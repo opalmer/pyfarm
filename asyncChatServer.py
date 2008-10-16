@@ -81,3 +81,53 @@ class stateclass:
             # if the buffer is empty, we don't care bout writing in the future
             if not len(self.buffers[fd]):
                 self.watchread(fd)
+
+    def errorevent(self, fd):
+        '''Called when an error occurs'''
+        self.closeout(fd)
+        
+    def closeout(self, fd):
+        '''Closes out a connection and removes it from data structures'''
+        self.dontwatch(fd)
+        try:
+            self.fd2socket(fd).close()
+        except:
+           pass
+           
+       del self.buffers[fd]
+       del self.sockets[fd]
+       
+   def loop(self):
+       '''main loop for the program'''
+       while 1:
+           result = self.p.poll()
+           for fd, event in result:
+               if fd == self.mastersocket.fileno() and event == self.POLLIN:
+                   # Mastersock events mean a new client connection
+                   # Accecpt it, config it, pass it to newconn()
+                   try:
+                       newsock, addr = self.fd2socket(fd).accept()
+                       newsock.setblocking(0)
+                       print "Got connection from", newsock.getpeername()
+                       self.newconn(newsock)
+                   except:
+                       pass
+               elif event == select.POLLIN:
+                   self.readevent(fd)
+               elif event == select.POLLOUT:
+                   self.writeevent(fd)
+               else:
+                   self.errorevent(fd)
+                   
+host = '' # bind to all interfaces
+port = 51423
+
+s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+s.bin((host, port))
+s.listen(1)
+s.setblocking(0)
+
+state = stateclass(s)
+
+state.loop()
