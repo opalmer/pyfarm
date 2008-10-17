@@ -1,5 +1,9 @@
-#!/usr/bin/env python
-# Asynchronous Chat Server - Chapter 22 - chatserver.py
+#!/usr/bin/python
+'''
+AUTHOR: Oliver Palmer
+PURPOSE: Chatserver, clients connec to this program
+INITIAL: Oct 16 2008
+'''
 
 import socket, traceback, os, sys, select
 
@@ -120,7 +124,7 @@ class stateclass:
                     self.errorevent(fd)
 
 host = ''                               # Bind to all interfaces
-port = 51423
+port = 54321
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
