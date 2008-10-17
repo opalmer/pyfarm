@@ -1,0 +1,13 @@
+Received: By test server from somewhere
+Received: By another server from my machine
+To: recipient@example.com
+From: Test Sender <sender@example.com>
+Subject: Test Message, Chapter 9 
+Date: Tue, 09 Dec 2003 15:29:18 -0600
+Message-ID: <20031209212918.10574.60752@somewhere.example.com>
+
+Hello,
+
+This is a test message from Chapter 9.  I hope you enjoy it!
+
+-- Anonymous
