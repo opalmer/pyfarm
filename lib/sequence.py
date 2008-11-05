@@ -10,6 +10,8 @@ name, and extension and then outputs it to a list to be used by the
 main program.
 '''
 
+import sys
+
 class Sequence(object):
 	'''
 	Sequence class used to generate a frame sequence
@@ -76,12 +78,44 @@ class Frame(object):
 		'''
 		pass
 		
-	def fullName(self):
-		'''Retun the frame name without the prefix'''
+	def number(self, zeros=True):
+		'''
+		Return the current frame number in the sequence
+			Variable:
+				zeros -- Will return either a number with or without zeros
+		'''
+		# using int(num) will get rid of the 00's in the string
 		pass
 		
+	def extension(self):
+		'''Return the extension to the user from the sequence'''
+		pass
+		
+	def step(self):
+		'''Generate the sequence step and return it to the user'''
+		# take two concurrent frames, calculate the diff.  Do it again
+		# then average the two
+		
+class Info(object):
+	'''
+	Query information about a sequence, return it to the user
+		Modes:
+			frames     -- return the total number of frames in the sequence
+			extensions -- return all extensions in the sequence
+			prefixes   -- return all prefixes used in the sequence
+	'''
+	def __init__(self, mode):
+		self.mode = mode
+		
+	def get(self):
+		if self.mode == 'frames':
+			pass
+		elif self.mode == 'extensions' or 'exts':
+			pass
+		elif self.mode == 'prefixes' or 'prefix':
+			pass
+			
 if __name__ == '__main__':
-	import sys
 	program = sys.argv[0]
 	print "\n%s is meant to be imported" % program
 	print "Please run help(%s) from python to learn more about this module\n" % program
