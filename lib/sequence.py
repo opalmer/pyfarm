@@ -11,6 +11,7 @@ main program.
 '''
 
 import sys
+from os.path import join
 
 class Sequence(object):
 	'''
@@ -38,15 +39,19 @@ class Sequence(object):
 	    for num in xrange(self.sFrame, self.eFrame+1, self.bFrame):
 	    	yield str(num).zfill(self.padding)
 		
-	def make(self, prefix=True):
+	def generate(self, prefix=True):
 		'''
 		Given input from user, generate the complete frame sequence
 		
 		OPTIONS:
 			prefix -- allows user enable or disable the prefix
 		'''
-		for num in self.seq():
-			yield num
+		if prefix == True:
+			for num in self.seq():
+				yield self.prefix+num+self.ext
+		else:
+			for num in self.seq():
+				yield num
 			
         
 class Frame(object):
