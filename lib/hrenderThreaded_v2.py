@@ -19,10 +19,7 @@ def coreCount():
 	return int(os.system('cat /proc/cpuinfo | grep processor | wc -l'))
 
 class ThreadedRenderQue(object):
-	'''
-	Que for defining and starting a threaded render que.
-	For an example of usage see the main function
-	'''
+	'''Que for defining and starting a threaded render locally'''
 	def __init__(self, sFrame, eFrame, bFrame, driver, hFile):
 		'''
 		Initialize all variables:
@@ -48,12 +45,10 @@ class ThreadedRenderQue(object):
 		self.driver  = driver
 		self.hFile   = hFile
 
-	def build(self):
+	def buildCommands(self):
 		'''Build command list from __init__ vars'''
 		for num in range(self.sFrame, self.eFrame, self.bFrame):
 			self.cmdList.append('hredner -e -f %s %s -d %s %s' % (num,num,self.driver,self.hFile))
-		print self.cmdList
-		print coreCount()
 
 	def reportError(self):
 		'''Output any and all errors to the Qerr generator instanace'''
@@ -85,9 +80,9 @@ class ThreadedRenderQue(object):
 			else:
 					self.Qout.put(result)
 
-	def startThreads(self, numThreads=5, daemons=True):
-		'''Create N threads, daemonize, then run all threads'''
-		for i in range(numThreads):
+	def startThreads(self, daemons=True):
+		'''Create threads based on numThreads(), add them into the pool'''
+		for i in range(numThreads()):
 			newThread = threading.Thread(target=doWork)
 			newThread.setDaemon(daemons)
 			Pool.append(newThread)
