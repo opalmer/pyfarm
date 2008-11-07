@@ -14,8 +14,12 @@ import Queue
 import os.path
 import threading
 
+Qin  = Queue.Queue()
+Qout = Queue.Queue()
+Qerr = Queue.Queue()
+
 def coreCount():
-	'''Find the number of cores on a linux workstation, add self.eThreads'''
+	'''Find the number of cores on a linux workstation'''
 	return int(os.system('cat /proc/cpuinfo | grep processor | wc -l'))
 
 class ThreadedRenderQue(object):
@@ -25,9 +29,6 @@ class ThreadedRenderQue(object):
 		Initialize all variables:
 			self.Pool     = List containing all threads
 			self.cmdList  = List containing a command list
-			self.Qin      = Generator containing input que
-			self.Qout     = Generator containing output que
-			self.Qerr     = Generator containing error que
 			self.sFrame   = Start frame integer
 			self.eFrame   = End frame integer
 			self.bFrame   = By frame integer
@@ -36,9 +37,6 @@ class ThreadedRenderQue(object):
 		'''
 		self.Pool    = []
 		self.cmdList = []
-		self.Qin     = Queue.Queue()
-		self.Qout    = Queue.Queue()
-		self.Qerr    = Queue.Queue()
 		self.sFrame  = int(sFrame)
 		self.eFrame  = int(eFrame)+1
 		self.bFrame  = int(bFrame)
@@ -50,9 +48,9 @@ class ThreadedRenderQue(object):
 		for num in range(self.sFrame, self.eFrame, self.bFrame):
 			self.cmdList.append('hredner -e -f %s %s -d %s %s' % (num,num,self.driver,self.hFile))
 
-	def reportError(self):
+	def reportError(self, error):
 		'''Output any and all errors to the Qerr generator instanace'''
-		return self.Qerr.put(sys.exc_info()[:2])
+		return Qerr.put(sys.exc_info()[:2])
 
 	def yieldQueue(self, Q):
 		'''Yield all items in the Queue without waiting'''
@@ -65,7 +63,7 @@ class ThreadedRenderQue(object):
 	def doWork(self):
 		'''Create threads and do work'''
 		while True:
-			command, item = self.Qin.get() # implicitly stops and waits
+			command, item = Qin.get() # implicitly stops and waits
 			if command == 'stop':
 				break
 			try:
@@ -78,11 +76,11 @@ class ThreadedRenderQue(object):
 					# unconditional except is right, since we report ALL errors
 					reportError()
 			else:
-					self.Qout.put(result)
+					Qout.put(result)
 
 	def startThreads(self, daemons=True):
 		'''Create threads based on numThreads(), add them into the pool'''
-		for i in range(numThreads()):
+		for i in range(coreCount()):
 			newThread = threading.Thread(target=doWork)
 			newThread.setDaemon(daemons)
 			Pool.append(newThread)
@@ -90,20 +88,20 @@ class ThreadedRenderQue(object):
 
 	def getWork(self, data, command='process'):
 		'''Post work requests as (command,data) to Qin'''
-		self.Qin.put((command, data))
+		Qin.put((command, data))
 
 	def getResults(self):
 		'''Get the final results from queue'''
-		return self.Qout.get()
+		return Qout.get()
 
 	def showResults(self):
 		'''Display the results'''
-		for result in yieldQueue(self.Qout):
+		for result in self.yieldQueue(Qout):
 			print 'Result:', result
 
 	def showErrors(self):
 		'''Display the errors'''
-		for etyp, err in reportError(self.Qerr):
+		for etyp, err in self.reportError(Qerr):
 			print 'Error:', etyp, err
 
 	def freeThreads(self):
