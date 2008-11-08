@@ -5,22 +5,19 @@ import sys
 import lib.hrenderThreaded_v3 as que
 
 sFrame  = 1
-eFrame  = 250
+eFrame  = 30
 bFrame  = 1
-driver  = 'i3d_output'
-hFile   = 'test.hip'
-cmdList = []
+threads = 8
+driver  = 'i3d'
+hFile   = '/media/projects/graphics/VSFX428-Particles/P2-DustStorm/dust_storm.hip'
 
-def generateCommands():
-	'''Generate a complete list of commands'''
-	for num in range(sFrame,eFrame,bFrame):
-		yield 'hrender -e -f %s %s -d %s %s' % (num,num,driver,hFile)
+def countThreads():
 
-for command in generateCommands():
-	que.requestWork( command )
+for num in range(sFrame,eFrame+1,bFrame):
+	que.requestWork('hrender -e -f %s %s -d %s %s' % (num,num,driver,hFile))
 
-que.startThreads(que.countCores)
+que.startThreads(threads) # <- enter the num
 que.stopThreads()
-que.showResults()
-que.showErrors()
-sys.exit(0)
+#que.showResults()
+#que.showErrors()
+#sys.exit(0)
