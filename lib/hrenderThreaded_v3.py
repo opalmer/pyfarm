@@ -1,111 +1,116 @@
 #!/usr/bin/python
 '''
 AUTHOR: Oliver Palmer
-Based on a cookbook example by John Nielsen & Justin A.
-#SEND TO STEVE WAGNER
+INITIAL: Nov 6 2008
+PURPOSE: To bring multi-threaded rendering to non threaded renders
 '''
 import threading, Queue, time, sys, os
 
-# Globals (start with a capital letter)
 Qin  = Queue.Queue()
 Qout = Queue.Queue()
 Qerr = Queue.Queue()
 Pool = []
 
-def report_error():
-    ''' we "report" errors by adding error information to Qerr '''
-    Qerr.put(sys.exc_info()[:2])
+def reportError():
+	'''we report errors by adding error information to Qerr'''
+	Qerr.put(sys.exc_info()[:2])
 
-def get_all_from_queue(Q):
-    ''' generator to yield one after the others all items currently
-        in the Queue Q, without any waiting
-    '''
-    try:
-        while True:
-            yield Q.get_nowait()
-    except Queue.Empty:
-        raise StopIteration
+def getAllWork(Q):
+	'''generator to yield one after the others all items currently
+	in the Queue Q, without any waiting
+	'''
+	try:
+		while True:
+			yield Q.get_nowait()
+	except Queue.Empty:
+		raise StopIteration
 
-def do_work_from_queue():
-    ''' the get-some-work, do-some-work main loop of worker threads '''
-    while True:
-        command, item = Qin.get()       # implicitly stops and waits
-        if command == 'stop':
-            break
-        try:
-            # simulated work functionality of a worker thread
-            if command == 'process':
-                result = os.system('%s' % item)
-            else:
-                raise ValueError, 'Unknown command %r' % command
-        except:
-            # unconditional except is right, since we report _all_ errors
-            report_error()
-        else:
-            Qout.put(result)
+def doWork():
+	'''Go get some work, then work on it'''
+	while True:
+		command, item = Qin.get()       # implicitly stops and waits
+		if command == 'stop':
+			break
+		try:
+			if command == 'process':
+				result = os.system('%s' % item) # <-- place your command here
+			else:
+				raise ValueError, 'Unknown command %r' % command
+		except:
+			reportError()
+		else:
+			Qout.put(result)
 
-def make_and_start_thread_pool(number_of_threads_in_pool=5, daemons=True):
-    ''' make a pool of N worker threads, daemonize, and start all of them '''
-    for i in range(number_of_threads_in_pool):
-         new_thread = threading.Thread(target=do_work_from_queue)
-         new_thread.setDaemon(daemons)
-         Pool.append(new_thread)
-         new_thread.start()
+def startThreads(number_of_threads_in_pool=5, daemons=True):
+	''' make a pool of N worker threads, daemonize, and start all of them '''
+	for i in range(number_of_threads_in_pool):
+		 new_thread = threading.Thread(target=doWork)
+		 new_thread.setDaemon(daemons)
+		 Pool.append(new_thread)
+		 new_thread.start()
 
-def request_work(data, command='process'):
-    ''' work requests are posted as (command, data) pairs to Qin '''
-    Qin.put((command, data))
+def requestWork(data, command='process'):
+	''' work requests are posted as (command, data) pairs to Qin '''
+	Qin.put((command, data))
 
-def get_result():
-    return Qout.get()     # implicitly stops and waits
+def getResult():
+	'''Stop and wait for results'''
+	return Qout.get()
 
-def show_all_results():
-    for result in get_all_from_queue(Qout):
-        print 'Result:', result
+def showResults():
+	'''Show all results inside of Qout'''
+	for result in getAllWork(Qout):
+		print 'Result:', result
 
-def show_all_errors():
-    for etyp, err in get_all_from_queue(Qerr):
-        print 'Error:', etyp, err
+def showErrors():
+	'''Show allerrors inside of Qerr'''
+	for etyp, err in getAllWork(Qerr):
+		print 'Error:', etyp, err
 
-def stop_and_free_thread_pool():
-    # order is important: first, request all threads to stop...:
-    for i in range(len(Pool)):
-        request_work(None, 'stop')
+def stopThreads():
+	'''
+	Stop the thread pool and then free all threads
+	ORDER IS IMPORTANT!
+	Order of Operations:
+		1.) Request all threads to stop working
+		2.) Wait for each thread to terminate
+		3.) Clean up the thread pool @ Pool[]
+	'''
+	for i in range(len(Pool)):
+		requestWork(None, 'stop')
 
-    # ...then, wait for each of them to terminate:
-    for existing_thread in Pool:
-        existing_thread.join()
+	for existing_thread in Pool:
+		existing_thread.join()
 
-    # clean up the pool from now-unused thread objects
-    del Pool[:]
+	del Pool[:]
 
-program = sys.argv[0]
-if len(sys.argv) != 6:
-	# Display help if the user does not enter the correct number of arguments
-	os.system('clear')
-	print "\nPROGRAM:\n\t%s" % program
-	print "\nERROR:\n\tIncorrect number of parameters specified\n\tPlease see usage and examples below"
-	print "\nUSAGE:\n\t%s startFrame endFrame numberOfThreads outputDriver hipFile" % program
-	print "\nEXAMPLE:\n\t%s 1 250 4 mantra P2_seq1_v4.hip" % program
-	print "\nHINTS:\n\t-For non-threaded processes (i3d bakes) set the number of \n\tthreads to AT LEAST equal to the number of processes"
-	print "\n\t-Do not offset the start frame, python will handle that when creating the threads"
-	sys.exit(1)
-else:
-	sFrame  = int(sys.argv[1])
-	eFrame  = int(sys.argv[2])+1
-	threads = int(sys.argv[3])
-	driver  = sys.argv[4]
-	hFile   = sys.argv[5]
-	cmdList = []
-	
-	for num in range(sFrame,eFrame):
-		cmdList.append('hrender -e -f %s %s -d %s %s' % (num,num,driver,hFile))
-	
-	for command in cmdList:	
-		request_work(command)       # add the command from cmdList into the que
-	
-	make_and_start_thread_pool(threads) # start the processes with a spec. number of threads
-	stop_and_free_thread_pool()         # cleanup threads
-	show_all_results()                  # show all results
-	show_all_errors()                   # show any errors that occur inside of python
-	sys.exit(0)
+if __name__ == '__main__':
+	# run this code only if run via the command line
+	# check to make sure the user has input the correct number of commands
+	if len(sys.argv) != 7:
+		os.system('clear')
+		print "\nPROGRAM:\n\t%s" % sys.argv[0]
+		print "\nERROR:\n\tIncorrect number of parameters specified\n\tPlease see usage and examples below"
+		print "\nUSAGE:\n\t%s startFrame endFrame byFrane threads outputDriver hipFile" % sys.argv[0]
+		print "\nEXAMPLE:\n\t%s 1 250 1 4 i3d_output_bake P2_seq2_v4.hip" % sys.argv[0]
+		sys.exit(1)
+	else:
+		sFrame  = int(sys.argv[1])
+		eFrame  = int(sys.argv[2])+1
+		bFrame  = int(sys.argv[3])
+		threads = int(sys.argv[4])
+		driver  = sys.argv[5]
+		hFile   = sys.argv[6]
+		cmdList = []
+
+		for num in range(sFrame,eFrame):
+			cmdList.append('hrender -e -f %s %s -d %s %s' % (num,num,driver,hFile))
+
+		for command in cmdList:
+			requestWork(command) # add the command from cmdList into the que
+
+		startThreads(threads)    # start the processes with a spec. number of threads
+		stopThreads()            # cleanup threads
+		showResults()            # show all results
+		showErrors()             # show any errors that occur inside of python
+		sys.exit(0)
