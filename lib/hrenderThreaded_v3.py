@@ -11,14 +11,17 @@ Qout = Queue.Queue()
 Qerr = Queue.Queue()
 Pool = []
 
+
+def countCores():
+	'''Count the number of cores on the local linux system'''
+	return os.system('cat /proc/cpuinfo | grep processor | wc -l')
+
 def reportError():
-	'''we report errors by adding error information to Qerr'''
+	'''Add an error to Qerr'''
 	Qerr.put(sys.exc_info()[:2])
 
 def getAllWork(Q):
-	'''generator to yield one after the others all items currently
-	in the Queue Q, without any waiting
-	'''
+	'''Yield all item currently waiting in Q'''
 	try:
 		while True:
 			yield Q.get_nowait()
@@ -26,7 +29,7 @@ def getAllWork(Q):
 		raise StopIteration
 
 def doWork():
-	'''Go get some work, then work on it'''
+	'''Get some work, then let the magic begin'''
 	while True:
 		command, item = Qin.get()       # implicitly stops and waits
 		if command == 'stop':
@@ -42,7 +45,7 @@ def doWork():
 			Qout.put(result)
 
 def startThreads(number_of_threads_in_pool=5, daemons=True):
-	''' make a pool of N worker threads, daemonize, and start all of them '''
+	'''Create a poll of N threads, add them, then start'''
 	for i in range(number_of_threads_in_pool):
 		 new_thread = threading.Thread(target=doWork)
 		 new_thread.setDaemon(daemons)
@@ -50,7 +53,7 @@ def startThreads(number_of_threads_in_pool=5, daemons=True):
 		 new_thread.start()
 
 def requestWork(data, command='process'):
-	''' work requests are posted as (command, data) pairs to Qin '''
+	'''Request work, add it to Qin instance'''
 	Qin.put((command, data))
 
 def getResult():
@@ -63,7 +66,7 @@ def showResults():
 		print 'Result:', result
 
 def showErrors():
-	'''Show allerrors inside of Qerr'''
+	'''Show all errors inside of Qerr'''
 	for etyp, err in getAllWork(Qerr):
 		print 'Error:', etyp, err
 
