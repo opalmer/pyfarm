@@ -9,10 +9,10 @@ PURPOSE: To provide various timining and stopwatch like functions to python.
 import time
 
 class Stopwatch(object):
-	def __init__(self, lapName):
-		self.lapName = lapName
+	def __init__(self):
 		self.start   = 0.0
 		self.end     = 0.0
+		self.elapsed = 0.0
 
 	def start(self):
 		'''Start the stopwatch'''
@@ -28,7 +28,7 @@ class Stopwatch(object):
 
 	def elapsed(self):
 		'''Return the elapsed time for the given lap'''
-		pass
+		return self.elapsed = self.start - self.end
 
 if __name__ == '__main__':
 	print "Sorry, this module is meant to be imported"

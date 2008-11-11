@@ -39,6 +39,9 @@ class Log(object):
 	def __init__(self):
 		pass
 
+	def config(self, message):
+		'''Configure the logging structure given a string message'''
+		pass
 
 if __name__ == '__main__':
 	print "This module is not meant to be run directly, please import it"
