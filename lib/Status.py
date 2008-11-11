@@ -9,6 +9,7 @@ the end user.
 
 import sys
 import time
+import logging
 
 class Exit(object):
 	'''Exit class used to describe exit codes to end user'''
@@ -27,6 +28,10 @@ class Exit(object):
 class Error(object):
 	'''Custom error class used to handle exceptions and faults'''
 	def __init__(self):
+		pass
+
+	def format(self):
+		'''Format a custom logging string'''
 		pass
 
 class Log(object):
