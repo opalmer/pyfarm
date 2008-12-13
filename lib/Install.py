@@ -66,7 +66,6 @@ class SystemPackages(object):
 
                         else:
                             print "%s is already installed" % package
-                            #pkgInstall = call('apt-get -y install %s' % package,shell=True,stdout=PIPE,stderr=PIPE)
 
 
 class PyFarm(object):
@@ -75,7 +74,7 @@ class PyFarm(object):
         pass
 
     def install(self):
-        '''Install PyFarm given the source code (also used to update code)'''
+        '''Install PyFarm given the source code.  Could also be used to update code'''
         pass
 
     def update(self):
