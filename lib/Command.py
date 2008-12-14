@@ -5,4 +5,7 @@ INITIAL: Nov 12 2008
 PURPOSE: Module used to run a command and gather the output
 '''
 
-class
+class Send(object):
+    '''Used to send a command to the system'''
+    def __init__(self, cmd):
+        self.cmd = cmd
