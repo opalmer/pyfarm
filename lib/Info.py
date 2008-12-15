@@ -32,6 +32,9 @@ class System:
         else:
             return False
 
+    def os():
+        '''Return the os type to PyFarm (win,irux,etc.)'''
+        pass
 
 
 class Job(object):
