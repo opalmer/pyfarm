@@ -1,0 +1,407 @@
+/* This is a color-scheme stylesheet, allowing you to easily
+ * override any styles (primarily colors) set in the main stylesheet.
+ *  
+ * CSS for IP.Board 2.3.0
+ * Author: Rikki Tissier, original IP.Board CSS by James Mathias
+ * Copyright: 2007 IPS, Inc, all rights reserved 
+ *
+ * All style attributes in alpha-numeric order starting from 0
+ *
+ */
+
+/* ------------------------ */
+/* MAIN						*/
+
+body {
+	background: #FFF;
+	color: #222;
+}
+
+a {
+	color: #222;
+}
+
+	a:hover {
+		color: #5f6069;
+	}
+
+/* ------------------------ */
+/* HEADER/FOOTER 			*/
+
+#logostrip {
+	background: #303b4a;
+}
+
+#gfooter {
+	background: #3b424c;
+	color: #fff;
+}
+
+	#gfooter a:link,
+	#gfooter a:visited {
+		color: #fff;
+	}
+
+/* ------------------------	*/
+/* SUBMENU 					*/
+
+#submenu {
+	background: #979ba0;
+	color: #31363d;
+}
+
+	#submenu a {
+		color: #31363d;
+	}
+	
+		#submenu a:hover {
+			background-color: #c5c7ca;
+			color: #1a1b1c;
+		}
+		
+/* ------------------------ */
+/* NAVSTRIP					*/
+
+#navstrip {
+	background: transparent;
+	color: #999;
+}
+
+	#navstrip a:link, 
+	#navstrip  a:visited {
+		color: #222;
+	}
+	
+	#navstrip a:hover, 
+	#navstrip a:active {
+		background: transparent; 
+		color: #5176B5;
+	}
+		
+/* ------------------------ */
+/* USERLINKS/USERLINKSGUEST */
+
+#userlinks {
+	background: #e4e9f0;
+	border-bottom: 1px solid #ced5e0;
+}
+
+#userlinksguest	{
+	background: #f1dada;
+	border-bottom: 1px solid #d1a9a9;
+}
+
+/* ------------------------ */
+/* PAGINATION				*/
+
+.pagecurrent{
+	background: #7d838c !important;
+	color: #fff;
+}
+
+/* ------------------------ */
+/* FORMS (BUTTONS ETC.)		*/
+
+.input-warn,
+.input-green,
+.input-checkbox,
+input,
+textarea,
+select,
+.textarea,
+.searchinput,
+.button,
+.gobutton {
+	background: #FFF;
+	border: 1px solid #6a7382;
+	color: #000;
+}
+
+.button{
+	background: #DFE6EF;
+}
+
+/* ------------------------- */
+/* MAINTITLE/SUBTITLE/CATEND */
+/* includes redirectwrap h4	 */
+
+.borderwrap{
+	border: 1px solid #c4c4c4;
+}
+
+.borderwrapm {
+	border: 1px solid #959595;
+}
+
+.borderwrap h3,
+.maintitle,
+.maintitlecollapse {
+	background: #303b4a;
+	color: #FFF;
+}
+
+	.maintitle td {
+		color: #FFF;
+	}
+	
+	.maintitle a:link, 
+	.maintitle a:visited,
+	.maintitlecollapse a:link, 
+	.maintitlecollapse a:visited {
+		color: #FFF;
+	}
+	
+	.maintitle a:hover, 
+	.maintitle a:active,
+	.maintitlecollapse a:hover, 
+	.maintitlecollapse a:active {
+		color: #e9eef4;
+		border-bottom: 1px solid #e9eef4;
+	}
+	
+	.maintitle p.expand a,
+	.maintitle p.goto a,
+	.maintitlecollapse p.expand a {
+		border: 0px;
+	}
+
+.catend {
+	background: #656f7b;
+	color: #000;
+}
+
+table th,
+.borderwrap table th,
+.subtitle,
+.subtitlediv,
+.postlinksbar,
+#redirectwrap h4 {
+	background: #ced7e5;
+	border-bottom: 1px solid #9aa4b1;
+	color: #464c55;
+}
+
+	.borderwrap table th a,
+	.subtitle a,
+	.subtitlediv a {
+		color: #464c55;
+		border-bottom: 1px dotted #464c55;
+	}
+	
+	.borderwrap table th a:hover,
+	.subtitle a:hover,
+	.subtitlediv a:hover
+	{
+		border-bottom: 1px solid #464c55;
+	}
+	
+	.borderwrap table th {
+		border-right: 1px dotted #b0bbcd !important;
+	}
+
+/* ------------------------ */
+/* (DARK)ROW1/ROW2			*/
+/* PFORM(LEFT|RIGHT)		*/
+
+.row1,
+.gal_curr { 
+	background: #e4e6e9; 
+}
+
+.row2,
+.gal_noncurr { 
+	background: #eff1f3; 
+}
+	
+	.ipbtable .row1,
+	.ipbtable .row2 {
+		border-bottom: 1px solid #dcdcdc;
+	}
+	
+	.gal_curr,
+	.gal_noncurr {
+		border-right: 1px solid #dcdcdc;
+	}
+	
+.darkrow1,
+.darkrow3 {
+	background: #c6ccd4;
+	color: #404957; 
+	border-top: 1px solid #a8b1bd;
+}
+
+.formtable td,
+.pformleft,
+.pformleftw,
+.pformright{
+	background:#F5F9FD;
+	border-bottom: 1px solid #dcdcdc;
+}
+
+.pformleft,
+.pformleftw {
+	background-color: #e4e6e9;
+}
+
+.pformright {
+	background-color: #eff1f3;
+}
+
+
+/* ------------------------ */
+/* POST_HEAD/POST1/POST2	*/
+
+.post_head {
+	background: #cfd6e1;
+	color: #464c55;
+}
+
+.post1,
+.bg1 {
+	background: #f0f0f0;
+}
+
+.post2,
+.bg3 {
+	background: #eff1f3;
+}
+
+.post1.post_left,
+.post2.post_left {
+	background-color: #e7eaef;
+}
+
+/* -------------------------- */
+/* FORMBUTTONROW      		  */
+/* includes redirectwrap foot */
+
+td.formbuttonrow,
+.formbuttonrow,
+.pformstrip,
+.borderwrap p.formbuttonrow,
+.borderwrap p.formbuttonrow1,
+#redirectwrap p.redirectfoot{
+	background: #c6ccd4;
+	color: #404957; 
+	border-top: 1px solid #a8b1bd;
+}
+
+/* ------------------------ */
+/* BAR/BARB/BARC/DARKROW	*/
+
+.bar,
+.barb,
+.barc{
+	background: #DFE6EF;
+	color: #222;
+}
+
+/* ------------------------ */
+/* TABS (ON/OFF)			*/
+
+.tabon,
+.pp-tabon {
+	border-color: #262d35;
+	background-color:#303b4a;
+	color:#FFFFFF;
+}
+
+	.tabon a,
+	.pp-tabon a {
+		color: #FFFFFF !important;
+	}
+
+.taboff,
+.pp-taboff,
+.pp-tabshaded {
+	border-color: #939fae;
+	background-color: #b4c1d3;
+	color: #2d2d2d;
+}
+	
+	.taboff a,
+	.pp-taboff a,
+	.pp-tabshaded a {
+		color: #2d2d2d;
+	}
+	
+.pp-tabclear,
+.pp-maintitle
+{
+	background: #303b4a;
+	color: #FFF;
+}
+
+/* ------------------------ */
+/* POPUPMENUS				*/
+
+.popmenubutton-new-out {
+	background-color:#dce1e8;
+	border: 1px solid #a9b0bb;
+}
+
+.popmenubutton a,
+.popmenubutton-new a,
+.popmenubutton-new-out a,
+.popupmenu-item a,
+.popupmenu-item-last a {
+	color: #30343b !important;
+}
+
+.popmenubutton a:hover,
+.popmenubutton-new a:hover,
+.popupmenu-item a:hover, 
+.popupmenu-item-last a:hover
+{ 
+	color: #5f7186;
+}
+
+/* ------------------------ */
+/* MISC 					*/
+
+.desc,
+.lastaction {
+	color: #434951;
+}
+
+.newslink span{
+	color: #072A66;
+}
+
+	.newslink input{
+		background: #FFF;
+		border: 1px solid #999;
+		color: #072A66;
+	}
+	
+.fauxbutton{
+	background: #DFE6EF;
+	border: 1px solid #6a7382;
+}
+
+	.fauxbutton a:link,
+	.fauxbutton a:visited,
+	.fauxbutton a:active{
+		color: #222 !important;
+	}
+	
+/* ------------------------ */
+/* GALLERY					*/
+
+.gallery_block {
+	background-color: #e6e6e6;
+}
+
+.gal_cat a {
+	border-bottom: 1px dotted #fff !important;
+}
+
+.thumbwrap p,
+.thumbwrapp p {
+	background: #e4e6e9 !important;
+}
+
+.thumbwrap p.alt,
+.thumbwrapp p.alt{
+	background: #eff1f3 !important;
+}

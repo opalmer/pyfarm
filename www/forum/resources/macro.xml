@@ -1,0 +1,470 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<macroexport exported="1158328901">
+	<macrogroup>
+		<macro>
+			<macro_value>A_LOCKED_B</macro_value>
+			<macro_replace><![CDATA[<img src='style_images/<#IMG_DIR#>/t_closed.gif' border='0'  alt='Closed Topic' />]]></macro_replace>
+		</macro>
+
+		<macro>
+			<macro_value>A_MOVED_B</macro_value>
+			<macro_replace><![CDATA[<img src='style_images/<#IMG_DIR#>/t_moved.gif' border='0'  alt='Moved Topic'>]]></macro_replace>
+		</macro>
+
+		<macro>
+			<macro_value>A_POLLONLY_B</macro_value>
+			<macro_replace><![CDATA[<img src='style_images/<#IMG_DIR#>/t_closed.gif' border='0'  alt='Poll Only' />]]></macro_replace>
+		</macro>
+
+		<macro>
+			<macro_value>A_POST</macro_value>
+			<macro_replace><![CDATA[<img src='style_images/<#IMG_DIR#>/t_new.gif' border='0'  alt='Start new topic' />]]></macro_replace>
+		</macro>
+
+		<macro>
+			<macro_value>A_REPLY</macro_value>
+			<macro_replace><![CDATA[<img src='style_images/<#IMG_DIR#>/t_reply.gif' border='0'  alt='Reply to this topic' />]]></macro_replace>
+		</macro>
+
+		<macro>
+			<macro_value>A_POLL</macro_value>
+			<macro_replace><![CDATA[<img src='style_images/<#IMG_DIR#>/t_poll.gif' border='0'  alt='Start Poll' />]]></macro_replace>
+		</macro>
+
+		<macro>
+			<macro_value>A_STAR</macro_value>
+			<macro_replace><![CDATA[<img src='style_images/<#IMG_DIR#>/pip.gif' border='0'  alt='*' />]]></macro_replace>
+		</macro>
+
+		<macro>
+			<macro_value>B_HOT</macro_value>
+			<macro_replace><![CDATA[<img src='style_images/<#IMG_DIR#>/f_hot.gif' border='0'  alt='Hot topic' />]]></macro_replace>
+		</macro>
+
+		<macro>
+			<macro_value>B_HOT_NN</macro_value>
+			<macro_replace><![CDATA[<img src='style_images/<#IMG_DIR#>/f_hot_no.gif' border='0'  alt='No new' />]]></macro_replace>
+		</macro>
+
+		<macro>
+			<macro_value>B_LOCKED</macro_value>
+			<macro_replace><![CDATA[<img src='style_images/<#IMG_DIR#>/f_closed.gif' border='0'  alt='Closed' />]]></macro_replace>
+		</macro>
+
+		<macro>
+			<macro_value>B_MOVED</macro_value>
+			<macro_replace><![CDATA[<img src='style_images/<#IMG_DIR#>/f_moved.gif' border='0'  alt='Moved' />]]></macro_replace>
+		</macro>
+
+		<macro>
+			<macro_value>B_NEW</macro_value>
+			<macro_replace><![CDATA[<img src='style_images/<#IMG_DIR#>/f_norm.gif' border='0'  alt='New Posts' />]]></macro_replace>
+		</macro>
+
+		<macro>
+			<macro_value>B_NORM</macro_value>
+			<macro_replace><![CDATA[<img src='style_images/<#IMG_DIR#>/f_norm_no.gif' border='0'  alt='No New Posts' />]]></macro_replace>
+		</macro>
+
+		<macro>
+			<macro_value>B_PIN</macro_value>
+			<macro_replace><![CDATA[<img src='style_images/<#IMG_DIR#>/f_pinned.gif' border='0'  alt='Pinned' />]]></macro_replace>
+		</macro>
+
+		<macro>
+			<macro_value>B_POLL</macro_value>
+			<macro_replace><![CDATA[<img src='style_images/<#IMG_DIR#>/f_poll.gif' border='0'  alt='Poll' />]]></macro_replace>
+		</macro>
+
+		<macro>
+			<macro_value>B_POLL_NN</macro_value>
+			<macro_replace><![CDATA[<img src='style_images/<#IMG_DIR#>/f_poll_no.gif' border='0'  alt='No new votes' />]]></macro_replace>
+		</macro>
+
+		<macro>
+			<macro_value>B_HOT_DOT</macro_value>
+			<macro_replace><![CDATA[<img src='style_images/<#IMG_DIR#>/f_hot_dot.gif' border='0' alt='New Posts' />]]></macro_replace>
+		</macro>
+
+		<macro>
+			<macro_value>B_NEW_DOT</macro_value>
+			<macro_replace><![CDATA[<img src='style_images/<#IMG_DIR#>/f_norm_dot.gif' border='0' alt='No New Posts' />]]></macro_replace>
+		</macro>
+
+		<macro>
+			<macro_value>B_HOT_NN_DOT</macro_value>
+			<macro_replace><![CDATA[<img src='style_images/<#IMG_DIR#>/f_hot_no_dot.gif' border='0' alt='No New Posts*' />]]></macro_replace>
+		</macro>
+
+		<macro>
+			<macro_value>B_NORM_DOT</macro_value>
+			<macro_replace><![CDATA[<img src='style_images/<#IMG_DIR#>/f_norm_no_dot.gif' border='0' alt='No New Posts*' />]]></macro_replace>
+		</macro>
+
+		<macro>
+			<macro_value>B_POLL_DOT</macro_value>
+			<macro_replace><![CDATA[<img src='style_images/<#IMG_DIR#>/f_poll_dot.gif' border='0' alt='Poll*' />]]></macro_replace>
+		</macro>
+
+		<macro>
+			<macro_value>B_POLL_NN_DOT</macro_value>
+			<macro_replace><![CDATA[<img src='style_images/<#IMG_DIR#>/f_poll_no_dot.gif' border='0' alt='No New Votes*' />]]></macro_replace>
+		</macro>
+
+		<macro>
+			<macro_value>C_LOCKED</macro_value>
+			<macro_replace><![CDATA[<img src='style_images/<#IMG_DIR#>/bf_readonly.gif' border='0'  alt='Read Only Forum' />]]></macro_replace>
+		</macro>
+
+		<macro>
+			<macro_value>C_OFF</macro_value>
+			<macro_replace><![CDATA[<img src='style_images/<#IMG_DIR#>/bf_nonew.gif' border='0'  alt='No New Posts' />]]></macro_replace>
+		</macro>
+
+		<macro>
+			<macro_value>C_OFF_CAT</macro_value>
+			<macro_replace><![CDATA[<img src='style_images/<#IMG_DIR#>/bc_nonew.gif' border='0'  alt='No New Posts' />]]></macro_replace>
+		</macro>
+
+		<macro>
+			<macro_value>C_OFF_RES</macro_value>
+			<macro_replace><![CDATA[<img src='style_images/<#IMG_DIR#>/br_nonew.gif' border='0'  alt='No New Posts' />]]></macro_replace>
+		</macro>
+
+		<macro>
+			<macro_value>C_ON</macro_value>
+			<macro_replace><![CDATA[<img src='style_images/<#IMG_DIR#>/bf_new.gif' border='0'  alt='New Posts' />]]></macro_replace>
+		</macro>
+
+		<macro>
+			<macro_value>C_ON_CAT</macro_value>
+			<macro_replace><![CDATA[<img src='style_images/<#IMG_DIR#>/bc_new.gif' border='0'  alt='New Posts' />]]></macro_replace>
+		</macro>
+
+		<macro>
+			<macro_value>C_ON_RES</macro_value>
+			<macro_replace><![CDATA[<img src='style_images/<#IMG_DIR#>/br_new.gif' border='0'  alt='New Posts'  />]]></macro_replace>
+		</macro>
+
+		<macro>
+			<macro_value>F_ACTIVE</macro_value>
+			<macro_replace><![CDATA[<img src='style_images/<#IMG_DIR#>/user.gif' border='0'  alt='Active Users' />]]></macro_replace>
+		</macro>
+
+		<macro>
+			<macro_value>F_NAV_SEP</macro_value>
+			<macro_replace><![CDATA[&nbsp;&gt;&nbsp;]]></macro_replace>
+		</macro>
+
+		<macro>
+			<macro_value>F_NAV</macro_value>
+			<macro_replace><![CDATA[<img src='style_images/<#IMG_DIR#>/nav.gif' border='0'  alt='&gt;' />]]></macro_replace>
+		</macro>
+
+		<macro>
+			<macro_value>F_STATS</macro_value>
+			<macro_replace><![CDATA[<img src='style_images/<#IMG_DIR#>/stats.gif' border='0'  alt='Board Stats' />]]></macro_replace>
+		</macro>
+
+		<macro>
+			<macro_value>NO_PHOTO</macro_value>
+			<macro_replace><![CDATA[<img src='style_images/<#IMG_DIR#>/nophoto.gif' border='0'  alt='No Photo' />]]></macro_replace>
+		</macro>
+
+		<macro>
+			<macro_value>CAMERA</macro_value>
+			<macro_replace><![CDATA[<img src='style_images/<#IMG_DIR#>/camera.gif' border='0'  alt='Photo' />]]></macro_replace>
+		</macro>
+
+		<macro>
+			<macro_value>M_READ</macro_value>
+			<macro_replace><![CDATA[<img src='style_images/<#IMG_DIR#>/f_norm_no.gif' border='0'  alt='Read Msg' />]]></macro_replace>
+		</macro>
+
+		<macro>
+			<macro_value>M_UNREAD</macro_value>
+			<macro_replace><![CDATA[<img src='style_images/<#IMG_DIR#>/f_norm.gif' border='0'  alt='Unread Msg' />]]></macro_replace>
+		</macro>
+
+		<macro>
+			<macro_value>P_AOL</macro_value>
+			<macro_replace><![CDATA[<img src='style_images/<#IMG_DIR#>/p_aim.gif' border='0'  alt='AOL' />]]></macro_replace>
+		</macro>
+
+		<macro>
+			<macro_value>P_DELETE</macro_value>
+			<macro_replace><![CDATA[<img src='style_images/<#IMG_DIR#>/p_delete.gif' border='0'  alt='Delete Post' />]]></macro_replace>
+		</macro>
+
+		<macro>
+			<macro_value>P_EDIT</macro_value>
+			<macro_replace><![CDATA[<img src='style_images/<#IMG_DIR#>/p_edit.gif' border='0'  alt='Edit Post' />]]></macro_replace>
+		</macro>
+
+		<macro>
+			<macro_value>P_EMAIL</macro_value>
+			<macro_replace><![CDATA[<img src='style_images/<#IMG_DIR#>/p_email.gif' border='0'  alt='Email Poster' />]]></macro_replace>
+		</macro>
+
+		<macro>
+			<macro_value>P_ICQ</macro_value>
+			<macro_replace><![CDATA[<img src='style_images/<#IMG_DIR#>/p_icq.gif' border='0'  alt='ICQ' />]]></macro_replace>
+		</macro>
+
+		<macro>
+			<macro_value>P_MSG</macro_value>
+			<macro_replace><![CDATA[<img src='style_images/<#IMG_DIR#>/p_pm.gif' border='0'  alt='PM' />]]></macro_replace>
+		</macro>
+
+		<macro>
+			<macro_value>P_QUOTE</macro_value>
+			<macro_replace><![CDATA[<img src='style_images/<#IMG_DIR#>/p_quote.gif' border='0'  alt='Quote Post' />]]></macro_replace>
+		</macro>
+
+		<macro>
+			<macro_value>P_WEBSITE</macro_value>
+			<macro_replace><![CDATA[<img src='style_images/<#IMG_DIR#>/p_www.gif' border='0'  alt='Users Website' />]]></macro_replace>
+		</macro>
+
+		<macro>
+			<macro_value>P_YIM</macro_value>
+			<macro_replace><![CDATA[<img src='style_images/<#IMG_DIR#>/p_yim.gif' border='0' alt='Yahoo' />]]></macro_replace>
+		</macro>
+
+		<macro>
+			<macro_value>P_REPORT</macro_value>
+			<macro_replace><![CDATA[<img src='style_images/<#IMG_DIR#>/p_report.gif' border='0'  alt='Report Post' />]]></macro_replace>
+		</macro>
+
+		<macro>
+			<macro_value>P_MSN</macro_value>
+			<macro_replace><![CDATA[<img src='style_images/<#IMG_DIR#>/p_msn.gif' border='0' alt='MSN' />]]></macro_replace>
+		</macro>
+
+		<macro>
+			<macro_value>CAT_IMG</macro_value>
+			<macro_replace><![CDATA[<img src='style_images/<#IMG_DIR#>/nav_m.gif' border='0'  alt='&gt;' width='8' height='8' />]]></macro_replace>
+		</macro>
+
+		<macro>
+			<macro_value>NEW_POST</macro_value>
+			<macro_replace><![CDATA[<img src='style_images/<#IMG_DIR#>/newpost.gif' border='0'  alt='Goto first unread' title='Goto first unread' hspace=2 />]]></macro_replace>
+		</macro>
+
+		<macro>
+			<macro_value>LAST_POST</macro_value>
+			<macro_replace><![CDATA[<img src='style_images/<#IMG_DIR#>/lastpost.gif' border='0'  alt='Last Post' />]]></macro_replace>
+		</macro>
+
+		<macro>
+			<macro_value>BR_REDIRECT</macro_value>
+			<macro_replace><![CDATA[<img src='style_images/<#IMG_DIR#>/br_redirect.gif' border='0'  alt='Redirect' />]]></macro_replace>
+		</macro>
+
+		<macro>
+			<macro_value>INTEGRITY_MSGR</macro_value>
+			<macro_replace><![CDATA[<img src='style_images/<#IMG_DIR#>/p_im.gif' border='0'  alt='Integrity Messenger IM' />]]></macro_replace>
+		</macro>
+
+		<macro>
+			<macro_value>ADDRESS_CARD</macro_value>
+			<macro_replace><![CDATA[<img src='style_images/<#IMG_DIR#>/addresscard.gif' border='0'  alt='Mini Profile' />]]></macro_replace>
+		</macro>
+
+		<macro>
+			<macro_value>T_QREPLY</macro_value>
+			<macro_replace><![CDATA[<img src='style_images/<#IMG_DIR#>/t_qr.gif' border='0'  alt='Fast Reply' />]]></macro_replace>
+		</macro>
+
+		<macro>
+			<macro_value>T_OPTS</macro_value>
+			<macro_replace><![CDATA[<img src='style_images/<#IMG_DIR#>/t_options.gif' border='0'  alt='Topic Options' />]]></macro_replace>
+		</macro>
+
+		<macro>
+			<macro_value>CAL_NEWEVENT</macro_value>
+			<macro_replace><![CDATA[<img src='style_images/<#IMG_DIR#>/cal_newevent.gif' border='0'  alt='Add New Event' />]]></macro_replace>
+		</macro>
+
+		<macro>
+			<macro_value>F_RULES</macro_value>
+			<macro_replace><![CDATA[<img src='style_images/<#IMG_DIR#>/forum_rules.gif' border='0'  alt='Forum Rules' />]]></macro_replace>
+		</macro>
+
+		<macro>
+			<macro_value>WARN_0</macro_value>
+			<macro_replace><![CDATA[<img src='style_images/<#IMG_DIR#>/warn0.gif' border='0'  alt='-----' />]]></macro_replace>
+		</macro>
+
+		<macro>
+			<macro_value>WARN_1</macro_value>
+			<macro_replace><![CDATA[<img src='style_images/<#IMG_DIR#>/warn1.gif' border='0'  alt='X----' />]]></macro_replace>
+		</macro>
+
+		<macro>
+			<macro_value>WARN_2</macro_value>
+			<macro_replace><![CDATA[<img src='style_images/<#IMG_DIR#>/warn2.gif' border='0'  alt='XX---' />]]></macro_replace>
+		</macro>
+
+		<macro>
+			<macro_value>WARN_3</macro_value>
+			<macro_replace><![CDATA[<img src='style_images/<#IMG_DIR#>/warn3.gif' border='0'  alt='XXX--' />]]></macro_replace>
+		</macro>
+
+		<macro>
+			<macro_value>WARN_4</macro_value>
+			<macro_replace><![CDATA[<img src='style_images/<#IMG_DIR#>/warn4.gif' border='0'  alt='XXXX-' />]]></macro_replace>
+		</macro>
+
+		<macro>
+			<macro_value>WARN_5</macro_value>
+			<macro_replace><![CDATA[<img src='style_images/<#IMG_DIR#>/warn5.gif' border='0'  alt='XXXXX' />]]></macro_replace>
+		</macro>
+
+		<macro>
+			<macro_value>WARN_ADD</macro_value>
+			<macro_replace><![CDATA[<img src='style_images/<#IMG_DIR#>/warn_add.gif' border='0'  alt='+' />]]></macro_replace>
+		</macro>
+
+		<macro>
+			<macro_value>WARN_MINUS</macro_value>
+			<macro_replace><![CDATA[<img src='style_images/<#IMG_DIR#>/warn_minus.gif' border='0'  alt='-' />]]></macro_replace>
+		</macro>
+
+		<macro>
+			<macro_value>PB_USER_ONLINE</macro_value>
+			<macro_replace><![CDATA[<img src='style_images/<#IMG_DIR#>/p_online.gif' border='0'  alt='User is online!' />]]></macro_replace>
+		</macro>
+
+		<macro>
+			<macro_value>PB_USER_OFFLINE</macro_value>
+			<macro_replace><![CDATA[<img src='style_images/<#IMG_DIR#>/p_offline.gif' border='0'  alt='User is offline' />]]></macro_replace>
+		</macro>
+
+		<macro>
+			<macro_value>ATTACH_ICON</macro_value>
+			<macro_replace><![CDATA[<img src='style_images/<#IMG_DIR#>/attachicon.gif' border='0'  alt='Topic has attachments' />]]></macro_replace>
+		</macro>
+
+		<macro>
+			<macro_value>MSG_FOLDER</macro_value>
+			<macro_replace><![CDATA[<img src='style_images/<#IMG_DIR#>/msg_folder.gif' border='0'  alt='-' />]]></macro_replace>
+		</macro>
+
+		<macro>
+			<macro_value>ITEM_START</macro_value>
+			<macro_replace><![CDATA[<img src='style_images/<#IMG_DIR#>/nav_m_dark.gif' border='0'  alt='.' />]]></macro_replace>
+		</macro>
+
+		<macro>
+			<macro_value>ACTIVE_LIST_SEP</macro_value>
+			<macro_replace>,</macro_replace>
+		</macro>
+
+		<macro>
+			<macro_value>BC_QUEUED_POSTS</macro_value>
+			<macro_replace><![CDATA[<img src='style_images/<#IMG_DIR#>/bc_queued.gif' alt='*' border='0' />]]></macro_replace>
+		</macro>
+
+		<macro>
+			<macro_value>A_APOLL</macro_value>
+			<macro_replace><![CDATA[<img src='style_images/<#IMG_DIR#>/t_addpoll.gif' border='0'  alt='Add Poll' />]]></macro_replace>
+		</macro>
+
+		<macro>
+			<macro_value>F_CALEN</macro_value>
+			<macro_replace><![CDATA[<img src='style_images/<#IMG_DIR#>/calen.gif' border='0'  alt='calendar' />]]></macro_replace>
+		</macro>
+
+		<macro>
+			<macro_value>E_PLUS</macro_value>
+			<macro_replace><![CDATA[<img src='style_images/<#IMG_DIR#>/exp_plus.gif' border='0'  alt='Expand' />]]></macro_replace>
+		</macro>
+
+		<macro>
+			<macro_value>E_MINUS</macro_value>
+			<macro_replace><![CDATA[<img src='style_images/<#IMG_DIR#>/exp_minus.gif' border='0'  alt='Collapse' />]]></macro_replace>
+		</macro>
+
+		<macro>
+			<macro_value>test</macro_value>
+			<macro_replace>test</macro_replace>
+		</macro>
+
+		<macro>
+			<macro_value>P_UP</macro_value>
+			<macro_replace><![CDATA[<img src='style_images/<#IMG_DIR#>/p_up.gif' border='0'  alt='Go to the top of the page' />]]></macro_replace>
+		</macro>
+
+		<macro>
+			<macro_value>POST_SNAPBACK</macro_value>
+			<macro_replace><![CDATA[<img src='style_images/<#IMG_DIR#>/post_snapback.gif' alt='*' border='0' />]]></macro_replace>
+		</macro>
+
+		<macro>
+			<macro_value>P_CARD</macro_value>
+			<macro_replace><![CDATA[<img src='style_images/<#IMG_DIR#>/p_card.gif' border='0'  alt='Profile Card' />]]></macro_replace>
+		</macro>
+
+		<macro>
+			<macro_value>PRO_AIM</macro_value>
+			<macro_replace><![CDATA[<img src='style_images/<#IMG_DIR#>/profile_aim.gif' border='0'  alt='AIM' />]]></macro_replace>
+		</macro>
+
+		<macro>
+			<macro_value>PRO_ITEM</macro_value>
+			<macro_replace><![CDATA[<img src='style_images/<#IMG_DIR#>/profile_item.gif' border='0'  alt='Profile Item' />]]></macro_replace>
+		</macro>
+
+		<macro>
+			<macro_value>PRO_MSN</macro_value>
+			<macro_replace><![CDATA[<img src='style_images/<#IMG_DIR#>/profile_msn.gif' border='0'  alt='MSN' />]]></macro_replace>
+		</macro>
+
+		<macro>
+			<macro_value>PRO_ICQ</macro_value>
+			<macro_replace><![CDATA[<img src='style_images/<#IMG_DIR#>/profile_icq.gif' border='0'  alt='ICQ' />]]></macro_replace>
+		</macro>
+
+		<macro>
+			<macro_value>PRO_YIM</macro_value>
+			<macro_replace><![CDATA[<img src='style_images/<#IMG_DIR#>/profile_yahoo.gif' border='0'  alt='Yahoo' />]]></macro_replace>
+		</macro>
+
+		<macro>
+			<macro_value>PRO_CONTACT</macro_value>
+			<macro_replace><![CDATA[<img src='style_images/<#IMG_DIR#>/icon_msg_nonew.gif' border='0'  alt='Contact' />]]></macro_replace>
+		</macro>
+
+		<macro>
+			<macro_value>BAR_LEFT</macro_value>
+			<macro_replace><![CDATA[<img src='style_images/<#IMG_DIR#>/bar_left.gif' border='0'  alt='*' />]]></macro_replace>
+		</macro>
+
+		<macro>
+			<macro_value>BAR_RIGHT</macro_value>
+			<macro_replace><![CDATA[<img src='style_images/<#IMG_DIR#>/bar_right.gif' border='0'  alt='*' />]]></macro_replace>
+		</macro>
+
+		<macro>
+			<macro_value>CAL_GOTO</macro_value>
+			<macro_replace><![CDATA[<img src='style_images/<#IMG_DIR#>/cal_goto.gif' border='0'  alt='Goto Month' />]]></macro_replace>
+		</macro>
+
+		<macro>
+			<macro_value>F_NORM_HOT</macro_value>
+			<macro_replace>f_hot_no.gif</macro_replace>
+		</macro>
+
+		<macro>
+			<macro_value>F_CLOSED</macro_value>
+			<macro_replace>f_closed.gif</macro_replace>
+		</macro>
+
+		<macro>
+			<macro_value>F_NORM</macro_value>
+			<macro_replace>f_norm_no.gif</macro_replace>
+		</macro>
+	</macrogroup>
+
+</macroexport>

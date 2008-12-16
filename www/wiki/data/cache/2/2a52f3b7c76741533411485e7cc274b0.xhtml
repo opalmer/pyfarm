@@ -1,0 +1,32 @@
+
+
+
+<h1><a name="display_wiki_page" id="display_wiki_page">Display Wiki Page</a></h1>
+<div class="level1">
+
+<p>
+
+This plugin defines an additional template function such that you can display more than one wiki page at a time on any given document.
+</p>
+
+<p>
+The plugin also exports a function for use with your template, so you will have to insert the following code into your template, at the top of the page should suffice.
+</p>
+<pre class="code php"><span class="kw2">&lt;?php</span> <span class="kw1">if</span> <span class="br0">&#40;</span><a href="http://www.php.net/file_exists"><span class="kw3">file_exists</span></a><span class="br0">&#40;</span>DOKU_PLUGIN<span class="sy0">.</span><span class="st0">'displaywikipage/code.php'</span><span class="br0">&#41;</span><span class="br0">&#41;</span> <span class="kw1">include_once</span><span class="br0">&#40;</span>DOKU_PLUGIN<span class="sy0">.</span><span class="st0">'displaywikipage/code.php'</span><span class="br0">&#41;</span><span class="sy0">;</span> <span class="kw2">?&gt;</span></pre>
+<p>
+<strong>Note</strong>: Inserting the code above is <strong>required</strong>, not optional.
+</p>
+
+<p>
+To display a wiki page at any point in your document, use the following code:
+</p>
+<pre class="code php"><span class="kw2">&lt;?php</span> <span class="kw1">if</span> <span class="br0">&#40;</span><a href="http://www.php.net/function_exists"><span class="kw3">function_exists</span></a><span class="br0">&#40;</span><span class="st0">'dwp_display_wiki_page'</span><span class="br0">&#41;</span><span class="br0">&#41;</span> dwp_display_wiki_page<span class="br0">&#40;</span><span class="st0">&quot;:path:to:page&quot;</span><span class="br0">&#41;</span><span class="sy0">;</span> <span class="kw2">?&gt;</span></pre>
+<p>
+Doing it in this fashion will allow your users to use the template whether or not you have the plugin installed.
+</p>
+
+<p>
+For updates, discussions (in english), you can visit <a href="http://tatewake.com/wiki/projects:display_wiki_page_for_dokuwiki" class="urlextern" title="http://tatewake.com/wiki/projects:display_wiki_page_for_dokuwiki"  rel="nofollow">Plugin&#039;s homepage</a>.
+</p>
+
+</div>

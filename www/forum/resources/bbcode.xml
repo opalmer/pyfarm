@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<bbcodeexport exported="1163600079">
+	<bbcodegroup>
+		<bbcode>
+			<bbcode_id>1</bbcode_id>
+			<bbcode_title>Post Snap Back</bbcode_title>
+			<bbcode_desc>This tag displays a little linked image which links back to a post - used when quoting posts from the board. Opens in same window by default.</bbcode_desc>
+			<bbcode_tag>snapback</bbcode_tag>
+			<bbcode_replace><![CDATA[<a href="index.php?act=findpost&amp;pid={content}"><{POST_SNAPBACK}></a>]]></bbcode_replace>
+			<bbcode_useoption>0</bbcode_useoption>
+			<bbcode_example><![CDATA[[snapback]100[/snapback]]]></bbcode_example>
+			<bbcode_switch_option>0</bbcode_switch_option>
+			<bbcode_add_into_menu>0</bbcode_add_into_menu>
+			<bbcode_menu_option_text></bbcode_menu_option_text>
+			<bbcode_menu_content_text></bbcode_menu_content_text>
+		</bbcode>
+
+		<bbcode>
+			<bbcode_id>2</bbcode_id>
+			<bbcode_title>Right</bbcode_title>
+			<bbcode_desc>Aligns content to the right of the posting area</bbcode_desc>
+			<bbcode_tag>right</bbcode_tag>
+			<bbcode_replace><![CDATA[<div align='right'>{content}</div>]]></bbcode_replace>
+			<bbcode_useoption>0</bbcode_useoption>
+			<bbcode_example><![CDATA[[right]Some text here[/right]]]></bbcode_example>
+			<bbcode_switch_option>0</bbcode_switch_option>
+			<bbcode_add_into_menu>0</bbcode_add_into_menu>
+			<bbcode_menu_option_text></bbcode_menu_option_text>
+			<bbcode_menu_content_text></bbcode_menu_content_text>
+		</bbcode>
+
+		<bbcode>
+			<bbcode_id>3</bbcode_id>
+			<bbcode_title>Left</bbcode_title>
+			<bbcode_desc>Aligns content to the left of the post</bbcode_desc>
+			<bbcode_tag>left</bbcode_tag>
+			<bbcode_replace><![CDATA[<div align='left'>{content}</div>]]></bbcode_replace>
+			<bbcode_useoption>0</bbcode_useoption>
+			<bbcode_example><![CDATA[[left]Left aligned text[/left]]]></bbcode_example>
+			<bbcode_switch_option>0</bbcode_switch_option>
+			<bbcode_add_into_menu>0</bbcode_add_into_menu>
+			<bbcode_menu_option_text></bbcode_menu_option_text>
+			<bbcode_menu_content_text></bbcode_menu_content_text>
+		</bbcode>
+
+		<bbcode>
+			<bbcode_id>4</bbcode_id>
+			<bbcode_title>Center</bbcode_title>
+			<bbcode_desc>Aligns content to the center of the posting area.</bbcode_desc>
+			<bbcode_tag>center</bbcode_tag>
+			<bbcode_replace><![CDATA[<div align='center'>{content}</div>]]></bbcode_replace>
+			<bbcode_useoption>0</bbcode_useoption>
+			<bbcode_example><![CDATA[[center]Centered Text[/center]]]></bbcode_example>
+			<bbcode_switch_option>0</bbcode_switch_option>
+			<bbcode_add_into_menu>1</bbcode_add_into_menu>
+			<bbcode_menu_option_text></bbcode_menu_option_text>
+			<bbcode_menu_content_text>Enter content to be centered</bbcode_menu_content_text>
+		</bbcode>
+
+		<bbcode>
+			<bbcode_id>5</bbcode_id>
+			<bbcode_title>Topic Link</bbcode_title>
+			<bbcode_desc>This tag provides an easy way to link to a topic</bbcode_desc>
+			<bbcode_tag>topic</bbcode_tag>
+			<bbcode_replace><![CDATA[<a href='index.php?showtopic={option}'>{content}</a>]]></bbcode_replace>
+			<bbcode_useoption>1</bbcode_useoption>
+			<bbcode_example><![CDATA[[topic=100]Click me![/topic]]]></bbcode_example>
+			<bbcode_switch_option>0</bbcode_switch_option>
+			<bbcode_add_into_menu>1</bbcode_add_into_menu>
+			<bbcode_menu_option_text>Enter the topic ID</bbcode_menu_option_text>
+			<bbcode_menu_content_text>Enter the title for this link</bbcode_menu_content_text>
+		</bbcode>
+
+		<bbcode>
+			<bbcode_id>6</bbcode_id>
+			<bbcode_title>Post Link</bbcode_title>
+			<bbcode_desc>This tag provides an easy way to link to a post.</bbcode_desc>
+			<bbcode_tag>post</bbcode_tag>
+			<bbcode_replace><![CDATA[<a href='index.php?act=findpost&pid={option}'>{content}</a>]]></bbcode_replace>
+			<bbcode_useoption>1</bbcode_useoption>
+			<bbcode_example><![CDATA[[post=100]Click me![/post]]]></bbcode_example>
+			<bbcode_switch_option>0</bbcode_switch_option>
+			<bbcode_add_into_menu>1</bbcode_add_into_menu>
+			<bbcode_menu_option_text>Enter the Post ID</bbcode_menu_option_text>
+			<bbcode_menu_content_text>Enter the title for this link</bbcode_menu_content_text>
+		</bbcode>
+
+		<bbcode>
+			<bbcode_id>7</bbcode_id>
+			<bbcode_title>CODEBOX</bbcode_title>
+			<bbcode_desc>Use this BBCode tag to show a scrolling codebox. Useful for long sections of code.</bbcode_desc>
+			<bbcode_tag>codebox</bbcode_tag>
+			<bbcode_replace><![CDATA[<div class='codetop'>CODE</div><div class='codemain' style='height:200px;white-space:pre;overflow:auto'>{content}</div>]]></bbcode_replace>
+			<bbcode_useoption>0</bbcode_useoption>
+			<bbcode_example><![CDATA[[codebox]long_code_here = ';[/codebox]]]></bbcode_example>
+			<bbcode_switch_option>0</bbcode_switch_option>
+			<bbcode_add_into_menu>1</bbcode_add_into_menu>
+			<bbcode_menu_option_text></bbcode_menu_option_text>
+			<bbcode_menu_content_text>Enter your code</bbcode_menu_content_text>
+		</bbcode>
+
+		<bbcode>
+			<bbcode_id>10</bbcode_id>
+			<bbcode_title>SPOILER</bbcode_title>
+			<bbcode_desc>Spoiler tag</bbcode_desc>
+			<bbcode_tag>spoiler</bbcode_tag>
+			<bbcode_replace><![CDATA[<span style='color:#000000;background:#000000'>{content}</span>]]></bbcode_replace>
+			<bbcode_useoption>0</bbcode_useoption>
+			<bbcode_example><![CDATA[[spoiler]Some hidden text[/spoiler]]]></bbcode_example>
+			<bbcode_switch_option>0</bbcode_switch_option>
+			<bbcode_add_into_menu>1</bbcode_add_into_menu>
+			<bbcode_menu_option_text></bbcode_menu_option_text>
+			<bbcode_menu_content_text>Enter the text to be masked</bbcode_menu_content_text>
+		</bbcode>
+
+		<bbcode>
+			<bbcode_id>11</bbcode_id>
+			<bbcode_title>Acronym</bbcode_title>
+			<bbcode_desc>Allows you to make an acronym that will display a description when moused over</bbcode_desc>
+			<bbcode_tag>acronym</bbcode_tag>
+			<bbcode_replace><![CDATA[<acronym title='{option}'>{content}</acronym>]]></bbcode_replace>
+			<bbcode_useoption>1</bbcode_useoption>
+			<bbcode_example><![CDATA[[acronym='Laugh Out Loud']lol[/acronym]]]></bbcode_example>
+			<bbcode_switch_option>0</bbcode_switch_option>
+			<bbcode_add_into_menu>1</bbcode_add_into_menu>
+			<bbcode_menu_option_text>Enter the description for this acronym (EG: Laugh Out Loud)</bbcode_menu_option_text>
+			<bbcode_menu_content_text>Enter the acronym (EG: lol)</bbcode_menu_content_text>
+		</bbcode>
+	</bbcodegroup>
+
+</bbcodeexport>

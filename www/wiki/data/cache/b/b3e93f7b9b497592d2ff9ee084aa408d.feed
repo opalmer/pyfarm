@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- generator="FeedCreator 1.7.2-ppt DokuWiki" -->
+<?xml-stylesheet href="http://www.opalmer.com/pyfarm/wiki/lib/exe/css.php?s=feed" type="text/css"?>
+<rdf:RDF
+    xmlns="http://purl.org/rss/1.0/"
+    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+    xmlns:slash="http://purl.org/rss/1.0/modules/slash/"
+    xmlns:dc="http://purl.org/dc/elements/1.1/">
+    <channel rdf:about="http://www.opalmer.com/pyfarm/wiki/feed.php">
+        <title>PyFarm -- Documentation</title>
+        <description></description>
+        <link>http://www.opalmer.com/pyfarm/wiki/</link>
+        <image rdf:resource="http://www.opalmer.com/pyfarm/wiki/lib/images/favicon.ico" />
+       <dc:date>2008-12-04T17:27:54-08:00</dc:date>
+        <items>
+            <rdf:Seq>
+                <rdf:li rdf:resource="http://www.opalmer.com/pyfarm/wiki/doku.php?id=start&amp;rev=1228440462&amp;do=diff"/>
+                <rdf:li rdf:resource="http://www.opalmer.com/pyfarm/wiki/doku.php?id=shared:testing_page&amp;rev=1228264031&amp;do=diff"/>
+                <rdf:li rdf:resource="http://www.opalmer.com/pyfarm/wiki/doku.php?id=shared:sidebar&amp;rev=1228173334&amp;do=diff"/>
+            </rdf:Seq>
+        </items>
+    </channel>
+    <image rdf:about="http://www.opalmer.com/pyfarm/wiki/lib/images/favicon.ico">
+        <title>PyFarm -- Documentation</title>
+        <link>http://www.opalmer.com/pyfarm/wiki/</link>
+        <url>http://www.opalmer.com/pyfarm/wiki/lib/images/favicon.ico</url>
+    </image>
+    <item rdf:about="http://www.opalmer.com/pyfarm/wiki/doku.php?id=start&amp;rev=1228440462&amp;do=diff">
+        <dc:format>text/html</dc:format>
+        <dc:date>2008-12-04T17:27:42-08:00</dc:date>
+        <dc:creator>opalmer</dc:creator>
+        <title>start</title>
+        <link>http://www.opalmer.com/pyfarm/wiki/doku.php?id=start&amp;rev=1228440462&amp;do=diff</link>
+        <description>Welcome to PyFarm's wiki articles and documentation.  Here you will be able to access documentation relating to fields in technical information, how-to's, system requirements, and much more.  To start using PyFarm's wiki please use the menu to the left.</description>
+    </item>
+    <item rdf:about="http://www.opalmer.com/pyfarm/wiki/doku.php?id=shared:testing_page&amp;rev=1228264031&amp;do=diff">
+        <dc:format>text/html</dc:format>
+        <dc:date>2008-12-02T16:27:11-08:00</dc:date>
+        <dc:creator>opalmer</dc:creator>
+        <title>shared:testing_page</title>
+        <link>http://www.opalmer.com/pyfarm/wiki/doku.php?id=shared:testing_page&amp;rev=1228264031&amp;do=diff</link>
+        <description>This page is only for testing, do not listen or use anything stated here!
+
+Testing some code highlighting (in line code):
+
+
+#!/usr/bin/python
+
+import stuff!
+
+# line comment
+Qerr = Queue.Queue()
+Pool = []
+
+def coolFunction():
+    '''it even returns some stuff!'''
+    return int(list(os.popen('cat /proc/cpuinfo | grep processor | wc -l'))[0])
+
+    '''lets TRY something'''
+    try:
+        while True:
+            yield Q.get_nowait()
+    except Queue.Empty:
+        raise StopIteration</description>
+    </item>
+    <item rdf:about="http://www.opalmer.com/pyfarm/wiki/doku.php?id=shared:sidebar&amp;rev=1228173334&amp;do=diff">
+        <dc:format>text/html</dc:format>
+        <dc:date>2008-12-01T15:15:34-08:00</dc:date>
+        <dc:creator>opalmer</dc:creator>
+        <title>shared:sidebar</title>
+        <link>http://www.opalmer.com/pyfarm/wiki/doku.php?id=shared:sidebar&amp;rev=1228173334&amp;do=diff</link>
+        <description>*  About
+	*  System Requirements
+	*  Installation
+	*  Operation
+	*  Troubleshooting
+	*  Support
+	*  Testing Page</description>
+    </item>
+</rdf:RDF>

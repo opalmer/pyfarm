@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<dheaderexport exported="1110752533" versionid="13005" type="dheader">
+	<dheader_settings>
+		<dheader>
+			<blog_header_font>./modules/blog/fonts/streetcornerbold.ttf</blog_header_font>
+			<blog_header_fontcharset>windows-1252</blog_header_fontcharset>
+			<blog_header_namesize>24</blog_header_namesize>
+			<blog_header_descsize>12</blog_header_descsize>
+			<blog_header_icon>logo_blog.png</blog_header_icon>
+			<blog_header_tile>tile_back.png</blog_header_tile>
+			<blog_header_textcolor>#FFFFFF</blog_header_textcolor>
+			<blog_header_shadowcolor>#456DB3</blog_header_shadowcolor>
+			<blog_header_textleftpos>63</blog_header_textleftpos>
+			<blog_header_namevpos>36</blog_header_namevpos>
+			<blog_header_descvpos>55</blog_header_descvpos>
+			<blog_header_imgcreate>createtruecolor</blog_header_imgcreate>
+			<blog_header_showdesc>1</blog_header_showdesc>
+			<blog_header_showshadow>1</blog_header_showshadow>
+		</dheader>
+	</dheader_settings>
+</dheaderexport>

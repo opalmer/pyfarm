@@ -1,0 +1,21 @@
+====== Display Wiki Page ======
+
+This plugin defines an additional template function such that you can display more than one wiki page at a time on any given document.
+
+The plugin also exports a function for use with your template, so you will have to insert the following code into your template, at the top of the page should suffice.
+
+<code php>
+<?php if (file_exists(DOKU_PLUGIN.'displaywikipage/code.php')) include_once(DOKU_PLUGIN.'displaywikipage/code.php'); ?>
+</code>
+
+**Note**: Inserting the code above is **required**, not optional.
+
+To display a wiki page at any point in your document, use the following code:
+
+<code php>
+<?php if (function_exists('dwp_display_wiki_page')) dwp_display_wiki_page(":path:to:page"); ?>
+</code>
+
+Doing it in this fashion will allow your users to use the template whether or not you have the plugin installed.
+
+For updates, discussions (in english), you can visit [[http://tatewake.com/wiki/projects:display_wiki_page_for_dokuwiki|Plugin's homepage]].

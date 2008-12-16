@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<installdata>
+	<package>
+		<name>Invision Power Board</name>
+		<version>2.3.3</version>
+		<versionlong>23006</versionlong>
+		<build>1134742970</build>
+		<license>Invision Power Services, Inc.
+Invision Power Board Software
+End User License Agreement (Version 2.3.x)
+
+LICENSE
+Invision Power Services (IPS) grants you a non-exclusive license to use the Software on one installation to be accessible by one URL (web address) subject to the provisions in all sections of this Agreement.
+
+TERM
+Invision Power Board is offered under yearly and lifetime licensing. Both license terms feature technical support and service plus access to upgrades to the software as they are available. In the event a one year license expires without being renewed, the software will remain completely functional but will be unsupported and no access to upgrades will be made available.
+
+SCOPE OF GRANT
+
+You may:
+
+    * customize the Software's design and operation to suit the internal needs of your web site except to the extent not permitted in this Agreement
+    * produce and distribute modification instructions, Skin packs, or Language packs provided that they contain notification that the Skin and Language packs were exported from and originally created by Invision Power Board and/or IPS. The modifications instructions you personally create are not owned by IPS so long as they contain no proprietary coding from Invision Power Board.
+    * create applications which interface with the operation of the Software provided said application is an original work 
+
+
+You may not:
+
+    * permit other individuals to use the Software except under the terms listed above
+    * reverse engineer, disassemble, or create derivative works based on the Software for distribution or usage outside your web site
+    * use the Software in such as way as to condone or encourage terrorism, promote or provide pirated Software, or any other form of illegal or damaging activity
+    * modify and/or remove any copyright notices or labels on the Software on each page (unless copyright output removal license is purchased) and in the header of each script source file
+    * distribute the Software
+    * distribute individual copies of files, libraries, or other programming material in the Software package
+    * distribute or modify proprietary graphics, HTML, or CSS packaged with the Software for use in Software applications other than Invision Power Board or web sites without written permission from IPS
+    * modify the software to function in more than one instance or location (URL, domain, subdomain, etc.) from a single set of source program files unless each location is separately licensed 
+
+
+DISCLAIMER OF WARRANTY
+The Software is provided on an "AS IS" basis, without warranty of any kind, including without limitation the warranties of merchantability, fitness for a particular purpose, and non-infringement. The entire risk as to the quality and performance of the Software is borne by you. Should the Software prove defective, you and not IPS assume the entire cost of any service and repair. In addition, the security mechanisms implemented by IPS Software have inherent limitations, and you must determine that the Software sufficiently meets your requirements. This disclaimer of warranty constitutes an essential part of the Agreement.
+
+TITLE
+Title, ownership rights, and intellectual property rights in the Software shall remain with IPS. The Software is protected by copyright laws and treaties. Title and related rights in the content generated through the Software is the property of the applicable content owner and may be protected by applicable law. This License gives IPS no rights to such content.
+
+TERMINATION
+This Agreement will terminate automatically upon failure to comply with the limitations described herein or on written notice from an authorized representative of IPS. On termination, you must destroy all copies of the Software within 48 hours. Termination of the license due to noncompliance will not result in any refunds of license fees.
+
+MISCELLANEOUS
+IPS reserves the right to publish a selected list of users of the Software. IPS reserves the right to change the terms of this Agreement at any time. Changes to the Agreement will be announced via email using the IPS email notification list. Failure to receive notification of a change does not make those changes invalid. A current copy of this Agreement will be available on the Invision Power Board web site.
+
+Skin packs and Language packs are defined as the group of code, text, and graphics that are exported from the Software using the provided functions of the Software Administration Control Panel. Integrated add-ons for Invision Power Board are released under this Agreement. Purchasing or downloading integrated add-ons constitute an additional, separate instance of this Agreement.
+
+Technical support will not be provided for third-party modifications to the Software including modifications to code, Skin packs, and Language packs to any license holder. If the Software is modified using a third-party modification instruction or otherwise, technical support may be refused to any license holder.
+
+PROPRIETARY LABELS
+Authorization to remove or modify output of copyright notices can be obtained from IPS for a fee. This fee authorizes you to remove the output of copyright notices: it does not give you authorization to remove any copyright notices in the program source files or any other rights.
+
+GOVERNING LAW
+This Agreement shall be governed by the Laws of the Commonwealth of Virginia and the Laws of the United States of America. Any action in regard to this Agreement or arising out of its terms and conditions shall be instituted and litigated in the Circuit Court of Bedford County. Each of the parties consents to jurisdiction in such Court and agrees that service of process as provided by the states and rules of civil procedures of the Commonwealth of Virginia shall be sufficient. (FTB)
+
+MANUFACTURER
+Invision Power Services, Inc., 1115 Vista Park Drive Suite C, Forest, VA 24551. For questions, write to the above address, email info@invisionpower.com, or call 434-316-7201.</license>
+	</package>
+</installdata>

@@ -1,0 +1,50 @@
+Welcome to PyFarm's wiki articles and documentation.  Here you will be able to access documentation relating to fields in technical information, how-to's, system requirements, and much more.  To start using PyFarm's wiki please use the menu to the left.
+
+==== About ====
+You have entered the front page of PyFarm's wiki.  Here you can receive a basic overview of the structure of articles on this site.  As this wiki grows in size so will this page, check back soon!
+
+==== Reference ====
+The following are examples of documentation that will be used frequently throughout this wiki siet.
+
+**Python Source Code:**
+<code python 1>
+#!/usr/bin/python
+
+import os
+
+greeting = "This is some source code, \nmuch more info than the snippet example"
+
+print "%s" % greeting
+</code>
+
+**Python code snippet:**
+<code python>
+print "This is a code snipped, short and to the point"
+</code>
+
+**Example Article Structure:**
+  * Description
+  * Requirements
+  * Functions (if applicable)
+       * Purpose
+       * Input variables
+       * Processing
+       * Output type (if any) 
+  * Step by Step Example
+  * Conclusion
+  * References (external links, etc.)
+       * Source code
+       * Other tutorials
+       * Other wiki pages
+
+==== Disclaimer ====
+PyFarm is an experimental program and has not been tested on all hardware.  Because of this the author cannot be held responsible should anything happen to your computer, program, or project.
+
+**Questions? Follow the procedure below:**
+  - Search this wiki
+  - Search the forums
+  - Search the blog
+  - Search the bug reports
+  - Google it
+  - //Perform the above steps again (not kidding)//
+  - Contact the developer

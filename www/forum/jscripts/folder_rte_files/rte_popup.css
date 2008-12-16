@@ -1,0 +1,81 @@
+html, body
+{
+	color: #000;
+	font: 10px Verdana,sans-serif;
+	background-color: transparent;
+	margin: 0px;
+	padding: 0px;
+}
+body
+{
+	padding: 5px;
+}
+
+table
+{
+	font: 10px Verdana,sans-serif;
+}
+
+.tblbutton
+{
+	border:1px solid #999;
+	background-color: #CCC;
+	font-family:Verdana, Arial;
+	font-size:10px;
+	font-weight:bold;
+	padding:2px;
+}
+
+form p
+{
+	margin-top: 5px;
+	margin-bottom: 5px;
+}
+.fl
+{
+	width: 9em; float: left; padding: 2px 5px; text-align: right;
+}
+
+.fr
+{
+	width: 7em; float: left; padding: 2px 5px; text-align: right;
+}
+
+.frlarge
+{
+	width: 10em; float: left; padding: 2px 5px; text-align: right;
+}
+
+fieldset
+{
+	padding: 0px 10px 5px 5px;
+}
+
+select, input, button
+{
+	font: 10px Verdana,sans-serif;
+}
+
+button
+{
+	width: 70px;
+}
+.space
+{
+	padding: 2px;
+}
+
+.title
+{
+	color: #000;
+	font-weight: bold;
+	font-size: 120%;
+	padding: 3px 10px;
+	margin-bottom: 10px;
+	border-bottom: 1px solid black;
+	letter-spacing: 2px;
+}
+form
+{
+	padding: 0px; margin: 0px;
+}

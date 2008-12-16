@@ -1,0 +1,275 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<export exported="1158933574">
+	<group>
+		<row>
+			<task_id>1</task_id>
+			<task_title>Hourly Clean Out</task_title>
+			<task_file>cleanout.php</task_file>
+			<task_next_run>1158935280</task_next_run>
+			<task_week_day>-1</task_week_day>
+			<task_month_day>-1</task_month_day>
+			<task_hour>-1</task_hour>
+			<task_minute>59</task_minute>
+			<task_cronkey>87a432443398942e7536028f9b0e4296</task_cronkey>
+			<task_log>1</task_log>
+			<task_description>Kill old sessions, reg images, searches</task_description>
+			<task_enabled>1</task_enabled>
+			<task_key>cleanout</task_key>
+			<task_safemode>0</task_safemode>
+			<task_locked>0</task_locked>
+		</row>
+
+		<row>
+			<task_id>2</task_id>
+			<task_title>Daily Stats Rebuild</task_title>
+			<task_file>rebuildstats.php</task_file>
+			<task_next_run>1158969600</task_next_run>
+			<task_week_day>-1</task_week_day>
+			<task_month_day>-1</task_month_day>
+			<task_hour>0</task_hour>
+			<task_minute>0</task_minute>
+			<task_cronkey>ac88319151330882c4a0eaa3d9016a1b</task_cronkey>
+			<task_log>1</task_log>
+			<task_description>Rebuilds board statistics</task_description>
+			<task_enabled>1</task_enabled>
+			<task_key>rebuildstats</task_key>
+			<task_safemode>0</task_safemode>
+			<task_locked>0</task_locked>
+		</row>
+
+		<row>
+			<task_id>3</task_id>
+			<task_title>Daily Clean Out</task_title>
+			<task_file>dailycleanout.php</task_file>
+			<task_next_run>1158980400</task_next_run>
+			<task_week_day>-1</task_week_day>
+			<task_month_day>-1</task_month_day>
+			<task_hour>3</task_hour>
+			<task_minute>0</task_minute>
+			<task_cronkey>43f41348f6d31e86884a6431f29ef52f</task_cronkey>
+			<task_log>1</task_log>
+			<task_description>Prunes topic subscriptions and old read topic entries</task_description>
+			<task_enabled>1</task_enabled>
+			<task_key>dailycleanout</task_key>
+			<task_safemode>0</task_safemode>
+			<task_locked>0</task_locked>
+		</row>
+
+		<row>
+			<task_id>4</task_id>
+			<task_title>Birthday and Events Cache</task_title>
+			<task_file>calendarevents.php</task_file>
+			<task_next_run>1158961980</task_next_run>
+			<task_week_day>-1</task_week_day>
+			<task_month_day>-1</task_month_day>
+			<task_hour>12</task_hour>
+			<task_minute>-1</task_minute>
+			<task_cronkey>f0bd66a5f14ad72e76c9636c84325a2a</task_cronkey>
+			<task_log>1</task_log>
+			<task_description><![CDATA[Caches calendar events &amp; birthdays]]></task_description>
+			<task_enabled>1</task_enabled>
+			<task_key>calendarevents</task_key>
+			<task_safemode>0</task_safemode>
+			<task_locked>0</task_locked>
+		</row>
+
+		<row>
+			<task_id>5</task_id>
+			<task_title>Announcements Update</task_title>
+			<task_file>announcements.php</task_file>
+			<task_next_run>1158933060</task_next_run>
+			<task_week_day>-1</task_week_day>
+			<task_month_day>-1</task_month_day>
+			<task_hour>4</task_hour>
+			<task_minute>-1</task_minute>
+			<task_cronkey>82584951232335eed1d53027f3046694</task_cronkey>
+			<task_log>1</task_log>
+			<task_description>Rebuilds cache and expires out of date announcements</task_description>
+			<task_enabled>1</task_enabled>
+			<task_key>announcements</task_key>
+			<task_safemode>0</task_safemode>
+			<task_locked>0</task_locked>
+		</row>
+
+		<row>
+			<task_id>6</task_id>
+			<task_title>Send Bulk Mail</task_title>
+			<task_file>bulkmail.php</task_file>
+			<task_next_run>1158846544</task_next_run>
+			<task_week_day>-1</task_week_day>
+			<task_month_day>-1</task_month_day>
+			<task_hour>-1</task_hour>
+			<task_minute>-1</task_minute>
+			<task_cronkey>39b03a6e8a22c6a9ee419d31a47cea33</task_cronkey>
+			<task_log>0</task_log>
+			<task_description>Dynamically assigned, no need to edit or change</task_description>
+			<task_enabled>0</task_enabled>
+			<task_key>bulkmail</task_key>
+			<task_safemode>1</task_safemode>
+			<task_locked>0</task_locked>
+		</row>
+
+		<row>
+			<task_id>7</task_id>
+			<task_title><![CDATA[Daily Topic &amp; Forum Digest]]></task_title>
+			<task_file>dailydigest.php</task_file>
+			<task_next_run>1158970200</task_next_run>
+			<task_week_day>-1</task_week_day>
+			<task_month_day>-1</task_month_day>
+			<task_hour>0</task_hour>
+			<task_minute>10</task_minute>
+			<task_cronkey>b905a89a00d6ba8acd30092cb9a3f8b2</task_cronkey>
+			<task_log>1</task_log>
+			<task_description><![CDATA[Emails out daily topic &amp; forum digest emails]]></task_description>
+			<task_enabled>1</task_enabled>
+			<task_key>dailydigest</task_key>
+			<task_safemode>0</task_safemode>
+			<task_locked>0</task_locked>
+		</row>
+
+		<row>
+			<task_id>8</task_id>
+			<task_title><![CDATA[Weekly Topic &amp; Forum Digest]]></task_title>
+			<task_file>weeklydigest.php</task_file>
+			<task_next_run>1159067400</task_next_run>
+			<task_week_day>0</task_week_day>
+			<task_month_day>-1</task_month_day>
+			<task_hour>3</task_hour>
+			<task_minute>10</task_minute>
+			<task_cronkey>5df642c53fda5d889546f21bfbac92ba</task_cronkey>
+			<task_log>1</task_log>
+			<task_description><![CDATA[Emails weekly topic &amp; forum digest emails]]></task_description>
+			<task_enabled>1</task_enabled>
+			<task_key>weeklydigest</task_key>
+			<task_safemode>0</task_safemode>
+			<task_locked>0</task_locked>
+		</row>
+
+		<row>
+			<task_id>9</task_id>
+			<task_title>Expire Paid Subscriptions</task_title>
+			<task_file>doexpiresubs.php</task_file>
+			<task_next_run>1158969600</task_next_run>
+			<task_week_day>-1</task_week_day>
+			<task_month_day>-1</task_month_day>
+			<task_hour>0</task_hour>
+			<task_minute>0</task_minute>
+			<task_cronkey>57fddf99f58d4c5393c2eb3408047267</task_cronkey>
+			<task_log>1</task_log>
+			<task_description>Unsubscribes members from their subscribed packages</task_description>
+			<task_enabled>1</task_enabled>
+			<task_key>doexpiresubs</task_key>
+			<task_safemode>1</task_safemode>
+			<task_locked>0</task_locked>
+		</row>
+
+		<row>
+			<task_id>10</task_id>
+			<task_title>Update Topic Views Counter</task_title>
+			<task_file>updateviews.php</task_file>
+			<task_next_run>1158942600</task_next_run>
+			<task_week_day>-1</task_week_day>
+			<task_month_day>-1</task_month_day>
+			<task_hour>3</task_hour>
+			<task_minute>-1</task_minute>
+			<task_cronkey>4faf64b98e9c57c483b82ba6074d1b0f</task_cronkey>
+			<task_log>0</task_log>
+			<task_description>Used when topic views are not incremented immediately</task_description>
+			<task_enabled>1</task_enabled>
+			<task_key>updateviews</task_key>
+			<task_safemode>0</task_safemode>
+			<task_locked>0</task_locked>
+		</row>
+
+		<row>
+			<task_id>11</task_id>
+			<task_title>Subscription Expiration Notification</task_title>
+			<task_file>expiresubs.php</task_file>
+			<task_next_run>1158973200</task_next_run>
+			<task_week_day>-1</task_week_day>
+			<task_month_day>-1</task_month_day>
+			<task_hour>1</task_hour>
+			<task_minute>0</task_minute>
+			<task_cronkey>521640eb417f07e634604daae56ca485</task_cronkey>
+			<task_log>1</task_log>
+			<task_description>Sends out an email to all members who have a subscription due to expire</task_description>
+			<task_enabled>1</task_enabled>
+			<task_key>expiresubs</task_key>
+			<task_safemode>0</task_safemode>
+			<task_locked>0</task_locked>
+		</row>
+
+		<row>
+			<task_id>12</task_id>
+			<task_title>RSS Import Update</task_title>
+			<task_file>rssimport.php</task_file>
+			<task_next_run>1158933480</task_next_run>
+			<task_week_day>-1</task_week_day>
+			<task_month_day>-1</task_month_day>
+			<task_hour>-1</task_hour>
+			<task_minute>30</task_minute>
+			<task_cronkey>a102c550761e0074251496e5d3afea60</task_cronkey>
+			<task_log>1</task_log>
+			<task_description>Imports any new RSS articles</task_description>
+			<task_enabled>1</task_enabled>
+			<task_key>rssimport</task_key>
+			<task_safemode>1</task_safemode>
+			<task_locked>0</task_locked>
+		</row>
+
+		<row>
+			<task_id>13</task_id>
+			<task_title>Remove Old Validating Members</task_title>
+			<task_file>removevalidating.php</task_file>
+			<task_next_run>1158976800</task_next_run>
+			<task_week_day>-1</task_week_day>
+			<task_month_day>-1</task_month_day>
+			<task_hour>2</task_hour>
+			<task_minute>0</task_minute>
+			<task_cronkey>0460686136ae8c6d4db59824afe59748</task_cronkey>
+			<task_log>1</task_log>
+			<task_description><![CDATA[If you enable the &#39;Prune validating members after x days&#39; setting, this task will remove those members]]></task_description>
+			<task_enabled>1</task_enabled>
+			<task_key>validating</task_key>
+			<task_safemode>1</task_safemode>
+			<task_locked>0</task_locked>
+		</row>
+
+		<row>
+			<task_id>14</task_id>
+			<task_title>Prune Logs</task_title>
+			<task_file>logprune.php</task_file>
+			<task_next_run>1159336800</task_next_run>
+			<task_week_day>-1</task_week_day>
+			<task_month_day>27</task_month_day>
+			<task_hour>6</task_hour>
+			<task_minute>0</task_minute>
+			<task_cronkey>8337aca64493804858fbcc2c4fc5759b</task_cronkey>
+			<task_log>1</task_log>
+			<task_description>This task will prune logs based on your log pruning settings</task_description>
+			<task_enabled>1</task_enabled>
+			<task_key>logprune</task_key>
+			<task_safemode>0</task_safemode>
+			<task_locked>0</task_locked>
+		</row>
+
+		<row>
+			<task_id>15</task_id>
+			<task_title>Update Profile Views</task_title>
+			<task_file>update_profile_views.php</task_file>
+			<task_next_run>1158936240</task_next_run>
+			<task_week_day>-1</task_week_day>
+			<task_month_day>-1</task_month_day>
+			<task_hour>1</task_hour>
+			<task_minute>-1</task_minute>
+			<task_cronkey>3077b04aeaebb5e758c1b5bcd1e48816</task_cronkey>
+			<task_log>0</task_log>
+			<task_description>Rebuilds the profile view counters</task_description>
+			<task_enabled>1</task_enabled>
+			<task_key>update_profile_views</task_key>
+			<task_safemode>1</task_safemode>
+			<task_locked>0</task_locked>
+		</row>
+	</group>
+
+</export>

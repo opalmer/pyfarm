@@ -1,0 +1,30 @@
+See http://flyspray.org/team
+
+Other past contributors:
+
+      (0.9.8) Installer by Jeffrey Fernandez
+
+      Much xml-rpc code by Angus Hardie
+      http://www.malcolmhardie.com/
+
+      Flyspray bottle logo designed by Robert Martinez
+      http://www.mray.de/
+
+      Some HTML rendering cleanups by Stefan Huber
+      http://stefan.huberdoc.at/
+
+      Tricky SQL queries and other miscellaneous help from Lance Conry
+      http://www.rhinosw.com/
+
+      Background scheduling of Jabber notifications and some database access
+      functions by Jamin Collins
+      http://asgardsrealm.net/
+
+      Funky page numbering by Nathan Fritz
+      http://www.netflint.net/
+
+      Regular expression filtering by Zeeshan Muhummad
+      http://www.new-frontier.info/
+
+      Configurable tasklist columns by Jonathan Oxer
+      http://oxer.com.au/

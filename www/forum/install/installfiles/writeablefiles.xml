@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<installdata>
+	<file>
+		<path>cache</path>
+	</file>
+	<file>
+		<path>cache/lang_cache</path>
+	</file>
+	<file>
+		<path>cache/skin_cache</path>
+	</file>
+	<file>
+		<path>uploads</path>
+	</file>
+	<file>
+		<path>style_images</path>
+	</file>
+	<file>
+		<path>conf_global.php</path>
+	</file>
+</installdata>

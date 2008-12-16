@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+<!DOCTYPE package SYSTEM "http://pear.php.net/dtd/package-1.0">
+<package version="1.0" packagerversion="1.4.0a9">
+ <name>Text_Diff</name>
+ <summary>Engine for performing and rendering text diffs</summary>
+ <description>This package provides a text-based diff engine and renderers for multiple diff output formats.
+ </description>
+ <maintainers>
+  <maintainer>
+   <user>chagenbu</user>
+   <name>Chuck Hagenbuch</name>
+   <email>chuck@horde.org</email>
+   <role>lead</role>
+  </maintainer>
+  <maintainer>
+   <user>jon</user>
+   <name>Jon Parise</name>
+   <email>jon@horde.org</email>
+   <role>lead</role>
+  </maintainer>
+  <maintainer>
+   <user>pmjones</user>
+   <name>Paul M Jones</name>
+   <email>pmjones@memphis.edu</email>
+   <role>lead</role>
+  </maintainer>
+  <maintainer>
+   <user>yunosh</user>
+   <name>Jan Schneider</name>
+   <email>jan@horde.org</email>
+   <role>lead</role>
+  </maintainer>
+  </maintainers>
+ <release>
+  <version>0.0.5</version>
+  <date>2005-05-05</date>
+  <license>LGPL</license>
+  <state>beta</state>
+  <notes>* Fixed variable name in Text_MappedDiff.
+* Removed output buffering code.
+* Fixed additional empty lines being added with the inline renderer (Bug 3730).
+* Fixed multiple calls to _endBlock per block (Bug 4065).
+  </notes>
+  <deps>
+   <dep type="php" rel="ge" version="4.2.0"/>
+   <dep type="ext" rel="has" optional="yes">xdiff</dep>
+  </deps>
+  <provides type="class" name="Text_Diff" />
+  <provides type="class" name="Text_Diff3" />
+  <provides type="class" name="Text_MappedDiff" />
+  <provides type="class" name="Text_Diff_Renderer" />
+  <provides type="class" name="Text_Diff_Engine_xdiff" />
+  <provides type="class" name="Text_Diff_Engine_native" />
+  <provides type="class" name="Text_Diff_Op" />
+  <provides type="class" name="Text_Diff_Op_copy" extends="Text_Diff_Op" />
+  <provides type="class" name="Text_Diff_Op_delete" extends="Text_Diff_Op" />
+  <provides type="class" name="Text_Diff_Op_add" extends="Text_Diff_Op" />
+  <provides type="class" name="Text_Diff_Op_change" extends="Text_Diff_Op" />
+  <provides type="function" name="Text_Diff::getDiff" />
+  <provides type="function" name="Text_Diff::reverse" />
+  <provides type="function" name="Text_Diff::isEmpty" />
+  <provides type="function" name="Text_Diff::lcs" />
+  <provides type="function" name="Text_Diff::getOriginal" />
+  <provides type="function" name="Text_Diff::getFinal" />
+  <provides type="function" name="Text_Diff_Engine_xdiff::diff" />
+  <provides type="function" name="Text_Diff_Engine_native::diff" />
+  <provides type="function" name="Text_Diff_Op::reverse" />
+  <provides type="function" name="Text_Diff_Op::norig" />
+  <provides type="function" name="Text_Diff_Op::nfinal" />
+  <provides type="function" name="Text_Diff_Op_copy::reverse" />
+  <provides type="function" name="Text_Diff_Op_delete::reverse" />
+  <provides type="function" name="Text_Diff_Op_add::reverse" />
+  <provides type="function" name="Text_Diff_Op_change::reverse" />
+  <provides type="class" name="Text_Diff3_Op" />
+  <provides type="class" name="Text_Diff3_Op_copy" extends="Text_Diff3_Op" />
+  <provides type="class" name="Text_Diff3_BlockBuilder" />
+  <provides type="function" name="Text_Diff3::mergedOutput" />
+  <provides type="function" name="Text_Diff3_Op::merged" />
+  <provides type="function" name="Text_Diff3_Op::isConflict" />
+  <provides type="function" name="Text_Diff3_Op_copy::merged" />
+  <provides type="function" name="Text_Diff3_Op_copy::isConflict" />
+  <provides type="function" name="Text_Diff3_BlockBuilder::input" />
+  <provides type="function" name="Text_Diff3_BlockBuilder::out1" />
+  <provides type="function" name="Text_Diff3_BlockBuilder::out2" />
+  <provides type="function" name="Text_Diff3_BlockBuilder::isEmpty" />
+  <provides type="function" name="Text_Diff3_BlockBuilder::finish" />
+  <provides type="function" name="Text_Diff_Renderer::getParams" />
+  <provides type="function" name="Text_Diff_Renderer::render" />
+  <provides type="class" name="Text_Diff_Renderer_inline" extends="Text_Diff_Renderer" />
+  <provides type="class" name="Text_Diff_Renderer_unified" extends="Text_Diff_Renderer" />
+  <filelist>
+   <file role="php" baseinstalldir="/Text" md5sum="16ca4ec69bf44ecd1467ebb5ee70b5df" name="Diff.php"/>
+   <file role="php" baseinstalldir="/Text" md5sum="7a1c6842b8b25822db3e37e5b9663da1" name="Diff3.php"/>
+   <file role="php" baseinstalldir="/Text" md5sum="a32f238fd2bf80cce18a745df89d7e43" name="Diff/Renderer.php"/>
+   <file role="php" baseinstalldir="/Text" md5sum="82ea5ce1668a6bc38ee7ece1020433b9" name="Diff/Renderer/inline.php"/>
+   <file role="php" baseinstalldir="/Text" md5sum="37211108109573d335251c690293d7b9" name="Diff/Renderer/unified.php"/>
+   <file role="doc" baseinstalldir="/Text" md5sum="d0e483e9f20738417d7a2a4fa56e074f" name="docs/examples/diff.php"/>
+   <file role="doc" baseinstalldir="/Text" md5sum="5fbdf5388905ed07026b876126aeee5a" name="docs/examples/1.txt"/>
+   <file role="doc" baseinstalldir="/Text" md5sum="011c4dad4506a4843ded1f12cab69909" name="docs/examples/2.txt"/>
+   <file role="test" baseinstalldir="/Text" md5sum="5fbdf5388905ed07026b876126aeee5a" name="tests/1.txt"/>
+   <file role="test" baseinstalldir="/Text" md5sum="011c4dad4506a4843ded1f12cab69909" name="tests/2.txt"/>
+   <file role="test" baseinstalldir="/Text" md5sum="adbb8551c010b970f9feb184a023c79d" name="tests/diff.phpt"/>
+   <file role="test" baseinstalldir="/Text" md5sum="7c2df75e9afc32c9fe4546f0322ebb0d" name="tests/inline.phpt"/>
+   <file role="test" baseinstalldir="/Text" md5sum="3b1e784b27e9215081ec65340bc7621a" name="tests/inline2.phpt"/>
+   <file role="test" baseinstalldir="/Text" md5sum="b8032a56a1ca4086caa4e90e76f1c486" name="tests/unified.phpt"/>
+   <file role="test" baseinstalldir="/Text" md5sum="f71a1255bdc21a43f03ee070df7c99b9" name="tests/unified2.phpt"/>
+  </filelist>
+ </release>
+ <changelog>
+   <release>
+    <version>0.0.4</version>
+    <date>2004-10-13</date>
+    <state>beta</state>
+    <notes>* Generalized Diff Renderer parameter handling.
+        * Added an inline renderer contributed by Ciprian Popovici (ciprian@zuavra.net).
+        * Fixed PHPDoc.
+        * Fixed a PHP 5 incompatibility.
+    </notes>
+   </release>
+   <release>
+    <version>0.0.3</version>
+    <date>2004-05-13</date>
+    <state>alpha</state>
+    <notes>Renamed final() and orig() methods to avoid conflict with final keyword in PHP5
+    </notes>
+   </release>
+   <release>
+    <version>0.0.2</version>
+    <date>2004-03-16</date>
+    <state>alpha</state>
+    <notes>Added optional xdiff support
+    </notes>
+   </release>
+   <release>
+    <version>0.0.1</version>
+    <date>2004-01-09</date>
+    <state>alpha</state>
+    <notes>Initial package release
+    </notes>
+   </release>
+ </changelog>
+</package>

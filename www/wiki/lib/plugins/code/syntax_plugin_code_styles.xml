@@ -1,0 +1,267 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+	$Id: syntax_plugin_code_styles.xml,v 1.2 2008/06/09 13:25:11 matthias Exp $
+
+	This file defines how the exported ODT document is styled.
+	To install it just copy it into the odt plugin's directory:
+		cp syntax_plugin_code_styles.xml ../odt/styles.xml
+
+	You may want to modify this file to suit your corporate identity.
+	To do so, export the wiki:syntax page, edit it's style definitions
+	(be sure to keep the names) and save the resulting file.
+	Extract the resulting file with unzip and copy the styles.xml over
+	the one	in {dokuwiki}/lib/plugins/odt/styles.xml
+-->
+<office:document-styles xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0" xmlns:style="urn:oasis:names:tc:opendocument:xmlns:style:1.0" xmlns:text="urn:oasis:names:tc:opendocument:xmlns:text:1.0" xmlns:table="urn:oasis:names:tc:opendocument:xmlns:table:1.0" xmlns:draw="urn:oasis:names:tc:opendocument:xmlns:drawing:1.0" xmlns:fo="urn:oasis:names:tc:opendocument:xmlns:xsl-fo-compatible:1.0" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:meta="urn:oasis:names:tc:opendocument:xmlns:meta:1.0" xmlns:number="urn:oasis:names:tc:opendocument:xmlns:datastyle:1.0" xmlns:svg="urn:oasis:names:tc:opendocument:xmlns:svg-compatible:1.0" xmlns:chart="urn:oasis:names:tc:opendocument:xmlns:chart:1.0" xmlns:dr3d="urn:oasis:names:tc:opendocument:xmlns:dr3d:1.0" xmlns:math="http://www.w3.org/1998/Math/MathML" xmlns:form="urn:oasis:names:tc:opendocument:xmlns:form:1.0" xmlns:script="urn:oasis:names:tc:opendocument:xmlns:script:1.0" xmlns:ooo="http://openoffice.org/2004/office" xmlns:ooow="http://openoffice.org/2004/writer" xmlns:oooc="http://openoffice.org/2004/calc" xmlns:dom="http://www.w3.org/2001/xml-events" office:version="1.0">
+	<office:font-face-decls>
+		<style:font-face style:name="StarSymbol" svg:font-family="StarSymbol"/>
+		<style:font-face style:name="Bitstream Vera Sans Mono" svg:font-family="&apos;Bitstream Vera Sans Mono&apos;" style:font-family-generic="modern" style:font-pitch="fixed"/>
+		<style:font-face style:name="Bitstream Vera Sans" svg:font-family="&apos;Bitstream Vera Sans&apos;" style:font-family-generic="roman" style:font-pitch="variable"/>
+		<style:font-face style:name="Bitstream Vera Sans1" svg:font-family="&apos;Bitstream Vera Sans&apos;" style:font-family-generic="swiss" style:font-pitch="variable"/>
+		<style:font-face style:name="Bitstream Vera Sans2" svg:font-family="&apos;Bitstream Vera Sans&apos;" style:font-family-generic="system" style:font-pitch="variable"/>
+	</office:font-face-decls>
+	<office:styles>
+		<style:default-style style:family="graphic">
+			<style:graphic-properties draw:shadow-offset-x="0.3cm" draw:shadow-offset-y="0.3cm" draw:start-line-spacing-horizontal="0.283cm" draw:start-line-spacing-vertical="0.283cm" draw:end-line-spacing-horizontal="0.283cm" draw:end-line-spacing-vertical="0.283cm" style:flow-with-text="false"/>
+			<style:paragraph-properties style:text-autospace="ideograph-alpha" style:line-break="strict" style:writing-mode="lr-tb" style:font-independent-line-spacing="false">
+				<style:tab-stops/>
+			</style:paragraph-properties>
+			<style:text-properties style:use-window-font-color="true" fo:font-size="12pt" style:font-size-asian="12pt" style:font-size-complex="12pt"/>
+		</style:default-style>
+		<style:default-style style:family="paragraph">
+			<style:paragraph-properties fo:hyphenation-ladder-count="no-limit" style:text-autospace="ideograph-alpha" style:punctuation-wrap="hanging" style:line-break="strict" style:tab-stop-distance="1.251cm" style:writing-mode="page"/>
+			<style:text-properties style:use-window-font-color="true" style:font-name="Bitstream Vera Sans" fo:font-size="12pt" style:font-name-asian="Bitstream Vera Sans2" style:font-size-asian="12pt" style:font-name-complex="Bitstream Vera Sans2" style:font-size-complex="12pt" fo:hyphenate="false" fo:hyphenation-remain-char-count="2" fo:hyphenation-push-char-count="2"/>
+		</style:default-style>
+		<style:default-style style:family="table">
+			<style:table-properties table:border-model="collapsing"/>
+		</style:default-style>
+		<style:default-style style:family="table-row">
+			<style:table-row-properties fo:keep-together="auto"/>
+		</style:default-style>
+		<style:style style:name="Standard" style:family="paragraph" style:class="text">
+			<style:paragraph-properties fo:text-align="justify" style:justify-single-word="false" fo:widows="2"/>
+			<style:text-properties style:letter-kerning="true"/>
+		</style:style>
+		<style:style style:name="Text_20_body" style:display-name="Text body" style:family="paragraph" style:parent-style-name="Standard" style:class="text">
+			<style:paragraph-properties fo:margin-top="0cm" fo:margin-bottom="0.212cm" fo:text-align="start"/>
+		</style:style>
+		<style:style style:name="Heading" style:family="paragraph" style:parent-style-name="Standard" style:next-style-name="Text_20_body" style:class="text">
+			<style:paragraph-properties fo:margin-top="0.423cm" fo:margin-bottom="0.212cm" fo:keep-with-next="always"/>
+			<style:text-properties style:font-name="Bitstream Vera Sans1" fo:font-size="14pt" style:font-name-asian="Bitstream Vera Sans2" style:font-size-asian="14pt" style:font-name-complex="Bitstream Vera Sans2" style:font-size-complex="14pt"/>
+		</style:style>
+		<style:style style:name="Heading_20_1" style:display-name="Heading 1" style:family="paragraph" style:parent-style-name="Heading" style:next-style-name="Text_20_body" style:class="text" style:default-outline-level="1">
+			<style:text-properties style:font-name="Bitstream Vera Sans" fo:font-size="24pt" fo:font-weight="bold" style:font-name-asian="Bitstream Vera Sans2" style:font-size-asian="24pt" style:font-weight-asian="bold" style:font-name-complex="Bitstream Vera Sans2" style:font-size-complex="24pt" style:font-weight-complex="bold"/>
+		</style:style>
+		<style:style style:name="Heading_20_2" style:display-name="Heading 2" style:family="paragraph" style:parent-style-name="Heading" style:next-style-name="Text_20_body" style:class="text" style:default-outline-level="2">
+			<style:text-properties style:font-name="Bitstream Vera Sans" fo:font-size="18pt" fo:font-weight="bold" style:font-name-asian="Bitstream Vera Sans2" style:font-size-asian="18pt" style:font-weight-asian="bold" style:font-name-complex="Bitstream Vera Sans2" style:font-size-complex="18pt" style:font-weight-complex="bold"/>
+		</style:style>
+		<style:style style:name="Heading_20_3" style:display-name="Heading 3" style:family="paragraph" style:parent-style-name="Heading" style:next-style-name="Text_20_body" style:class="text" style:default-outline-level="3">
+			<style:text-properties style:font-name="Bitstream Vera Sans" fo:font-size="14pt" fo:font-weight="bold" style:font-name-asian="Bitstream Vera Sans2" style:font-size-asian="14pt" style:font-weight-asian="bold" style:font-name-complex="Bitstream Vera Sans2" style:font-size-complex="14pt" style:font-weight-complex="bold"/>
+		</style:style>
+		<style:style style:name="Heading_20_4" style:display-name="Heading 4" style:family="paragraph" style:parent-style-name="Heading" style:next-style-name="Text_20_body" style:class="text" style:default-outline-level="4">
+			<style:text-properties style:font-name="Bitstream Vera Sans" fo:font-size="12pt" fo:font-weight="bold" style:font-name-asian="Bitstream Vera Sans2" style:font-size-asian="12pt" style:font-weight-asian="bold" style:font-name-complex="Bitstream Vera Sans2" style:font-size-complex="12pt" style:font-weight-complex="bold"/>
+		</style:style>
+		<style:style style:name="Heading_20_5" style:display-name="Heading 5" style:family="paragraph" style:parent-style-name="Heading" style:next-style-name="Text_20_body" style:class="text" style:default-outline-level="5">
+			<style:text-properties style:font-name="Bitstream Vera Sans" fo:font-size="10pt" fo:font-weight="bold" style:font-name-asian="Bitstream Vera Sans2" style:font-size-asian="10pt" style:font-weight-asian="bold" style:font-name-complex="Bitstream Vera Sans2" style:font-size-complex="10pt" style:font-weight-complex="bold"/>
+		</style:style>
+		<style:style style:name="List" style:family="paragraph" style:parent-style-name="Text_20_body" style:class="list"/>
+		<style:style style:name="Table_20_Contents" style:display-name="Table Contents" style:family="paragraph" style:parent-style-name="Standard" style:class="extra">
+			<style:paragraph-properties text:number-lines="false" text:line-number="0"/>
+		</style:style>
+		<style:style style:name="Table_20_Heading" style:display-name="Table Heading" style:family="paragraph" style:parent-style-name="Table_20_Contents" style:class="extra">
+			<style:paragraph-properties fo:text-align="center" style:justify-single-word="false" text:number-lines="false" text:line-number="0"/>
+			<style:text-properties fo:font-weight="bold" style:font-weight-asian="bold" style:font-weight-complex="bold"/>
+		</style:style>
+		<style:style style:name="Caption" style:family="paragraph" style:parent-style-name="Standard" style:class="extra">
+			<style:paragraph-properties fo:margin-top="0.212cm" fo:margin-bottom="0.212cm" text:number-lines="false" text:line-number="0"/>
+			<style:text-properties fo:font-size="12pt" fo:font-style="italic" style:font-size-asian="12pt" style:font-style-asian="italic" style:font-size-complex="12pt" style:font-style-complex="italic"/>
+		</style:style>
+		<style:style style:name="Index" style:family="paragraph" style:parent-style-name="Standard" style:class="index">
+			<style:paragraph-properties text:number-lines="false" text:line-number="0"/>
+		</style:style>
+		<style:style style:name="Quotations" style:family="paragraph" style:parent-style-name="Standard" style:class="html">
+			<style:paragraph-properties fo:margin-left="1cm" fo:margin-right="1cm" fo:margin-top="0cm" fo:margin-bottom="0.499cm" fo:text-indent="0cm" style:auto-text-indent="false"/>
+		</style:style>
+		<style:style style:name="Preformatted_20_Text" style:display-name="Preformatted Text" style:family="paragraph" style:parent-style-name="Standard" style:class="html">
+			<style:text-properties style:font-name="Bitstream Vera Sans Mono" fo:font-size="10pt" style:font-name-asian="Bitstream Vera Sans Mono" style:font-size-asian="10pt" style:font-name-complex="Bitstream Vera Sans Mono" style:font-size-complex="10pt"/>
+			<style:paragraph-properties fo:margin-top="0cm" fo:margin-bottom="0cm" fo:text-align="start" style:justify-single-word="false" fo:widows="2"/>
+		</style:style>
+		<style:style style:name="Horizontal_20_Line" style:display-name="Horizontal Line" style:family="paragraph" style:parent-style-name="Standard" style:next-style-name="Text_20_body" style:class="html">
+			<style:paragraph-properties fo:margin-top="0cm" fo:margin-bottom="0.499cm" style:border-line-width-bottom="0.002cm 0.035cm 0.002cm" fo:padding="0cm" fo:border-left="none" fo:border-right="none" fo:border-top="none" fo:border-bottom="0.039cm double #808080" text:number-lines="false" text:line-number="0" style:join-border="false"/>
+			<style:text-properties fo:font-size="3pt" style:font-size-asian="3pt" style:font-size-complex="3pt"/>
+		</style:style>
+		<style:style style:name="Footnote" style:family="paragraph" style:parent-style-name="Standard" style:class="extra">
+			<style:paragraph-properties fo:margin-left="0.499cm" fo:margin-right="0cm" fo:text-indent="-0.499cm" style:auto-text-indent="false" text:number-lines="false" text:line-number="0"/>
+			<style:text-properties fo:font-size="10pt" style:font-size-asian="10pt" style:font-size-complex="10pt"/>
+		</style:style>
+		<style:style style:name="Frame_20_contents" style:display-name="Frame contents" style:family="paragraph" style:parent-style-name="Text_20_body" style:class="extra"/>
+		<style:style style:name="Numbering_20_Symbols" style:display-name="Numbering Symbols" style:family="text"/>
+		<style:style style:name="Bullet_20_Symbols" style:display-name="Bullet Symbols" style:family="text">
+			<style:text-properties style:font-name="StarSymbol" fo:font-size="9pt" style:font-name-asian="StarSymbol" style:font-size-asian="9pt" style:font-name-complex="StarSymbol" style:font-size-complex="9pt"/>
+		</style:style>
+		<style:style style:name="Internet_20_link" style:display-name="Internet link" style:family="text">
+			<style:text-properties fo:color="#000080" style:text-underline-style="solid" style:text-underline-width="auto" style:text-underline-color="font-color"/>
+		</style:style>
+		<style:style style:name="Emphasis" style:family="text">
+			<style:text-properties fo:font-style="italic" style:font-style-asian="italic" style:font-style-complex="italic"/>
+		</style:style>
+		<style:style style:name="Strong_20_Emphasis" style:display-name="Strong Emphasis" style:family="text">
+			<style:text-properties fo:font-weight="bold" style:font-weight-asian="bold" style:font-weight-complex="bold"/>
+		</style:style>
+		<style:style style:name="Source_20_Text" style:display-name="Source Text" style:family="text">
+			<style:text-properties style:font-name="Bitstream Vera Sans Mono" style:font-name-asian="Bitstream Vera Sans Mono" style:font-name-complex="Bitstream Vera Sans Mono"/>
+		</style:style>
+		<style:style style:name="Code_5f_Section" style:display-name="Code_Section" style:family="paragraph" style:master-page-name="">
+			<style:paragraph-properties fo:orphans="2" fo:widows="2" style:page-number="auto" fo:background-color="#fafafa" style:shadow="none">
+				<style:tab-stops/>
+				<style:background-image/>
+			</style:paragraph-properties>
+			<style:text-properties style:font-name="Bitstream Vera Sans Mono" style:font-name-asian="Bitstream Vera Sans Mono" style:font-name-complex="Bitstream Vera Sans Mono" fo:font-size="10pt"/>
+		</style:style>
+		<style:style style:name="Code_5f_Title" style:display-name="Code_Title" style:family="paragraph" style:parent-style-name="Standard" style:class="extra" style:master-page-name="">
+			<style:paragraph-properties fo:margin-top="0.101cm" fo:margin-bottom="0.101cm" style:page-number="auto" fo:background-color="transparent" text:number-lines="false" text:line-number="0"/>
+			<style:text-properties fo:font-size="11pt" fo:font-style="oblique" style:font-style-asian="italic" style:font-weight-asian="normal" style:font-style-complex="italic" style:font-weight-complex="normal"/>
+		</style:style>
+		<style:style style:name="Code_5f_Console" style:display-name="Code_Console" style:family="paragraph" style:parent-style-name="Preformatted_20_Text">
+			<style:paragraph-properties fo:background-color="#444444"/>
+			<style:text-properties fo:color="#ffffff" fo:font-weight="bold"/>
+		</style:style>
+		<style:style style:name="Code_5f_Standard" style:display-name="Code_Standard" style:family="paragraph" style:parent-style-name="Preformatted_20_Text">
+			<style:paragraph-properties fo:background-color="#fafafa"/>
+			<style:text-properties style:font-name="Courier 10 Pitch"/>
+		</style:style>
+		<style:style style:name="Code_5f_diff_5f_addedline" style:display-name="Code_diff_addedline" style:family="text">
+			<style:text-properties fo:color="#000000" fo:background-color="#ccffcc"/>
+		</style:style>
+		<style:style style:name="Code_5f_diff_5f_blockheader" style:display-name="Code_diff_blockheader" style:family="text">
+			<style:text-properties fo:color="#000000" fo:background-color="#ccccff"/>
+		</style:style>
+		<style:style style:name="Code_5f_diff_5f_deletedline" style:display-name="Code_diff_deletedline" style:family="text">
+			<style:text-properties fo:color="#000000" fo:background-color="#ffcccc"/>
+		</style:style>
+		<style:style style:name="Code_5f_br0" style:display-name="Code_br0" style:family="text">
+			<style:text-properties fo:color="#336699" fo:font-weight="bold" fo:background-color="#fafafa" style:font-weight-asian="bold" style:font-weight-complex="bold"/>
+		</style:style>
+		<style:style style:name="Code_5f_co1" style:display-name="Code_co1" style:family="text">
+			<style:text-properties fo:color="#666666" fo:font-style="oblique" fo:background-color="#fafafa" style:font-style-asian="italic" style:font-weight-asian="normal" style:font-style-complex="italic" style:font-weight-complex="normal"/>
+		</style:style>
+		<style:style style:name="Code_5f_co2" style:display-name="Code_co2" style:family="text">
+			<style:text-properties fo:color="#666666" fo:font-style="oblique" fo:font-weight="bold" fo:background-color="#fafafa" style:font-style-asian="italic" style:font-weight-asian="normal" style:font-style-complex="italic" style:font-weight-complex="normal"/>
+		</style:style>
+		<style:style style:name="Code_5f_coMULTI" style:display-name="Code_coMULTI" style:family="text">
+			<style:text-properties fo:color="#666666" fo:font-style="oblique" fo:background-color="#fafafa" style:font-style-asian="italic" style:font-weight-asian="normal" style:font-style-complex="italic" style:font-weight-complex="normal"/>
+		</style:style>
+		<style:style style:name="Code_5f_es0" style:display-name="Code_es0" style:family="text">
+			<style:text-properties fo:color="#cc0099" fo:font-weight="bold" fo:background-color="#fafafa" style:font-weight-asian="bold" style:font-weight-complex="bold"/>
+		</style:style>
+		<style:style style:name="Code_5f_imp" style:display-name="Code_imp" style:family="text">
+			<style:text-properties fo:color="#990099" fo:background-color="#fafafa"/>
+		</style:style>
+		<style:style style:name="Code_5f_kw1" style:display-name="Code_kw1" style:family="text">
+			<style:text-properties fo:color="#990033" fo:font-weight="bold" fo:background-color="#fafafa" style:font-weight-asian="bold" style:font-weight-complex="bold"/>
+		</style:style>
+		<style:style style:name="Code_5f_kw2" style:display-name="Code_kw2" style:family="text">
+			<style:text-properties fo:color="#003366" fo:font-style="oblique" fo:font-weight="bold" fo:background-color="#fafafa" style:font-style-asian="italic" style:font-weight-asian="bold" style:font-style-complex="italic" style:font-weight-complex="bold"/>
+		</style:style>
+		<style:style style:name="Code_5f_kw3" style:display-name="Code_kw3" style:family="text">
+			<style:text-properties fo:color="#330099" fo:font-weight="bold" fo:background-color="#fafafa" style:font-weight-asian="bold" style:font-weight-complex="bold"/>
+		</style:style>
+		<style:style style:name="Code_5f_kw4" style:display-name="Code_kw4" style:family="text">
+			<style:text-properties fo:color="#993333" fo:background-color="#fafafa"/>
+		</style:style>
+		<style:style style:name="Code_5f_kw5" style:display-name="Code_kw5" style:family="text">
+			<style:text-properties fo:color="#0000ff" fo:background-color="#fafafa"/>
+		</style:style>
+		<style:style style:name="Code_5f_lno" style:display-name="Code_lno" style:family="text">
+			<style:text-properties fo:color="#999999" fo:font-style="oblique" fo:background-color="#fafafa" style:font-style-asian="italic" style:font-weight-asian="normal" style:font-style-complex="italic" style:font-weight-complex="normal"/>
+		</style:style>
+		<style:style style:name="Code_5f_me0" style:display-name="Code_me0" style:family="text">
+			<style:text-properties fo:color="#006600" fo:background-color="#fafafa"/>
+		</style:style>
+		<style:style style:name="Code_5f_nu0" style:display-name="Code_nu0" style:family="text">
+			<style:text-properties fo:color="#993399" fo:background-color="#fafafa"/>
+		</style:style>
+		<style:style style:name="Code_5f_re0" style:display-name="Code_re0" style:family="text">
+			<style:text-properties fo:color="#660066" fo:background-color="#fafafa"/>
+		</style:style>
+		<style:style style:name="Code_5f_re1" style:display-name="Code_re1" style:family="text">
+			<style:text-properties fo:color="#666600" fo:background-color="#fafafa"/>
+		</style:style>
+		<style:style style:name="Code_5f_re2" style:display-name="Code_re2" style:family="text">
+			<style:text-properties fo:color="#006633" fo:background-color="#fafafa"/>
+		</style:style>
+		<style:style style:name="Code_5f_re3" style:display-name="Code_re3" style:family="text">
+			<style:text-properties fo:color="#996633" fo:font-style="oblique" fo:background-color="#fafafa" style:font-style-asian="italic" style:font-weight-asian="normal" style:font-style-complex="italic" style:font-weight-complex="normal"/>
+		</style:style>
+		<style:style style:name="Code_5f_re4" style:display-name="Code_re4" style:family="text">
+			<style:text-properties fo:color="#009999" fo:background-color="#fafafa"/>
+		</style:style>
+		<style:style style:name="Code_5f_sc0" style:display-name="Code_sc0" style:family="text">
+			<style:text-properties fo:color="#006699" fo:background-color="#fafafa"/>
+		</style:style>
+		<style:style style:name="Code_5f_sc1" style:display-name="Code_sc1" style:family="text">
+			<style:text-properties fo:color="#996600" fo:background-color="#fafafa"/>
+		</style:style>
+		<style:style style:name="Code_5f_sc2" style:display-name="Code_sc2" style:family="text">
+			<style:text-properties fo:color="#009900" fo:background-color="#fafafa"/>
+		</style:style>
+		<style:style style:name="Code_5f_st0" style:display-name="Code_st0" style:family="text">
+			<style:text-properties fo:color="#990000" fo:background-color="#fafafa"/>
+		</style:style>
+		<style:style style:name="Code_5f_sy0" style:display-name="Code_sy0" style:family="text">
+			<style:text-properties fo:color="#66cc66" fo:background-color="#fafafa"/>
+		</style:style>
+		<style:style style:name="Graphics" style:family="graphic">
+			<style:graphic-properties text:anchor-type="paragraph" svg:x="0cm" svg:y="0cm" style:wrap="dynamic" style:number-wrapped-paragraphs="no-limit" style:wrap-contour="false" style:vertical-pos="top" style:vertical-rel="paragraph" style:horizontal-pos="center" style:horizontal-rel="paragraph"/>
+		</style:style>
+		<style:style style:name="Frame" style:family="graphic">
+			<style:graphic-properties text:anchor-type="paragraph" svg:x="0cm" svg:y="0cm" fo:margin-left="0.201cm" fo:margin-right="0.201cm" fo:margin-top="0.201cm" fo:margin-bottom="0.201cm" style:wrap="parallel" style:number-wrapped-paragraphs="no-limit" style:wrap-contour="false" style:vertical-pos="top" style:vertical-rel="paragraph-content" style:horizontal-pos="center" style:horizontal-rel="paragraph-content" fo:padding="0.15cm" fo:border="0.002cm solid #000000"/>
+		</style:style>
+		<text:outline-style>
+			<text:outline-level-style text:level="1" style:num-format="">
+				<style:list-level-properties text:min-label-distance="0.381cm"/>
+			</text:outline-level-style>
+			<text:outline-level-style text:level="2" style:num-format="">
+				<style:list-level-properties text:min-label-distance="0.381cm"/>
+			</text:outline-level-style>
+			<text:outline-level-style text:level="3" style:num-format="">
+				<style:list-level-properties text:min-label-distance="0.381cm"/>
+			</text:outline-level-style>
+			<text:outline-level-style text:level="4" style:num-format="">
+				<style:list-level-properties text:min-label-distance="0.381cm"/>
+			</text:outline-level-style>
+			<text:outline-level-style text:level="5" style:num-format="">
+				<style:list-level-properties text:min-label-distance="0.381cm"/>
+			</text:outline-level-style>
+			<text:outline-level-style text:level="6" style:num-format="">
+				<style:list-level-properties text:min-label-distance="0.381cm"/>
+			</text:outline-level-style>
+			<text:outline-level-style text:level="7" style:num-format="">
+				<style:list-level-properties text:min-label-distance="0.381cm"/>
+			</text:outline-level-style>
+			<text:outline-level-style text:level="8" style:num-format="">
+				<style:list-level-properties text:min-label-distance="0.381cm"/>
+			</text:outline-level-style>
+			<text:outline-level-style text:level="9" style:num-format="">
+				<style:list-level-properties text:min-label-distance="0.381cm"/>
+			</text:outline-level-style>
+			<text:outline-level-style text:level="10" style:num-format="">
+				<style:list-level-properties text:min-label-distance="0.381cm"/>
+			</text:outline-level-style>
+		</text:outline-style>
+
+        <text:list-style style:name="Numbering_20_1" style:display-name="Numbering 1"/>
+		<text:list-style style:name="List_20_1" style:display-name="List 1"/>
+
+		<text:notes-configuration text:note-class="footnote" style:num-format="1" text:start-value="0" text:footnotes-position="page" text:start-numbering-at="document"/>
+		<text:notes-configuration text:note-class="endnote" style:num-format="i" text:start-value="0"/>
+		<text:linenumbering-configuration text:number-lines="false" text:offset="0.499cm" style:num-format="1" text:number-position="left" text:increment="5"/>
+
+	</office:styles>
+
+	<office:automatic-styles/>
+
+	<office:master-styles>
+		<style:master-page style:name="Standard" style:page-layout-name="pm1"/>
+	</office:master-styles>
+</office:document-styles>

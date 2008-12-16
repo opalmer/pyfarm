@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8"?>
+<export exported="1182883843">
+	<group>
+		<row>
+			<com_id>1</com_id>
+			<com_title>IP.Gallery</com_title>
+			<com_author>Invision Power Services</com_author>
+			<com_url>http://example.com</com_url>
+			<com_version>2.2</com_version>
+			<com_date_added>1113309894</com_date_added>
+			<com_menu_data><![CDATA[a:1:{i:1;a:5:{s:9:"menu_text";s:24:"Purchase and Information";s:8:"menu_url";s:9:"code=show";s:13:"menu_redirect";i:0;s:12:"menu_permbit";s:0:"";s:13:"menu_permlang";s:0:"";}}]]></com_menu_data>
+			<com_enabled>0</com_enabled>
+			<com_safemode>1</com_safemode>
+			<com_section>gallery</com_section>
+			<com_filename>gallery</com_filename>
+			<com_description>Complete gallery system for your members</com_description>
+			<com_url_title><![CDATA[{ipb.lang['gallery']}]]></com_url_title>
+			<com_url_uri><![CDATA[{ipb.base_url}act=module&module=gallery]]></com_url_uri>
+			<com_position>1</com_position>
+		</row>
+
+		<row>
+			<com_id>2</com_id>
+			<com_title>IP.Blog</com_title>
+			<com_author>Invision Power Services</com_author>
+			<com_url>http://example.com</com_url>
+			<com_version>1.3</com_version>
+			<com_date_added>1113310263</com_date_added>
+			<com_menu_data><![CDATA[a:1:{i:1;a:5:{s:9:"menu_text";s:24:"Purchase and Information";s:8:"menu_url";s:9:"code=show";s:13:"menu_redirect";i:0;s:12:"menu_permbit";s:0:"";s:13:"menu_permlang";s:0:"";}}]]></com_menu_data>
+			<com_enabled>0</com_enabled>
+			<com_safemode>1</com_safemode>
+			<com_section>blog</com_section>
+			<com_filename>blog</com_filename>
+			<com_description>Blogging addition for your members</com_description>
+			<com_url_title><![CDATA[{ipb.lang['blog']}]]></com_url_title>
+			<com_url_uri>{ipb.base_url}automodule=blog</com_url_uri>
+			<com_position>2</com_position>
+		</row>
+
+		<row>
+			<com_id>3</com_id>
+			<com_title>Invision Chat (ParaChat)</com_title>
+			<com_author>Invision Power Services</com_author>
+			<com_url>http://example.com</com_url>
+			<com_version>2.1</com_version>
+			<com_date_added>1113313895</com_date_added>
+			<com_menu_data><![CDATA[a:1:{i:1;a:5:{s:9:"menu_text";s:24:"Purchase and Information";s:8:"menu_url";s:9:"code=show";s:13:"menu_redirect";i:0;s:12:"menu_permbit";s:0:"";s:13:"menu_permlang";s:0:"";}}]]></com_menu_data>
+			<com_enabled>0</com_enabled>
+			<com_safemode>1</com_safemode>
+			<com_section>chatpara</com_section>
+			<com_filename>chatpara</com_filename>
+			<com_description>Full real-time chat system for your members</com_description>
+			<com_url_title><![CDATA[{ipb.lang['live_chat']}]]></com_url_title>
+			<com_url_uri>{ipb.base_url}autocom=chatpara</com_url_uri>
+			<com_position>5</com_position>
+		</row>
+
+		<row>
+			<com_id>4</com_id>
+			<com_title>Invision Copyright Removal</com_title>
+			<com_author>Invision Power Services</com_author>
+			<com_url>http://www.example.com</com_url>
+			<com_version>2.1</com_version>
+			<com_date_added>1113314009</com_date_added>
+			<com_menu_data><![CDATA[a:1:{i:1;a:5:{s:9:"menu_text";s:24:"Purchase and Information";s:8:"menu_url";s:9:"code=show";s:13:"menu_redirect";i:0;s:12:"menu_permbit";s:0:"";s:13:"menu_permlang";s:0:"";}}]]></com_menu_data>
+			<com_enabled>0</com_enabled>
+			<com_safemode>1</com_safemode>
+			<com_section>copyright</com_section>
+			<com_filename>copyright</com_filename>
+			<com_description><![CDATA[Allows the copyright notices to be removed from the board's output]]></com_description>
+			<com_url_title></com_url_title>
+			<com_url_uri></com_url_uri>
+			<com_position>4</com_position>
+		</row>
+
+		<row>
+			<com_id>5</com_id>
+			<com_title>AddOnChat</com_title>
+			<com_author>Invision Power Services</com_author>
+			<com_url>http://example.com</com_url>
+			<com_version>2.1</com_version>
+			<com_date_added>1113313895</com_date_added>
+			<com_menu_data><![CDATA[a:1:{i:1;a:5:{s:9:"menu_text";s:24:"Purchase and Information";s:8:"menu_url";s:9:"code=show";s:13:"menu_redirect";i:0;s:12:"menu_permbit";s:0:"";s:13:"menu_permlang";s:0:"";}}]]></com_menu_data>
+			<com_enabled>0</com_enabled>
+			<com_safemode>1</com_safemode>
+			<com_section>chatsigma</com_section>
+			<com_filename>chatsigma</com_filename>
+			<com_description>Full real-time chat system for your members</com_description>
+			<com_url_title><![CDATA[{ipb.lang['live_chat']}]]></com_url_title>
+			<com_url_uri>{ipb.base_url}autocom=chatsigma</com_url_uri>
+			<com_position>6</com_position>
+		</row>
+
+		<row>
+			<com_id>17</com_id>
+			<com_title>IP.Downloads</com_title>
+			<com_author>Invision Power Services, Inc.</com_author>
+			<com_url>http://example.com</com_url>
+			<com_version>1.1</com_version>
+			<com_date_added>1182883727</com_date_added>
+			<com_menu_data><![CDATA[a:1:{i:1;a:5:{s:9:"menu_text";s:24:"Purchase and Information";s:8:"menu_url";s:9:"code=show";s:13:"menu_redirect";i:0;s:12:"menu_permbit";s:0:"";s:13:"menu_permlang";s:0:"";}}]]></com_menu_data>
+			<com_enabled>0</com_enabled>
+			<com_safemode>1</com_safemode>
+			<com_section>downloads</com_section>
+			<com_filename>downloads</com_filename>
+			<com_description>Share files for download through your site</com_description>
+			<com_url_title></com_url_title>
+			<com_url_uri></com_url_uri>
+			<com_position>3</com_position>
+		</row>
+	</group>
+
+</export>

@@ -1,0 +1,46 @@
+/*	Cascading Style Sheet for 'code' syntax plugin  -  2008-07-22
+	Copyright (C) 2005, 2008  M.Watermann, D-10247 Berlin, FRG  -  <support@mwat.de>
+*/
+div.dokuwiki pre.code,pre.code,div.dokuwiki pre.console,pre.console{border:thin dotted #ccc;margin:1ex 0;line-height:1.33;overflow:auto;text-indent:0;max-height:40em;max-width:99%;}
+div.dokuwiki pre.code,pre.code{background:#fcfdfe none;color:#000;padding:0.4ex;}
+.code .diff_addedline{background:#cfc none;color:#000;}
+.code .diff_blockheader{background:#ccf none;color:#000;}
+.code .diff_deletedline{background:#fcc none;color:#000;}
+.code .br0{background:inherit;color:#369;}
+.code .co1,.code .co2,.code .coMULTI,.code .kw2,.code .lno{font-style:italic;}
+.code .br0,.code .co2,.code .es0,.code .kw1,.code .kw2,.code .kw3,.code .lno{font-weight:600;}
+.code .co1,.code .co2,.code .coMULTI{background:inherit;color:#666;}
+.code .es0{background:inherit;color:#c09;}
+.code .imp{background:inherit;color:#909;}
+.code .kw1{background:inherit;color:#903;}
+.code .kw2{background:inherit;color:#036;}
+.code .kw3{background:inherit;color:#309;}
+.code .kw4{background:inherit;color:#933;}
+.code .kw5{background:inherit;color:#00f;}
+.code .lno{background:inherit;color:#999;font-size:smaller;}
+.code .me0{background:inherit;color:#060;}
+.code .nu0{background:inherit;color:#939;}
+.code .re0{background:inherit;color:#606;}
+.code .re1{background:inherit;color:#660;}
+.code .re2{background:inherit;color:#063;}
+.code .re3{background:inherit;color:#963;font-style:italic;font-weight:400;}
+.code .re4{background:inherit;color:#099;}
+.code .sc0{background:inherit;color:#069;}
+.code .sc1{background:inherit;color:#960;}
+.code .sc2{background:inherit;color:#090;}
+.code .st0{background:inherit;color:#900;}
+.code .sy0{background:inherit;color:#6c6;}
+pre.code a{border:none;}
+div.dokuwiki pre.console,pre.console{background:#333 none;color:#fff;font-weight:900;padding:0.4ex 0.3ex 0.6ex 0.6ex;}
+div.dokuwiki pre.console .lno,pre.console .lno{background:inherit;color:#cff;font-size:smaller;font-style:italic;}
+div.code{margin:0.4ex 0;padding:0.4ex 0;}
+div.code pre.code{margin:0;}
+div.code p.codehead,div.code p.codefoot{color:#030;background:inherit;line-height:1.33;text-align:left;padding:0 0 0 1ex;}
+div.code p.codehead{margin:0.6ex 0 0 0;text-decoration:underline;}
+div.code p.codefoot{margin:0 0 0.6ex 0;text-decoration:underline;}
+div.code p.codeHidden{background-image:url(img/plus-11x11.gif);}
+div.code p.codeShown{background-image:url(img/minus-11x11.gif);}
+div.code p.codeHidden,div.code p.codeShown{padding-left:13px;background-repeat:no-repeat;background-position:0 50%;cursor:pointer;}
+div.code p.codeHidden:hover,div.code p.codeShown:hover{background-color:#ddffdd;color:#030;text-decoration:none;}
+div.code pre.codeHidden{display:none;}
+div.code pre.codeShown{display:block;}

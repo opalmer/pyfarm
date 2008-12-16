@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<installdata>
+	<action>
+		<file>login</file>
+		<menu>Login</menu>
+		<position>0</position>
+	</action>
+	<action>
+		<file>overview</file>
+		<menu>Overview</menu>
+		<position>1</position>
+	</action>
+	<action>
+		<file>eula</file>
+		<menu>EULA</menu>
+		<position>2</position>
+	</action>
+	<action>
+		<file>install</file>
+		<menu>Upgrade</menu>
+		<position>3</position>
+	</action>
+</installdata>

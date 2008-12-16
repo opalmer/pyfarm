@@ -1,0 +1,337 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<helpsettingsexport exported="1190903778">
+	<helpsettingsgroup>
+		<helpsettings>
+			<key>new_reg_notify</key>
+			<title>Change the email that receives this notification</title>
+			<helptext><![CDATA[This email can only go to one predefined email address. This email is set at:<br />
+<i>TOOLS & SETTINGS</i> -> <i>Email Set-up</i> -> <i>Board incoming email address</i>
+<br />
+<br /><a href="#" onclick='opener.ipsclass.location_jump("{base_url}&section=tools&act=op&search=Board+incoming+email+address&code=setting_view", 1); return false;'>Click here</a> to view or edit the current email address.
+
+
+]]></helptext>
+			<mouseover>Change the email that receives this notification.</mouseover>
+		</helpsettings>
+
+		<helpsettings>
+			<key>csite_on</key>
+			<title>How to select which forums to export topics from...</title>
+			<helptext><![CDATA[If you have your portal enabled, you will have to select which forums to export topics from. This can be done by <a href="#" onclick='opener.ipsclass.location_jump("{base_url}&section=tools&act=portal&code=portal_settings&pc_key=recent_topics", 1); return false;'>click here</a>, or go to:<br/>
+<i>TOOLS & SETTINGS</i> -> <i>Manage Portal Plug-ins</i> -> <i>Invision Power Board Latest Topics</i> -> <i>Edit Settings</i>
+
+]]></helptext>
+			<mouseover>Export topics to the portal</mouseover>
+		</helpsettings>
+
+		<helpsettings>
+			<key>csite_fav_contents</key>
+			<title>How to add links to this box</title>
+			<helptext><![CDATA[In order to add links to this box, you will have to use HTML. To find out more about HTML, you can visit <a href="http://www.w3schools.com/html/default.asp" target="_blank">W3Schools</a>.<br /> <br />
+To add a link, you will need to use the following format:<br />
+&lt;a href="http://www.link_url_here.com"&gt;Link_Name_Here&lt;/a&gt;<br /><br />
+To go to the next line, you will use the tag: &lt;br /&gt;]]></helptext>
+			<mouseover>HTML Help</mouseover>
+		</helpsettings>
+
+		<helpsettings>
+			<key>max_sig_length</key>
+			<title>Disabling Signatures</title>
+			<helptext><![CDATA[While there is no universal way to remove signatures from accounts, you can stop users from creating new signatures or altering their existing ones. To do this, simply change this setting to: -1<br /><br />
+Note this will not remove currently added signatures. For that, you will need to edit their account and remove the signature manually.]]></helptext>
+			<mouseover>Disabling Signatures</mouseover>
+		</helpsettings>
+
+		<helpsettings>
+			<key>cookie_domain</key>
+			<title>Cookie Domain</title>
+			<helptext><![CDATA[You should enter your domain name with a period in front. For example, if your forum is at <i>http://www.your-domain.com/forums/</i>, you'd enter:<br />
+<b>.your-domain.com</b><br />
+<br />
+Be sure not to include anything in front of the first period or after the domain extension.<br /><br />
+If you are using a subdomain, such as: <i>http://forum.your-domain.com</i>, your should enter:<br />
+<b>.forum.your-domain.com</b>]]></helptext>
+			<mouseover>What should I enter?</mouseover>
+		</helpsettings>
+
+		<helpsettings>
+			<key>cookie_id</key>
+			<title>Cookie Prefix</title>
+			<helptext><![CDATA[This is useful when you have multiple programs running on the same domain, which may interfere with the IP.Board cookies that are set. You can simply put a unique prefix so it does not interfere with other cookies. For example:<br />
+<b>myipb_</b><br />
+<br />
+If you are running multiple installations of IP.Board, you can setup prefixes similar to:<br />
+First forum: <b>forum1_</b><br />
+Second forum: <b>forum2_</b><br />
+And so on.]]></helptext>
+			<mouseover>What is this for?</mouseover>
+		</helpsettings>
+
+		<helpsettings>
+			<key>cookie_path</key>
+			<title>Cookie Path</title>
+			<helptext><![CDATA[Setting the Cookie Path should only be needed in rare cases. If you have conflicting cookies, you may want to set it to the folder where your board is located. For example:<br />
+<b>/forum</b>]]></helptext>
+			<mouseover>When do I need this?</mouseover>
+		</helpsettings>
+
+		<helpsettings>
+			<key>update_topic_views_immediately</key>
+			<title>Topic Views</title>
+			<helptext><![CDATA[Often times with large boards updating the topic views can cause issues. Since the topics database table is accessed every time someone views a topic, it can put a strain on the table and lock queries as a result. Setting this option to <b>No</b> will update the views every 6 hours. While all views will be counted, the topic counter will not be updated right away to help reduce the chance of this table being locked.
+
+<b>This setting is recommended for large/active boards.</b>]]></helptext>
+			<mouseover>How can I tell if I need this?</mouseover>
+		</helpsettings>
+
+		<helpsettings>
+			<key>load_limit</key>
+			<title>Server Load Limit</title>
+			<helptext><![CDATA[The board will take a snapshot of what the current load for your server is, and cache the result for 10 seconds. Note that the load is for the server itself, and it not always related to IP.Board. If you experience high loads, you may want to consult with your webhost and see what is causing it.<br /><br />
+<br />
+If your server is <b>Linux</b>, the server load relates to:<br />
+How many processes are waiting in queue to use the processor on the server. For example, if you have one CPU on your server, then a load of 1.00 would mean there is one process waiting in queue. If you have two CPUs, then 2.00 would be more suitable for that example. As a safe rule, you can enter a limit of 20.
+<br />
+<br />
+If your server has <b>Windows</b>, the server load relates to: <br />
+The CPU usage of the server at that time. As with home computers with Windows, the usage can spike drastically for short periods of time. If you set it at 50, anytime the CPU usage is above 50%, you will get the error message. Also note the board caches the load for 10 seconds, so all users will see the message for a minimum of 10 seconds. On Windows, it is <i>recommended</i> to put it as 100, as the CPU usage monitor is not reliable for tools such as this. By setting it at 100, you will still see the load at the bottom-right of your board, but the board will not give the error when the server load spikes.]]></helptext>
+			<mouseover>What to put depending on your operating system...</mouseover>
+		</helpsettings>
+
+		<helpsettings>
+			<key>time_offset</key>
+			<title>Server Time Zone</title>
+			<helptext>This is the time zone displayed to guests. Please note it does not take into affect Daylight Saving Time for guests. Guests cannot pick their own time zone until they register or login.</helptext>
+			<mouseover>When is this used?</mouseover>
+		</helpsettings>
+
+		<helpsettings>
+			<key>smtp_host</key>
+			<title>SMTP Information</title>
+			<helptext><![CDATA[This (and all other SMTP settings) are only needed if you have set the board to use SMTP for the setting <i>Mail Delivery Method</i>. If you are using PHP Mail(), all of these settings can be left default.<br /><br />
+If you are unsure of any of the SMTP information, please contact your webhost or email host provider, and they can provide you with this information.]]></helptext>
+			<mouseover></mouseover>
+		</helpsettings>
+
+		<helpsettings>
+			<key>mail_method</key>
+			<title>PHP mail() or SMTP?</title>
+			<helptext><![CDATA[For most PHP installations, PHP mail() is enabled. If you are unsure of this, you can ask your webhost if this is enabled. If it is disabled or your are experiencing a lot of <a href="#" onclick='opener.ipsclass.location_jump("{base_url}&section=admin&act=emailerror", 1); return false;'>Email Errors</a>, you may want to switch to SMTP.]]></helptext>
+			<mouseover>PHP mail() or SMTP?</mouseover>
+		</helpsettings>
+
+		<helpsettings>
+			<key>home_url</key>
+			<title>Website URL</title>
+			<helptext><![CDATA[When entering your website URL, be sure to include the full domain. Example: http://www.your-domain.com<br /><br />
+If you do not enter the <i>http://</i>, your link will not work correctly.]]></helptext>
+			<mouseover>Be sure to include http://</mouseover>
+		</helpsettings>
+
+		<helpsettings>
+			<key>upload_dir</key>
+			<title>Upload Directory</title>
+			<helptext><![CDATA[Be sure to check the suggestion for your upload directory in the setting description.<br /><br />
+If you still have issues uploading, please ensure your <i>uploads</i> directory is writable using the <a href="#" onclick='opener.ipsclass.location_jump("{base_url}&section=help&act=diag&code=filepermissions", 1); return false;'>File Permission Checker</a>.]]></helptext>
+			<mouseover>Having Trouble Uploading?</mouseover>
+		</helpsettings>
+
+		<helpsettings>
+			<key>upload_url</key>
+			<title>Upload URL</title>
+			<helptext><![CDATA[Be sure to check the suggestion for your upload URL in the setting description.<br /><br />
+If you still have issues uploading, please ensure your <i>uploads</i> directory is writable using the <a href="#" onclick='opener.ipsclass.location_jump("{base_url}&section=help&act=diag&code=filepermissions", 1); return false;'>File Permission Checker</a>.]]></helptext>
+			<mouseover>Having Trouble Uploading?</mouseover>
+		</helpsettings>
+
+		<helpsettings>
+			<key>safe_mode_skins</key>
+			<title>Safe Mode Skin</title>
+			<helptext><![CDATA[The <a href="#" onclick='opener.ipsclass.location_jump("{base_url}&section=help&act=diag", 1); return false;'>System Overview</a> page will let you know if your PHP installation has Safe Mode on. If it does, please enable this setting.]]></helptext>
+			<mouseover>Not sure if your are running safe_mode?</mouseover>
+		</helpsettings>
+
+		<helpsettings>
+			<key>coppa_address</key>
+			<title>Address Formatting</title>
+			<helptext><![CDATA[In order to format the address properly, you will need to use HTML linebreak tags. Those tags are like so:<br />
+&lt;br /&gt;<br /><br />
+As an example, the address should be entered like this:<br /><br/>
+Company Name &lt;br /&gt;<br />
+123 Fake St. &lt;br /&gt;<br />
+Smalltown, BH 20015
+<br />
+<br />
+<br />
+This will be formatted as:<br /><br />
+Company Name<br />
+123 Fake St.<br />
+Smalltown, BH 20015]]></helptext>
+			<mouseover>Address Formatting</mouseover>
+		</helpsettings>
+
+		<helpsettings>
+			<key>search_sql_method</key>
+			<title>Type of search to use?</title>
+			<helptext><![CDATA[If your server is capable of Full Text searching, it is <b>highly</b> recommended to use it. Searching is one of the top resource users for a board. Full Text searching indexes all of your content for faster and more efficient searches. This should only be set to Normal is absolutely needed.]]></helptext>
+			<mouseover>Type of search to use?</mouseover>
+		</helpsettings>
+
+		<helpsettings>
+			<key>spider_visit</key>
+			<title>Logging Spider visits</title>
+			<helptext><![CDATA[Enabling spider bot visits can greatly increase the amount of database storage space used. If this is enabled, it is recommended to enable <a href="#" onclick='opener.ipsclass.location_jump("{base_url}&section=tools&act=op&code=findsetting&key=log_prune", 1); return false;'>Log Pruning</a> for spider visits.]]></helptext>
+			<mouseover>Important note about enabling logging...</mouseover>
+		</helpsettings>
+
+		<helpsettings>
+			<key>spider_group</key>
+			<title>Picking A Group</title>
+			<helptext>When you select a group for search engine bots, they will be able to see and store anything that group has access to. So do not assign them to a special group such as Admins or Moderators, as they will be able to see everything those groups can see - including hidden forums.</helptext>
+			<mouseover>Picking a group...</mouseover>
+		</helpsettings>
+
+		<helpsettings>
+			<key>search_engine_bots</key>
+			<title>Using Pre-Made Lists</title>
+			<helptext><![CDATA[Some pre-made lists have a long list of recognized bots. While it is useful to know what bots are visiting your site, large lists can cause many issues. It can cause forum slowness or PHP & SQL errors. It is highly recommended to <i>not</i> enter large lists, but rather enter the ones you feel will visit your site or are important to your site.]]></helptext>
+			<mouseover>Adding a list...</mouseover>
+		</helpsettings>
+
+		<helpsettings>
+			<key>forum_trash_can_id</key>
+			<title>Setting Up A Trash Can Forum</title>
+			<helptext><![CDATA[If you do not have a trash can forum setup already, you can create one using the <a href="#" onclick='opener.ipsclass.location_jump("{base_url}&section=content&act=forum&code=new&type=forum", 1); return false;'>Add New Forum</a> section.<br /><br />
+This forum can be called whatever you would like and placed in whatever category. Normally the trash can forum is setup so that only Admins can view the forum. This way you can review all deleted topics, and permanently delete them as needed.]]></helptext>
+			<mouseover>Setting up a trash can forum...</mouseover>
+		</helpsettings>
+
+		<helpsettings>
+			<key>subsm_nopkg_group</key>
+			<title>What Group to Pick?</title>
+			<helptext><![CDATA[The best way to configure this setting is to setup a special user group for people who have no purchased a package as of yet. If you leave this set to 'Validating', it can cause confusion. Once someone validates they would be placed back into the validating group until they pay. Setting up a specific group for unpaid members would allow your members to properly validate, but you would still be able to control what type of board access they have.]]></helptext>
+			<mouseover>What group to pick...</mouseover>
+		</helpsettings>
+
+		<helpsettings>
+			<key>bot_antispam</key>
+			<title>About Captcha</title>
+			<helptext><![CDATA[This feature is your first line of defense against spam bots. Most spam bots are unable to get past the registration page when this is set to 'Advanced'. This should stop them before they are able to register. The second line of defense is validation, which can be enabled lower on this page under "<i>New registration email validation?</i>".<br /><br />
+If you continue to get spam registrations, you may wish to ban common spamming IP addresses, names, and emails using the <a href="#" onclick='opener.ipsclass.location_jump("{base_url}&section=content&act=babw&code=ban", 1); return false;'>Ban Filters</a>.]]></helptext>
+			<mouseover>Why should I enable this?</mouseover>
+		</helpsettings>
+
+		<helpsettings>
+			<key>guest_captcha</key>
+			<title>Guest Post Security</title>
+			<helptext><![CDATA[If <i>any</i> of your forums allow guest posting, it is important to set this setting to 'Advanced'. Spam bots commonly search for forums that allow guest posting to spam their sites/links. Most bots cannot bypass the Advanced Captcha, so it will stop your guest forums from being overly spammed.]]></helptext>
+			<mouseover>Guest posting security...</mouseover>
+		</helpsettings>
+
+		<helpsettings>
+			<key>captcha_allow_fonts</key>
+			<title>Preview Captcha</title>
+			<helptext><![CDATA[If there is no preview image in this setting, it can mean that your GD installation does not support fonts. If no image is shown, please set this setting to <i>No</i>. If it still does not load, please set <i>Enable Captcha?</i> to <i>Normal</i> for the time being, and consult with your webhost to have them install the GD libraries with font support.]]></helptext>
+			<mouseover>Preview Captcha</mouseover>
+		</helpsettings>
+
+		<helpsettings>
+			<key>ipb_bruteforce_attempts</key>
+			<title>Managing Locked Accounts</title>
+			<helptext><![CDATA[If this setting is enabled, you can manage any locked accounts by <a href="#" onclick='opener.ipsclass.location_jump("{base_url}&section=content&act=mtools&code=lock", 1); return false;'>Clicking Here</a>.]]></helptext>
+			<mouseover>Managing locked accounts...</mouseover>
+		</helpsettings>
+
+		<helpsettings>
+			<key>reg_auth_type</key>
+			<title>Setting Up Validation</title>
+			<helptext><![CDATA[This setting is important in terms of controlling who can register on your board. Along with the Captcha, this is a good way of reducing the amount of spam your board receives.<br /<br />
+Most of the time admins will want their users to validate their <b>email</b> addresses. This can help avoid false registrations and incorrect emails.<br /><br />
+For tighter security, you can also enable <b>admin</b> validation. With this enabled, you will have to manually validate all accounts on your board.<br /><br />
+To manage your validating accounts, you can view the <a href="#" onclick='opener.ipsclass.location_jump("{base_url}&section=content&act=mtools&code=mod", 1); return false;'>Manage Validating</a> section.]]></helptext>
+			<mouseover>Validation...</mouseover>
+		</helpsettings>
+
+		<helpsettings>
+			<key>force_login</key>
+			<title>Guest Viewing</title>
+			<helptext>If you enable this setting, this will override all forum specific settings. Guests will not be able to view any part of the board besides a login and registration screen.</helptext>
+			<mouseover>Guest viewing...</mouseover>
+		</helpsettings>
+
+		<helpsettings>
+			<key>strip_space_chr</key>
+			<title>Stripping Hidden Characters</title>
+			<helptext><![CDATA[It is important to use this only if your forum is primarily English. Enabling this feature while using non-Latin (English) characters on your board can cause issues with member accounts.<br /><br />
+Enable this feature if you have users signing up with duplicate usernames. For example, a user can enter a name with a hidden HTML space in it, so it will appear as though it is the same name of an existing user. ]]></helptext>
+			<mouseover>When to enable this...</mouseover>
+		</helpsettings>
+
+		<helpsettings>
+			<key>allow_flash</key>
+			<title>Using the Flash Tag</title>
+			<helptext><![CDATA[To post a flash (.swf) movie into a post, you will need to use the flash tags. The flash tag is use like so:<br />
+<b>[flash=199,199]</b>http://www.domain.com/flashmovie.swf<b>[/flash]</b><br /><br />
+The <i>199,199</i> in the tag define the height and width of the flash movie. To set the maximum height and width for the flash tags, please <a href="#" onclick='opener.ipsclass.location_jump("{base_url}&section=tools&act=op&search=flash&code=setting_view", 1); return false;'>Click Here</a>. ]]></helptext>
+			<mouseover>How to use the flash tag...</mouseover>
+		</helpsettings>
+
+		<helpsettings>
+			<key>max_h_flash</key>
+			<title>Enabling Flash</title>
+			<helptext><![CDATA[To enable the use of Flash tags, please <a href="#" onclick='opener.ipsclass.location_jump("{base_url}&section=tools&act=op&search=flash&code=setting_view", 1); return false;'>Click Here</a>. This can also be found under the <i>Security & Privacy</i> setting group.]]></helptext>
+			<mouseover>How to enable flash tags...</mouseover>
+		</helpsettings>
+
+		<helpsettings>
+			<key>max_w_flash</key>
+			<title>Enabling Flash</title>
+			<helptext><![CDATA[To enable the use of Flash tags, please <a href="#" onclick='opener.ipsclass.location_jump("{base_url}&section=tools&act=op&search=flash&code=setting_view", 1); return false;'>Click Here</a>. This can also be found under the <i>Security & Privacy</i> setting group.]]></helptext>
+			<mouseover>How to enable flash tags...</mouseover>
+		</helpsettings>
+
+		<helpsettings>
+			<key>max_poll_questions</key>
+			<title>Creating Polls</title>
+			<helptext><![CDATA[Polls are enabled on a per-forum basis. When creating a forum, please ensure that the forum settings have polls enabled.<br /><br />
+When making a new topic, there will be a text link just below the topic title. This link will allow you to create a new poll for this topic.]]></helptext>
+			<mouseover>How to create a poll...</mouseover>
+		</helpsettings>
+
+		<helpsettings>
+			<key>startpoll_cutoff</key>
+			<title>Adding a Poll</title>
+			<helptext><![CDATA[To add a poll to an existing topic, you must add a reply to the topic. When clicking 'Add Reply', an a text link will appear above the post box to add a new poll.]]></helptext>
+			<mouseover>Adding a poll to an existing topic...</mouseover>
+		</helpsettings>
+
+		<helpsettings>
+			<key>post_titlechange</key>
+			<title>Member Titles</title>
+			<helptext><![CDATA[Allowing users to change their own member titles will allow them to override any predefined <a href="#" onclick='opener.ipsclass.location_jump("{base_url}&section=content&act=mem&code=title", 1); return false;'>Member Ranks</a> added.]]></helptext>
+			<mouseover>Member titles...</mouseover>
+		</helpsettings>
+
+		<helpsettings>
+			<key>sig_allow_ibc</key>
+			<title>BBCode in Signatures</title>
+			<helptext><![CDATA[If you wish to disable images in signatures, please disable this setting. Please note this will disable all BBCode in signatures - not just the "img" tag. The code itself will be seen in the signature if someone attempts to add it, it will not parse.]]></helptext>
+			<mouseover>Disabling images in signatures...</mouseover>
+		</helpsettings>
+
+		<helpsettings>
+			<key>allow_skins</key>
+			<title>Skin Selection</title>
+			<helptext>If you disable this setting, the skin drop-down menu at the bottom of your board will no longer appear. You will also no longer be able to assign specific skins to user accounts. They will use whatever the default skin is.</helptext>
+			<mouseover>Allowing skins...</mouseover>
+		</helpsettings>
+
+		<helpsettings>
+			<key>max_user_name_length</key>
+			<title>Possible hardcoded limit...</title>
+			<helptext><![CDATA[In some cases, there may be a hardcoded limit of 32 characters. To change this, please view the Knowledge Base article relating to this subject.]]></helptext>
+			<mouseover>Possible hardcoded limit...</mouseover>
+		</helpsettings>
+	</helpsettingsgroup>
+
+</helpsettingsexport>
