@@ -1,7 +1,7 @@
 '''
 AUTHOR: Oliver Palmer
 CONTACT: opalme20@student.scad.edu || (703)725-6544
-INITIAL: Nov 11 2008
+INITIAL: Dec 11 2008
 PURPOSE: Module used to manage ques inside of the program
 '''
 import sys
