@@ -21,3 +21,7 @@ class Internal:
 
     def echo(self, num):
         self.run(num)
+
+    class Test:
+        def main():
+            return "It worked!"

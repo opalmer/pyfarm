@@ -34,7 +34,17 @@ class System:
 
     def os():
         '''Return the os type to PyFarm (win,irux,etc.)'''
-        pass
+        import os
+        import sys
+        #'posix', 'nt', 'dos', 'os2', 'mac', or 'ce'
+        if os.name == 'posix':
+            return 'linux'
+        elif os.name == 'nt':
+            return 'windows':
+        elif os.name == 'dos':
+            return 'dos'
+        elif os.name == 'os2':
+            pass # will figure out what to do here later
 
 
 class Job(object):
