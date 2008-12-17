@@ -8,6 +8,10 @@ import sys
 import socket
 import traceback
 
+###################################
+## TEST AND TWEAK CLASSES TO KEEP
+## FROM BREAKING THE NETWORK!
+###################################
 class Broadcast(object):
     '''Class used to send a broadcast signal to all computers on a network'''
     def __init__(self, port=51423, host=''):
