@@ -8,3 +8,4 @@ PURPOSE: This program is used for testing purposes ONLY, not to publish
 from lib.Network import Broadcast
 
 send = Broadcast()
+send.send()

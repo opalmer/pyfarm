@@ -10,7 +10,7 @@ import traceback
 
 class Broadcast(object):
     '''Class used to send a broadcast signal to all computers on a network'''
-    def __init__(self, port, host=''):
+    def __init__(self, port=51423, host=''):
         self.port = port
         self.host = host
         self.dest = ('<broadcast>', self.port)
@@ -21,7 +21,7 @@ class Broadcast(object):
         self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
         self.sock.sendto("Hello", self.dest)
 
-        print "Looking fore replies; press Ctrl-C to stop."
+        print "Looking for replies; press Ctrl-C to stop."
         while 1:
             (buf, address) = self.sock.recvfrom(2048)
             if not len(buf):
@@ -36,7 +36,7 @@ class Broadcast(object):
 
         while 1:
             try:
-                message, address self.sock.recvfrom(8192)
+                message, address = self.sock.recvfrom(8192)
                 print "Got broadcast from", address
                 # acknowledge the broadcase
                 self.sock.sendto("Active Client: ", address)
