@@ -38,7 +38,6 @@ class Thread(QThread):
         super(Thread, self).__init__(parent)
         self.socketId = socketId
 
-        
     def run(self):
         socket = QTcpSocket()
         if not socket.setSocketDescriptor(self.socketId):
@@ -170,7 +169,7 @@ class TcpServer(QTcpServer):
         self.connect(thread, SIGNAL("finished()"),
                      thread, SLOT("deleteLater()"))
         thread.start()
-        
+
 
 class BuildingServicesDlg(QPushButton):
 
