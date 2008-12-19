@@ -1,8 +1,0 @@
-<Files *.php>
-Deny From All
-</Files>
-
-<Files fetch.php>
-Allow From All
-</Files>
-

@@ -1,2 +1,0 @@
-[01-Dec-2008 18:27:06] PHP Warning:  array_map() [<a href='function.array-map'>function.array-map</a>]: The first argument, 'map_attrs', should be either NULL or a valid callback in /home/opalme6/public_html/pyfarm/wp-includes/rss.php on line 175
-[01-Dec-2008 18:27:06] PHP Warning:  join() [<a href='function.join'>function.join</a>]: Invalid arguments passed in /home/opalme6/public_html/pyfarm/wp-includes/rss.php on line 175

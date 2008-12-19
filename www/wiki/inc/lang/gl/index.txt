@@ -1,4 +1,0 @@
-====== Índice ======
-
-Isto é un índice de todas as páxinas dispoñibles ordenadas por [[doku>wiki:namespaces|nomes de espazo]].
-

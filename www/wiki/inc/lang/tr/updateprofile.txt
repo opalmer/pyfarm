@@ -1,3 +1,0 @@
-====== Profil Güncelleme ======
-
-İstediğiniz profil kısımlarını değiştirebilirsiniz. Ancak kullanıcı adınızı değiştirmeniz mümkün değildir.

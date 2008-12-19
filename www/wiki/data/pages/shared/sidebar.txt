@@ -1,7 +1,0 @@
-  * [[About]]
-  * [[System Requirements]]
-  * [[Installation]]
-  * [[Operation]]
-  * [[Troubleshooting]]
-  * [[Support]]
-  * [[Testing Page]]

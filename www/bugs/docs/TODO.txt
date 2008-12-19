@@ -1,1 +1,0 @@
-The TODO list can be found at http://bugs.flyspray.org/

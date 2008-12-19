@@ -1,2 +1,0 @@
-[01-Dec-2008 16:11:55] PHP Fatal error:  Call to undefined function  language_attributes() in /home/opalme6/public_html/pyfarm/wp-content/themes/googlechrome/header.php on line 2
-[01-Dec-2008 16:12:02] PHP Fatal error:  Call to undefined function  get_header() in /home/opalme6/public_html/pyfarm/wp-content/themes/googlechrome/index.php on line 1

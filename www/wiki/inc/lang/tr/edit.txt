@@ -1,4 +1,0 @@
-Sayfayı değiştir ve ''Kaydete'' bas. Wiki sözdizimi için [[wiki:syntax]]'a
-bak. Lütfen sayfayı sadece eğer **geliştirebiliyorsan** değiştir. Eğer
-testler yapmak istiyorsan, [[playground:playground]] adresini kullan.
-
