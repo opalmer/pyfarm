@@ -1,12 +1,10 @@
-# -*- coding: utf-8 -*-
-
-# Form implementation generated from reading ui file 'MainWidget.ui'
-#
-# Created: Fri Dec 19 16:20:04 2008
-#      by: PyQt4 UI code generator 4.4.3
-#
-# WARNING! All changes made in this file will be lost!
-
+'''
+AUTHOR: Oliver Palmer
+CONTACT: opalme20@student.scad.edu || (703)725-6544
+INITIAL: Dec 19 2008
+PURPOSE: Program used to call up the render gui and submit renders
+'''
+import sys
 from PyQt4.QtGui import *
 from PyQt4.QtCore import *
 
@@ -18,10 +16,21 @@ class Proto1( QWidget ):
         self.sFrame = QSpinBox()
         self.eFrame = QSpinBox()
         self.renderer = QComboBox()
-        #self.renderers = ['Mental Ray','Software','Vector']
+        self.renderers = ['Mental Ray','Software','Vector']
+        self.render.addItems( self.renderers )
         self.nodeList = QTableWidget()
         self.findNodes = QPushButton()
         self.render = QPushButton()
         self.quit = QPushButton()
         self.output = QTextBrowser()
         self.progress = QProgressBar()
+        grid = QGridLayout()
+        grid.addWidget( self.renderer, 0, 0 )
+        self.setLayout( grid )
+        self.sFrame
+
+
+app = QApplication(sys.argv)
+form = Proto1()
+form.show()
+app.exec_()
