@@ -5,6 +5,7 @@ INITIAL: Dec 15 2008
 PURPOSE: Testing module, just for tests!
 '''
 
+
 class Internal:
     '''Class used to test internal class communication'''
     import sys

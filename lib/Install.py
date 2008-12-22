@@ -6,6 +6,7 @@ PURPOSE: This module is intended to help install and update PyFarm both
 at the system level and the program level.
 '''
 
+# TODO: Create cross-platform installer
 class SystemPackages(object):
     '''
     Used to install a grou of packages onto the local system

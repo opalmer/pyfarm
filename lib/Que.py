@@ -6,11 +6,12 @@ PURPOSE: Module used to manage ques inside of the program
 '''
 import sys
 
+# TODO: Create a working child of the queue standard module
 class Que(object):
-	'''Create and manage a custom custom que in program'''
-	def __init__(self):
-		pass
+    '''Create and manage a custom custom que in program'''
+    def __init__(self):
+        pass
 
 if __name__ == '__main__':
-	print "Sorry this module is meant to be imported"
-	sys.exit(1)
+    print "Sorry this module is meant to be imported"
+    sys.exit(1)

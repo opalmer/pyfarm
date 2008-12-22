@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Project SYSTEM "Project-4.4.dtd">
 <!-- eric4 project file for project PyFarm -->
-<!-- Saved: 2008-12-20, 20:02:17 -->
+<!-- Saved: 2008-12-22, 02:50:39 -->
 <!-- Copyright (C) 2008 Oliver Palmer, opalme20@student.scad.edu -->
 <Project version="4.4">
   <ProgLanguage mixed="0">Python</ProgLanguage>
   <ProjectType>Qt4</ProjectType>
-  <Description>Render farm scripts and user interface components developed for the everyday user. HOMEPAGE: http://www.opalmer.com/pyfarm</Description>
+  <Description></Description>
   <Version>0.0.1</Version>
   <Author>Oliver Palmer</Author>
   <Email>opalme20@student.scad.edu</Email>
   <Sources>
-    <Source>Main.py</Source>
+    <Source>Main.pyw</Source>
     <Source>resources/books/pyqt/chap04/alert.pyw</Source>
     <Source>resources/books/pyqt/chap04/alert_extra.pyw</Source>
     <Source>resources/books/pyqt/chap04/calculate.pyw</Source>
@@ -72,9 +72,8 @@
     <Source>resources/books/pyqt/chap19/pageindexer_26.pyw</Source>
     <Source>resources/books/pyqt/chap19/pageindexer_ans.pyw</Source>
     <Source>resources/books/pyqt/makepyqt.pyw</Source>
+    <Source>testing/proto1/Main.pyw</Source>
     <Source>testing/proto1/SubmitRender.pyw</Source>
-    <Source>testing/proto1/lib/Ui_Master.pyw</Source>
-    <Source>testing/proto1/test.pyw</Source>
     <Source>lib/FarmLog.py</Source>
     <Source>lib/Info.py</Source>
     <Source>lib/Install.py</Source>
@@ -263,16 +262,16 @@
     <Source>resources/books/pyqt/chap02/answers.py</Source>
     <Source>resources/books/pyqt/chap02/frange.py</Source>
     <Source>resources/books/pyqt/chap02/simplified.py</Source>
-    <Source>resources/books/pyqt/chap03/SortedDict.py</Source>
-    <Source>resources/books/pyqt/chap03/__init__.py</Source>
     <Source>resources/books/pyqt/chap03/balloon.py</Source>
     <Source>resources/books/pyqt/chap03/dimension.py</Source>
     <Source>resources/books/pyqt/chap03/item.py</Source>
     <Source>resources/books/pyqt/chap03/length.py</Source>
     <Source>resources/books/pyqt/chap03/ordereddict.py</Source>
     <Source>resources/books/pyqt/chap03/rectangle.py</Source>
+    <Source>resources/books/pyqt/chap03/SortedDict.py</Source>
     <Source>resources/books/pyqt/chap03/stack.py</Source>
     <Source>resources/books/pyqt/chap03/tribool.py</Source>
+    <Source>resources/books/pyqt/chap03/__init__.py</Source>
     <Source>resources/books/pyqt/chap05/numberformatdlg1.py</Source>
     <Source>resources/books/pyqt/chap05/numberformatdlg2.py</Source>
     <Source>resources/books/pyqt/chap05/numberformatdlg3.py</Source>
@@ -310,13 +309,13 @@
     <Source>resources/books/pyqt/chap19/walker_26.py</Source>
     <Source>resources/books/pyqt/chap19/walker_ans.py</Source>
     <Source>resources/books/pyqt/mkpyqt.py</Source>
-    <Source>resources/tools/cx_Freeze-4.0.1/cx_Freeze/__init__.py</Source>
     <Source>resources/tools/cx_Freeze-4.0.1/cx_Freeze/dist.py</Source>
     <Source>resources/tools/cx_Freeze-4.0.1/cx_Freeze/finder.py</Source>
     <Source>resources/tools/cx_Freeze-4.0.1/cx_Freeze/freezer.py</Source>
     <Source>resources/tools/cx_Freeze-4.0.1/cx_Freeze/hooks.py</Source>
     <Source>resources/tools/cx_Freeze-4.0.1/cx_Freeze/main.py</Source>
     <Source>resources/tools/cx_Freeze-4.0.1/cx_Freeze/windist.py</Source>
+    <Source>resources/tools/cx_Freeze-4.0.1/cx_Freeze/__init__.py</Source>
     <Source>resources/tools/cx_Freeze-4.0.1/initscripts/Console.py</Source>
     <Source>resources/tools/cx_Freeze-4.0.1/initscripts/ConsoleKeepPath.py</Source>
     <Source>resources/tools/cx_Freeze-4.0.1/initscripts/ConsoleSetLibPath.py</Source>
@@ -329,14 +328,14 @@
     <Source>resources/tools/cx_Freeze-4.0.1/samples/advanced/setup.py</Source>
     <Source>resources/tools/cx_Freeze-4.0.1/samples/matplotlib/setup.py</Source>
     <Source>resources/tools/cx_Freeze-4.0.1/samples/matplotlib/test_matplotlib.py</Source>
-    <Source>resources/tools/cx_Freeze-4.0.1/samples/relimport/pkg1/__init__.py</Source>
-    <Source>resources/tools/cx_Freeze-4.0.1/samples/relimport/pkg1/pkg2/__init__.py</Source>
     <Source>resources/tools/cx_Freeze-4.0.1/samples/relimport/pkg1/pkg2/sub3.py</Source>
     <Source>resources/tools/cx_Freeze-4.0.1/samples/relimport/pkg1/pkg2/sub5.py</Source>
+    <Source>resources/tools/cx_Freeze-4.0.1/samples/relimport/pkg1/pkg2/__init__.py</Source>
     <Source>resources/tools/cx_Freeze-4.0.1/samples/relimport/pkg1/sub1.py</Source>
     <Source>resources/tools/cx_Freeze-4.0.1/samples/relimport/pkg1/sub2.py</Source>
     <Source>resources/tools/cx_Freeze-4.0.1/samples/relimport/pkg1/sub4.py</Source>
     <Source>resources/tools/cx_Freeze-4.0.1/samples/relimport/pkg1/sub6.py</Source>
+    <Source>resources/tools/cx_Freeze-4.0.1/samples/relimport/pkg1/__init__.py</Source>
     <Source>resources/tools/cx_Freeze-4.0.1/samples/relimport/relimport.py</Source>
     <Source>resources/tools/cx_Freeze-4.0.1/samples/relimport/setup.py</Source>
     <Source>resources/tools/cx_Freeze-4.0.1/samples/simple/hello.py</Source>
@@ -344,9 +343,8 @@
     <Source>resources/tools/cx_Freeze-4.0.1/samples/wx/setup.py</Source>
     <Source>resources/tools/cx_Freeze-4.0.1/samples/wx/wxapp.py</Source>
     <Source>resources/tools/cx_Freeze-4.0.1/setup.py</Source>
-    <Source>testing/proto1/QtDesigner/tmp.py</Source>
+    <Source>testing/proto1/lib/TableTest.py</Source>
     <Source>testing/proto1/lib/Ui_Master.py</Source>
-    <Source>testing/proto1/lib/Ui_SubmitRender_dead.py</Source>
     <Source>testing/proto1/lib/__init__.py</Source>
   </Sources>
   <Forms>
@@ -361,7 +359,6 @@
     <Form>resources/books/pyqt/chap09/vehiclerentaldlg.ui</Form>
     <Form>resources/books/pyqt/chap17/newimagedlg.ui</Form>
     <Form>testing/proto1/QtDesigner/MainWidget.ui</Form>
-    <Form>testing/proto1/QtDesigner/tableTest.ui</Form>
   </Forms>
   <Translations>
   </Translations>
@@ -377,7 +374,7 @@
   </Interfaces>
   <Others>
   </Others>
-  <MainScript>Main.py</MainScript>
+  <MainScript>Main.pyw</MainScript>
   <Vcs>
     <VcsType>None</VcsType>
   </Vcs>

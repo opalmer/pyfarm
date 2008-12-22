@@ -27,7 +27,6 @@ class Proto1( QWidget ):
         grid = QGridLayout()
         grid.addWidget( self.renderer, 0, 0 )
         self.setLayout( grid )
-        self.sFrame
 
 
 app = QApplication(sys.argv)

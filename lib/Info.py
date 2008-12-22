@@ -6,12 +6,15 @@ PURPOSE: Module used to return miscellaneous info either about the system
 or PyFarm itself.
 '''
 
+# TODO: Add software discovery to Info module
+# TODO: Find a cross platform way to return the mac address and
 class System:
     def time( format ):
         '''Return the current system time to the user'''
         import time
         return time.strftime("%d %b %Y %H:%M:%S")
 
+    # TODO: Find cross-platform ways to get CPU load
     def cpuLoad():
         '''Return the current CPU load to the user'''
         from subprocess import Popen,PIPE
@@ -24,6 +27,7 @@ class System:
 
         return [one, five, fifteen]
 
+    # TODO: ONLY allow execution of Info.isRoot() if running on Linux
     def isRoot():
         '''Return false if not running as root, true if you are.'''
         import os
@@ -32,6 +36,7 @@ class System:
         else:
             return False
 
+    # TODO: Bugfix @ Info.os
     def os():
         '''Return the os type to PyFarm (win,irux,etc.)'''
         import os
@@ -46,7 +51,7 @@ class System:
         elif os.name == 'os2':
             pass # will figure out what to do here later
 
-
+# TODO: Begin work on job info class
 class Job(object):
     '''Return info about a specific job'''
     def __init__(self):
