@@ -7,3 +7,4 @@ __contact__ = 'opalme20@student.scad.edu | 703-725-6544'
 # TODO: Replace all calls to os.Popen with subprocess,Popen
 # TODO: Standardize class documentation
 # TODO: Remove __name__ == '__main__' from all libraries
+# TODO: First check nvidia setting for autocomplete fix, then system/admin,. then POST IT!
