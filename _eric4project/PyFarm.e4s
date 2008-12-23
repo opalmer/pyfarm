@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Session SYSTEM "Session-4.2.dtd">
+<!-- eric4 session file for project PyFarm -->
+<!-- This file was generated automatically, do not edit. -->
+<!-- Saved: 2008-12-23, 03:55:17 -->
+<Session version="4.2">
+  <Filenames>
+    <Filename cline="0" cindex="0" folds="">C:\Users\opalmer\Desktop\PyFarm\Main.pyw</Filename>
+    <Filename cline="22" cindex="8" folds="">C:\Users\opalmer\Desktop\PyFarm\testing\proto1\Main.pyw</Filename>
+    <Filename cline="20" cindex="37" folds="">C:\Users\opalmer\Desktop\PyFarm\testing\proto1\lib\Que.py</Filename>
+    <Filename cline="32" cindex="47" folds="">C:\Users\opalmer\Desktop\PyFarm\testing\proto1\lib\FarmLog.py</Filename>
+  </Filenames>
+  <ActiveWindow cline="32" cindex="47">C:\Users\opalmer\Desktop\PyFarm\testing\proto1\lib\FarmLog.py</ActiveWindow>
+  <Breakpoints>
+  </Breakpoints>
+  <Watchexpressions>
+  </Watchexpressions>
+  <DebugInfo>
+    <CommandLine></CommandLine>
+    <WorkingDirectory></WorkingDirectory>
+    <Environment></Environment>
+    <ReportExceptions value="True" />
+    <Exceptions>
+    </Exceptions>
+    <AutoClearShell value="True" />
+    <TracePython value="False" />
+    <AutoContinue value="True" />
+    <CovexcPattern></CovexcPattern>
+  </DebugInfo>
+  <Bookmarks>
+  </Bookmarks>
+</Session>

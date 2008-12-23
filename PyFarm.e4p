@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Project SYSTEM "Project-4.4.dtd">
 <!-- eric4 project file for project PyFarm -->
-<!-- Saved: 2008-12-23, 00:14:45 -->
+<!-- Saved: 2008-12-23, 03:16:21 -->
 <!-- Copyright (C) 2008 Oliver Palmer, opalme20@student.scad.edu -->
 <Project version="4.4">
   <ProgLanguage mixed="0">Python</ProgLanguage>
@@ -343,8 +343,11 @@
     <Source>resources/tools/cx_Freeze-4.0.1/samples/wx/wxapp.py</Source>
     <Source>resources/tools/cx_Freeze-4.0.1/setup.py</Source>
     <Source>testing/proto1/lib/TableTest.py</Source>
-    <Source>testing/proto1/lib/Ui_Master.py</Source>
     <Source>testing/proto1/lib/__init__.py</Source>
+    <Source>lib/Util.py</Source>
+    <Source>testing/proto1/lib/ui_Proto1.py</Source>
+    <Source>testing/proto1/lib/Que.py</Source>
+    <Source>testing/proto1/QtDesigner/Proto1.ui</Source>
   </Sources>
   <Forms>
     <Form>resources/books/pyqt/chap06/newimagedlg.ui</Form>
@@ -358,6 +361,7 @@
     <Form>resources/books/pyqt/chap09/vehiclerentaldlg.ui</Form>
     <Form>resources/books/pyqt/chap17/newimagedlg.ui</Form>
     <Form>testing/proto1/QtDesigner/MainWidget.ui</Form>
+    <Form>testing/proto1/QtDesigner/Proto1.ui</Form>
   </Forms>
   <Translations>
   </Translations>

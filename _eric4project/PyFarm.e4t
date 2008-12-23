@@ -1,165 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Tasks SYSTEM "Tasks-4.2.dtd">
 <!-- eric4 tasks file for project PyFarm -->
-<!-- Saved: 2008-12-23, 00:25:13 -->
+<!-- Saved: 2008-12-23, 03:55:17 -->
 <Tasks version="4.2">
-  <Task priority="1" completed="False" bugfix="False">
-    <Summary>TODO: Add software discovery to Info module</Summary>
-    <Description></Description>
-    <Created>2008-12-22, 16:17:03</Created>
-    <Resource>
-      <Filename>lib/Info.py</Filename>
-      <Linenumber>9</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="False" bugfix="False">
-    <Summary>TODO: Find a cross platform way to return the mac address and</Summary>
-    <Description></Description>
-    <Created>2008-12-22, 16:17:03</Created>
-    <Resource>
-      <Filename>lib/Info.py</Filename>
-      <Linenumber>10</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="False" bugfix="False">
-    <Summary>TODO: Find cross-platform ways to get CPU load</Summary>
-    <Description></Description>
-    <Created>2008-12-22, 16:17:03</Created>
-    <Resource>
-      <Filename>lib/Info.py</Filename>
-      <Linenumber>17</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="False" bugfix="False">
-    <Summary>TODO: ONLY allow execution of Info.isRoot() if running on Linux</Summary>
-    <Description></Description>
-    <Created>2008-12-22, 16:17:03</Created>
-    <Resource>
-      <Filename>lib/Info.py</Filename>
-      <Linenumber>30</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="False" bugfix="False">
-    <Summary>TODO: Bugfix @ Info.os</Summary>
-    <Description></Description>
-    <Created>2008-12-22, 16:17:03</Created>
-    <Resource>
-      <Filename>lib/Info.py</Filename>
-      <Linenumber>39</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="False" bugfix="False">
-    <Summary>TODO: Begin work on job info class</Summary>
-    <Description></Description>
-    <Created>2008-12-22, 16:17:03</Created>
-    <Resource>
-      <Filename>lib/Info.py</Filename>
-      <Linenumber>54</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="False" bugfix="False">
-    <Summary>TODO: Create cross-platform installer</Summary>
-    <Description></Description>
-    <Created>2008-12-22, 16:17:03</Created>
-    <Resource>
-      <Filename>lib/Install.py</Filename>
-      <Linenumber>9</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="False" bugfix="False">
-    <Summary>TODO: TEST AND TWEAK BROADCAST!</Summary>
-    <Description></Description>
-    <Created>2008-12-22, 16:17:03</Created>
-    <Resource>
-      <Filename>lib/Network.py</Filename>
-      <Linenumber>11</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="False" bugfix="False">
-    <Summary>TODO: Use Broadcast.send()/receieve() to get the client name and pass it off to others</Summary>
-    <Description></Description>
-    <Created>2008-12-22, 16:17:03</Created>
-    <Resource>
-      <Filename>lib/Network.py</Filename>
-      <Linenumber>12</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="False" bugfix="False">
-    <Summary>TODO: Work on getting subprocess to work and thread it!</Summary>
-    <Description></Description>
-    <Created>2008-12-22, 16:17:03</Created>
-    <Resource>
-      <Filename>lib/Process.py</Filename>
-      <Linenumber>10</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="False" bugfix="False">
-    <Summary>TODO: Add 'default' options to RenderFormat</Summary>
-    <Description></Description>
-    <Created>2008-12-22, 16:19:07</Created>
-    <Resource>
-      <Filename>lib/RenderFormat.py</Filename>
-      <Linenumber>10</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="False" bugfix="False">
-    <Summary>TODO: Create a working child of the queue standard module</Summary>
-    <Description></Description>
-    <Created>2008-12-22, 16:20:42</Created>
-    <Resource>
-      <Filename>lib/Que.py</Filename>
-      <Linenumber>9</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="False" bugfix="False">
-    <Summary>TODO: Test the stopwatch and add proper logging to it</Summary>
-    <Description></Description>
-    <Created>2008-12-22, 16:22:47</Created>
-    <Resource>
-      <Filename>lib/Stopwatch.py</Filename>
-      <Linenumber>10</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="False" bugfix="False">
-    <Summary>TODO: Convert ThreadedRenderQue to proper class for use with gui/server/sockets</Summary>
-    <Description></Description>
-    <Created>2008-12-22, 16:23:36</Created>
-    <Resource>
-      <Filename>lib/ThreadedRenderQue.py</Filename>
-      <Linenumber>15</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="False" bugfix="False">
-    <Summary>TODO: Fix logging in prototype lib and add to here</Summary>
-    <Description></Description>
-    <Created>2008-12-22, 16:24:09</Created>
-    <Resource>
-      <Filename>lib/FarmLog.py</Filename>
-      <Linenumber>8</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="False" bugfix="False">
-    <Summary>TODO: Add logging to file as well as or in place of console logging</Summary>
-    <Description></Description>
-    <Created>2008-12-22, 16:24:09</Created>
-    <Resource>
-      <Filename>lib/FarmLog.py</Filename>
-      <Linenumber>9</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="False" bugfix="False">
-    <Summary>TODO: Create SPEFIFIC logging for rendering</Summary>
-    <Description></Description>
-    <Created>2008-12-22, 16:24:09</Created>
-    <Resource>
-      <Filename>lib/FarmLog.py</Filename>
-      <Linenumber>10</Linenumber>
-    </Resource>
-  </Task>
   <Task priority="1" completed="False" bugfix="False">
     <Summary>TODO: Create a cross-platform means of find MAC ADRESSES and IP ADDRESSES</Summary>
     <Description></Description>
-    <Created>2008-12-23, 00:25:12</Created>
+    <Created>2008-12-23, 03:16:00</Created>
     <Resource>
       <Filename>Main.pyw</Filename>
       <Linenumber>7</Linenumber>
@@ -168,7 +15,7 @@
   <Task priority="1" completed="False" bugfix="False">
     <Summary>TODO: Replace all calls to os.Popen with subprocess,Popen</Summary>
     <Description></Description>
-    <Created>2008-12-23, 00:25:12</Created>
+    <Created>2008-12-23, 03:16:00</Created>
     <Resource>
       <Filename>Main.pyw</Filename>
       <Linenumber>8</Linenumber>
@@ -177,7 +24,7 @@
   <Task priority="1" completed="False" bugfix="False">
     <Summary>TODO: Standardize class documentation</Summary>
     <Description></Description>
-    <Created>2008-12-23, 00:25:12</Created>
+    <Created>2008-12-23, 03:16:00</Created>
     <Resource>
       <Filename>Main.pyw</Filename>
       <Linenumber>9</Linenumber>
@@ -186,7 +33,7 @@
   <Task priority="1" completed="False" bugfix="False">
     <Summary>TODO: Remove __name__ == '__main__' from all libraries</Summary>
     <Description></Description>
-    <Created>2008-12-23, 00:25:12</Created>
+    <Created>2008-12-23, 03:16:00</Created>
     <Resource>
       <Filename>Main.pyw</Filename>
       <Linenumber>10</Linenumber>
@@ -195,10 +42,181 @@
   <Task priority="1" completed="False" bugfix="False">
     <Summary>TODO: First check nvidia setting for autocomplete fix, then system/admin,. then POST IT!</Summary>
     <Description></Description>
-    <Created>2008-12-23, 00:25:12</Created>
+    <Created>2008-12-23, 03:16:00</Created>
     <Resource>
       <Filename>Main.pyw</Filename>
       <Linenumber>11</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="False">
+    <Summary>TODO: Create cross-platform installer</Summary>
+    <Description></Description>
+    <Created>2008-12-23, 03:16:01</Created>
+    <Resource>
+      <Filename>lib/Install.py</Filename>
+      <Linenumber>9</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="False">
+    <Summary>TODO: TEST AND TWEAK BROADCAST!</Summary>
+    <Description></Description>
+    <Created>2008-12-23, 03:16:01</Created>
+    <Resource>
+      <Filename>lib/Network.py</Filename>
+      <Linenumber>11</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="False">
+    <Summary>TODO: Use Broadcast.send()/receieve() to get the client name and pass it off to others</Summary>
+    <Description></Description>
+    <Created>2008-12-23, 03:16:01</Created>
+    <Resource>
+      <Filename>lib/Network.py</Filename>
+      <Linenumber>12</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="False">
+    <Summary>TODO: Work on getting subprocess to work and thread it!</Summary>
+    <Description></Description>
+    <Created>2008-12-23, 03:16:01</Created>
+    <Resource>
+      <Filename>lib/Process.py</Filename>
+      <Linenumber>10</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="False">
+    <Summary>TODO: Create a working child of the queue standard module</Summary>
+    <Description></Description>
+    <Created>2008-12-23, 03:16:01</Created>
+    <Resource>
+      <Filename>lib/Que.py</Filename>
+      <Linenumber>9</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="False">
+    <Summary>TODO: Add 'default' options to RenderFormat</Summary>
+    <Description></Description>
+    <Created>2008-12-23, 03:16:01</Created>
+    <Resource>
+      <Filename>lib/RenderFormat.py</Filename>
+      <Linenumber>10</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="False">
+    <Summary>TODO: Test the stopwatch and add proper logging to it</Summary>
+    <Description></Description>
+    <Created>2008-12-23, 03:16:01</Created>
+    <Resource>
+      <Filename>lib/Stopwatch.py</Filename>
+      <Linenumber>10</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="False">
+    <Summary>TODO: Convert ThreadedRenderQue to proper class for use with gui/server/sockets</Summary>
+    <Description></Description>
+    <Created>2008-12-23, 03:16:01</Created>
+    <Resource>
+      <Filename>lib/ThreadedRenderQue.py</Filename>
+      <Linenumber>15</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="False">
+    <Summary>TODO: Turn this line conversion into a working class! SEE ALSO: crlf.py &amp; lfcr.py which come with python</Summary>
+    <Description></Description>
+    <Created>2008-12-23, 03:16:02</Created>
+    <Resource>
+      <Filename>lib/Util.py</Filename>
+      <Linenumber>10</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="False">
+    <Summary>TODO: Add other 'file utilities' to Util lib</Summary>
+    <Description></Description>
+    <Created>2008-12-23, 03:16:02</Created>
+    <Resource>
+      <Filename>lib/Util.py</Filename>
+      <Linenumber>11</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="False">
+    <Summary>TODO: Add software discovery to Info module</Summary>
+    <Description></Description>
+    <Created>2008-12-23, 03:27:07</Created>
+    <Resource>
+      <Filename>lib/Info.py</Filename>
+      <Linenumber>9</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="False">
+    <Summary>TODO: Find a cross platform way to return the mac address and</Summary>
+    <Description></Description>
+    <Created>2008-12-23, 03:27:07</Created>
+    <Resource>
+      <Filename>lib/Info.py</Filename>
+      <Linenumber>10</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="False">
+    <Summary>TODO: Find cross-platform ways to get CPU load</Summary>
+    <Description></Description>
+    <Created>2008-12-23, 03:27:07</Created>
+    <Resource>
+      <Filename>lib/Info.py</Filename>
+      <Linenumber>17</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="False">
+    <Summary>TODO: ONLY allow execution of Info.isRoot() if running on Linux</Summary>
+    <Description></Description>
+    <Created>2008-12-23, 03:27:07</Created>
+    <Resource>
+      <Filename>lib/Info.py</Filename>
+      <Linenumber>30</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="False">
+    <Summary>TODO: Bugfix @ Info.os</Summary>
+    <Description></Description>
+    <Created>2008-12-23, 03:27:07</Created>
+    <Resource>
+      <Filename>lib/Info.py</Filename>
+      <Linenumber>39</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="False">
+    <Summary>TODO: Begin work on job info class</Summary>
+    <Description></Description>
+    <Created>2008-12-23, 03:27:07</Created>
+    <Resource>
+      <Filename>lib/Info.py</Filename>
+      <Linenumber>54</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="False">
+    <Summary>TODO: Create a working child of the queue standard module</Summary>
+    <Description></Description>
+    <Created>2008-12-23, 03:30:00</Created>
+    <Resource>
+      <Filename>testing/proto1/lib/Que.py</Filename>
+      <Linenumber>8</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="False">
+    <Summary>TODO: Add logging to file as well as or in place of console logging</Summary>
+    <Description></Description>
+    <Created>2008-12-23, 03:33:16</Created>
+    <Resource>
+      <Filename>lib/FarmLog.py</Filename>
+      <Linenumber>8</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="False">
+    <Summary>TODO: Create SPEFIFIC logging for rendering</Summary>
+    <Description></Description>
+    <Created>2008-12-23, 03:33:16</Created>
+    <Resource>
+      <Filename>lib/FarmLog.py</Filename>
+      <Linenumber>9</Linenumber>
     </Resource>
   </Task>
 </Tasks>
