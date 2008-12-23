@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Tasks SYSTEM "Tasks-4.2.dtd">
 <!-- eric4 tasks file for project PyFarm -->
-<!-- Saved: 2008-12-23, 00:14:45 -->
+<!-- Saved: 2008-12-23, 00:25:13 -->
 <Tasks version="4.2">
   <Task priority="1" completed="False" bugfix="False">
     <Summary>TODO: Add software discovery to Info module</Summary>
@@ -157,39 +157,48 @@
     </Resource>
   </Task>
   <Task priority="1" completed="False" bugfix="False">
-    <Summary>TODO: Replace all calls to os.Popen with subprocess,Popen</Summary>
+    <Summary>TODO: Create a cross-platform means of find MAC ADRESSES and IP ADDRESSES</Summary>
     <Description></Description>
-    <Created>2008-12-22, 19:20:28</Created>
+    <Created>2008-12-23, 00:25:12</Created>
     <Resource>
       <Filename>Main.pyw</Filename>
       <Linenumber>7</Linenumber>
     </Resource>
   </Task>
   <Task priority="1" completed="False" bugfix="False">
-    <Summary>TODO: Standardize class documentation</Summary>
+    <Summary>TODO: Replace all calls to os.Popen with subprocess,Popen</Summary>
     <Description></Description>
-    <Created>2008-12-22, 19:20:28</Created>
+    <Created>2008-12-23, 00:25:12</Created>
     <Resource>
       <Filename>Main.pyw</Filename>
       <Linenumber>8</Linenumber>
     </Resource>
   </Task>
   <Task priority="1" completed="False" bugfix="False">
-    <Summary>TODO: Remove __name__ == '__main__' from all libraries</Summary>
+    <Summary>TODO: Standardize class documentation</Summary>
     <Description></Description>
-    <Created>2008-12-22, 19:20:28</Created>
+    <Created>2008-12-23, 00:25:12</Created>
     <Resource>
       <Filename>Main.pyw</Filename>
       <Linenumber>9</Linenumber>
     </Resource>
   </Task>
   <Task priority="1" completed="False" bugfix="False">
-    <Summary>TODO: First check nvidia setting for autocomplete fix, then system/admin,. then POST IT!</Summary>
+    <Summary>TODO: Remove __name__ == '__main__' from all libraries</Summary>
     <Description></Description>
-    <Created>2008-12-22, 19:20:28</Created>
+    <Created>2008-12-23, 00:25:12</Created>
     <Resource>
       <Filename>Main.pyw</Filename>
       <Linenumber>10</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="False">
+    <Summary>TODO: First check nvidia setting for autocomplete fix, then system/admin,. then POST IT!</Summary>
+    <Description></Description>
+    <Created>2008-12-23, 00:25:12</Created>
+    <Resource>
+      <Filename>Main.pyw</Filename>
+      <Linenumber>11</Linenumber>
     </Resource>
   </Task>
 </Tasks>
