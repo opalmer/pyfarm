@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Project SYSTEM "Project-4.4.dtd">
 <!-- eric4 project file for project PyFarm -->
-<!-- Saved: 2008-12-23, 03:16:21 -->
+<!-- Saved: 2008-12-24, 04:31:39 -->
 <!-- Copyright (C) 2008 Oliver Palmer, opalme20@student.scad.edu -->
 <Project version="4.4">
   <ProgLanguage mixed="0">Python</ProgLanguage>
@@ -73,7 +73,6 @@
     <Source>resources/books/pyqt/chap19/pageindexer_ans.pyw</Source>
     <Source>resources/books/pyqt/makepyqt.pyw</Source>
     <Source>testing/proto1/Main.pyw</Source>
-    <Source>testing/proto1/SubmitRender.pyw</Source>
     <Source>lib/FarmLog.py</Source>
     <Source>lib/Info.py</Source>
     <Source>lib/Install.py</Source>
@@ -348,6 +347,7 @@
     <Source>testing/proto1/lib/ui_Proto1.py</Source>
     <Source>testing/proto1/lib/Que.py</Source>
     <Source>testing/proto1/QtDesigner/Proto1.ui</Source>
+    <Source>testing/proto1/lib/FarmLog.py</Source>
   </Sources>
   <Forms>
     <Form>resources/books/pyqt/chap06/newimagedlg.ui</Form>
@@ -360,7 +360,6 @@
     <Form>resources/books/pyqt/chap09/paymentdlg.ui</Form>
     <Form>resources/books/pyqt/chap09/vehiclerentaldlg.ui</Form>
     <Form>resources/books/pyqt/chap17/newimagedlg.ui</Form>
-    <Form>testing/proto1/QtDesigner/MainWidget.ui</Form>
     <Form>testing/proto1/QtDesigner/Proto1.ui</Form>
   </Forms>
   <Translations>

@@ -15,7 +15,10 @@ from lib.ui_Proto1 import Ui_Proto1
 __VERSION__ = '0.0.1'
 __AUTHOR__ = 'Oliver Palmer'
 __CONTACT__ = 'opalme20@student.scad.edu'
-__DESCRIPTION__ = 'PyFarm'
+__DESCRIPTION__ = 'PyFarm is a distributed \
+rendering package that can be used in everyday \
+production.  Distributed under the General Public \
+License version 3.'
 
 class Proto1(QtGui.QDialog):
     def __init__(self):

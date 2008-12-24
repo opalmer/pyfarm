@@ -11,34 +11,59 @@ PURPOSE: Module used to control the output of logging
 import string
 import logging
 
-class FarmLog(logging):
-    '''General usage logginf for PyFarm'''
-    def __init__(self):
-        logging.__init__(self)
-        self.level = None
-        self.basicConfig(format=”%(levelname)10s \
-                                %(asctime)s”\
-                                “%(message)s”,
-                                level=self.setLevel())
+class FarmLog(object):
+    def __init__(self, program='PyFarm', level='debug'):
+        super(FarmLog, self).__init__()
+        self.level = string.upper(level)
 
-    def setLevel(self,  lvl='debug'):
-        '''Setup the minium level of logging to echo to console'''
-        self.level = string.upper(lvl)
+        #create logger
+        self.logger = logging.getLogger(program)
+        self.logger.setLevel(self.setLevel(self.level))
+        #create console handler and set level to debug
+        self.ch = logging.StreamHandler()
+        self.ch.setLevel(self.setLevel(self.level))
+        #create formatter
+        formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+        #add formatter to ch
+        self.ch.setFormatter(formatter)
+        #add ch to logger
+        self.logger.addHandler(self.ch)
 
-        if self.level == 'DEBUG':
-            self.basicConfig(level=self.DEBUG)
-        elif self.level == 'INFO':
-            self.basicConfig(level=self.INFO)
-        elif self.level == 'WARN':
-            self.basicConfig(level=self.WARNING)
-        elif self.level == 'ERROR':
-            self.basicConfig(level=self.ERROR)
-        elif self.level == 'CRITICAL':
-            self.basicConfig(level=self.CRITICAL)
+    def setLevel(self, level='debug'):
+        '''Set the maxium logging level'''
+        levels = ['CRITICAL','ERROR','WARNING','INFO','DEBUG']
+        self.level = string.upper(level)
+
+        if self.level not in levels:
+            raise '\n\n[ BREAK ] That log level is NOT valid!'
         else:
-            raise "Sorry, %s is not a valid log \
-            level.  Please use debug, info, warn \
-            , error, or critical instead" % \
-                    self.level
+            if self.level == 'CRITICAL':
+                return logging.CRITICAL
+            elif self.level == 'ERROR':
+                return logging.ERROR
+            elif self.level == 'WARNING':
+                return logging.WARNING
+            elif self.level == 'INFO':
+                return logging.INFO
+            elif self.level == 'DEBUG':
+                return logging.DEBUG
 
-        def
+    def critical(self, msg):
+        '''Echo critical level messages to self.logger'''
+        self.logger.critical(msg)
+
+    def error(self, msg):
+        '''Echo error level messages to self.logger'''
+        self.logger.error(msg)
+
+    def warning(self, msg):
+        '''Echo warning messages to self.logger'''
+        self.logger.warning(msg)
+
+    def info(self, msg):
+        '''Echo info messages to self.logger'''
+        self.logger.info(msg)
+
+    def debug(self, msg):
+        '''Echo debug messages to self.logger'''
+        self.logger.debug(msg)

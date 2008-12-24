@@ -2,15 +2,13 @@
 <!DOCTYPE Session SYSTEM "Session-4.2.dtd">
 <!-- eric4 session file for project PyFarm -->
 <!-- This file was generated automatically, do not edit. -->
-<!-- Saved: 2008-12-23, 03:55:17 -->
+<!-- Saved: 2008-12-24, 04:31:39 -->
 <Session version="4.2">
   <Filenames>
-    <Filename cline="0" cindex="0" folds="">C:\Users\opalmer\Desktop\PyFarm\Main.pyw</Filename>
-    <Filename cline="22" cindex="8" folds="">C:\Users\opalmer\Desktop\PyFarm\testing\proto1\Main.pyw</Filename>
-    <Filename cline="20" cindex="37" folds="">C:\Users\opalmer\Desktop\PyFarm\testing\proto1\lib\Que.py</Filename>
-    <Filename cline="32" cindex="47" folds="">C:\Users\opalmer\Desktop\PyFarm\testing\proto1\lib\FarmLog.py</Filename>
+    <Filename cline="48" cindex="36" folds="">C:\Users\opalmer\Desktop\PyFarm\testing\proto1\lib\FarmLog.py</Filename>
+    <Filename cline="12" cindex="25" folds="">C:\Users\opalmer\Desktop\PyFarm\testing\proto1\test.py</Filename>
   </Filenames>
-  <ActiveWindow cline="32" cindex="47">C:\Users\opalmer\Desktop\PyFarm\testing\proto1\lib\FarmLog.py</ActiveWindow>
+  <ActiveWindow cline="12" cindex="25">C:\Users\opalmer\Desktop\PyFarm\testing\proto1\test.py</ActiveWindow>
   <Breakpoints>
   </Breakpoints>
   <Watchexpressions>
