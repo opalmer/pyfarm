@@ -29,6 +29,10 @@ class FarmLog(object):
         #add ch to logger
         self.logger.addHandler(self.ch)
 
+    def setProgram(self, prog):
+        '''All the user to mod the program name'''
+        self.logger = logging.getLogger(prog)
+
     def setLevel(self, level='debug'):
         '''Set the maxium logging level'''
         levels = ['CRITICAL','ERROR','WARNING','INFO','DEBUG']

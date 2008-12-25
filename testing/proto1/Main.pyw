@@ -33,6 +33,7 @@ class Proto1(QtGui.QDialog):
         self.scene = None
         self.sFrame = None
         self.eFrame = None
+        self.hosts = []
 
         # Connect Qt signals to actionss
         self.connect(self.ui.renderButton, QtCore.SIGNAL("pressed()"), self._startRender)
@@ -75,6 +76,10 @@ class Proto1(QtGui.QDialog):
             self.ui.progressBar.setValue(i)
             time.sleep(.01)
             i += 1
+
+    def _getHosts(self):
+        '''Get hosts via mulicast packet, add them to self.hosts'''
+
 
     def _startRender(self):
             '''Once the render button is pressed this function is
