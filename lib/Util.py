@@ -36,3 +36,12 @@ class ConvertLineEndings(object):
                     temp = re.sub("\r(?!\n)|(?<!\r)\n", "\r\n", temp)
             return temp
 
+
+class StringUtil(object):
+    '''General utilities for string formatting'''
+    def __init__(self):
+        super(StringUtil,  self).__init__()
+
+    def chop(s, c):
+        '''Chop string s into c number of chunks'''
+        return [s[i*c:(i+1)*c] for i in range((len(s)+c-1)/c]

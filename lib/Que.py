@@ -4,14 +4,22 @@ CONTACT: opalme20@student.scad.edu || (703)725-6544
 INITIAL: Dec 11 2008
 PURPOSE: Module used to manage ques inside of the program
 '''
-import sys
-
+import Queue
 # TODO: Create a working child of the queue standard module
-class Que(object):
+
+class Que( Queue.Queue() ):
     '''Create and manage a custom custom que in program'''
     def __init__(self):
-        pass
+        Queue.__init__(self)
 
-if __name__ == '__main__':
-    print "Sorry this module is meant to be imported"
-    sys.exit(1)
+    def put(self, item, block=True, timeout=None):
+        '''Put an item into the que'''
+        try:
+            self.put(item)
+
+        except Full:
+            FarmLog.info('Que is full')
+
+    def get(self):
+        '''Get a job from the que'''
+        return self.get()

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Project SYSTEM "Project-4.4.dtd">
 <!-- eric4 project file for project PyFarm -->
-<!-- Saved: 2008-12-24, 04:31:39 -->
+<!-- Saved: 2008-12-25, 22:12:56 -->
 <!-- Copyright (C) 2008 Oliver Palmer, opalme20@student.scad.edu -->
 <Project version="4.4">
   <ProgLanguage mixed="0">Python</ProgLanguage>
@@ -348,6 +348,10 @@
     <Source>testing/proto1/lib/Que.py</Source>
     <Source>testing/proto1/QtDesigner/Proto1.ui</Source>
     <Source>testing/proto1/lib/FarmLog.py</Source>
+    <Source>testing/proto1/test.py</Source>
+    <Source>testing/proto1/lib/Network.py</Source>
+    <Source>testing/proto1/lib/Info.py</Source>
+    <Source>testing/proto1/lib/Util.py</Source>
   </Sources>
   <Forms>
     <Form>resources/books/pyqt/chap06/newimagedlg.ui</Form>

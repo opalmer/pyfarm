@@ -2,13 +2,14 @@
 <!DOCTYPE Session SYSTEM "Session-4.2.dtd">
 <!-- eric4 session file for project PyFarm -->
 <!-- This file was generated automatically, do not edit. -->
-<!-- Saved: 2008-12-24, 04:31:39 -->
+<!-- Saved: 2008-12-25, 22:12:56 -->
 <Session version="4.2">
   <Filenames>
-    <Filename cline="48" cindex="36" folds="">C:\Users\opalmer\Desktop\PyFarm\testing\proto1\lib\FarmLog.py</Filename>
-    <Filename cline="12" cindex="25" folds="">C:\Users\opalmer\Desktop\PyFarm\testing\proto1\test.py</Filename>
+    <Filename cline="0" cindex="17" folds="">C:\Users\opalmer\Desktop\PyFarm\Main.pyw</Filename>
+    <Filename cline="78" cindex="51" folds="">C:\Users\opalmer\Desktop\PyFarm\testing\proto1\lib\Info.py</Filename>
+    <Filename cline="9" cindex="16" folds="">C:\Users\opalmer\Desktop\PyFarm\testing\proto1\lib\Network.py</Filename>
   </Filenames>
-  <ActiveWindow cline="12" cindex="25">C:\Users\opalmer\Desktop\PyFarm\testing\proto1\test.py</ActiveWindow>
+  <ActiveWindow cline="9" cindex="16">C:\Users\opalmer\Desktop\PyFarm\testing\proto1\lib\Network.py</ActiveWindow>
   <Breakpoints>
   </Breakpoints>
   <Watchexpressions>

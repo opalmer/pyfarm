@@ -5,7 +5,9 @@ INITIAL: Dec 16 2008
 PURPOSE: Network modules used to help facilitate network communication
 '''
 import sys
+import time
 import socket
+import threading
 import traceback
 
 # TODO: TEST AND TWEAK BROADCAST!
@@ -82,3 +84,7 @@ class WakeOnLan(object):
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
         sock.sendto(send_data, ('<broadcast>', 7))
+
+
+class Heartbeat(object):
+    '''Used to send and receieve periodic heartbeats'''
