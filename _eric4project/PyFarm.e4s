@@ -2,14 +2,25 @@
 <!DOCTYPE Session SYSTEM "Session-4.2.dtd">
 <!-- eric4 session file for project PyFarm -->
 <!-- This file was generated automatically, do not edit. -->
-<!-- Saved: 2008-12-25, 22:12:56 -->
+<!-- Saved: 2008-12-30, 20:13:34 -->
 <Session version="4.2">
   <Filenames>
-    <Filename cline="0" cindex="17" folds="">C:\Users\opalmer\Desktop\PyFarm\Main.pyw</Filename>
-    <Filename cline="78" cindex="51" folds="">C:\Users\opalmer\Desktop\PyFarm\testing\proto1\lib\Info.py</Filename>
-    <Filename cline="9" cindex="16" folds="">C:\Users\opalmer\Desktop\PyFarm\testing\proto1\lib\Network.py</Filename>
+    <Filename cline="37" cindex="23" folds="">C:\Users\opalmer\Desktop\PyFarm\branches\proto1\Main.pyw</Filename>
+    <Filename cline="20" cindex="12" folds="">C:\Users\opalmer\Desktop\PyFarm\branches\proto1\lib\FarmLog.py</Filename>
+    <Filename cline="13" cindex="0" folds="">C:\Users\opalmer\Desktop\PyFarm\branches\proto1\lib\Info.py</Filename>
+    <Filename cline="59" cindex="0" folds="">C:\Users\opalmer\Desktop\PyFarm\branches\proto1\lib\Install.py</Filename>
+    <Filename cline="6" cindex="10" folds="">C:\Users\opalmer\Desktop\PyFarm\branches\proto1\lib\Network.py</Filename>
+    <Filename cline="0" cindex="0" folds="">C:\Users\opalmer\Desktop\PyFarm\branches\proto1\lib\Process.py</Filename>
+    <Filename cline="0" cindex="0" folds="">C:\Users\opalmer\Desktop\PyFarm\branches\proto1\lib\Que.py</Filename>
+    <Filename cline="0" cindex="0" folds="">C:\Users\opalmer\Desktop\PyFarm\branches\proto1\lib\RenderFormat.py</Filename>
+    <Filename cline="0" cindex="0" folds="">C:\Users\opalmer\Desktop\PyFarm\branches\proto1\lib\Stopwatch.py</Filename>
+    <Filename cline="0" cindex="0" folds="">C:\Users\opalmer\Desktop\PyFarm\branches\proto1\lib\TableTest.py</Filename>
+    <Filename cline="0" cindex="0" folds="">C:\Users\opalmer\Desktop\PyFarm\branches\proto1\lib\Test.py</Filename>
+    <Filename cline="16" cindex="20" folds="">C:\Users\opalmer\Desktop\PyFarm\branches\proto1\lib\ThreadedRenderQue.py</Filename>
+    <Filename cline="48" cindex="36" folds="">C:\Users\opalmer\Desktop\PyFarm\branches\proto1\lib\Util.py</Filename>
+    <Filename cline="26" cindex="26" folds="">C:\Users\opalmer\Desktop\PyFarm\branches\proto1\tests\getWinMacAddress.py</Filename>
   </Filenames>
-  <ActiveWindow cline="9" cindex="16">C:\Users\opalmer\Desktop\PyFarm\testing\proto1\lib\Network.py</ActiveWindow>
+  <ActiveWindow cline="26" cindex="26">C:\Users\opalmer\Desktop\PyFarm\branches\proto1\tests\getWinMacAddress.py</ActiveWindow>
   <Breakpoints>
   </Breakpoints>
   <Watchexpressions>

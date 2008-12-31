@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Project SYSTEM "Project-4.4.dtd">
 <!-- eric4 project file for project PyFarm -->
-<!-- Saved: 2008-12-25, 22:12:56 -->
+<!-- Saved: 2008-12-30, 20:13:34 -->
 <!-- Copyright (C) 2008 Oliver Palmer, opalme20@student.scad.edu -->
 <Project version="4.4">
   <ProgLanguage mixed="0">Python</ProgLanguage>
@@ -72,7 +72,6 @@
     <Source>resources/books/pyqt/chap19/pageindexer_26.pyw</Source>
     <Source>resources/books/pyqt/chap19/pageindexer_ans.pyw</Source>
     <Source>resources/books/pyqt/makepyqt.pyw</Source>
-    <Source>testing/proto1/Main.pyw</Source>
     <Source>lib/FarmLog.py</Source>
     <Source>lib/Info.py</Source>
     <Source>lib/Install.py</Source>
@@ -84,7 +83,6 @@
     <Source>lib/Test.py</Source>
     <Source>lib/ThreadedRenderQue.py</Source>
     <Source>lib/__init__.py</Source>
-    <Source>render.py</Source>
     <Source>resources/books/network_programming/01/download.py</Source>
     <Source>resources/books/network_programming/01/gopherclient.py</Source>
     <Source>resources/books/network_programming/01/gopherclient2.py</Source>
@@ -341,17 +339,12 @@
     <Source>resources/tools/cx_Freeze-4.0.1/samples/wx/setup.py</Source>
     <Source>resources/tools/cx_Freeze-4.0.1/samples/wx/wxapp.py</Source>
     <Source>resources/tools/cx_Freeze-4.0.1/setup.py</Source>
-    <Source>testing/proto1/lib/TableTest.py</Source>
-    <Source>testing/proto1/lib/__init__.py</Source>
     <Source>lib/Util.py</Source>
-    <Source>testing/proto1/lib/ui_Proto1.py</Source>
-    <Source>testing/proto1/lib/Que.py</Source>
-    <Source>testing/proto1/QtDesigner/Proto1.ui</Source>
-    <Source>testing/proto1/lib/FarmLog.py</Source>
-    <Source>testing/proto1/test.py</Source>
-    <Source>testing/proto1/lib/Network.py</Source>
-    <Source>testing/proto1/lib/Info.py</Source>
-    <Source>testing/proto1/lib/Util.py</Source>
+    <Source>lib/TableTest.py</Source>
+    <Source>tests/log.py</Source>
+    <Source>tests/render.py</Source>
+    <Source>lib/ui/Proto1.py</Source>
+    <Source>lib/ui/__init__.py</Source>
   </Sources>
   <Forms>
     <Form>resources/books/pyqt/chap06/newimagedlg.ui</Form>
@@ -364,7 +357,7 @@
     <Form>resources/books/pyqt/chap09/paymentdlg.ui</Form>
     <Form>resources/books/pyqt/chap09/vehiclerentaldlg.ui</Form>
     <Form>resources/books/pyqt/chap17/newimagedlg.ui</Form>
-    <Form>testing/proto1/QtDesigner/Proto1.ui</Form>
+    <Form>QtDesigner/Proto1.ui</Form>
   </Forms>
   <Translations>
   </Translations>
