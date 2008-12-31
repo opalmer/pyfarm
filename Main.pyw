@@ -1,7 +1,7 @@
 #!/usr/bin/python
 '''
 AUTHOR: Oliver Palmer
-CONTACT: opalme20@student.scad.edu || (703)725-6544
+CONTACT: oliverpalmer@opalmer.com || (703)725-6544
 INITIAL: Dec 19 2008
 PURPOSE: Classes used to call up the render gui and
 submit renders
@@ -10,9 +10,9 @@ submit renders
 import sys
 import time
 from PyQt4 import QtCore, QtGui
-from lib.ui_Proto1 import Ui_Proto1
+from lib.ui.ui_Proto1 import Ui_Proto1
 
-__VERSION__ = '0.0.1'
+__VERSION__ = '0.0.60'
 __AUTHOR__ = 'Oliver Palmer'
 __CONTACT__ = 'opalme20@student.scad.edu'
 __DESCRIPTION__ = 'PyFarm is a distributed \
@@ -21,8 +21,26 @@ production.  Distributed under the General Public \
 License version 3.'
 
 class Proto1(QtGui.QDialog):
+    '''
+    Prototype class implimenting the Qt Designer generated user
+    interface.
+
+    REQUIRES:
+        PyQt:
+            QtGui.QDialog
+
+        Python:
+            sys
+            time
+
+        PyFarm:
+            lib.ui.ui_Proto1
+            lib.FarmLog
+
+    INPUT:
+        None
+    '''
     def __init__(self):
-        '''Tmp class to create proto1 gui from QtDesigner UI output'''
         QtGui.QDialog.__init__(self)
 
         # first setup the user interface from QtDesigner

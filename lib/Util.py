@@ -5,7 +5,7 @@ INITIAL: Dec 18 2008
 PURPOSE: Module contains multiple utilities used both by PyFarm and for
 general usage.
 '''
-import string
+import Info
 
 # TODO: Turn this line conversion into a working class! SEE ALSO: crlf.py & lfcr.py which come with python
 # TODO: Add other 'file utilities' to Util lib
@@ -19,7 +19,7 @@ class ConvertLineEndings(object):
         target (string) -- Target file to run operation on
     '''
     def __init__(self,  os,  target):
-        self.os = string.upper(os)
+        self.os = os.upper()
         self.target = target
 
     def run(self):
@@ -44,4 +44,11 @@ class StringUtil(object):
 
     def chop(s, c):
         '''Chop string s into c number of chunks'''
-        return [s[i*c:(i+1)*c] for i in range((len(s)+c-1)/c]
+        return [s[i*c:(i+1)*c] for i in range((len(s)+c-1))/c] # added a ) after c-1)
+
+    def removeLineEnding(self, str):
+        '''Given a input string, remove the appropriate line ending'''
+        if Info.os() == 'linux':
+            return str.split('\n')[0]
+        elif Info.os() == 'windows':
+            return str.split('\r\n')[0]

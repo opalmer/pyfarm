@@ -1,6 +1,6 @@
 '''
 AUTHOR: Oliver Palmer
-CONTACT: opalme20@student.scad.edu || (703)725-6544
+CONTACT: oliverpalmer@opalmer.com || (703)725-6544
 INITIAL: Dec 8 2008
 PURPOSE: Module used to return miscellaneous info either about the system
 or PyFarm itself.
@@ -9,26 +9,50 @@ or PyFarm itself.
 import os
 import sys
 import uuid
+import time
 from FarmLog import FarmLog
 from subprocess import Popen,PIPE
 
 log = FarmLog('lib.Info')
 
 # TODO: Add software discovery to Info module
-# TODO: Find a cross platform way to return the mac address and
 class System(object):
-    '''Return important information abou the system'''
+    '''
+    Return important information about the system
+
+    REQUIRES:
+        Python:
+            os
+            sys
+            uuid
+            time
+            subprocess
+
+        PyFarm:
+            FarmLog
+            Info (this module)
+
+    INPUT:
+        None
+    '''
     def __init__(self):
         super(System,  self).__init__()
 
     def time(self, format ):
         '''Return the current system time to the user'''
-        import time
         return time.strftime("%d %b %Y %H:%M:%S")
 
     # TODO: Find cross-platform ways to get CPU load
     def cpuLoad(self):
-        '''Return the current CPU load to the user'''
+        '''
+        Return the current CPU load to the user
+
+        OUTPUT:
+            3 value array
+            array[0] -- 1 min cpu load
+            array[1] -- 5 min cpu load
+            array[2] -- 15 min cpu load
+        '''
         if self.os() == 'linux':
             a = Popen('uptime', bufsize=1024, stdout=PIPE)
             load = a.stdout.read().split('\n')[0].split(', ')[2:5]
@@ -38,10 +62,11 @@ class System(object):
 
             return [one, five, fifteen]
 
-    # TODO: ONLY allow execution of Info.isRoot() if running on Linux
+        elif self.os() == 'windows':
+            sys.exit(log.error('Only linux systems can call System.cpuLoad()'))
+
     def isRoot(self):
         '''Return false if not running as root, true if you are.'''
-        import os
         if self.os() == 'linux':
             if os.getuid() == 0:
                 return True
@@ -76,12 +101,12 @@ class System(object):
                 if line == '' and p.poll() != None: break
 
         elif self.os() == 'windows':
-            mac = hex(uuid.getnode())[2:len(mac)-1]
+            p = Popen(['ipconfig'])
 
         return mac
 
 # TODO: Begin work on job info class
 class Job(object):
     '''Return info about a specific job'''
-    def __init__(self):
-        pass
+    def __init__(self,  jobid):
+        self.jobid = jobid

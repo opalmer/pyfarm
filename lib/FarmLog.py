@@ -1,6 +1,6 @@
 '''
 AUTHOR: Oliver Palmer
-CONTACT: opalme20@student.scad.edu || (703)725-6544
+CONTACT: oliverpalmer@opalmer.com || (703)725-6544
 INITIAL: Dec 15 2008
 PURPOSE: Module used to control the output of logging
 '''
@@ -12,6 +12,18 @@ import string
 import logging
 
 class FarmLog(object):
+    '''
+    Used to setup a custom logging program for PyFarm
+
+    REQUIRES:
+        Python:
+            string
+            logging
+
+    INPUT:
+        program (string) -- set the name of the logging program
+        level (string) -- set the maxium logging level
+    '''
     def __init__(self, program='PyFarm', level='debug'):
         super(FarmLog, self).__init__()
         self.level = string.upper(level)
@@ -30,11 +42,23 @@ class FarmLog(object):
         self.logger.addHandler(self.ch)
 
     def setProgram(self, prog):
-        '''All the user to mod the program name'''
+        '''
+        Set the name of the logging program, after the defaults
+        have been setup inside of __init__
+
+        INPUT:
+            prog (string) -- The name to set the logger to
+        '''
         self.logger = logging.getLogger(prog)
 
     def setLevel(self, level='debug'):
-        '''Set the maxium logging level'''
+        '''
+        Set the maxium logging level.  Can also set the level
+        post initial setup.
+
+        INPUT:
+            level (string) [debug] -- set the max logging level
+        '''
         levels = ['CRITICAL','ERROR','WARNING','INFO','DEBUG']
         self.level = string.upper(level)
 
@@ -53,21 +77,45 @@ class FarmLog(object):
                 return logging.DEBUG
 
     def critical(self, msg):
-        '''Echo critical level messages to self.logger'''
+        '''
+        Echo critical level messages to self.logger
+
+        INPUT:
+            msg (string) -- The message to send to the logger
+        '''
         self.logger.critical(msg)
 
     def error(self, msg):
-        '''Echo error level messages to self.logger'''
+        '''
+        Echo error level messages to self.logger
+
+        INPUT:
+            msg (string) -- The message to send to the logger
+        '''
         self.logger.error(msg)
 
     def warning(self, msg):
-        '''Echo warning messages to self.logger'''
+        '''
+        Echo warning messages to self.logger
+
+        INPUT:
+            msg (string) -- The message to send to the logger
+        '''
         self.logger.warning(msg)
 
     def info(self, msg):
-        '''Echo info messages to self.logger'''
+        '''
+        Echo info messages to self.logger
+
+        INPUT:
+            msg (string) -- The message to send to the logger'''
         self.logger.info(msg)
 
     def debug(self, msg):
-        '''Echo debug messages to self.logger'''
+        '''
+        Echo debug messages to self.logger
+
+        INPUT:
+            msg (string) -- The message to send to the logger
+        '''
         self.logger.debug(msg)
