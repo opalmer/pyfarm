@@ -1,10 +1,9 @@
 '''
 Used to get a windows mac address
 '''
-import os
-import string
 from subprocess import Popen,PIPE
-
+import string
+import os
 mac = []
 search = False
 state = 'Media disconnected'
@@ -20,14 +19,20 @@ while True:
         search = True
 
     if search:
+        print search
         # if we find the 'Physical Address' line, break it down
-        if line.count('Physical') and line.count('00') == 1:
+        #print line.count('Physical')
+        #print line.count('00')
+        if line.count('Physical') and line.count('00') == 0:
+            print line
             addr = line.split('\r\n')[0].split(':')[1].split(' ')[1]
             if addr[0:2] == '00':
-                print addr
+                 mac.append(addr)
 
     # now set search to false so we no longer look for ALL mac addrs
     search = False
 
     if line == '' and p.poll() != None:
         break
+
+#print mac

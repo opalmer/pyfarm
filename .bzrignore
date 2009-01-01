@@ -3,3 +3,5 @@
 *.BAK
 *.pyc
 *.pyo
+*.moved
+*.pywc
