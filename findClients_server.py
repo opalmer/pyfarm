@@ -3,4 +3,4 @@
 from lib.Network import *
 
 server = Broadcast()
-server.getNodes()
+server.send()

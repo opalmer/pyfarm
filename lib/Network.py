@@ -50,7 +50,7 @@ class Broadcast(object):
                 self.log.debug("Found Node: %s @ %s:%s" % (hostname, address[0], address[1]))
 
         except (KeyboardInterrupt, SystemExit):
-            sys.exit(self.log.critical('PROGRAM TERMINATED'))
+            pass
 
     def isUp(self):
         '''Receieve the broadcast packet and reply to the host'''
