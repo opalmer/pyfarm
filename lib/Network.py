@@ -21,26 +21,28 @@ class MulticastServer(threading.Thread):
         self.dest = ('<broadcast>', self.port)
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.sock.settimeout(timeout)
-        self.name = System().name()
 
     def run(self):
         '''Send the broadcast packet accross the network'''
         self.log.warning("Be sure you have started the client(s) first!")
         try:
+            # get ready to broadcast
             self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
-            self.sock.sendto(self.name, self.dest)
+            self.sock.sendto("I'm a server!  My name is %s" % System().name(), self.dest) # SEND, <broadcast> see page ch5 for turing off multicasting!
 
             self.log.info("Looking for nodes; press Ctrl-C to stop.")
             while True:
-                (hostname, address) = self.sock.recvfrom(2048)
-                if not len(hostname):
+                # get ready to receieve a message
+                (message, address) = self.sock.recvfrom(2048)
+                if not len(message): # if there is not a message, break
                    break
 
-                self.log.debug("Found Node: %s @ %s:%s" % (hostname, address[0], address[1]))
-                self.nodes.append([hostname, address[0], address[1]])
+                self.log.debug("Found Node: %s @ %s:%s" % (address[0], address[1], message))
+                self.nodes.append([address[0], address[1], message]) # add the returned info to the list
 
         except (KeyboardInterrupt, SystemExit, socket.timeout):
-                return self.nodes
+            #after the timeout, kill the thread and reveal the nodes
+            return self.nodes
 
 
 class MulticastClient(threading.Thread):
@@ -51,22 +53,22 @@ class MulticastClient(threading.Thread):
         self.port = port
         self.host = host
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self.name = System().name()
 
     def run(self):
         '''Receieve the broadcast packet and reply to the host'''
         self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
-        self.sock.bind((self.host, self.port))
+        self.sock.bind((self.host, self.port)) #setup a socket to receieve a connection
         self.log.info("Looking for nodes; press Ctrl-C to stop.")
 
         while True:
             try:
-                hostname, address = self.sock.recvfrom(8192)
-                self.log.debug("Found Server: %s @ %s:%s" % (hostname, address[0], address[1]))
+                # this loop is run ever time a connection comes in
+                message, address = self.sock.recvfrom(8192) # get the connection info and message
+                self.log.debug("Found Server: %s @ %s:%s" % (message, address[0], address[1]))
 
-                # Acknowledge the multicast packet
-                self.sock.sendto(self.name, address)
+                # Now, reply back to the server with our address and message
+                self.sock.sendto("Hello, my name is %s" % System().name(), address)
             except (KeyboardInterrupt, SystemExit):
                 sys.exit(self.log.critical('PROGRAM TERMINATED'))
 
