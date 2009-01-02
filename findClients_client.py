@@ -3,4 +3,4 @@
 from lib.Network import *
 
 client = Broadcast()
-client.receieve()
+client.isUp()

@@ -4,14 +4,11 @@ CONTACT: opalme20@student.scad.edu || (703)725-6544
 INITIAL: Dec 16 2008
 PURPOSE: Network modules used to help facilitate network communication
 '''
-import os
 import sys
-import time
 import socket
-import random
-import threading
-import traceback
+#import threading
 from Info import System
+from FarmLog import FarmLog
 
 class Broadcast(object):
     '''
@@ -24,6 +21,7 @@ class Broadcast(object):
     def __init__(self, port=51423, host=''):
         #super(Broadcast, self).__init__()
         # network setup
+        self.log = FarmLog("Network.Broadcast()")
         self.port = port
         self.host = host
         self.dest = ('<broadcast>', self.port)
@@ -33,40 +31,43 @@ class Broadcast(object):
         self.name = System().name()
         self.nodes = []
 
-    def send(self):
+    def getNodes(self):
         '''
         Send the broadcast packet accross the network
 
         NOTICE: You MUST start the clients first!
         '''
-        self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
-        self.sock.sendto(self.name, self.dest)
+        try:
+            self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+            self.sock.sendto(self.name, self.dest)
 
-        print "Looking for nodes; press Ctrl-C to stop."
-        while True:
-            (hostname, address) = self.sock.recvfrom(2048)
-            if not len(hostname):
-               break
+            self.log.info("Looking for nodes; press Ctrl-C to stop.")
+            while True:
+                (hostname, address) = self.sock.recvfrom(2048)
+                if not len(hostname):
+                   break
 
-            yield [address[0], address[1], hostname]
+                self.log.debug("Found Node: %s @ %s:%s" % (hostname, address[0], address[1]))
 
-    def receieve(self):
+        except (KeyboardInterrupt, SystemExit):
+            sys.exit(self.log.critical('PROGRAM TERMINATED'))
+
+    def isUp(self):
         '''Receieve the broadcast packet and reply to the host'''
         self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
         self.sock.bind((self.host, self.port))
+        self.log.info("Looking for nodes; press Ctrl-C to stop.")
 
         while True:
             try:
                 hostname, address = self.sock.recvfrom(8192)
-                print "Server:",[address[0], address[1], hostname]
+                self.log.debug("Found Server: %s @ %s:%s" % (hostname, address[0], address[1]))
 
                 # Acknowledge the multicast packet
                 self.sock.sendto(self.name, address)
             except (KeyboardInterrupt, SystemExit):
-                raise
-            except:
-                traceback.print_exc()
+                sys.exit(self.log.critical('PROGRAM TERMINATED'))
 
 
 class WakeOnLan(object):
