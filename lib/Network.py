@@ -41,21 +41,14 @@ class Broadcast(object):
         '''
         self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
         self.sock.sendto(self.name, self.dest)
-        start = time.time()
-        timeout = 2
-        end = start+timeout
+
         print "Looking for nodes; press Ctrl-C to stop."
         while True:
-            if time.time() < end:
-                (hostname, address) = self.sock.recvfrom(2048)
-                address[0].close()
-                if not len(hostname):
-                    pass
+            (hostname, address) = self.sock.recvfrom(2048)
+            if not len(hostname):
+               break
 
-                yield [address[0], address[1], hostname]
-
-            else:
-                break
+            yield [address[0], address[1], hostname]
 
     def receieve(self):
         '''Receieve the broadcast packet and reply to the host'''
