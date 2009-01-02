@@ -6,9 +6,69 @@ PURPOSE: Network modules used to help facilitate network communication
 '''
 import sys
 import socket
-#import threading
+import threading
 from Info import System
 from FarmLog import FarmLog
+
+class MulticastServer(threading.Thread):
+    '''Threaded server to send multicast packets and listen for clients'''
+    def __init__(self, port=51423, host='', timeout=3):
+        #super(MulticastServer, self).__init__(self)
+        self.log = FarmLog("Network.MulticastServer()")
+        self.port = port
+        self.host = host
+        self.nodes = []
+        self.dest = ('<broadcast>', self.port)
+        self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.sock.settimeout(timeout)
+        self.name = System().name()
+
+    def run(self):
+        '''Send the broadcast packet accross the network'''
+        self.log.warning("Be sure you have started the client(s) first!")
+        try:
+            self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+            self.sock.sendto(self.name, self.dest)
+
+            self.log.info("Looking for nodes; press Ctrl-C to stop.")
+            while True:
+                (hostname, address) = self.sock.recvfrom(2048)
+                if not len(hostname):
+                   break
+
+                self.log.debug("Found Node: %s @ %s:%s" % (hostname, address[0], address[1]))
+                self.nodes.append([hostname, address[0], address[1]])
+
+        except (KeyboardInterrupt, SystemExit, socket.timeout):
+                return self.nodes
+
+
+class MulticastClient(threading.Thread):
+    '''Threaded client to recieve a multicast packet and log the server ip/port'''
+    def __init__(self, port=51423, host=''):
+        self.log = FarmLog("Network.MulticastClient()")
+        self.port = port
+        self.host = host
+        self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.name = System().name()
+
+    def run(self):
+        '''Receieve the broadcast packet and reply to the host'''
+        self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+        self.sock.bind((self.host, self.port))
+        self.log.info("Looking for nodes; press Ctrl-C to stop.")
+
+        while True:
+            try:
+                hostname, address = self.sock.recvfrom(8192)
+                self.log.debug("Found Server: %s @ %s:%s" % (hostname, address[0], address[1]))
+
+                # Acknowledge the multicast packet
+                self.sock.sendto(self.name, address)
+            except (KeyboardInterrupt, SystemExit):
+                sys.exit(self.log.critical('PROGRAM TERMINATED'))
+
 
 class Broadcast(object):
     '''
@@ -52,7 +112,7 @@ class Broadcast(object):
         except (KeyboardInterrupt, SystemExit):
             pass
 
-    def isUp(self):
+    def node(self):
         '''Receieve the broadcast packet and reply to the host'''
         self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
@@ -106,5 +166,47 @@ class WakeOnLan(object):
         sock.sendto(send_data, ('<broadcast>', 7))
 
 
-class Heartbeat(object):
-    '''Used to send and receieve periodic heartbeats'''
+UDP_PORT = 43278; CHECK_PERIOD = 20; CHECK_TIMEOUT = 15
+
+import socket, threading, time
+
+class Heartbeats(dict):
+    """Manage shared heartbeats dictionary with thread locking"""
+
+    def __init__(self):
+        super(Heartbeats, self).__init__()
+        self._lock = threading.Lock()
+
+    def __setitem__(self, key, value):
+        """Create or update the dictionary entry for a client"""
+        self._lock.acquire()
+        super(Heartbeats, self).__setitem__(key, value)
+        self._lock.release()
+
+    def getSilent(self):
+        """Return a list of clients with heartbeat older than CHECK_TIMEOUT"""
+        limit = time.time() - CHECK_TIMEOUT
+        self._lock.acquire()
+        silent = [ip for (ip, ipTime) in self.items() if ipTime < limit]
+        self._lock.release()
+        return silent
+
+class HeartbeatReceiver(threading.Thread):
+    """Receive UDP packets and log them in the heartbeats dictionary"""
+
+    def __init__(self, goOnEvent, heartbeats):
+        super(Receiver, self).__init__()
+        self.goOnEvent = goOnEvent
+        self.heartbeats = heartbeats
+        self.recSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.recSocket.settimeout(CHECK_TIMEOUT)
+        self.recSocket.bind((socket.gethostbyname('localhost'), UDP_PORT))
+
+    def run(self):
+        while self.goOnEvent.isSet():
+            try:
+                data, addr = self.recSocket.recvfrom(5)
+                if data == 'PyHB':
+                    self.heartbeats[addr[0]] = time.time()
+            except socket.timeout:
+                pass

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Project SYSTEM "Project-4.4.dtd">
 <!-- eric4 project file for project PyFarm_proto1 -->
-<!-- Saved: 2009-01-01, 16:26:00 -->
+<!-- Saved: 2009-01-01, 22:11:03 -->
 <!-- Copyright (C) 2009 Oliver Palmer, oliverpalmer@opalmer.com -->
 <Project version="4.4">
   <ProgLanguage mixed="0">Python</ProgLanguage>
@@ -30,6 +30,10 @@
     <Source>tests/getWinMacAddress.py</Source>
     <Source>tests/log.py</Source>
     <Source>tests/render.py</Source>
+    <Source>findClients_client.py</Source>
+    <Source>findClients_server.py</Source>
+    <Source>test.py</Source>
+    <Source>lib/ThreadFarmer.py</Source>
   </Sources>
   <Forms>
     <Form>QtDesigner/Proto1.ui</Form>

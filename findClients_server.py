@@ -2,5 +2,6 @@
 
 from lib.Network import *
 
-server = Broadcast()
-server.send()
+server = MulticastServer()
+a = server.run()
+print a
