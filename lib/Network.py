@@ -13,8 +13,8 @@ from FarmLog import FarmLog
 class MulticastServer(threading.Thread):
     '''Threaded server to send multicast packets and listen for clients'''
     def __init__(self, port=51423, host='', timeout=3):
-        #super(MulticastServer, self).__init__(self)
         self.log = FarmLog("Network.MulticastServer()")
+        self.log.setLevel('debug')
         self.port = port
         self.host = host
         self.nodes = []
@@ -47,6 +47,7 @@ class MulticastClient(threading.Thread):
     '''Threaded client to recieve a multicast packet and log the server ip/port'''
     def __init__(self, port=51423, host=''):
         self.log = FarmLog("Network.MulticastClient()")
+        self.log.setLevel('debug')
         self.port = port
         self.host = host
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -82,6 +83,7 @@ class Broadcast(object):
         #super(Broadcast, self).__init__()
         # network setup
         self.log = FarmLog("Network.Broadcast()")
+        self.log.setLevel('debug')
         self.port = port
         self.host = host
         self.dest = ('<broadcast>', self.port)

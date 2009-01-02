@@ -30,10 +30,9 @@ class FarmLog(object):
 
         #create logger
         self.logger = logging.getLogger(program)
-        self.logger.setLevel(self.setLevel(self.level))
-        #create console handler and set level to debug
         self.ch = logging.StreamHandler()
-        self.ch.setLevel(self.setLevel(self.level))
+        self.logger.setLevel(level)
+
         #create formatter
         formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
         #add formatter to ch
@@ -51,7 +50,7 @@ class FarmLog(object):
         '''
         self.logger = logging.getLogger(prog)
 
-    def setLevel(self, level='debug'):
+    def setLevel(self, level):
         '''
         Set the maxium logging level.  Can also set the level
         post initial setup.
@@ -59,22 +58,27 @@ class FarmLog(object):
         INPUT:
             level (string) [debug] -- set the max logging level
         '''
-        levels = ['CRITICAL','ERROR','WARNING','INFO','DEBUG']
         self.level = string.upper(level)
+        levels = ['CRITICAL','ERROR','WARNING','INFO','DEBUG']
 
         if self.level not in levels:
             raise '\n\n[ BREAK ] That log level is NOT valid!'
         else:
             if self.level == 'CRITICAL':
-                return logging.CRITICAL
+                self.logger.setLevel(logging.CRITICAL)
+                self.ch.setLevel(logging.CRITICAL)
             elif self.level == 'ERROR':
-                return logging.ERROR
+                self.logger.setLevel(logging.ERROR)
+                self.ch.setLevel(logging.ERROR)
             elif self.level == 'WARNING':
-                return logging.WARNING
+                self.logger.setLevel(logging.WARNING)
+                self.ch.setLevel(logging.WARNING)
             elif self.level == 'INFO':
-                return logging.INFO
+                self.logger.setLevel(logging.INFO)
+                self.ch.setLevel(logging.INFO)
             elif self.level == 'DEBUG':
-                return logging.DEBUG
+                self.logger.setLevel(logging.DEBUG)
+                self.ch.setLevel(logging.DEBUG)
 
     def critical(self, msg):
         '''
