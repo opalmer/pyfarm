@@ -35,4 +35,4 @@ while True:
     if line == '' and p.poll() != None:
         break
 
-#print mac
+print mac

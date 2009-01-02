@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Project SYSTEM "Project-4.4.dtd">
+<!-- eric4 project file for project PyFarm_proto1 -->
+<!-- Saved: 2009-01-01, 16:26:00 -->
+<!-- Copyright (C) 2009 Oliver Palmer, oliverpalmer@opalmer.com -->
+<Project version="4.4">
+  <ProgLanguage mixed="0">Python</ProgLanguage>
+  <ProjectType>Qt4</ProjectType>
+  <Description>Python based distributed rendering engine</Description>
+  <Version>0.0.64</Version>
+  <Author>Oliver Palmer</Author>
+  <Email>oliverpalmer@opalmer.com</Email>
+  <Sources>
+    <Source>Main.pyw</Source>
+    <Source>lib/FarmLog.py</Source>
+    <Source>lib/Info.py</Source>
+    <Source>lib/Install.py</Source>
+    <Source>lib/Network.py</Source>
+    <Source>lib/Process.py</Source>
+    <Source>lib/Que.py</Source>
+    <Source>lib/RenderFormat.py</Source>
+    <Source>lib/Stopwatch.py</Source>
+    <Source>lib/TableTest.py</Source>
+    <Source>lib/Test.py</Source>
+    <Source>lib/ThreadedRenderQue.py</Source>
+    <Source>lib/Util.py</Source>
+    <Source>lib/__init__.py</Source>
+    <Source>lib/ui/Proto1.py</Source>
+    <Source>lib/ui/__init__.py</Source>
+    <Source>tests/getWinMacAddress.py</Source>
+    <Source>tests/log.py</Source>
+    <Source>tests/render.py</Source>
+  </Sources>
+  <Forms>
+    <Form>QtDesigner/Proto1.ui</Form>
+  </Forms>
+  <Translations>
+  </Translations>
+  <Resources>
+  </Resources>
+  <Interfaces>
+  </Interfaces>
+  <Others>
+  </Others>
+  <MainScript>Main.pyw</MainScript>
+  <Vcs>
+    <VcsType>None</VcsType>
+  </Vcs>
+  <FiletypeAssociations>
+    <FiletypeAssociation pattern="*.ui" type="FORMS" />
+    <FiletypeAssociation pattern="*.idl" type="INTERFACES" />
+    <FiletypeAssociation pattern="*.ptl" type="SOURCES" />
+    <FiletypeAssociation pattern="*.pyw" type="SOURCES" />
+    <FiletypeAssociation pattern="*.ui.h" type="FORMS" />
+    <FiletypeAssociation pattern="*.py" type="SOURCES" />
+    <FiletypeAssociation pattern="*.qrc" type="RESOURCES" />
+  </FiletypeAssociations>
+</Project>

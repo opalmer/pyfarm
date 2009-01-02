@@ -86,14 +86,14 @@ class System(object):
         elif os.name == 'dos':
             return 'dos'
         elif os.name == 'os2':
-            pass # will figure out what to do here later
+            pass # TODO: Figure out what to do with 'os2'
 
     def macAddress(self):
         '''Return a list of mac address to the user'''
         mac = []
 
         if self.os() == 'linux':
-             p = Popen(['ifconfig | grep HWaddr | awk {"print $5"}'],shell=True, stdout=PIPE)
+            p = Popen(['ifconfig | grep HWaddr | awk {"print $5"}'],shell=True, stdout=PIPE)
 
             while True:
                 line = p.stdout.readline()
@@ -104,6 +104,15 @@ class System(object):
             p = Popen(['ipconfig'])
 
         return mac
+
+    def name(self):
+        '''Return the name of the computer'''
+        if self.os() == 'linux':
+            p = Popen(['uname -n'], shell=True, stdout=PIPE)
+            return p.stdout.readline().split('\n')[0]
+
+        elif self.os() == 'windows':
+            return os.getenv('COMPUTERNAME')
 
 # TODO: Begin work on job info class
 class Job(object):

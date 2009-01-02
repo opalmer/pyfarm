@@ -115,9 +115,10 @@ class Proto1(QtGui.QDialog):
             print "End Frame: %s" % self.eFrame
             self._testProgress()
 
-if __name__ == "__main__":
+if __name__ == "__main__":'''
     app = QtGui.QApplication(sys.argv)
     #window = QtGui.QDialog()
     ui = Proto1()
     ui.show()
-    sys.exit(app.exec_())
+    sys.exit(app.exec_())'''
+
