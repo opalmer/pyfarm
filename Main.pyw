@@ -10,7 +10,9 @@ submit renders
 import sys
 import time
 from PyQt4 import QtCore, QtGui
-from lib.ui.Proto1 import Ui_Proto1
+from lib.Network import *
+from lib.FarmLog import *
+from lib.ui.Proto1_5 import Ui_Proto1_5
 
 __VERSION__ = '0.0.60'
 __AUTHOR__ = 'Oliver Palmer'
@@ -20,7 +22,9 @@ rendering package that can be used in everyday \
 production.  Distributed under the General Public \
 License version 3.'
 
-class Proto1(QtGui.QDialog):
+log = FarmLog("Main.pyw")
+log.setLevel('info')
+class Proto1_5(QtGui.QDialog, QThread):
     '''
     Prototype class implimenting the Qt Designer generated user
     interface.
@@ -41,10 +45,8 @@ class Proto1(QtGui.QDialog):
         None
     '''
     def __init__(self):
-        QtGui.QDialog.__init__(self)
-
         # first setup the user interface from QtDesigner
-        self.ui = Ui_Proto1()
+        self.ui = Ui_Proto1_5()
         self.ui.setupUi(self)
 
         # initilize some required variables
@@ -56,6 +58,7 @@ class Proto1(QtGui.QDialog):
         # Connect Qt signals to actionss
         self.connect(self.ui.renderButton, QtCore.SIGNAL("pressed()"), self._startRender)
         self.connect(self.ui.aboutButton,  QtCore.SIGNAL("pressed()"),  self._about)
+        self.connect(self.ui.findNodesButton,  QtCore.SIGNAL("pressed()"),  self._getHosts)
 
     def _sFrame(self):
         '''(int) get the start frame from the interface'''
@@ -80,7 +83,6 @@ class Proto1(QtGui.QDialog):
 
         about = QtGui.QMessageBox()
         about.information(None, "PyFarm -- Prototype 1 - About", message)
-        abou
 
     def _testProgress(self):
         '''Run a test on the progress bar'''
@@ -98,7 +100,24 @@ class Proto1(QtGui.QDialog):
 
     def _getHosts(self):
         '''Get hosts via mulicast packet, add them to self.hosts'''
-
+        try:
+            self.ui.console.append('<font color=blue>INFO</font> - Searching for hosts...')
+            server = MulticastServer()
+            self.hosts = server.run()
+            
+            if len(self.hosts) == 0:
+                self.ui.console.append('<font color=red>CRITICAL</font> - Make sure you have setup the client(s) first!')
+                
+            else:
+                # if hosts are not found, warn the user
+                for host in self.hosts:
+                    self.ui.console.append('<font color=green>NETWORK</font> - Found Host: %s:%s' % (host[0], host[1]))
+                    self.ui.console.append('<font color=blue>INFO</font> - Adding host!')
+                    self.ui.hostList.addItem('%s' % host)
+                    
+        except socket.error,  err:
+            self.ui.console.append('<font color=red>ERROR</font> - A socket error has occurred, restarting search' % err)
+            self._getHosts()
 
     def _startRender(self):
             '''Once the render button is pressed this function is
@@ -119,7 +138,10 @@ class Proto1(QtGui.QDialog):
 if __name__ == "__main__":
     app = QtGui.QApplication(sys.argv)
     #window = QtGui.QDialog()
-    ui = Proto1()
+    ui = Proto1_5()
     ui.show()
     sys.exit(app.exec_())
-
+    
+    ######################
+    # ADD A run() function down here to connected to QThread!!!
+    ######################
