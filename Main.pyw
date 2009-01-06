@@ -10,7 +10,7 @@ submit renders
 import sys
 import time
 from PyQt4 import QtCore, QtGui
-from lib.ui.ui_Proto1 import Ui_Proto1
+from lib.ui.Proto1 import Ui_Proto1
 
 __VERSION__ = '0.0.60'
 __AUTHOR__ = 'Oliver Palmer'
@@ -80,6 +80,7 @@ class Proto1(QtGui.QDialog):
 
         about = QtGui.QMessageBox()
         about.information(None, "PyFarm -- Prototype 1 - About", message)
+        abou
 
     def _testProgress(self):
         '''Run a test on the progress bar'''
@@ -115,10 +116,10 @@ class Proto1(QtGui.QDialog):
             print "End Frame: %s" % self.eFrame
             self._testProgress()
 
-if __name__ == "__main__":'''
+if __name__ == "__main__":
     app = QtGui.QApplication(sys.argv)
     #window = QtGui.QDialog()
     ui = Proto1()
     ui.show()
-    sys.exit(app.exec_())'''
+    sys.exit(app.exec_())
 
