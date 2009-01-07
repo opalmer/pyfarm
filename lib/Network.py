@@ -13,44 +13,52 @@ from FarmLog import FarmLog
 
 class MulticastServer(QThread):
     '''Threaded server to send multicast packets and listen for clients'''
-    def __init__(self, port=51423, host='', timeout=3,  parent=None):
+    def __init__(self,  parent=QThread(),  port=51423, host='', timeout=3):
         super(MulticastServer,  self).__init__(parent)
         self.log = FarmLog("Network.MulticastServer()")
-        self.log.setLevel('info')
+        self.log.setLevel('debug')
         self.port = port
         self.host = host
-        self.nodes = []
+        #self.nodes = []
+        self.mutex = QMutex()
         self.dest = ('<broadcast>', self.port)
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.sock.settimeout(timeout)
-
-    def send(self):
+        self.thread = QThread()
+        self.done = False
+            
+    def run(self):
         '''Send the broadcast packet accross the network'''
         try:
+            nodes = []
             # get ready to broadcast
             self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
             self.sock.sendto("I'm a server!  My name is %s" % System().name(), self.dest) 
-
             self.log.debug("Looking for nodes; press Ctrl-C to stop.")
+            
             while True:
-                # get ready to receieve a message
                 (message, address) = self.sock.recvfrom(2048)
-                if not len(message): # if there is not a message, break
-                   break
-
                 self.log.debug("Found Node: %s:%s" % (address[0], address[1]))
-                self.nodes.append([address[0], address[1]]) # add the returned info to the list
+                nodes.append('%s:%s' % (address[0], str(address[1])))
 
-        except (KeyboardInterrupt, SystemExit, socket.timeout):
-            #after the timeout, kill the thread and reveal the nodes
-            return self.nodes
+        except (socket.timeout,  socket.error):
+            #self.start()
+            pass
+            
+        finally:
+            #return nodes
+            print 'Finished? ', self.isFinished()
+            print 'Running? ', self.isRunning()
+            self.emit("finished()")
+            print 'Finished? ', self.isFinished()
+            print 'Running? ', self.isRunning()
 
-
-class MulticastClient(threading.Thread):
+class MulticastClient(QThread):
     '''Threaded client to recieve a multicast packet and log the server ip/port'''
-    def __init__(self, port=51423, host=''):
+    def __init__(self, port=51423, host='', parent=None):
+        super(MulticastClient,  self).__init__(parent)
         self.log = FarmLog("Network.MulticastClient()")
-        self.log.setLevel('info')
+        self.log.setLevel('debug')
         self.port = port
         self.host = host
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -70,6 +78,7 @@ class MulticastClient(threading.Thread):
 
                 # Now, reply back to the server with our address and message
                 self.sock.sendto("Hello, my name is %s" % System().name(), address)
+                #sys.exit()
             except (KeyboardInterrupt, SystemExit):
                 sys.exit(self.log.critical('PROGRAM TERMINATED'))
 

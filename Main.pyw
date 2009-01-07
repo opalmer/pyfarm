@@ -24,7 +24,7 @@ License version 3.'
 
 log = FarmLog("Main.pyw")
 log.setLevel('info')
-class Proto1_5(QtGui.QDialog, QThread):
+class Proto1_5(QtGui.QDialog):
     '''
     Prototype class implimenting the Qt Designer generated user
     interface.
@@ -46,6 +46,7 @@ class Proto1_5(QtGui.QDialog, QThread):
     '''
     def __init__(self):
         # first setup the user interface from QtDesigner
+        super(Proto1_5, self).__init__()
         self.ui = Ui_Proto1_5()
         self.ui.setupUi(self)
 
@@ -54,11 +55,12 @@ class Proto1_5(QtGui.QDialog, QThread):
         self.sFrame = None
         self.eFrame = None
         self.hosts = []
+        self.hostNum = 0
 
-        # Connect Qt signals to actionss
+        # Connect Qt signals to actions
         self.connect(self.ui.renderButton, QtCore.SIGNAL("pressed()"), self._startRender)
         self.connect(self.ui.aboutButton,  QtCore.SIGNAL("pressed()"),  self._about)
-        self.connect(self.ui.findNodesButton,  QtCore.SIGNAL("pressed()"),  self._getHosts)
+        self.connect(self.ui.findNodesButton,  QtCore.SIGNAL("pressed()"),  self.getHosts)
 
     def _sFrame(self):
         '''(int) get the start frame from the interface'''
@@ -97,28 +99,31 @@ class Proto1_5(QtGui.QDialog, QThread):
             self.ui.progressBar.setValue(i)
             time.sleep(.01)
             i += 1
-
-    def _getHosts(self):
+        
+    def getHosts(self):
         '''Get hosts via mulicast packet, add them to self.hosts'''
-        try:
-            self.ui.console.append('<font color=blue>INFO</font> - Searching for hosts...')
-            server = MulticastServer()
-            self.hosts = server.run()
-            
-            if len(self.hosts) == 0:
-                self.ui.console.append('<font color=red>CRITICAL</font> - Make sure you have setup the client(s) first!')
-                
-            else:
-                # if hosts are not found, warn the user
-                for host in self.hosts:
-                    self.ui.console.append('<font color=green>NETWORK</font> - Found Host: %s:%s' % (host[0], host[1]))
-                    self.ui.console.append('<font color=blue>INFO</font> - Adding host!')
-                    self.ui.hostList.addItem('%s' % host)
-                    
-        except socket.error,  err:
-            self.ui.console.append('<font color=red>ERROR</font> - A socket error has occurred, restarting search' % err)
-            self._getHosts()
-
+        self.ui.console.append('<font color=blue>NETWORK</font> - Searching for hosts...')
+        #server = MulticastServer().start()
+        #server.quit()
+        
+        ########
+        # method 2
+        ########
+        thread = MulticastServer()
+        self.connect(thread, SIGNAL("finished(bool,int)"), self.finished)
+        self.connect(thread, SIGNAL("finished()"), thread, SLOT("deleteLater()"))
+        thread.start()
+        thread.wait(300) # Needed for Windows
+        
+        #self.hostNum = len(self.hosts)
+        #self.ui.console.append('<font color=blue>NETWORK</font> - Found %i active hosts!' % self.hostNum)
+        
+#        if len(self.hosts) > 0:
+#            self.ui.console.append('<font color=blue>NETWORK</font> - Found active hosts!')
+#            self.ui.console.append('<font color=blue>NETWORK</font> - Adding hosts...')
+#            print self.hosts
+        
+        
     def _startRender(self):
             '''Once the render button is pressed this function is
             executed starting the entire render process'''
@@ -141,7 +146,3 @@ if __name__ == "__main__":
     ui = Proto1_5()
     ui.show()
     sys.exit(app.exec_())
-    
-    ######################
-    # ADD A run() function down here to connected to QThread!!!
-    ######################
