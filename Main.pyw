@@ -9,10 +9,13 @@ submit renders
 
 import sys
 import time
-from PyQt4 import QtCore, QtGui
+from PyQt4.QtGui import *
+from PyQt4.QtCore import *
+from lib.Process import *
 from lib.Network import *
 from lib.FarmLog import *
 from lib.ui.Proto1_5 import Ui_Proto1_5
+
 
 __VERSION__ = '0.0.60'
 __AUTHOR__ = 'Oliver Palmer'
@@ -24,14 +27,15 @@ License version 3.'
 
 log = FarmLog("Main.pyw")
 log.setLevel('info')
-class Proto1_5(QtGui.QDialog):
+        
+class Proto1_5(QDialog):
     '''
     Prototype class implimenting the Qt Designer generated user
     interface.
 
     REQUIRES:
         PyQt:
-            QtGui.QDialog
+            QDialog
 
         Python:
             sys
@@ -56,11 +60,12 @@ class Proto1_5(QtGui.QDialog):
         self.eFrame = None
         self.hosts = []
         self.hostNum = 0
+        self.newHosts = 0
 
         # Connect Qt signals to actions
-        self.connect(self.ui.renderButton, QtCore.SIGNAL("pressed()"), self._startRender)
-        self.connect(self.ui.aboutButton,  QtCore.SIGNAL("pressed()"),  self._about)
-        self.connect(self.ui.findNodesButton,  QtCore.SIGNAL("pressed()"),  self.getHosts)
+        self.connect(self.ui.renderButton, SIGNAL("pressed()"), self._startRender)
+        self.connect(self.ui.aboutButton,  SIGNAL("pressed()"),  self._about)
+        self.connect(self.ui.findNodesButton,  SIGNAL("pressed()"),  self._getHosts)
 
     def _sFrame(self):
         '''(int) get the start frame from the interface'''
@@ -83,51 +88,51 @@ class Proto1_5(QtGui.QDialog):
         (__AUTHOR__, __CONTACT__,
         __VERSION__, __DESCRIPTION__)
 
-        about = QtGui.QMessageBox()
+        about = QMessageBox()
         about.information(None, "PyFarm -- Prototype 1 - About", message)
-
-    def _testProgress(self):
-        '''Run a test on the progress bar'''
-        min = 0
-        max = 100
-        i = 0
-
-        self.ui.progressBar.setMinimum(min)
-        self.ui.progressBar.setMaximum(max)
-
-        while i <= max:
-            self.ui.progressBar.setValue(i)
-            time.sleep(.01)
-            i += 1
+            
+    def _doneFindingHosts(self):
+        # inform the user of new hosts
+        self.ui.console.append('<font color=blue>NETWORK</font> - Found %s new hosts' % self.newHosts)
+        self.newHosts = 0
         
-    def getHosts(self):
+        
+    def _addHost(self, host):
+        '''Given an input host, add it to the host list'''
+        # if it has alredy been added, don't add it
+        if host not in self.hosts:
+            self.hosts.append(host)
+            self.ui.hostList.addItem(host)
+            self.newHosts += 1
+        
+    def _getHosts(self):
         '''Get hosts via mulicast packet, add them to self.hosts'''
         self.ui.console.append('<font color=blue>NETWORK</font> - Searching for hosts...')
-        #server = MulticastServer().start()
-        #server.quit()
-        
-        ########
-        # method 2
-        ########
-        thread = MulticastServer()
-        self.connect(thread, SIGNAL("finished(bool,int)"), self.finished)
-        self.connect(thread, SIGNAL("finished()"), thread, SLOT("deleteLater()"))
-        thread.start()
-        thread.wait(300) # Needed for Windows
-        
-        #self.hostNum = len(self.hosts)
-        #self.ui.console.append('<font color=blue>NETWORK</font> - Found %i active hosts!' % self.hostNum)
-        
-#        if len(self.hosts) > 0:
-#            self.ui.console.append('<font color=blue>NETWORK</font> - Found active hosts!')
-#            self.ui.console.append('<font color=blue>NETWORK</font> - Adding hosts...')
-#            print self.hosts
-        
-        
+        findHosts = MulticastServer()
+        self.connect(findHosts, SIGNAL("gotNode"), self._addHost)
+        self.connect(findHosts,  SIGNAL("DONE"),  self._doneFindingHosts)
+        findHosts.start()
+
+    def _incrimentProgress(self, value):
+        '''Run a test on the progress bar'''
+        self.ui.progressBar.setValue(value)
+            
+            
+    def _unthreadedProgress(self, start, end):
+        '''An unthreaded progress bar'''
+        for i in range(start, end+1):
+            time.sleep(.2)
+            self.ui.progressBar.setValue(i)
+            
     def _startRender(self):
             '''Once the render button is pressed this function is
             executed starting the entire render process'''
-
+            
+            ### CHECK OUT THE PROCESS MODULE.PB it seems to be working 
+            ####SLOWLY change the code to act as the progress bar stuff!
+            #b = QThread()
+            #b.start() 
+            
             # lock in the variables for rendering
             self.scene = self._scene()
             self.sFrame = self._sFrame()
@@ -138,11 +143,16 @@ class Proto1_5(QtGui.QDialog):
             print "Scene: %s" % self.scene
             print "Start Frame: %s" % self.sFrame
             print "End Frame: %s" % self.eFrame
-            self._testProgress()
+            
+            # setup a test run for the progress bar
+            self.ui.progressBar.setMinimum(self.sFrame)
+            self.ui.progressBar.setMaximum(self.eFrame)
+            self._unthreadedProgress(self.sFrame,  self.eFrame)
+
 
 if __name__ == "__main__":
-    app = QtGui.QApplication(sys.argv)
-    #window = QtGui.QDialog()
+    app = QApplication(sys.argv)
+    #window = QDialog()
     ui = Proto1_5()
     ui.show()
     sys.exit(app.exec_())

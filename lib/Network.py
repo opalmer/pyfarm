@@ -6,7 +6,6 @@ PURPOSE: Network modules used to help facilitate network communication
 '''
 import sys
 import socket
-import threading
 from PyQt4.QtCore import *
 from Info import System
 from FarmLog import FarmLog
@@ -19,12 +18,9 @@ class MulticastServer(QThread):
         self.log.setLevel('debug')
         self.port = port
         self.host = host
-        #self.nodes = []
-        self.mutex = QMutex()
         self.dest = ('<broadcast>', self.port)
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.sock.settimeout(timeout)
-        self.thread = QThread()
         self.done = False
             
     def run(self):
@@ -39,19 +35,17 @@ class MulticastServer(QThread):
             while True:
                 (message, address) = self.sock.recvfrom(2048)
                 self.log.debug("Found Node: %s:%s" % (address[0], address[1]))
-                nodes.append('%s:%s' % (address[0], str(address[1])))
+                #nodes.append('%s:%s' % (address[0], str(address[1])))
+                self.emit(SIGNAL('gotNode'), '%s:%s' % (address[0], str(address[1])))
 
         except (socket.timeout,  socket.error):
             #self.start()
             pass
             
         finally:
-            #return nodes
-            print 'Finished? ', self.isFinished()
-            print 'Running? ', self.isRunning()
-            self.emit("finished()")
-            print 'Finished? ', self.isFinished()
-            print 'Running? ', self.isRunning()
+            self.done = True
+            self.emit(SIGNAL('DONE'), self.done)
+            
 
 class MulticastClient(QThread):
     '''Threaded client to recieve a multicast packet and log the server ip/port'''
