@@ -11,8 +11,26 @@ from Info import System
 from FarmLog import FarmLog
 
 class MulticastServer(QThread):
-    '''Threaded server to send multicast packets and listen for clients'''
-    def __init__(self,  parent,  port=51423, host='', timeout=3):
+    '''
+    Threaded client to recieve a multicast packet and inform the server of ip and port
+
+    REQUIRES:
+        Python:
+            socket
+
+        PyQt:
+            QThread
+
+        PyFarm:
+            FarmLog
+
+    INPUT:
+        parent (str) - the thread to parent to. Example: a = MulticastServer(self)
+        port (int) - incoming number, defaults to 51423
+        host (str) - host to bind to UDP, defaults to ALL
+        timeout (int) - timeout the operation after this amount of time
+    '''
+    def __init__(self,  parent,  port=51423, host='', timeout=5):
         super(MulticastServer,  self).__init__(parent)
         self.log = FarmLog("Network.MulticastServer()")
         self.log.setLevel('debug')
@@ -22,33 +40,51 @@ class MulticastServer(QThread):
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.sock.settimeout(timeout)
         self.done = False
-            
+
     def run(self):
         '''Send the broadcast packet accross the network'''
         try:
             nodes = []
             # get ready to broadcast
             self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
-            self.sock.sendto("I'm a server!  My name is %s" % System().name(), self.dest) 
+            self.sock.sendto("I'm a server, my name is %s" % System().name(), self.dest)
             self.log.debug("Looking for nodes; press Ctrl-C to stop.")
-            
+
             while True:
                 (message, address) = self.sock.recvfrom(2048)
                 self.log.debug("Found Node: %s:%s" % (address[0], address[1]))
-                #nodes.append('%s:%s' % (address[0], str(address[1])))
                 self.emit(SIGNAL('gotNode'), '%s:%s' % (address[0], str(address[1])))
 
         except (socket.timeout,  socket.error):
-            #self.start()
             pass
-            
+
         finally:
             self.done = True
             self.emit(SIGNAL('DONE'), self.done)
-            
+
 
 class MulticastClient(QThread):
-    '''Threaded client to recieve a multicast packet and log the server ip/port'''
+    '''
+    Threaded client to recieve a multicast packet and inform the server of ip and port
+
+    REQUIRES:
+        Python:
+            socket
+
+        PyQt:
+            QThread
+
+        PyFarm:
+            FarmLog
+
+    INPUT:
+        port (int) - incoming number, defaults to 51423
+        host (str) - host to bind to UDP, defaults to ALL
+        parent - None.  By parenting to none it the client runs on its own, not bound to original thread.
+
+    OUTPUT:
+        address (None) - Example: ['10.56.1.5', 51423]
+    '''
     def __init__(self, port=51423, host='', parent=None):
         super(MulticastClient,  self).__init__(parent)
         self.log = FarmLog("Network.MulticastClient()")
@@ -71,10 +107,45 @@ class MulticastClient(QThread):
                 self.log.debug("Found Server: %s:%s" % (address[0], address[1]))
 
                 # Now, reply back to the server with our address and message
-                self.sock.sendto("Hello, my name is %s" % System().name(), address)
-                #sys.exit()
+                self.sock.sendto("I'm a client, my name is %s" % System().name(), address)
+
             except (KeyboardInterrupt, SystemExit):
                 sys.exit(self.log.critical('PROGRAM TERMINATED'))
+
+
+class UDPServer(QThread):
+    '''Simple server to send udp communications'''
+    pass
+
+
+class UDPClient(QThread):
+    '''
+    Simple client to receieve udp communications
+
+    REQUIRES:
+        Python:
+            socket
+
+        PyQt:
+            QThread
+
+        PyFarm:
+            FarmLog
+
+        INPUT:
+            port (int) - incoming number, defaults to 51423
+            host (str) - host to bind to UDP, defaults to ALL
+            parent - None.  By parenting to none it the client runs on its own, not bound to original thread.
+    '''
+    def __init__(self, port=51423, host='', parent=None):
+        super(UDPClient, self).__init__(parent)
+        self.log = FarmLog("Network.UDPClient")
+        self.log.setLevel('debug')
+        self.port = port
+        self.host = host
+
+    def run(self):
+        '''Receieve the broadcast packet and reply to the host'''
 
 
 class WakeOnLan(object):
@@ -111,49 +182,3 @@ class WakeOnLan(object):
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
         sock.sendto(send_data, ('<broadcast>', 7))
-
-
-UDP_PORT = 43278; CHECK_PERIOD = 20; CHECK_TIMEOUT = 15
-
-import socket, threading, time
-
-class Heartbeats(dict):
-    """Manage shared heartbeats dictionary with thread locking"""
-
-    def __init__(self):
-        super(Heartbeats, self).__init__()
-        self._lock = threading.Lock()
-
-    def __setitem__(self, key, value):
-        """Create or update the dictionary entry for a client"""
-        self._lock.acquire()
-        super(Heartbeats, self).__setitem__(key, value)
-        self._lock.release()
-
-    def getSilent(self):
-        """Return a list of clients with heartbeat older than CHECK_TIMEOUT"""
-        limit = time.time() - CHECK_TIMEOUT
-        self._lock.acquire()
-        silent = [ip for (ip, ipTime) in self.items() if ipTime < limit]
-        self._lock.release()
-        return silent
-
-class HeartbeatReceiver(threading.Thread):
-    """Receive UDP packets and log them in the heartbeats dictionary"""
-
-    def __init__(self, goOnEvent, heartbeats):
-        super(Receiver, self).__init__()
-        self.goOnEvent = goOnEvent
-        self.heartbeats = heartbeats
-        self.recSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self.recSocket.settimeout(CHECK_TIMEOUT)
-        self.recSocket.bind((socket.gethostbyname('localhost'), UDP_PORT))
-
-    def run(self):
-        while self.goOnEvent.isSet():
-            try:
-                data, addr = self.recSocket.recvfrom(5)
-                if data == 'PyHB':
-                    self.heartbeats[addr[0]] = time.time()
-            except socket.timeout:
-                pass

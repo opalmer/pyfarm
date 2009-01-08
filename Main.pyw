@@ -14,8 +14,7 @@ from PyQt4.QtCore import *
 from lib.Process import *
 from lib.Network import *
 from lib.FarmLog import *
-from lib.ui.Proto1_5 import Ui_Proto1_5
-
+from lib.ui.Proto2 import Ui_Proto2
 
 __VERSION__ = '0.0.74'
 __AUTHOR__ = 'Oliver Palmer'
@@ -28,19 +27,17 @@ License version 3.'
 log = FarmLog("Main.pyw")
 log.setLevel('debug')
 
-class Proto1_5(QDialog):
+class Proto2(QDialog):
     '''
     Prototype class implimenting the Qt Designer generated user
     interface.
 
     REQUIRES:
-        PyQt:
-            QDialog
-
         Python:
             sys
             time
-
+        PyQt:
+            QDialog
         PyFarm:
             lib.ui.ui_Proto1
             lib.FarmLog
@@ -50,8 +47,8 @@ class Proto1_5(QDialog):
     '''
     def __init__(self):
         # first setup the user interface from QtDesigner
-        super(Proto1_5, self).__init__()
-        self.ui = Ui_Proto1_5()
+        super(Proto2, self).__init__()
+        self.ui = Ui_Proto2()
         self.ui.setupUi(self)
 
         # initilize some required variables
@@ -134,9 +131,6 @@ class Proto1_5(QDialog):
         self.connect(self.progress, SIGNAL('progress_done'), self._renderComplete)
         self.progress.start()
 
-    def _test(self):
-        self.progress.exit()
-
     def _renderButtonSwap(self):
         '''Swap the current render button state'''
         if self.rendering:
@@ -172,9 +166,8 @@ class Proto1_5(QDialog):
                 log.debug("End Frame: %s" % self.eFrame)
                 self._render()
 
-
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    ui = Proto1_5()
+    ui = Proto2()
     ui.show()
     app.exec_()

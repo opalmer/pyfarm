@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Project SYSTEM "Project-4.4.dtd">
 <!-- eric4 project file for project PyFarm_proto1 -->
-<!-- Saved: 2009-01-06, 19:56:49 -->
+<!-- Saved: 2009-01-07, 22:24:42 -->
 <!-- Copyright (C) 2009 Oliver Palmer, oliverpalmer@opalmer.com -->
 <Project version="4.4">
   <ProgLanguage mixed="0">Python</ProgLanguage>
@@ -38,6 +38,9 @@
     <Source>lib/ui/Proto1_5.py</Source>
     <Source>resources/pageindexer_ans.pyw</Source>
     <Source>resources/walker_ans.py</Source>
+    <Source>lib/ui/Proto2.py</Source>
+    <Source>tests/receieve.py</Source>
+    <Source>tests/send.py</Source>
   </Sources>
   <Forms>
   </Forms>
