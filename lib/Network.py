@@ -12,7 +12,7 @@ from FarmLog import FarmLog
 
 class MulticastServer(QThread):
     '''Threaded server to send multicast packets and listen for clients'''
-    def __init__(self,  parent=QThread(),  port=51423, host='', timeout=3):
+    def __init__(self,  parent,  port=51423, host='', timeout=3):
         super(MulticastServer,  self).__init__(parent)
         self.log = FarmLog("Network.MulticastServer()")
         self.log.setLevel('debug')

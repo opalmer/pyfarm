@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'Proto1_5.ui'
+# Form implementation generated from reading ui file 'QtDesigner/Proto1_5.ui'
 #
-# Created: Tue Jan  6 01:12:34 2009
+# Created: Wed Jan  7 18:45:03 2009
 #      by: PyQt4 UI code generator 4.4.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -66,6 +66,9 @@ class Ui_Proto1_5(object):
         self.verticalLayout.addWidget(self.renderButton)
         spacerItem1 = QtGui.QSpacerItem(20, 40, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
         self.verticalLayout.addItem(spacerItem1)
+        self.stopRender = QtGui.QPushButton(self.layoutWidget)
+        self.stopRender.setObjectName("stopRender")
+        self.verticalLayout.addWidget(self.stopRender)
         self.quitButton = QtGui.QPushButton(self.layoutWidget)
         self.quitButton.setObjectName("quitButton")
         self.verticalLayout.addWidget(self.quitButton)
@@ -108,13 +111,14 @@ class Ui_Proto1_5(object):
         QtCore.QMetaObject.connectSlotsByName(Proto1_5)
 
     def retranslateUi(self, Proto1_5):
-        Proto1_5.setWindowTitle(QtGui.QApplication.translate("Proto1_5", "PyFarm -- Prototype  1", None, QtGui.QApplication.UnicodeUTF8))
+        Proto1_5.setWindowTitle(QtGui.QApplication.translate("Proto1_5", "PyFarm -- Prototype  1.5", None, QtGui.QApplication.UnicodeUTF8))
         self.label.setText(QtGui.QApplication.translate("Proto1_5", "Scene:", None, QtGui.QApplication.UnicodeUTF8))
         self.label_2.setText(QtGui.QApplication.translate("Proto1_5", "Start Frame", None, QtGui.QApplication.UnicodeUTF8))
         self.label_3.setText(QtGui.QApplication.translate("Proto1_5", "End Frame", None, QtGui.QApplication.UnicodeUTF8))
         self.findNodesButton.setText(QtGui.QApplication.translate("Proto1_5", "Find Nodes", None, QtGui.QApplication.UnicodeUTF8))
         self.aboutButton.setText(QtGui.QApplication.translate("Proto1_5", "About", None, QtGui.QApplication.UnicodeUTF8))
         self.renderButton.setText(QtGui.QApplication.translate("Proto1_5", "Render", None, QtGui.QApplication.UnicodeUTF8))
+        self.stopRender.setText(QtGui.QApplication.translate("Proto1_5", "Cancel Render", None, QtGui.QApplication.UnicodeUTF8))
         self.quitButton.setText(QtGui.QApplication.translate("Proto1_5", "Quit", None, QtGui.QApplication.UnicodeUTF8))
         self.label_4.setText(QtGui.QApplication.translate("Proto1_5", "Progress", None, QtGui.QApplication.UnicodeUTF8))
         self.label_6.setText(QtGui.QApplication.translate("Proto1_5", "Hosts:", None, QtGui.QApplication.UnicodeUTF8))
