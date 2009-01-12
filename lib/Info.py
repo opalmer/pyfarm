@@ -10,6 +10,7 @@ import os
 import sys
 import uuid
 import time
+import socket
 from FarmLog import FarmLog
 from subprocess import Popen,PIPE
 
@@ -105,14 +106,9 @@ class System(object):
 
         return mac
 
-    def name(self):
+    def hostname(self):
         '''Return the name of the computer'''
-        if self.os() == 'linux':
-            p = Popen(['uname -n'], shell=True, stdout=PIPE)
-            return p.stdout.readline().split('\n')[0]
-
-        elif self.os() == 'windows':
-            return os.getenv('COMPUTERNAME')
+        return socket.gethostname()
 
 # TODO: Begin work on job info class
 class Job(object):

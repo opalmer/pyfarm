@@ -29,6 +29,8 @@ class MulticastServer(QThread):
         port (int) - incoming number, defaults to 51423
         host (str) - host to bind to UDP, defaults to ALL
         timeout (int) - timeout the operation after this amount of time
+
+      NOTE: Get hostname with socket.hostname() <- might be required by QTcpServer
     '''
     def __init__(self,  parent,  port=51423, host='', timeout=5):
         super(MulticastServer,  self).__init__(parent)
@@ -84,6 +86,8 @@ class MulticastClient(QThread):
 
     OUTPUT:
         address (None) - Example: ['10.56.1.5', 51423]
+
+    NOTE: Get hostname with socket.hostname() <- might be required by QTcpServer
     '''
     def __init__(self, port=51423, host='', parent=None):
         super(MulticastClient,  self).__init__(parent)

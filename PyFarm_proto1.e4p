@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Project SYSTEM "Project-4.4.dtd">
 <!-- eric4 project file for project PyFarm_proto1 -->
-<!-- Saved: 2009-01-07, 22:24:42 -->
+<!-- Saved: 2009-01-08, 01:17:52 -->
 <!-- Copyright (C) 2009 Oliver Palmer, oliverpalmer@opalmer.com -->
 <Project version="4.4">
   <ProgLanguage mixed="0">Python</ProgLanguage>
@@ -41,8 +41,18 @@
     <Source>lib/ui/Proto2.py</Source>
     <Source>tests/receieve.py</Source>
     <Source>tests/send.py</Source>
+    <Source>resources/hotel_server/buildingservicesclient_ans.pyw</Source>
+    <Source>resources/hotel_server/buildingservicesserver_ans.pyw</Source>
+    <Source>resources/hotel_server/threaded/buildingservicesclient.pyw</Source>
+    <Source>resources/hotel_server/threaded/buildingservicesserver.pyw</Source>
+    <Source>resources/hotel_server/threaded/original/buildingservicesclient.pyw</Source>
+    <Source>resources/hotel_server/threaded/original/buildingservicesserver.pyw</Source>
+    <Source>tests/TCPServerDevel/client.pyw</Source>
+    <Source>tests/TCPServerDevel/server.pyw</Source>
   </Sources>
   <Forms>
+    <Form>lib/ui/Proto2.ui</Form>
+    <Form>lib/ui/Proto2_addHost.ui</Form>
   </Forms>
   <Translations>
   </Translations>

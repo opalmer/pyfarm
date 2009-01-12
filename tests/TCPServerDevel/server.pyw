@@ -131,8 +131,26 @@ class BuildingServicesClient(QWidget):
                 self.nextBlockSize = stream.readUInt16()
             if self.socket.bytesAvailable() < self.nextBlockSize:
                 break
+            '''
+            actions = [ RENDER,QUERY,STOP ]
+                RENDER - Render a given frame
+                        -+requires command string be given
+                QUERY - Read back the current render
+                        + return the current command being run as well as a log (if avaliable)
+                STOP - stop the current render
+                        + set self.rendering = False
+                OFFLINE - take the client offline
+                        +set self.clientOnline = False
+                ONLINE - put the client back online
+                        +set self.clientOnline = True
+
+                NOTE: Offline, online, etc the same way you did earliear
+                NOTE2: Get the hostname using the same script you had earliear
+                #### socket.gethostname()
+            '''
             action = QString()
             room = QString()
+            command = QString() # the command to send to the remote computer
             date = QDate()
             stream >> action >> room
             if action != "ERROR":

@@ -166,7 +166,7 @@ class TcpServer(QTcpServer):
 
 class BuildingServicesDlg(QPushButton):
     def __init__(self, parent=None):
-        super(BuildingServicesDlg, self).__init__("&Close Server", parent)
+        super(BuildingServicesDlg, self).__init__("&Close Client", parent)
         self.setWindowFlags(Qt.WindowStaysOnTopHint)
 
         self.loadBookings()
