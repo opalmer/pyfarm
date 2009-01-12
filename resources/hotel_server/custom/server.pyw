@@ -23,13 +23,17 @@ MAX_BOOKINGS_PER_DAY = 5
 # Key = date, value = list of room IDs
 Bookings = collections.defaultdict(list)
 
+
 def printBookings():
     for key in sorted(Bookings):
         print key, Bookings[key]
     print
 
+
 class Thread(QThread):
+
     lock = QReadWriteLock()
+
     def __init__(self, socketId, parent):
         super(Thread, self).__init__(parent)
         self.socketId = socketId
@@ -66,7 +70,6 @@ class Thread(QThread):
                     Thread.lock.unlock()
                 uroom = unicode(room)
             if action == "BOOK":
-                print room
                 newlist = False
                 try:
                     Thread.lock.lockForRead()
@@ -132,6 +135,7 @@ class Thread(QThread):
             finally:
                 Thread.lock.unlock()
 
+
     def sendError(self, socket, msg):
         reply = QByteArray()
         stream = QDataStream(reply, QIODevice.WriteOnly)
@@ -141,6 +145,7 @@ class Thread(QThread):
         stream.device().seek(0)
         stream.writeUInt16(reply.size() - SIZEOF_UINT16)
         socket.write(reply)
+
 
     def sendReply(self, socket, action, room, date):
         reply = QByteArray()
@@ -154,8 +159,10 @@ class Thread(QThread):
 
 
 class TcpServer(QTcpServer):
+
     def __init__(self, parent=None):
         super(TcpServer, self).__init__(parent)
+
 
     def incomingConnection(self, socketId):
         thread = Thread(socketId, self)
@@ -165,14 +172,18 @@ class TcpServer(QTcpServer):
 
 
 class BuildingServicesDlg(QPushButton):
+
     def __init__(self, parent=None):
-        super(BuildingServicesDlg, self).__init__("&Close Server", parent)
+        super(BuildingServicesDlg, self).__init__(
+                "&Close Server", parent)
         self.setWindowFlags(Qt.WindowStaysOnTopHint)
 
         self.loadBookings()
         self.tcpServer = TcpServer(self)
         if not self.tcpServer.listen(QHostAddress("0.0.0.0"), PORT):
-            QMessageBox.critical(self, "Building Services Server", QString("Failed to start server: %1").arg(self.tcpServer.errorString()))
+            QMessageBox.critical(self, "Building Services Server",
+                    QString("Failed to start server: %1") \
+                    .arg(self.tcpServer.errorString()))
             self.close()
             return
 
