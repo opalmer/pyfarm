@@ -50,14 +50,21 @@ class BuildingServicesClient(QWidget):
         self.bookButton.setEnabled(False)
         self.unBookButton = QPushButton("&Unbook")
         self.unBookButton.setEnabled(False)
+        self.bookingsOnDateButton = QPushButton("Bookings &on Date?")
+        self.bookingsForRoomButton = QPushButton("Bookings &for Room?")
+        self.bookingsForRoomButton.setEnabled(False)
         quitButton = QPushButton("&Quit")
         if not MAC:
             self.bookButton.setFocusPolicy(Qt.NoFocus)
             self.unBookButton.setFocusPolicy(Qt.NoFocus)
+            self.bookingsOnDateButton.setFocusPolicy(Qt.NoFocus)
+            self.bookingsForRoomButton.setFocusPolicy(Qt.NoFocus)
 
         buttonLayout = QHBoxLayout()
         buttonLayout.addWidget(self.bookButton)
         buttonLayout.addWidget(self.unBookButton)
+        buttonLayout.addWidget(self.bookingsOnDateButton)
+        buttonLayout.addWidget(self.bookingsForRoomButton)
         buttonLayout.addStretch()
         buttonLayout.addWidget(quitButton)
         layout = QGridLayout()
@@ -67,7 +74,7 @@ class BuildingServicesClient(QWidget):
         layout.addWidget(self.dateEdit, 0, 3)
         layout.addWidget(responseLabel, 1, 0)
         layout.addWidget(self.responseLabel, 1, 1, 1, 3)
-        layout.addLayout(buttonLayout, 2, 1, 1, 4)
+        layout.addLayout(buttonLayout, 2, 0, 1, 5)
         self.setLayout(layout)
 
         self.connect(self.socket, SIGNAL("connected()"),
@@ -87,6 +94,10 @@ class BuildingServicesClient(QWidget):
                      self.book)
         self.connect(self.unBookButton, SIGNAL("clicked()"),
                      self.unBook)
+        self.connect(self.bookingsOnDateButton, SIGNAL("clicked()"),
+                     self.bookingsOnDate)
+        self.connect(self.bookingsForRoomButton, SIGNAL("clicked()"),
+                     self.bookingsForRoom)
         self.connect(quitButton, SIGNAL("clicked()"), self.close)
 
         self.setWindowTitle("Building Services")
@@ -101,6 +112,7 @@ class BuildingServicesClient(QWidget):
             enabled = False
         self.bookButton.setEnabled(enabled)
         self.unBookButton.setEnabled(enabled)
+        self.bookingsForRoomButton.setEnabled(enabled)
 
 
     def closeEvent(self, event):
@@ -115,6 +127,15 @@ class BuildingServicesClient(QWidget):
 
     def unBook(self):
         self.issueRequest(QString("UNBOOK"), self.roomEdit.text(),
+                          self.dateEdit.date())
+
+
+    def bookingsOnDate(self):
+        self.issueRequest(QString("BOOKINGSONDATE"), self.roomEdit.text(),
+                          self.dateEdit.date())
+
+    def bookingsForRoom(self):
+        self.issueRequest(QString("BOOKINGSFORROOM"), self.roomEdit.text(),
                           self.dateEdit.date())
 
 
@@ -155,7 +176,13 @@ class BuildingServicesClient(QWidget):
             room = QString()
             date = QDate()
             stream >> action >> room
-            if action != "ERROR":
+            if action == "BOOKINGSFORROOM":
+                dates = []
+                for x in range(stream.readInt32()):
+                    stream >> date
+                    dates.append(unicode(date.toString(Qt.ISODate)))
+                dates = ", ".join(dates)
+            if action not in ("BOOKINGSFORROOM", "ERROR"):
                 stream >> date
             if action == "ERROR":
                 msg = QString("Error: %1").arg(room)
@@ -165,6 +192,13 @@ class BuildingServicesClient(QWidget):
             elif action == "UNBOOK":
                 msg = QString("Unbooked room %1 for %2").arg(room) \
                               .arg(date.toString(Qt.ISODate))
+            elif action == "BOOKINGSONDATE":
+                msg = QString("Rooms booked on %1: %2")\
+                        .arg(date.toString(Qt.ISODate))\
+                        .arg(room)
+            elif action == "BOOKINGSFORROOM":
+                msg = QString("Room %1 is booked on: %2").arg(room)\
+                                                         .arg(dates)
             self.responseLabel.setText(msg)
             self.updateUi()
             self.nextBlockSize = 0
