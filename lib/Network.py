@@ -164,6 +164,7 @@ class UDPClient(QThread):
 
     def run(self):
         '''Receieve the broadcast packet and reply to the host'''
+        pass
 
 
 class TCPServerThread(QThread):
@@ -208,6 +209,8 @@ class TCPServerThread(QThread):
                     TCPServerThread.lock.unlock()
 
                 uroom = unicode(room)
+
+
 class TCPServer(QTcpServer):
     '''Threaded CP Server used to handle incoming requests'''
     def __init__(self, parent=None):
@@ -220,105 +223,69 @@ class TCPServer(QTcpServer):
         self.connect(thread, SIGNAL("finished()"), thread, SLOT("deleteLater()"))
         thread.start()
 
-class TCPClient(QWidget):
-    '''TCP Client used to send information to threaded TCP Server'''
-    def __init__(self, parent=None):
+class TCPClient(QTcpSocket):
+    '''TCP Client to communicate with TCP server'''
+    def __init__(self, host="localhost", port=TCP_PORT, parent=None):
         super(TCPClient, self).__init__(parent)
-
+        self.host = host
+        self.port = port
         self.socket = QTcpSocket()
         self.nextBlockSize = 0
         self.request = None
 
-        roomLabel = QLabel("&Room")
-        self.roomEdit = QLineEdit()
-        roomLabel.setBuddy(self.roomEdit)
-        regex = QRegExp(r"[0-9](?:0[1-9]|[12][0-9]|3[0-4])")
-        self.roomEdit.setValidator(QRegExpValidator(regex, self))
-        self.roomEdit.setAlignment(Qt.AlignRight|Qt.AlignVCenter)
-        dateLabel = QLabel("&Date")
-        self.dateEdit = QDateEdit()
-        dateLabel.setBuddy(self.dateEdit)
-        self.dateEdit.setAlignment(Qt.AlignRight|Qt.AlignVCenter)
-        self.dateEdit.setDate(QDate.currentDate().addDays(1))
-        self.dateEdit.setDisplayFormat("yyyy-MM-dd")
-        responseLabel = QLabel("Response")
-        self.responseLabel = QLabel()
-        self.responseLabel.setFrameStyle(QFrame.StyledPanel|QFrame.Sunken)
-
-        self.bookButton = QPushButton("&Book")
-        quitButton = QPushButton("&Quit")
-        MAC = "qt_mac_set_native_menubar" in dir()
-        if not MAC:
-            self.bookButton.setFocusPolicy(Qt.NoFocus)
-
-        buttonLayout = QHBoxLayout()
-        buttonLayout.addWidget(self.bookButton)
-        buttonLayout.addStretch()
-        buttonLayout.addWidget(quitButton)
-        layout = QGridLayout()
-        layout.addWidget(roomLabel, 0, 0)
-        layout.addWidget(self.roomEdit, 0, 1)
-        layout.addWidget(dateLabel, 0, 2)
-        layout.addWidget(self.dateEdit, 0, 3)
-        layout.addWidget(responseLabel, 1, 0)
-        layout.addWidget(self.responseLabel, 1, 1, 1, 3)
-        layout.addLayout(buttonLayout, 2, 1, 1, 4)
-        self.setLayout(layout)
-
+        # setup the connections
         self.connect(self.socket, SIGNAL("connected()"), self.sendRequest)
         self.connect(self.socket, SIGNAL("readyRead()"), self.readResponse)
         self.connect(self.socket, SIGNAL("disconnected()"), self.serverHasStopped)
         self.connect(self.socket, SIGNAL("error(QAbstractSocket::SocketError)"), self.serverHasError)
-        self.connect(self.roomEdit, SIGNAL("textEdited(QString)"), self.updateUi)
-        self.connect(self.dateEdit, SIGNAL("dateChanged(QDate)"), self.updateUi)
-        self.connect(self.bookButton, SIGNAL("clicked()"), self.book)
-        self.connect(quitButton, SIGNAL("clicked()"), self.close)
 
-        self.setWindowTitle("Building Services")
+    def pack(self, action, software, options, job, frame):
+        '''
+        Pack the information into a packet
 
-    def updateUi(self):
-        enabled = False
-        if not self.roomEdit.text().isEmpty() and self.dateEdit.date() > QDate.currentDate():
-            enabled = True
-        if self.request is not None:
-            enabled = False
-        self.bookButton.setEnabled(enabled)
-
-    def closeEvent(self, event):
-        self.socket.close()
-        event.accept()
-
-    def book(self):
-        # example
-        # self.issueRequest(action, command, job, frame)
-        self.issueRequest(QString("BOOK"), self.roomEdit.text(), self.dateEdit.date())
-
-    def issueRequest(self, action, command, date):
+        VARS:
+            action (string) - action to perform
+                    +render - render the give frame
+                    +status - current status of the render
+                        - waiting
+                        - running
+                        - failed
+                    +kill - if rendering, STOP
+                    +log - if rendering, tail the process log
+            software (string) - software to render with
+            options (string) - string of render options
+            job (string) - job NUMBER
+            frame (string) - frame to render, query, etc.
+        '''
         self.request = QByteArray()
         stream = QDataStream(self.request, QIODevice.WriteOnly)
         stream.setVersion(QDataStream.Qt_4_2)
         stream.writeUInt16(0)
-        stream << action << command << date
+
+        # pack the data
+        stream << action << software << options << job << frame
         stream.device().seek(0)
         stream.writeUInt16(self.request.size() - SIZEOF_UINT16)
-        self.updateUi()
+
+        # if the socket is open, close it
         if self.socket.isOpen():
             self.socket.close()
-        self.responseLabel.setText("Connecting to server...")
 
         # once the socket emits connected() self.sendRequest is called
-        self.socket.connectToHost("0.0.0.0", TCP_PORT)
+        self.socket.connectToHost(self.host, self.port)
 
     def sendRequest(self):
-        self.responseLabel.setText("Sending request...")
+        '''Send the packed packet'''
         self.nextBlockSize = 0
         self.socket.write(self.request)
         self.request = None
 
     def readResponse(self):
+        '''Read the response from the server'''
         stream = QDataStream(self.socket)
         stream.setVersion(QDataStream.Qt_4_2)
 
+        # while there is streaming data
         while True:
             if self.nextBlockSize == 0:
                 if self.socket.bytesAvailable() < SIZEOF_UINT16:
@@ -326,30 +293,30 @@ class TCPClient(QWidget):
                 self.nextBlockSize = stream.readUInt16()
             if self.socket.bytesAvailable() < self.nextBlockSize:
                 break
+
             action = QString()
-            command = QString()
-            date = QDate()
-            stream >> action >> command
-            if action != "ERROR":
-                stream >> date
+            software = QString()
+            options = QString()
+            job = QString()
+            frame = QString()
+            scene = QString()
+
+            stream >> action >> job >> frame
             if action == "ERROR":
                 msg = QString("Error: %1").arg(command)
-            elif action == "BOOK":
-                msg = QString("Booked room %1 for %2").arg(command).arg(date.toString(Qt.ISODate))
-            elif action == "UNBOOK":
-                msg = QString("Unbooked room %1 for %2").arg(command).arg(date.toString(Qt.ISODate))
-            self.responseLabel.setText(msg)
-            self.updateUi()
+            elif action == "RENDER":
+                msg = QString("Rendering frame %2 of job %1").arg(job).arg(frame)
+                self._updateStatus('TCPServer', msg, 'green')
             self.nextBlockSize = 0
 
     def serverHasStopped(self):
-        self.responseLabel.setText("Error: Connection closed by server")
+        '''If the server has stopped or been shutdown, close the socket'''
         self.socket.close()
 
     def serverHasError(self, error):
-        self.responseLabel.setText(QString("Error: %1").arg(self.socket.errorString()))
+        '''Gather errors then close the connection'''
+        print QString("Error: %1").arg(self.socket.errorString())
         self.socket.close()
-
 
 class WakeOnLan(object):
     '''Designed to utilize wake on lan to startup a remote machine'''

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Project SYSTEM "Project-4.4.dtd">
 <!-- eric4 project file for project PyFarm_proto1 -->
-<!-- Saved: 2009-01-12, 11:24:31 -->
+<!-- Saved: 2009-01-20, 23:24:57 -->
 <!-- Copyright (C) 2009 Oliver Palmer, oliverpalmer@opalmer.com -->
 <Project version="4.4">
   <ProgLanguage mixed="0">Python</ProgLanguage>
@@ -47,6 +47,18 @@
     <Source>resources/hotel_server/buildingservicesserver.pyw</Source>
     <Source>resources/hotel_server/custom/TCPClient.pyw</Source>
     <Source>resources/hotel_server/custom/TCPServer.pyw</Source>
+    <Source>test_tcp_client.py</Source>
+    <Source>test_tcp_server.py</Source>
+    <Source>lib/TCPClient.pyw</Source>
+    <Source>lib/TCPServer.pyw</Source>
+    <Source>lib/XMLProcessing.py</Source>
+    <Source>resources/easyp2p.py</Source>
+    <Source>resources/hotel_server/buildingservicesclient_ans.pyw</Source>
+    <Source>resources/hotel_server/buildingservicesserver_ans.pyw</Source>
+    <Source>lib/ui/RC1.py</Source>
+    <Source>Main_RC1.pyw</Source>
+    <Source>resources/hotel_server/custom/TCPClient2.pyw</Source>
+    <Source>resources/hotel_server/custom/lib/ui/RC1.py</Source>
   </Sources>
   <Forms>
     <Form>lib/ui/Proto2.ui</Form>
