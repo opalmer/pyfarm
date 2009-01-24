@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Project SYSTEM "Project-4.4.dtd">
 <!-- eric4 project file for project PyFarm_proto1 -->
-<!-- Saved: 2009-01-20, 23:24:57 -->
+<!-- Saved: 2009-01-23, 17:02:28 -->
 <!-- Copyright (C) 2009 Oliver Palmer, oliverpalmer@opalmer.com -->
 <Project version="4.4">
   <ProgLanguage mixed="0">Python</ProgLanguage>
@@ -32,7 +32,6 @@
     <Source>tests/render.py</Source>
     <Source>findClients_client.py</Source>
     <Source>findClients_server.py</Source>
-    <Source>test.py</Source>
     <Source>lib/ThreadFarmer.py</Source>
     <Source>lib/DeadCode.py</Source>
     <Source>lib/ui/Proto1_5.py</Source>
@@ -47,8 +46,6 @@
     <Source>resources/hotel_server/buildingservicesserver.pyw</Source>
     <Source>resources/hotel_server/custom/TCPClient.pyw</Source>
     <Source>resources/hotel_server/custom/TCPServer.pyw</Source>
-    <Source>test_tcp_client.py</Source>
-    <Source>test_tcp_server.py</Source>
     <Source>lib/TCPClient.pyw</Source>
     <Source>lib/TCPServer.pyw</Source>
     <Source>lib/XMLProcessing.py</Source>
@@ -59,6 +56,8 @@
     <Source>Main_RC1.pyw</Source>
     <Source>resources/hotel_server/custom/TCPClient2.pyw</Source>
     <Source>resources/hotel_server/custom/lib/ui/RC1.py</Source>
+    <Source>resources/hotel_server/custom/lib/ui/__init__.py</Source>
+    <Source>Main_proto2.pyw</Source>
   </Sources>
   <Forms>
     <Form>lib/ui/Proto2.ui</Form>

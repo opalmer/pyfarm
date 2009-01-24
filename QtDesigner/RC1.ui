@@ -11,7 +11,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1196</width>
+    <width>1243</width>
     <height>448</height>
    </rect>
   </property>
@@ -19,12 +19,12 @@
    <string>PyFarm -- Release Canidate 1</string>
   </property>
   <widget class="QWidget" name="centralwidget" >
-   <widget class="QWidget" name="" >
+   <widget class="QWidget" name="layoutWidget" >
     <property name="geometry" >
      <rect>
       <x>30</x>
       <y>20</y>
-      <width>1141</width>
+      <width>1191</width>
       <height>371</height>
      </rect>
     </property>
@@ -42,7 +42,7 @@
         <string/>
        </property>
        <property name="currentIndex" >
-        <number>1</number>
+        <number>0</number>
        </property>
        <widget class="QWidget" name="networkToolbox" >
         <attribute name="title" >
@@ -729,7 +729,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1196</width>
+     <width>1243</width>
      <height>26</height>
     </rect>
    </property>

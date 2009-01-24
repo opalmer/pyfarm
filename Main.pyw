@@ -1,173 +1,141 @@
 #!/usr/bin/python
 '''
 AUTHOR: Oliver Palmer
-CONTACT: oliverpalmer@opalmer.com || (703)725-6544
-INITIAL: Dec 19 2008
-PURPOSE: Classes used to call up the render gui and
-submit renders
+CONTACT: opalme20@student.scad.edu || (703)725-6544
+INITIAL: Jan 12 2009
+PURPOSE: TCP client used to send information to the server and react to
+signals sent from the server
 '''
-
+# From Python
 import sys
-import time
-from PyQt4.QtGui import *
+# From PyQt
 from PyQt4.QtCore import *
-from lib.Process import *
+from PyQt4.QtGui import *
+from PyQt4.QtNetwork import *
+# From PyFarm
+from lib.ui.RC1 import Ui_RC1
 from lib.Network import *
-from lib.FarmLog import *
-from lib.ui.Proto2 import Ui_Proto2
 
-__VERSION__ = '0.0.74'
-__AUTHOR__ = 'Oliver Palmer'
-__CONTACT__ = 'opalme20@student.scad.edu'
-__DESCRIPTION__ = 'PyFarm is a distributed \
-rendering package that can be used in everyday \
-production.  Distributed under the General Public \
-License version 3.'
+PORT = 9407
+SIZEOF_UINT16 = 2
 
-log = FarmLog("Main.pyw")
-log.setLevel('debug')
-
-class Proto2(QDialog):
-    '''
-    Prototype class implimenting the Qt Designer generated user
-    interface.
-
-    REQUIRES:
-        Python:
-            sys
-            time
-        PyQt:
-            QDialog
-        PyFarm:
-            lib.ui.ui_Proto1
-            lib.FarmLog
-
-    INPUT:
-        None
-    '''
+class RC1(QMainWindow):
     def __init__(self):
-        # first setup the user interface from QtDesigner
-        super(Proto2, self).__init__()
-        self.ui = Ui_Proto2()
+        super(RC1, self).__init__()
+
+        # setup UI
+        self.ui = Ui_RC1()
         self.ui.setupUi(self)
 
-        # initilize some required variables
-        self.scene = None
-        self.sFrame = self.ui.sFrameBox.value() # get the default value for sFrame
-        self.eFrame = self.ui.eFrameBox.value() # get the default value for eFrame
+        # setup ui vars
         self.hosts = []
-        self.hostNum = 0
-        self.newHosts = 0
-        self.rendering = False
 
-        # Connect Qt signals to actions
-        self.connect(self.ui.renderButton, SIGNAL("pressed()"), self._startRender)
-        self.connect(self.ui.stopRender,  SIGNAL("pressed()"), self._stopRender)
-        self.connect(self.ui.aboutButton,  SIGNAL("pressed()"),  self._about)
-        self.connect(self.ui.findNodesButton,  SIGNAL("pressed()"),  self._getHosts)
-        self.connect(self.ui.sFrameBox,  SIGNAL("valueChanged(int)"),  self._setStartFrame)
-        self.connect(self.ui.eFrameBox,  SIGNAL("valueChanged(int)"),  self._setEndFrame)
-        self.connect(self.ui.sceneEntry,  SIGNAL("textChanged(QString)"),  self._setScene)
+        # setup socket vars
+        self.socket = QTcpSocket()
+        self.nextBlockSize = 0
+        self.request = None
 
-        self._renderButtonSwap()
+        # make signal connections
+        ## ui signals
+        self.connect(self.ui.render, SIGNAL("pressed()"), self._gatherInfo)
+        self.connect(self.ui.findHosts, SIGNAL("pressed()"), self._findHosts)
 
-    def _setScene(self,  value):
-        self.scene = str(value)
-        log.debug('Changed start frame to: %s' % self.scene)
+        ## socket signals
+        self.connect(self.socket, SIGNAL("connected()"), self.sendRequest)
+        self.connect(self.socket, SIGNAL("readyRead()"), self.readResponse)
+        self.connect(self.socket, SIGNAL("disconnected()"), self.serverHasStopped)
+        self.connect(self.socket, SIGNAL("error(QAbstractSocket::SocketError)"), self.serverHasError)
 
-    def _setStartFrame(self,  value):
-        self.sFrame = value
-        self.ui.progressBar.setMinimum(value)
-        log.debug('Changed start frame to: %i' % self.sFrame)
+    def _gatherInfo(self):
+        self.job = self.ui.inputJobName.text()
+        self.sFrame = self.ui.inputStartFrame.text()
+        self.eFrame = self.ui.inputEndFrame.text()
+        self.issueRequest(QString("RENDER"), self.job, self.sFrame)
 
-    def _setEndFrame(self, value):
-        self.eFrame = value
-        self.ui.progressBar.setMaximum(value)
-        log.debug('Changed end frame to: %i' % self.eFrame)
-
-    def _about(self):
-        '''Informs the user about this program'''
-        message = 'AUTHOR: %s \
-               \nCONTACT: %s \
-               \nVERSION: %s \
-               \n\n%s' % \
-        (__AUTHOR__, __CONTACT__,
-        __VERSION__, __DESCRIPTION__)
-
-        about = QMessageBox()
-        about.information(None, "PyFarm -- Prototype 1 - About", message)
-
-    def _doneFindingHosts(self):
-        # inform the user of new hosts
-        self.ui.console.append('<font color=blue>NETWORK</font> - Found %s new hosts' % self.newHosts)
-        self.newHosts = 0
-
-    def _addHost(self, host):
-        '''Given an input host, add it to the host list'''
-        # if it has alredy been added, don't add it
-        if host not in self.hosts:
-            self.hosts.append(host)
-            self.ui.hostList.addItem(host)
-            self.newHosts += 1 # count the number of NEW hosts
-
-    def _getHosts(self):
-        '''Get hosts via mulicast packet, add them to self.hosts'''
-        self.ui.console.append('<font color=blue>NETWORK</font> - Searching for hosts...')
-        findHosts = MulticastServer(self)
+    def _findHosts(self):
+        '''Get hosts via broadcast packet, add them to self.hosts'''
+        self._updateStatus('BroadcastClient (gui)', 'Searching for hosts...', 'green')
+        findHosts = BroadcastServer(self)
         self.connect(findHosts, SIGNAL("gotNode"), self._addHost)
         self.connect(findHosts,  SIGNAL("DONE"),  self._doneFindingHosts)
         findHosts.start()
 
-    def _render(self):
-        '''Run this function to start the render'''
-        self.rendering = True
-        self.ui.console.append('<font color=green>INFO</font> - Rendering')
-        self.ui.progressBar.setValue(0)# reset the progress bar to 0
-        self._renderButtonSwap()
+    def _addHost(self):
+        pass
 
-        # setup the progress bar thread
-        self.progress = ProtoRender(self, self.sFrame, self.eFrame)
-        self.connect(self.progress, SIGNAL('frameComplete'), self.ui.progressBar.setValue)
-        self.connect(self.progress, SIGNAL('progress_done'), self._renderComplete)
-        self.progress.start()
+    def _updateStatus(self, section, msg, color='black'):
+        '''
+        Update the ui's status window
 
-    def _renderButtonSwap(self):
-        '''Swap the current render button state'''
-        if self.rendering:
-            self.ui.renderButton.setDisabled(1)
-            self.ui.stopRender.setDisabled(0)
-        else:
-            self.ui.renderButton.setDisabled(0)
-            self.ui.stopRender.setDisabled(1)
+        VARS:
+            section (string)-- The section to report from (ex. NETWORK)
+            msg (string) - The message to post
+            color (string) - The color name or hex value to set the section
+        '''
+        self.ui.status.append('<font color=%s><b>%s</b></font> - %s' % (color, section, msg))
 
-    def _renderComplete(self):
-        self.rendering = False
-        self._renderButtonSwap()
-        self.ui.console.append('<font color=green>INFO</font> - Rendering Complete')
+    def issueRequest(self, action, job, frame):
+        '''Pack the data and ready it to be sent'''
+        self.request = QByteArray()
+        stream = QDataStream(self.request, QIODevice.WriteOnly)
+        stream.setVersion(QDataStream.Qt_4_2)
+        stream.writeUInt16(0)
+        stream << action << job << frame
+        stream.device().seek(0)
+        stream.writeUInt16(self.request.size() - SIZEOF_UINT16)
+        if self.socket.isOpen():
+            self.socket.close()
+        self._updateStatus('TCPClient (gui)', 'Packing request', 'green')
 
-    def _stopRender(self):
-        self.progress.stop()
-        self.rendering = False
-        self._renderButtonSwap()
-        self.ui.console.append('<font color=red>WARNING</font> - <b>RENDER TERMINATED</b>')
+        # once the socket emits connected() self.sendRequest is called
+        self.socket.connectToHost("localhost", PORT)
 
-    def _startRender(self):
-            '''Once the render button is pressed this function is
-            executed starting the entire render process'''
-            # if scene is not given error out
+    def sendRequest(self):
+        '''Send the requested data to the remote server'''
+        self._updateStatus('TCPClient (gui)', 'Sending request', 'green')
+        self.nextBlockSize = 0
+        self.socket.write(self.request)
+        self.request = None
 
-            if self.scene == None or self.scene == '':
-                self.ui.console.append('<font color=orange>ERROR</font> - You must specify a scene to render')
-            else:
-                # inform the user of their choices
-                self.ui.console.append('<font color=green>INFO</font> - Starting Render')
-                log.debug("Scene: %s" % self.scene)
-                log.debug("Start Frame: %s" % self.sFrame)
-                log.debug("End Frame: %s" % self.eFrame)
-                self._render()
+    def readResponse(self):
+        '''Read the response from the server'''
+        self._updateStatus('TCPServer', 'Successful connection', 'green')
+        self._updateStatus('TCPClient (gui)', 'Reading response', 'green')
+        stream = QDataStream(self.socket)
+        stream.setVersion(QDataStream.Qt_4_2)
+
+        while True:
+            if self.nextBlockSize == 0:
+                if self.socket.bytesAvailable() < SIZEOF_UINT16:
+                    break
+                self.nextBlockSize = stream.readUInt16()
+            if self.socket.bytesAvailable() < self.nextBlockSize:
+                break
+
+            action = QString()
+            job = QString()
+            frame = QString()
+
+            stream >> action >> job >> frame
+            if action == "ERROR":
+                msg = QString("Error: %1").arg(command)
+            elif action == "RENDER":
+                msg = QString("Rendering frame %2 of job %1").arg(job).arg(frame)
+                self._updateStatus('TCPServer', msg, 'green')
+            self.nextBlockSize = 0
+
+    def serverHasStopped(self):
+        '''Run upon server shutdown'''
+        self._updateStatus('TCPClient (gui)', '<font color=red><b>Server Thread Killed</b></font>','green')
+        self.socket.close()
+
+    def serverHasError(self, error):
+        '''Gather errors then close the connection'''
+        self._updateStatus('TCPClient (gui)', QString("<font color='red'><b>Error: %1</b></font>").arg(self.socket.errorString()), 'green')
+        self.socket.close()
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    ui = Proto2()
+    ui = RC1()
     ui.show()
     app.exec_()

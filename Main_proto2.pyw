@@ -14,9 +14,9 @@ from PyQt4.QtCore import *
 from lib.Process import *
 from lib.Network import *
 from lib.FarmLog import *
-from lib.ui.RC1 import Ui_RC1
+from lib.ui.Proto2 import Ui_Proto2
 
-__VERSION__ = '0.1.12'
+__VERSION__ = '0.0.74'
 __AUTHOR__ = 'Oliver Palmer'
 __CONTACT__ = 'opalme20@student.scad.edu'
 __DESCRIPTION__ = 'PyFarm is a distributed \
@@ -27,7 +27,7 @@ License version 3.'
 log = FarmLog("Main.pyw")
 log.setLevel('debug')
 
-class RC1(QDialog):
+class Proto2(QDialog):
     '''
     Prototype class implimenting the Qt Designer generated user
     interface.

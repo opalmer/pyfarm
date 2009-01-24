@@ -47,7 +47,7 @@ class BroadcastServer(QThread):
       NOTE: Get hostname with socket.hostname() <- might be required by QTcpServer
     '''
     def __init__(self,  parent, host='', timeout=5):
-        super(MulticastServer,  self).__init__(parent)
+        super(BroadcastServer,  self).__init__(parent)
         self.log = FarmLog("Network.MulticastServer()")
         self.log.setLevel('debug')
         self.port = BROADCAST_PORT
@@ -352,3 +352,47 @@ class WakeOnLan(object):
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
         sock.sendto(send_data, ('<broadcast>', 7))
+
+
+def ResolveHost(host):
+    '''
+    Given IP address or hostname, return hostname and IP
+
+    VARS:
+        host (string) - hostname or IP address
+
+    OUTPUT:
+        list2 - [hostname, address]
+    '''
+    HOST_LIST = host.split('.')
+    IS_ADDRESS = None
+    IS_HOSTNAME = None
+    digit_groups = 0
+    output = []
+
+    # check to see if we are working with
+    # an IP address or hostname
+    if len(HOST_LIST) == 4:
+        for value in HOST_LIST:
+            if value.isdigit():
+                digit_groups += 1
+            elif value.isalpha():
+                IS_HOSTNAME = True
+                break
+
+        if digit_groups == 4:
+            IS_ADDRESS = True
+    else:
+        IS_HOSTNAME = True
+
+    # if we are working with an address, do this
+    if IS_ADDRESS:
+        output.append(socket.gethostbyaddr(host)[0])
+        output.append(host)
+        return output
+
+    # if we are working with a hostname, do this
+    if IS_HOSTNAME:
+        output.append(host)
+        output.append(socket.gethostbyname(host))
+        return output
