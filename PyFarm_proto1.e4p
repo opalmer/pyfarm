@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Project SYSTEM "Project-4.4.dtd">
 <!-- eric4 project file for project PyFarm_proto1 -->
-<!-- Saved: 2009-01-23, 17:02:28 -->
+<!-- Saved: 2009-01-24, 17:55:17 -->
 <!-- Copyright (C) 2009 Oliver Palmer, oliverpalmer@opalmer.com -->
 <Project version="4.4">
   <ProgLanguage mixed="0">Python</ProgLanguage>
@@ -53,11 +53,16 @@
     <Source>resources/hotel_server/buildingservicesclient_ans.pyw</Source>
     <Source>resources/hotel_server/buildingservicesserver_ans.pyw</Source>
     <Source>lib/ui/RC1.py</Source>
-    <Source>Main_RC1.pyw</Source>
     <Source>resources/hotel_server/custom/TCPClient2.pyw</Source>
     <Source>resources/hotel_server/custom/lib/ui/RC1.py</Source>
     <Source>resources/hotel_server/custom/lib/ui/__init__.py</Source>
     <Source>Main_proto2.pyw</Source>
+    <Source>test.py</Source>
+    <Source>lib/ui/testing.py</Source>
+    <Source>tableTest.py</Source>
+    <Source>testingTable.pyw</Source>
+    <Source>lib/ui/AddCustomHost.py</Source>
+    <Source>lib/ui/AddCustomHost_BACKUP.py</Source>
   </Sources>
   <Forms>
     <Form>lib/ui/Proto2.ui</Form>

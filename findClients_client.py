@@ -2,5 +2,5 @@
 
 from lib.Network import *
 
-client = MulticastClient()
+client = BroadcastClient()
 client.run()

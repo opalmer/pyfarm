@@ -14,7 +14,9 @@ from PyQt4.QtGui import *
 from PyQt4.QtNetwork import *
 # From PyFarm
 from lib.ui.RC1 import Ui_RC1
+from lib.ui.AddCustomHost import Ui_AddCustomHost
 from lib.Network import *
+from lib.Util import *
 
 PORT = 9407
 SIZEOF_UINT16 = 2
@@ -29,6 +31,10 @@ class RC1(QMainWindow):
 
         # setup ui vars
         self.hosts = []
+        self.foundHosts = 0
+        self.ui.networkTable.setAlternatingRowColors(True)
+        self.netTable = self.ui.networkTable
+        self.netTable.horizontalHeader().setStretchLastSection(True)
 
         # setup socket vars
         self.socket = QTcpSocket()
@@ -46,7 +52,85 @@ class RC1(QMainWindow):
         self.connect(self.socket, SIGNAL("disconnected()"), self.serverHasStopped)
         self.connect(self.socket, SIGNAL("error(QAbstractSocket::SocketError)"), self.serverHasError)
 
+        ## network section signals
+        self.connect(self.netTable, SIGNAL("cellPressed(int,int)"), self._getRow)
+        self.connect(self.ui.disableHost, SIGNAL("pressed()"), self._disableHosts)
+        self.connect(self.ui.addHost, SIGNAL("pressed()"), self._customHostDialog)
+
+        # run some programs
+
+    def _customHostDialog(self):
+        ''''Open a dialog to add a custom host'''
+        self.customHostDialog = Ui_AddCustomHost()
+        self.connect(self.customHostDialog.buttons, SIGNAL("accepted()"), self._addCustomHost)
+        self.customHostDialog.exec_()
+
+    def _addCustomHost(self):
+        '''Add the custom host to self.hosts and the gui, close the dialog'''
+        host = self.customHostDialog.inputHost.text()
+        self.addHost(str(host))
+        self.customHostDialog.close()
+
+    def addHost(self, host, warnHostExists=True):
+        '''
+        Add the given host to the table
+
+        INPUT:
+            host (string) - host to add
+            warnHostExists (bool) - if false, do not popup info about
+            hosts that have already been added
+        '''
+        # check to make sure the host is valid
+        if ResolveHost(host) == 'BAD_HOST':
+            msg = QMessageBox()
+            msg.critical(None, "Bad host or IP", unicode("Sorry %s could not be resolved, please check your entry and try again." % host))
+        else:
+            # prepare the information
+            self.currentHost = []
+            self.currentHost.append(ResolveHost(host)[0])
+            self.currentHost.append(ResolveHost(host)[1])
+            self.currentHost.append('Waiting')
+
+            # if the current host has not been added
+            if self.currentHost not in self.hosts:
+                self.hosts.append(self.currentHost)
+                self._addHostToTable(self.currentHost)
+                self.foundHosts += 1
+            else:
+                if warnHostExists:
+                    msg = QMessageBox()
+                    msg.information(None, "Host Already Added", unicode("%s has already been added to the list." % host))
+                else:
+                    pass
+
+    def addHostFromBroadcast(self, host):
+        '''Add a host generated from the broadcast packet'''
+        self.addHost(host, False)
+
+    def _addHostToTable(self, resolvedHost):
+        '''Add the given host to the table'''
+        y = 0
+        x = self.ui.networkTable.rowCount()
+        self.ui.networkTable.insertRow(self.ui.networkTable.rowCount())
+
+        for attribute in resolvedHost:
+            item = QTableWidgetItem(attribute)
+            self.ui.networkTable.setItem(x, y, item)
+            y += 1
+
+        self.netTable.resizeColumnsToContents()
+        print self.hosts
+
+    def _getRow(self, selection):
+        print selection
+
+    def _disableHosts(self):
+        pass
+        #for i in list(self.netTable.selectedItems()):
+            #print i.text()
+
     def _gatherInfo(self):
+        '''Gather information about the current job'''
         self.job = self.ui.inputJobName.text()
         self.sFrame = self.ui.inputStartFrame.text()
         self.eFrame = self.ui.inputEndFrame.text()
@@ -54,16 +138,19 @@ class RC1(QMainWindow):
 
     def _findHosts(self):
         '''Get hosts via broadcast packet, add them to self.hosts'''
-        self._updateStatus('BroadcastClient (gui)', 'Searching for hosts...', 'green')
+        self.updateStatus('BroadcastClient (gui)', 'Searching for hosts...', 'green')
         findHosts = BroadcastServer(self)
-        self.connect(findHosts, SIGNAL("gotNode"), self._addHost)
+        self.connect(findHosts, SIGNAL("gotNode"), self.addHostFromBroadcast)
         self.connect(findHosts,  SIGNAL("DONE"),  self._doneFindingHosts)
         findHosts.start()
 
-    def _addHost(self):
-        pass
+    def _doneFindingHosts(self):
+        '''Functions to run when done finding hosts'''
+        # inform the user of the number of hosts found
+        self.updateStatus('BroadcastClient (gui)', 'Found %i new hosts, search complete.' % self.foundHosts, 'green')
+        self.foundHosts = 0
 
-    def _updateStatus(self, section, msg, color='black'):
+    def updateStatus(self, section, msg, color='black'):
         '''
         Update the ui's status window
 
@@ -85,22 +172,22 @@ class RC1(QMainWindow):
         stream.writeUInt16(self.request.size() - SIZEOF_UINT16)
         if self.socket.isOpen():
             self.socket.close()
-        self._updateStatus('TCPClient (gui)', 'Packing request', 'green')
+        self.updateStatus('TCPClient (gui)', 'Packing request', 'green')
 
         # once the socket emits connected() self.sendRequest is called
         self.socket.connectToHost("localhost", PORT)
 
     def sendRequest(self):
         '''Send the requested data to the remote server'''
-        self._updateStatus('TCPClient (gui)', 'Sending request', 'green')
+        self.updateStatus('TCPClient (gui)', 'Sending request', 'green')
         self.nextBlockSize = 0
         self.socket.write(self.request)
         self.request = None
 
     def readResponse(self):
         '''Read the response from the server'''
-        self._updateStatus('TCPServer', 'Successful connection', 'green')
-        self._updateStatus('TCPClient (gui)', 'Reading response', 'green')
+        self.updateStatus('TCPServer', 'Successful connection', 'green')
+        self.updateStatus('TCPClient (gui)', 'Reading response', 'green')
         stream = QDataStream(self.socket)
         stream.setVersion(QDataStream.Qt_4_2)
 
@@ -121,17 +208,17 @@ class RC1(QMainWindow):
                 msg = QString("Error: %1").arg(command)
             elif action == "RENDER":
                 msg = QString("Rendering frame %2 of job %1").arg(job).arg(frame)
-                self._updateStatus('TCPServer', msg, 'green')
+                self.updateStatus('TCPServer', msg, 'green')
             self.nextBlockSize = 0
 
     def serverHasStopped(self):
         '''Run upon server shutdown'''
-        self._updateStatus('TCPClient (gui)', '<font color=red><b>Server Thread Killed</b></font>','green')
+        self.updateStatus('TCPClient (gui)', '<font color=red><b>Server Thread Killed</b></font>','green')
         self.socket.close()
 
     def serverHasError(self, error):
         '''Gather errors then close the connection'''
-        self._updateStatus('TCPClient (gui)', QString("<font color='red'><b>Error: %1</b></font>").arg(self.socket.errorString()), 'green')
+        self.updateStatus('TCPClient (gui)', QString("<font color='red'><b>Error: %1</b></font>").arg(self.socket.errorString()), 'green')
         self.socket.close()
 
 if __name__ == "__main__":

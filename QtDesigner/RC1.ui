@@ -67,8 +67,20 @@
            <bold>false</bold>
           </font>
          </property>
+         <property name="statusTip" >
+          <string>Connected Hosts</string>
+         </property>
          <property name="editTriggers" >
           <set>QAbstractItemView::NoEditTriggers</set>
+         </property>
+         <property name="dragDropOverwriteMode" >
+          <bool>false</bool>
+         </property>
+         <property name="selectionMode" >
+          <enum>QAbstractItemView::ContiguousSelection</enum>
+         </property>
+         <property name="selectionBehavior" >
+          <enum>QAbstractItemView::SelectRows</enum>
          </property>
          <column>
           <property name="text" >
@@ -77,12 +89,7 @@
          </column>
          <column>
           <property name="text" >
-           <string>IP</string>
-          </property>
-         </column>
-         <column>
-          <property name="text" >
-           <string>Port</string>
+           <string>IP Address</string>
           </property>
          </column>
          <column>

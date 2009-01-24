@@ -63,13 +63,13 @@ class BroadcastServer(QThread):
             nodes = []
             # get ready to broadcast
             self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
-            self.sock.sendto("I'm a server, my name is %s" % System().name(), self.dest)
+            self.sock.sendto("I'm a server, my name is %s" % socket.gethostname(), self.dest)
             self.log.debug("Looking for nodes; press Ctrl-C to stop.")
 
             while True:
                 (message, address) = self.sock.recvfrom(2048)
-                self.log.debug("Found Node: %s:%s" % (address[0], address[1]))
-                self.emit(SIGNAL('gotNode'), '%s:%s' % (address[0], str(address[1])))
+                self.log.debug("Found Node: %s" % address[0])
+                self.emit(SIGNAL('gotNode'), '%s' % address[0])
 
         except (socket.timeout,  socket.error):
             pass
@@ -104,8 +104,8 @@ class BroadcastClient(QThread):
     NOTE: Get hostname with socket.hostname() <- might be required by QTcpServer
     '''
     def __init__(self, host='', parent=None):
-        super(MulticastClient,  self).__init__(parent)
-        self.log = FarmLog("Network.MulticastClient()")
+        super(BroadcastClient,  self).__init__(parent)
+        self.log = FarmLog("Network.BroadcastClient()")
         self.log.setLevel('debug')
         self.port = BROADCAST_PORT
         self.host = host
@@ -122,10 +122,10 @@ class BroadcastClient(QThread):
             try:
                 # this loop is run ever time a connection comes in
                 message, address = self.sock.recvfrom(8192) # get the connection info and message
-                self.log.debug("Found Server: %s:%s" % (address[0], address[1]))
+                self.log.debug("Found Server: %s" % address[0])
 
                 # Now, reply back to the server with our address and message
-                self.sock.sendto("I'm a client, my name is %s" % System().name(), address)
+                self.sock.sendto("I'm a client, my name is %s" % socket.gethostname(), address)
 
             except (KeyboardInterrupt, SystemExit):
                 sys.exit(self.log.critical('PROGRAM TERMINATED'))
@@ -353,7 +353,6 @@ class WakeOnLan(object):
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
         sock.sendto(send_data, ('<broadcast>', 7))
 
-
 def ResolveHost(host):
     '''
     Given IP address or hostname, return hostname and IP
@@ -364,35 +363,15 @@ def ResolveHost(host):
     OUTPUT:
         list2 - [hostname, address]
     '''
-    HOST_LIST = host.split('.')
-    IS_ADDRESS = None
-    IS_HOSTNAME = None
-    digit_groups = 0
     output = []
-
-    # check to see if we are working with
-    # an IP address or hostname
-    if len(HOST_LIST) == 4:
-        for value in HOST_LIST:
-            if value.isdigit():
-                digit_groups += 1
-            elif value.isalpha():
-                IS_HOSTNAME = True
-                break
-
-        if digit_groups == 4:
-            IS_ADDRESS = True
-    else:
-        IS_HOSTNAME = True
-
-    # if we are working with an address, do this
-    if IS_ADDRESS:
+    try:
         output.append(socket.gethostbyaddr(host)[0])
-        output.append(host)
-        return output
+    except (socket.gaierror, socket.herror):
+        return "BAD_HOST"
 
-    # if we are working with a hostname, do this
-    if IS_HOSTNAME:
-        output.append(host)
-        output.append(socket.gethostbyname(host))
-        return output
+    try:
+        output.append(socket.gethostbyaddr(host)[2][0])
+    except (socket.gaierror, socket.herror):
+        return "BAD_HOST"
+
+    return output
