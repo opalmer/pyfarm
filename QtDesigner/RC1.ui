@@ -77,7 +77,7 @@
           <bool>false</bool>
          </property>
          <property name="selectionMode" >
-          <enum>QAbstractItemView::ContiguousSelection</enum>
+          <enum>QAbstractItemView::SingleSelection</enum>
          </property>
          <property name="selectionBehavior" >
           <enum>QAbstractItemView::SelectRows</enum>

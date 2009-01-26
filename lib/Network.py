@@ -48,8 +48,6 @@ class BroadcastServer(QThread):
     '''
     def __init__(self,  parent, host='', timeout=5):
         super(BroadcastServer,  self).__init__(parent)
-        self.log = FarmLog("Network.MulticastServer()")
-        self.log.setLevel('debug')
         self.port = BROADCAST_PORT
         self.host = host
         self.dest = ('<broadcast>', self.port)
@@ -64,11 +62,11 @@ class BroadcastServer(QThread):
             # get ready to broadcast
             self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
             self.sock.sendto("I'm a server, my name is %s" % socket.gethostname(), self.dest)
-            self.log.debug("Looking for nodes; press Ctrl-C to stop.")
+            print "Looking for nodes; press Ctrl-C to stop."
 
             while True:
                 (message, address) = self.sock.recvfrom(2048)
-                self.log.debug("Found Node: %s" % address[0])
+                print "Found Node: %s" % address[0]
                 self.emit(SIGNAL('gotNode'), '%s' % address[0])
 
         except (socket.timeout,  socket.error):
@@ -105,8 +103,6 @@ class BroadcastClient(QThread):
     '''
     def __init__(self, host='', parent=None):
         super(BroadcastClient,  self).__init__(parent)
-        self.log = FarmLog("Network.BroadcastClient()")
-        self.log.setLevel('debug')
         self.port = BROADCAST_PORT
         self.host = host
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -116,24 +112,19 @@ class BroadcastClient(QThread):
         self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
         self.sock.bind((self.host, self.port)) #setup a socket to receieve a connection
-        self.log.debug("Looking for server; press Ctrl-C to stop.")
+        print "Looking for server; press Ctrl-C to stop."
 
         while True:
             try:
                 # this loop is run ever time a connection comes in
                 message, address = self.sock.recvfrom(8192) # get the connection info and message
-                self.log.debug("Found Server: %s" % address[0])
+                print "Found Server: %s" % address[0]
 
                 # Now, reply back to the server with our address and message
                 self.sock.sendto("I'm a client, my name is %s" % socket.gethostname(), address)
 
             except (KeyboardInterrupt, SystemExit):
-                sys.exit(self.log.critical('PROGRAM TERMINATED'))
-
-
-class UDPServer(QThread):
-    '''Simple server to send udp communications'''
-    pass
+                sys.exit('PROGRAM TERMINATED')
 
 
 class UDPClient(QThread):

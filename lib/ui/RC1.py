@@ -2,12 +2,13 @@
 
 # Form implementation generated from reading ui file 'QtDesigner/RC1.ui'
 #
-# Created: Sat Jan 24 00:47:28 2009
+# Created: Sat Jan 24 19:23:17 2009
 #      by: PyQt4 UI code generator 4.4.3
 #
 # WARNING! All changes made in this file will be lost!
 
 from PyQt4 import QtCore, QtGui
+
 
 class Ui_RC1(object):
     def setupUi(self, RC1):
@@ -33,6 +34,7 @@ class Ui_RC1(object):
         self.networkToolbox.setObjectName("networkToolbox")
         self.networkTable = QtGui.QTableWidget(self.networkToolbox)
         self.networkTable.setGeometry(QtCore.QRect(20, 20, 411, 231))
+        self.networkTable.setObjectName("networkTable")
         font = QtGui.QFont()
         font.setPointSize(10)
         font.setWeight(50)
@@ -40,9 +42,8 @@ class Ui_RC1(object):
         self.networkTable.setFont(font)
         self.networkTable.setEditTriggers(QtGui.QAbstractItemView.NoEditTriggers)
         self.networkTable.setDragDropOverwriteMode(False)
-        self.networkTable.setSelectionMode(QtGui.QAbstractItemView.ContiguousSelection)
+        self.networkTable.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
         self.networkTable.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
-        self.networkTable.setObjectName("networkTable")
         self.networkTable.setColumnCount(3)
         self.networkTable.setRowCount(0)
         item = QtGui.QTableWidgetItem()
@@ -467,4 +468,3 @@ class Ui_RC1(object):
         self.menuHelp_bugs.setStatusTip(QtGui.QApplication.translate("RC1", "Submit and review the latest bugs for PyFarm", None, QtGui.QApplication.UnicodeUTF8))
         self.menuHelp_diagnostics.setText(QtGui.QApplication.translate("RC1", "Diagnostic Utilities", None, QtGui.QApplication.UnicodeUTF8))
         self.menuHelp_diagnostics.setStatusTip(QtGui.QApplication.translate("RC1", "Utilities used to perform basic checks on PyFarm\'s health [ Not implimented yet ]", None, QtGui.QApplication.UnicodeUTF8))
-

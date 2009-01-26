@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Project SYSTEM "Project-4.4.dtd">
 <!-- eric4 project file for project PyFarm_proto1 -->
-<!-- Saved: 2009-01-24, 17:55:17 -->
+<!-- Saved: 2009-01-25, 20:49:47 -->
 <!-- Copyright (C) 2009 Oliver Palmer, oliverpalmer@opalmer.com -->
 <Project version="4.4">
   <ProgLanguage mixed="0">Python</ProgLanguage>
@@ -61,12 +61,11 @@
     <Source>lib/ui/testing.py</Source>
     <Source>tableTest.py</Source>
     <Source>testingTable.pyw</Source>
-    <Source>lib/ui/AddCustomHost.py</Source>
-    <Source>lib/ui/AddCustomHost_BACKUP.py</Source>
+    <Source>resources/events.pyw</Source>
+    <Source>resources/pagedesigner_ans.pyw</Source>
+    <Source>lib/ui/CustomWidgets.py</Source>
   </Sources>
   <Forms>
-    <Form>lib/ui/Proto2.ui</Form>
-    <Form>lib/ui/Proto2_addHost.ui</Form>
   </Forms>
   <Translations>
   </Translations>

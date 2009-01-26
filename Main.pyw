@@ -13,10 +13,13 @@ from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from PyQt4.QtNetwork import *
 # From PyFarm
+## ui components
 from lib.ui.RC1 import Ui_RC1
-from lib.ui.AddCustomHost import Ui_AddCustomHost
-from lib.Network import *
+from lib.ui.CustomWidgets import *
+#from lib.ui.AddCustomHost import AddHostDialog
+## general libs
 from lib.Util import *
+from lib.Network import *
 
 PORT = 9407
 SIZEOF_UINT16 = 2
@@ -29,12 +32,16 @@ class RC1(QMainWindow):
         self.ui = Ui_RC1()
         self.ui.setupUi(self)
 
+        # add external libs
+        self.netTableLib = NetworkTable()
+
         # setup ui vars
         self.hosts = []
         self.foundHosts = 0
         self.ui.networkTable.setAlternatingRowColors(True)
         self.netTable = self.ui.networkTable
         self.netTable.horizontalHeader().setStretchLastSection(True)
+        self.message = QString()
 
         # setup socket vars
         self.socket = QTcpSocket()
@@ -53,15 +60,82 @@ class RC1(QMainWindow):
         self.connect(self.socket, SIGNAL("error(QAbstractSocket::SocketError)"), self.serverHasError)
 
         ## network section signals
-        self.connect(self.netTable, SIGNAL("cellPressed(int,int)"), self._getRow)
         self.connect(self.ui.disableHost, SIGNAL("pressed()"), self._disableHosts)
         self.connect(self.ui.addHost, SIGNAL("pressed()"), self._customHostDialog)
+        self.connect(self.ui.removeHost, SIGNAL("pressed()"), self._removeSelectedHost)
 
         # run some programs
+        '''
+        // create table, let it be as follows
+        QTableWidget *table = new QTableWidget;
+        connect(table, SIGNAL(customContextMenuRequested ( const QPoint &)), this, SLOT(popupYourMenu(const QPoint &)));
+
+        void YourClass:popupYourMenu(const QPoint & pos)
+        {
+        // create popupMenu as QMenu object
+        // populate it
+
+        popupMenu->popup(pos);
+        }
+        '''
+    def contextMenuEvent(self, event):
+        menu = QMenu(self)
+        oneAction = menu.addAction("&One")
+        twoAction = menu.addAction("&Two")
+        self.connect(oneAction, SIGNAL("triggered()"), self.one)
+        self.connect(twoAction, SIGNAL("triggered()"), self.two)
+        menu.exec_(event.globalPos())
+
+    def one(self):
+        self.message = QString("Menu option One")
+        print "Menu option One"
+        #self.update()
+
+    def two(self):
+        self.message = QString("Menu option Two")
+        print "Menu option Two"
+        #self.update()
+
+#    def three(self):
+#        self.message = QString("Menu option Three")
+#        print "Menu option Three"
+#        self.update()
+
+#    def event(self, event):
+#        if event.type() == QEvent.KeyPress and \
+#           event.key() == Qt.Key_Tab:
+#            self.key = QString("Tab captured in event()")
+#            print "Captured tab"
+#            self.update()
+#            return True
+#        return QWidget.event(self, event)
+
+    def _removeSelectedHost(self):
+        '''Remove the currently selected host'''
+        lineHost = self._getHostSelection()
+        self.hosts.remove(lineHost[1])
+        self.netTable.removeRow(lineHost[0])
+
+    def _getHostSelection(self):
+        '''
+        Get the current host selection
+
+        OUTPUT:
+            list2 - [rowNum, [hostname, ipaddress, status]]
+        '''
+        output = []
+        tmp = []
+        output.append(list(self.netTable.selectedIndexes())[0].row())
+        for i in list(self.netTable.selectedItems()):
+            tmp.append(str(i.text()))
+
+        output.append(tmp)
+
+        return output
 
     def _customHostDialog(self):
         ''''Open a dialog to add a custom host'''
-        self.customHostDialog = Ui_AddCustomHost()
+        self.customHostDialog = AddHostDialog()
         self.connect(self.customHostDialog.buttons, SIGNAL("accepted()"), self._addCustomHost)
         self.customHostDialog.exec_()
 
@@ -87,14 +161,15 @@ class RC1(QMainWindow):
         else:
             # prepare the information
             self.currentHost = []
+            self.hostStatusMenu = HostStatus(self)
             self.currentHost.append(ResolveHost(host)[0])
             self.currentHost.append(ResolveHost(host)[1])
-            self.currentHost.append('Waiting')
+            self.currentHost.append('Online')
 
             # if the current host has not been added
             if self.currentHost not in self.hosts:
                 self.hosts.append(self.currentHost)
-                self._addHostToTable(self.currentHost)
+                self.addHostToTable(self.currentHost)
                 self.foundHosts += 1
             else:
                 if warnHostExists:
@@ -107,7 +182,7 @@ class RC1(QMainWindow):
         '''Add a host generated from the broadcast packet'''
         self.addHost(host, False)
 
-    def _addHostToTable(self, resolvedHost):
+    def addHostToTable(self, resolvedHost):
         '''Add the given host to the table'''
         y = 0
         x = self.ui.networkTable.rowCount()
@@ -118,16 +193,19 @@ class RC1(QMainWindow):
             self.ui.networkTable.setItem(x, y, item)
             y += 1
 
-        self.netTable.resizeColumnsToContents()
-        print self.hosts
+#        a = QTableWidgetItem()
+#        b = HostStatusMenu(self)
+#        a.setData(0, QVariant(b.resize(300, 300)))
+#        b.show()
+#        self.ui.networkTable.setItem(x, 2, a)
 
-    def _getRow(self, selection):
-        print selection
+        #self.netTable.resizeColumnsToContents()
 
     def _disableHosts(self):
-        pass
-        #for i in list(self.netTable.selectedItems()):
-            #print i.text()
+        print "Disable"
+        row = self._getHostSelection()[0]
+        item = QTableWidgetItem('Offline')
+        self.netTable.setItem(2, row, item)
 
     def _gatherInfo(self):
         '''Gather information about the current job'''
@@ -221,8 +299,8 @@ class RC1(QMainWindow):
         self.updateStatus('TCPClient (gui)', QString("<font color='red'><b>Error: %1</b></font>").arg(self.socket.errorString()), 'green')
         self.socket.close()
 
-if __name__ == "__main__":
-    app = QApplication(sys.argv)
-    ui = RC1()
-    ui.show()
-    app.exec_()
+
+app = QApplication(sys.argv)
+ui = RC1()
+ui.show()
+app.exec_()
