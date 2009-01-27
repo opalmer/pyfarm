@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Project SYSTEM "Project-4.4.dtd">
 <!-- eric4 project file for project PyFarm_proto1 -->
-<!-- Saved: 2009-01-25, 20:49:47 -->
+<!-- Saved: 2009-01-26, 19:35:12 -->
 <!-- Copyright (C) 2009 Oliver Palmer, oliverpalmer@opalmer.com -->
 <Project version="4.4">
   <ProgLanguage mixed="0">Python</ProgLanguage>
@@ -64,6 +64,9 @@
     <Source>resources/events.pyw</Source>
     <Source>resources/pagedesigner_ans.pyw</Source>
     <Source>lib/ui/CustomWidgets.py</Source>
+    <Source>QProcessTest.pyw</Source>
+    <Source>lib/ui/QProcessTesting.py</Source>
+    <Source>lib/ui/RC1_BACKUP.py</Source>
   </Sources>
   <Forms>
   </Forms>
