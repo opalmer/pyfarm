@@ -81,8 +81,6 @@ class QProcessTest(QWidget):
         else:
             self.debugOut("PID: %s" % self.process.pid())
 
-
-
     def startCommand(self):
         '''Start the command here'''
         self.debugOut("Starting the process")
