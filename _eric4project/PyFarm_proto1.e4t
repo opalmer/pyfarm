@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Tasks SYSTEM "Tasks-4.2.dtd">
+<!-- eric4 tasks file for project PyFarm_proto1 -->
+<!-- Saved: 2009-01-27, 22:16:02 -->
+<Tasks version="4.2">
+  <Task priority="1" completed="False" bugfix="False">
+    <Summary>TODO: Create a working child of the queue standard module</Summary>
+    <Description></Description>
+    <Created>2009-01-27, 20:30:20</Created>
+    <Resource>
+      <Filename>lib/Que.py</Filename>
+      <Linenumber>8</Linenumber>
+    </Resource>
+  </Task>
+</Tasks>

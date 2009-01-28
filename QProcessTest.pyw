@@ -6,6 +6,7 @@ INITIAL: Jan 26 2009
 PURPOSE: Small gui to learn about and test QProcess
 '''
 
+import os
 import sys
 from PyQt4.QtGui import *
 from PyQt4.QtCore import *
@@ -17,11 +18,11 @@ class QProcessTest(QWidget):
         self.ui = Ui_QProcessTest()
         self.ui.setupUi(self)
 
-        # setup buttons
-        self.startButton = self.ui.startButton
-        self.stopButton = self.ui.stopButton
-        self.connect(self.startButton, SIGNAL("clicked()"), self.startCommand)
-        self.connect(self.stopButton, SIGNAL("clicked()"), self.stopCommand)
+        # setup buttons and line edits
+        self.connect(self.ui.startButton, SIGNAL("clicked()"), self.startCommand)
+        self.connect(self.ui.stopButton, SIGNAL("clicked()"), self.stopCommand)
+        self.connect(self.ui.command, SIGNAL("editingFinished()"), self.setCommand)
+        self.connect(self.ui.arguments, SIGNAL("editingFinished()"), self.setArguments)
 
         # setup the output consoles
         self.mainOutLine = 1
@@ -37,17 +38,22 @@ class QProcessTest(QWidget):
         self.connect(self.process, SIGNAL("readyReadStandardOutput()"), self.readStandardOutput)
         self.connect(self.process, SIGNAL("readyReadStandardError()"), self.readErrorOutput)
 
-        # log setup
-        #self.stdOut = QString('/home/opalmer/stdout.log')
-        #self.stdErr = QString('/home/opalmer/stderr.log')
-        #self.process.setStandardErrorFile(self.stdErr)
-        #self.process.setStandardOutputFile(self.stdOut)
+    def setCommand(self):
+        '''Called by the command line edit, sets self.command'''
+        self.command = self.ui.command.text()
+        self.debugOut("Command: %s" % self.command)
 
-        # setup some defaults, so we don't have to
-        cmd = QString('/bin/ping')
-        arg = QString('-c 10 google.com')
-        self.ui.command.setText(cmd)
-        self.ui.arguments.setText(arg)
+    def setArguments(self):
+        '''Called by the arguments line edit, sets self.arguments'''
+        self.arguments = QStringList()
+        for arg in self.ui.arguments.text().split(' '):
+            self.arguments.append(arg)
+
+        args = []
+        for i in self.arguments:
+            args.append(str(i))
+
+        self.debugOut("Arguments: %s" % args)
 
     def readStandardOutput(self):
         '''Read the standard output of a process'''
@@ -61,32 +67,26 @@ class QProcessTest(QWidget):
         '''Run when self.process emits finished(int), exit code captured'''
         self.debugOut("Process Finished")
         self.debugOut("Exit Code: %i" % self.process.exitCode())
-        self.startButton.setEnabled(True)
-        self.stopButton.setEnabled(False)
+        self.ui.startButton.setEnabled(True)
+        self.ui.stopButton.setEnabled(False)
 
     def processRunning(self):
         '''Called when self.process emits started()'''
         self.debugOut("Process Running")
-        self.startButton.setEnabled(False)
-        self.stopButton.setEnabled(True)
-        self.debugOut("PID: %s" % self.process.pid())
+        self.ui.startButton.setEnabled(False)
+        self.ui.stopButton.setEnabled(True)
+
+        if os.name == 'nt':
+            self.debugOut('PID: <i>Not available on windows</i>')
+        else:
+            self.debugOut("PID: %s" % self.process.pid())
+
+
 
     def startCommand(self):
         '''Start the command here'''
         self.debugOut("Starting the process")
-        self.debugOut("Command: %s" % self.ui.command.text())
-
-        # split of the arguments, add them to self.arguments
-        for arg in self.ui.arguments.text().split(' '):
-            self.arguments.append(arg)
-
-        # log the arguments to the debug console
-        args = []
-        for i in list(self.arguments):
-            args.append(str(i))
-        self.debugOut("Arguments: %s" % args)
-
-        self.process.start(self.ui.command.text(), self.arguments)
+        self.process.start(self.command, self.arguments)
 
     def stopCommand(self):
         '''Stop running command'''
