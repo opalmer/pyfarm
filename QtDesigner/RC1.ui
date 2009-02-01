@@ -42,7 +42,7 @@
         <string/>
        </property>
        <property name="currentIndex" >
-        <number>0</number>
+        <number>1</number>
        </property>
        <widget class="QWidget" name="networkToolbox" >
         <attribute name="title" >
@@ -291,7 +291,7 @@
            <x>12</x>
            <y>26</y>
            <width>575</width>
-           <height>109</height>
+           <height>143</height>
           </rect>
          </property>
          <layout class="QVBoxLayout" name="verticalLayout" >
@@ -330,9 +330,6 @@
             </item>
             <item>
              <widget class="QPushButton" name="browseForScene" >
-              <property name="enabled" >
-               <bool>false</bool>
-              </property>
               <property name="font" >
                <font>
                 <pointsize>10</pointsize>
@@ -341,7 +338,7 @@
                </font>
               </property>
               <property name="statusTip" >
-               <string>Browse for scene to render [ Not implimented yet ]</string>
+               <string>Browse for scene to render</string>
               </property>
               <property name="text" >
                <string>Browse</string>
@@ -527,7 +524,7 @@
                  <number>1</number>
                 </property>
                 <property name="maximum" >
-                 <number>500000000</number>
+                 <number>999999999</number>
                 </property>
                 <property name="value" >
                  <number>1</number>
@@ -578,6 +575,9 @@
                 <property name="minimum" >
                  <number>1</number>
                 </property>
+                <property name="maximum" >
+                 <number>999999999</number>
+                </property>
                </widget>
               </item>
               <item>
@@ -624,9 +624,29 @@
                 <property name="minimum" >
                  <number>1</number>
                 </property>
+                <property name="maximum" >
+                 <number>999999999</number>
+                </property>
                </widget>
               </item>
              </layout>
+            </item>
+            <item>
+             <widget class="QCheckBox" name="useMentalRay" >
+              <property name="font" >
+               <font>
+                <pointsize>10</pointsize>
+                <weight>50</weight>
+                <bold>false</bold>
+               </font>
+              </property>
+              <property name="statusTip" >
+               <string>If enabled, rendering will be done with mentalray</string>
+              </property>
+              <property name="text" >
+               <string>Mental Ray</string>
+              </property>
+             </widget>
             </item>
             <item>
              <spacer name="horizontalSpacer" >

@@ -8,6 +8,7 @@ signals sent from the server
 '''
 # From Python
 import sys
+import os.path
 # From PyQt
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
@@ -19,6 +20,7 @@ from lib.ui.CustomWidgets import *
 #from lib.ui.AddCustomHost import AddHostDialog
 ## general libs
 from lib.Util import *
+from lib.Que import *
 from lib.Network import *
 
 PORT = 9407
@@ -39,9 +41,12 @@ class RC1(QMainWindow):
         self.hosts = []
         self.foundHosts = 0
         self.ui.networkTable.setAlternatingRowColors(True)
+        self.software = self.ui.softwarePackages
         self.netTable = self.ui.networkTable
         self.netTable.horizontalHeader().setStretchLastSection(True)
         self.message = QString()
+        self.scene = ''
+        self.que = PriorityQueue()
 
         # setup socket vars
         self.socket = QTcpSocket()
@@ -52,6 +57,7 @@ class RC1(QMainWindow):
         ## ui signals
         self.connect(self.ui.render, SIGNAL("pressed()"), self._gatherInfo)
         self.connect(self.ui.findHosts, SIGNAL("pressed()"), self._findHosts)
+        self.connect(self.ui.browseForScene, SIGNAL("pressed()"), self._browseForScene)
 
         ## socket signals
         self.connect(self.socket, SIGNAL("connected()"), self.sendRequest)
@@ -78,6 +84,19 @@ class RC1(QMainWindow):
         popupMenu->popup(pos);
         }
         '''
+    def _browseForScene(self):
+        '''Browse for a scene to render'''
+        getScene = QFileDialog.getOpenFileName(\
+            None,
+            self.trUtf8("Select File"),
+            QString(),
+            self.trUtf8("All Files(*.*);;Maya (*.mb *.ma);;Houdini (*.hip *.ifd);;Shake(*.shk)"),
+            None,
+            QFileDialog.Options(QFileDialog.DontResolveSymlinks))
+
+        if not getScene.isEmpty():
+            self.ui.inputScene.setText(getScene)
+
     def contextMenuEvent(self, event):
         menu = QMenu(self)
         oneAction = menu.addAction("&One")
@@ -156,8 +175,7 @@ class RC1(QMainWindow):
         '''
         # check to make sure the host is valid
         if ResolveHost(host) == 'BAD_HOST':
-            msg = QMessageBox()
-            msg.critical(None, "Bad host or IP", unicode("Sorry %s could not be resolved, please check your entry and try again." % host))
+            self.criticalMessage("Bad host or IP", "Sorry %s could not be resolved, please check your entry and try again." % host)
         else:
             # prepare the information
             self.currentHost = []
@@ -202,17 +220,77 @@ class RC1(QMainWindow):
         #self.netTable.resizeColumnsToContents()
 
     def _disableHosts(self):
-        print "Disable"
         row = self._getHostSelection()[0]
         item = QTableWidgetItem('Offline')
         self.netTable.setItem(2, row, item)
 
+    def _isExt(self, inFile, trueExtension):
+        '''
+        Returns true if the extension of the input
+
+        VARS:
+            inFile -- The file that comes from inputScene
+            trueExtension --  The extesion that you are expecting
+        '''
+        if os.path.splitext(str(inFile))[1].split('.')[1] == trueExtension:
+            return True
+        else:
+            return False
+
+    def criticalMessage(self, title, message):
+        '''
+        Pop up critical message window
+
+        VARS:
+            title -- Title of window
+            message -- message to display
+        '''
+        msg = QMessageBox()
+        msg.critical(None, title, unicode(message))
+
     def _gatherInfo(self):
         '''Gather information about the current job'''
-        self.job = self.ui.inputJobName.text()
-        self.sFrame = self.ui.inputStartFrame.text()
-        self.eFrame = self.ui.inputEndFrame.text()
-        self.issueRequest(QString("RENDER"), self.job, self.sFrame)
+        if self.ui.inputScene.text() == '':
+            self.criticalMessage("No Input File Specified", "You must specify an input file to render.")
+        elif not os.path.isfile(self.ui.inputScene.text()):
+            self.criticalMessage("Input File Error","You must specify an input file to render, not a path.")
+        else:
+            self.job = self.ui.inputJobName.text()
+            self.sFrame = self.ui.inputStartFrame.text()
+            self.eFrame = self.ui.inputEndFrame.text()
+            self.bFrame = self.ui.inputByFrame.text()
+            self.scene = self.ui.inputScene.text()
+
+            #setup mentalray if activated
+            if self.ui.useMentalRay.isChecked():
+                self.rayFlag = '-r mr'
+            else:
+                self.rayFlag = ''
+
+            # get information from the drop down menu
+            if self.software.currentText() == 'Maya 2008':
+                # make sure that we are looking at maya extensions
+                #if not self._isExt(self.scene, 'ma') or self._isExt(self.scene, 'mb'):
+                    #self.criticalMessage("Bad Input File", "You are rendering with Maya please select a Maya scene.")
+                #else:
+                self.command = '/usr/autodesk/maya2008-x64/bin/Render'
+
+            elif self.software.currentText() == 'Maya 2009':
+                #if not self._isExt(self.scene, 'ma') or self._isExt(self.scene, 'mb'):
+                    #self.criticalMessage("Bad Input File", "You are rendering with Maya please select a Maya scene.")
+                #else:
+                self.command = '/usr/autodesk/maya2009-x64/bin/Render'
+
+            elif self.software.currentText() == 'Shake':
+                self.command = '/opt/shake/bin/shake'
+
+            for frame in range(int(self.sFrame),int(self.eFrame)+1, int(self.bFrame)):
+                if self.rayFlag == '':
+                    self.que.put('%s -s %s -e %s -v 5 %s' % (self.command, frame, frame, self.scene))
+                else:
+                    self.que.put('%s %s -s %s -e %s -v 5 %s' % (self.command, self.rayFlag, frame, frame, self.scene))
+
+#            self.issueRequest(QString("RENDER"), self.job, self.sFrame)
 
     def _findHosts(self):
         '''Get hosts via broadcast packet, add them to self.hosts'''

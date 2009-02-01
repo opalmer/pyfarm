@@ -11,10 +11,12 @@ import socket
 # pyfarm libs
 from Info import System
 from FarmLog import FarmLog
+from lib.Que import *
 # Qt libs
 from PyQt4.QtCore import *
 from PyQt4.QtNetwork import *
-from PyQt4.QtGui import * # < - tmp
+
+#from PyQt4.QtGui import *
 
 ## SETUP SOME STANDARD VARS FOR NETWORK USE
 SIZEOF_UINT16 = 32
@@ -26,21 +28,11 @@ UDP_PORT = 9632
 
 class BroadcastServer(QThread):
     '''
-    Threaded client to recieve a multicast packet and inform the server of ip and port
-
-    REQUIRES:
-        Python:
-            socket
-
-        PyQt:
-            QThread
-
-        PyFarm:
-            FarmLog
+    Threaded server to recieve a multicast packet and get the client ip/port
 
     INPUT:
         parent (str) - the thread to parent to. Example: a = MulticastServer(self)
-        port (int) - incoming number, defaults to 51423
+        port (int) - incoming number, defaults to BROADCAST_PORT
         host (str) - host to bind to UDP, defaults to ALL
         timeout (int) - timeout the operation after this amount of time
 
@@ -81,18 +73,8 @@ class BroadcastClient(QThread):
     '''
     Threaded client to recieve a multicast packet and inform the server of ip and port
 
-    REQUIRES:
-        Python:
-            socket
-
-        PyQt:
-            QThread
-
-        PyFarm:
-            FarmLog
-
     INPUT:
-        port (int) - incoming number, defaults to 51423
+        port (int) - incoming number, defaults to BROADCAST_PORT
         host (str) - host to bind to UDP, defaults to ALL
         parent - None.  By parenting to none it the client runs on its own, not bound to original thread.
 
@@ -112,13 +94,12 @@ class BroadcastClient(QThread):
         self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
         self.sock.bind((self.host, self.port)) #setup a socket to receieve a connection
-        print "Looking for server; press Ctrl-C to stop."
+        print "Waiting on master computer..."
 
         while True:
             try:
                 # this loop is run ever time a connection comes in
                 message, address = self.sock.recvfrom(8192) # get the connection info and message
-                print "Found Server: %s" % address[0]
 
                 # Now, reply back to the server with our address and message
                 self.sock.sendto("I'm a client, my name is %s" % socket.gethostname(), address)
@@ -126,81 +107,18 @@ class BroadcastClient(QThread):
             except (KeyboardInterrupt, SystemExit):
                 sys.exit('PROGRAM TERMINATED')
 
+            finally:
+                return address[0]
+
 
 class TCPServerStdOutThread(QThread):
     '''
     Threaded TCP Server used to handle all incoming
     standard output information.
     '''
-    def __init__(self, socketid, parent):
-        super(TCPServerStdOutThread, self).__init__(parent)
-        self.socketid = socketid
-
-    def run(self):
-        '''Start the server thread'''
-        print "Starting TCP Server Thread"
-        socket = QTcpSocket()
-
-        if not socket.setSocketDescriptor(self.socketid):
-            self.emit(SIGNAL("error(int)"), socket.error())
-            return
-
-        while socket.state() == QAbstractSocket.ConnectedState:
-            nextBlockSize = 0
-            stream = QDataStream(socket)
-            stream.setVersion(QDataStream.Qt_4_2)
-
-            while True:
-                socket.waitForReadyRead(-1)
-                if socket.bytesAvailable() >= SIZEOF_UINT16:
-                    nextBlockSize = stream.readUInt16()
-                    break
-
-            if socket.bytesAvailable() < nextBlockSize:
-                while True:
-                    socket.waitForReadyRead(-1)
-                    if socket.bytesAvailable() >= nextBlockSize:
-                        break
-
-        job = QString()
-        frame = QString()
-        host = QString()
-        stdout = QString()
-        output = QStringList()
-
-        stream >> job >> frame >> host >> stdout
-
-        for arg in (job, frame, stdout, host):
-            output.append(arg)
-
-        self.emit(SIGNAL("emitStdOutLine"), output)
-
-class TCPServerStdOut(QTcpServer):
-    '''Threaded CP Server used to handle incoming requests'''
-    def __init__(self, parent=None):
-        super(TCPServerStdOut, self).__init__(parent)
-
-    def incomingConnection(self, socketid):
-        '''If a new connection is found, start a thread for it'''
-        print "Got incoming connection"
-        thread = TCPServerStdOutThread(socketid, self)
-        #print "TCPServer() - DEBUG - Got incoming connection at %s" % socketid
-        self.connect(thread, SIGNAL("emitStdOutLine"), self.emitLine)
-        self.connect(thread, SIGNAL("finished()"), thread, SLOT("deleteLater()"))
-        thread.start()
-
-    def emitLine(self, line):
-        self.emit(SIGNAL("emitStdOutLine"), line)
-
-
-class TCPServerStdOutThread2(QThread):
-    '''
-    Threaded TCP Server used to handle all incoming
-    standard output information.
-    '''
     lock = QReadWriteLock()
     def __init__(self, socketid, parent):
-        super(TCPServerStdOutThread2, self).__init__(parent)
+        super(TCPServerStdOutThread, self).__init__(parent)
         self.socketid = socketid
 
     def run(self):
@@ -247,10 +165,10 @@ class TCPServerStdOutThread2(QThread):
 
         socket.close()
 
-class TCPServerStdOut2(QTcpServer):
+class TCPServerStdOut(QTcpServer):
     '''Threaded CP Server used to handle incoming requests'''
     def __init__(self, parent=None):
-        super(TCPServerStdOut2, self).__init__(parent)
+        super(TCPServerStdOut, self).__init__(parent)
 
     def incomingConnection(self, socketid):
         '''If a new connection is found, start a thread for it'''
@@ -279,7 +197,6 @@ class TCPStdOutClient(QTcpSocket):
         self.connect(self.socket, SIGNAL("connected()"), self.sendRequest)
         self.connect(self.socket, SIGNAL("disconnected()"), self.serverHasStopped)
         self.connect(self.socket, SIGNAL("error(QAbstractSocket::SocketError)"), self.serverHasError)
-
 
     def pack(self, job, frame, stdout, host=socket.gethostname()):
         '''

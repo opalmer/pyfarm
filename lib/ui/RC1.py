@@ -2,13 +2,12 @@
 
 # Form implementation generated from reading ui file 'QtDesigner/RC1.ui'
 #
-# Created: Sat Jan 24 19:23:17 2009
+# Created: Sun Feb  1 02:56:21 2009
 #      by: PyQt4 UI code generator 4.4.3
 #
 # WARNING! All changes made in this file will be lost!
 
 from PyQt4 import QtCore, QtGui
-
 
 class Ui_RC1(object):
     def setupUi(self, RC1):
@@ -34,7 +33,6 @@ class Ui_RC1(object):
         self.networkToolbox.setObjectName("networkToolbox")
         self.networkTable = QtGui.QTableWidget(self.networkToolbox)
         self.networkTable.setGeometry(QtCore.QRect(20, 20, 411, 231))
-        self.networkTable.setObjectName("networkTable")
         font = QtGui.QFont()
         font.setPointSize(10)
         font.setWeight(50)
@@ -44,6 +42,7 @@ class Ui_RC1(object):
         self.networkTable.setDragDropOverwriteMode(False)
         self.networkTable.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
         self.networkTable.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
+        self.networkTable.setObjectName("networkTable")
         self.networkTable.setColumnCount(3)
         self.networkTable.setRowCount(0)
         item = QtGui.QTableWidgetItem()
@@ -118,7 +117,7 @@ class Ui_RC1(object):
         self.submitJob.setFont(font)
         self.submitJob.setObjectName("submitJob")
         self.layoutWidget1 = QtGui.QWidget(self.submitToolbox)
-        self.layoutWidget1.setGeometry(QtCore.QRect(12, 26, 575, 109))
+        self.layoutWidget1.setGeometry(QtCore.QRect(12, 26, 575, 143))
         self.layoutWidget1.setObjectName("layoutWidget1")
         self.verticalLayout = QtGui.QVBoxLayout(self.layoutWidget1)
         self.verticalLayout.setObjectName("verticalLayout")
@@ -141,7 +140,6 @@ class Ui_RC1(object):
         self.inputScene.setObjectName("inputScene")
         self.horizontalLayout.addWidget(self.inputScene)
         self.browseForScene = QtGui.QPushButton(self.layoutWidget1)
-        self.browseForScene.setEnabled(False)
         font = QtGui.QFont()
         font.setPointSize(10)
         font.setWeight(50)
@@ -235,7 +233,7 @@ class Ui_RC1(object):
         self.inputStartFrame.setFont(font)
         self.inputStartFrame.setCorrectionMode(QtGui.QAbstractSpinBox.CorrectToNearestValue)
         self.inputStartFrame.setMinimum(1)
-        self.inputStartFrame.setMaximum(500000000)
+        self.inputStartFrame.setMaximum(999999999)
         self.inputStartFrame.setProperty("value", QtCore.QVariant(1))
         self.inputStartFrame.setObjectName("inputStartFrame")
         self.horizontalLayout_3.addWidget(self.inputStartFrame)
@@ -261,6 +259,7 @@ class Ui_RC1(object):
         self.inputEndFrame.setFont(font)
         self.inputEndFrame.setCorrectionMode(QtGui.QAbstractSpinBox.CorrectToNearestValue)
         self.inputEndFrame.setMinimum(1)
+        self.inputEndFrame.setMaximum(999999999)
         self.inputEndFrame.setObjectName("inputEndFrame")
         self.horizontalLayout_3.addWidget(self.inputEndFrame)
         self.endFrameLabel_2 = QtGui.QLabel(self.layoutWidget1)
@@ -285,9 +284,18 @@ class Ui_RC1(object):
         self.inputByFrame.setFont(font)
         self.inputByFrame.setCorrectionMode(QtGui.QAbstractSpinBox.CorrectToNearestValue)
         self.inputByFrame.setMinimum(1)
+        self.inputByFrame.setMaximum(999999999)
         self.inputByFrame.setObjectName("inputByFrame")
         self.horizontalLayout_3.addWidget(self.inputByFrame)
         self.horizontalLayout_4.addLayout(self.horizontalLayout_3)
+        self.useMentalRay = QtGui.QCheckBox(self.layoutWidget1)
+        font = QtGui.QFont()
+        font.setPointSize(10)
+        font.setWeight(50)
+        font.setBold(False)
+        self.useMentalRay.setFont(font)
+        self.useMentalRay.setObjectName("useMentalRay")
+        self.horizontalLayout_4.addWidget(self.useMentalRay)
         spacerItem1 = QtGui.QSpacerItem(188, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
         self.horizontalLayout_4.addItem(spacerItem1)
         self.verticalLayout.addLayout(self.horizontalLayout_4)
@@ -383,7 +391,7 @@ class Ui_RC1(object):
         self.menubar.addAction(self.menuHelp.menuAction())
 
         self.retranslateUi(RC1)
-        self.tabToolbox.setCurrentIndex(0)
+        self.tabToolbox.setCurrentIndex(1)
         QtCore.QObject.connect(self.menuFile_quit, QtCore.SIGNAL("triggered()"), RC1.close)
         QtCore.QMetaObject.connectSlotsByName(RC1)
 
@@ -412,7 +420,7 @@ class Ui_RC1(object):
         self.submitJob.setText(QtGui.QApplication.translate("RC1", "Submit", None, QtGui.QApplication.UnicodeUTF8))
         self.sceneLabel.setText(QtGui.QApplication.translate("RC1", "Scene:", None, QtGui.QApplication.UnicodeUTF8))
         self.inputScene.setStatusTip(QtGui.QApplication.translate("RC1", "Scene to render with job", None, QtGui.QApplication.UnicodeUTF8))
-        self.browseForScene.setStatusTip(QtGui.QApplication.translate("RC1", "Browse for scene to render [ Not implimented yet ]", None, QtGui.QApplication.UnicodeUTF8))
+        self.browseForScene.setStatusTip(QtGui.QApplication.translate("RC1", "Browse for scene to render", None, QtGui.QApplication.UnicodeUTF8))
         self.browseForScene.setText(QtGui.QApplication.translate("RC1", "Browse", None, QtGui.QApplication.UnicodeUTF8))
         self.jobNameLabel.setText(QtGui.QApplication.translate("RC1", "Job Name:", None, QtGui.QApplication.UnicodeUTF8))
         self.inputJobName.setStatusTip(QtGui.QApplication.translate("RC1", "Set the name of the current job", None, QtGui.QApplication.UnicodeUTF8))
@@ -429,6 +437,8 @@ class Ui_RC1(object):
         self.inputEndFrame.setStatusTip(QtGui.QApplication.translate("RC1", "Set end frame of job", None, QtGui.QApplication.UnicodeUTF8))
         self.endFrameLabel_2.setText(QtGui.QApplication.translate("RC1", "By:", None, QtGui.QApplication.UnicodeUTF8))
         self.inputByFrame.setStatusTip(QtGui.QApplication.translate("RC1", "Set by or step frame of job", None, QtGui.QApplication.UnicodeUTF8))
+        self.useMentalRay.setStatusTip(QtGui.QApplication.translate("RC1", "If enabled, rendering will be done with mentalray", None, QtGui.QApplication.UnicodeUTF8))
+        self.useMentalRay.setText(QtGui.QApplication.translate("RC1", "Mental Ray", None, QtGui.QApplication.UnicodeUTF8))
         self.tabToolbox.setTabText(self.tabToolbox.indexOf(self.submitToolbox), QtGui.QApplication.translate("RC1", "Submit", None, QtGui.QApplication.UnicodeUTF8))
         self.tabToolbox.setTabToolTip(self.tabToolbox.indexOf(self.submitToolbox), QtGui.QApplication.translate("RC1", "Setup and submit a render to PyFarm", None, QtGui.QApplication.UnicodeUTF8))
         self.tableWidget.horizontalHeaderItem(0).setText(QtGui.QApplication.translate("RC1", "ID", None, QtGui.QApplication.UnicodeUTF8))
@@ -468,3 +478,4 @@ class Ui_RC1(object):
         self.menuHelp_bugs.setStatusTip(QtGui.QApplication.translate("RC1", "Submit and review the latest bugs for PyFarm", None, QtGui.QApplication.UnicodeUTF8))
         self.menuHelp_diagnostics.setText(QtGui.QApplication.translate("RC1", "Diagnostic Utilities", None, QtGui.QApplication.UnicodeUTF8))
         self.menuHelp_diagnostics.setStatusTip(QtGui.QApplication.translate("RC1", "Utilities used to perform basic checks on PyFarm\'s health [ Not implimented yet ]", None, QtGui.QApplication.UnicodeUTF8))
+
