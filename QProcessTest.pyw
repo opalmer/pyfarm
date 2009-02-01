@@ -73,6 +73,7 @@ class QProcessTest(QWidget):
     def processRunning(self):
         '''Called when self.process emits started()'''
         self.debugOut("Process Running")
+<<<<<<< TREE
         self.ui.startButton.setEnabled(False)
         self.ui.stopButton.setEnabled(True)
 
@@ -80,6 +81,17 @@ class QProcessTest(QWidget):
             self.debugOut('PID: <i>Not available on windows</i>')
         else:
             self.debugOut("PID: %s" % self.process.pid())
+
+
+=======
+        self.ui.startButton.setEnabled(False)
+        self.ui.stopButton.setEnabled(True)
+
+        if os.name == 'nt':
+            self.debugOut('PID: <i>Not available on windows</i>')
+        else:
+            self.debugOut("PID: %s" % self.process.pid())
+>>>>>>> MERGE-SOURCE
 
     def startCommand(self):
         '''Start the command here'''

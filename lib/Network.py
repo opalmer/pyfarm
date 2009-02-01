@@ -17,7 +17,7 @@ from PyQt4.QtNetwork import *
 from PyQt4.QtGui import * # < - tmp
 
 ## SETUP SOME STANDARD VARS FOR NETWORK USE
-SIZEOF_UINT16 = 2
+SIZEOF_UINT16 = 32
 
 ## SETUP PORTS FOR NETWORK (Range: 9630-9699)
 BROADCAST_PORT = 9630
@@ -127,21 +127,6 @@ class BroadcastClient(QThread):
                 sys.exit('PROGRAM TERMINATED')
 
 
-class TCPServerStdErrThread(QThread):
-    '''
-    Threaded TCP used to handle all incoming
-    standard error information
-    '''
-    def __init(self, socketid, parent):
-        super(TCPServerStdErrThread, self).__init__(parent)
-        self.socketid = socketid
-        
-    def run(self):
-        '''Start the server'''
-        print "TCPServerStdErrThread() - DEBUG - Started Thread"
-        socket = QTcpSocket()
-        
-        
 class TCPServerStdOutThread(QThread):
     '''
     Threaded TCP Server used to handle all incoming
@@ -150,116 +135,152 @@ class TCPServerStdOutThread(QThread):
     def __init__(self, socketid, parent):
         super(TCPServerStdOutThread, self).__init__(parent)
         self.socketid = socketid
-    
+
     def run(self):
-        '''Start the server'''
-        print "TCPServerStdOutThread() - DEBUG - Started Thread"
+        '''Start the server thread'''
+        print "Starting TCP Server Thread"
         socket = QTcpSocket()
-        
+
         if not socket.setSocketDescriptor(self.socketid):
             self.emit(SIGNAL("error(int)"), socket.error())
             return
-            
+
         while socket.state() == QAbstractSocket.ConnectedState:
             nextBlockSize = 0
             stream = QDataStream(socket)
             stream.setVersion(QDataStream.Qt_4_2)
-            
+
             while True:
                 socket.waitForReadyRead(-1)
                 if socket.bytesAvailable() >= SIZEOF_UINT16:
                     nextBlockSize = stream.readUInt16()
                     break
-                    
+
             if socket.bytesAvailable() < nextBlockSize:
                 while True:
                     socket.waitForReadyRead(-1)
                     if socket.bytesAvailable() >= nextBlockSize:
                         break
-            
-            # setup and unpack the packet
-            machineAddress = QString()
-            stdOutput = QString()
-            stream >> stdOutput >> machineAddress
-            try:
-                TCPServerThread.lock.lockForRead()
-            finally:
-                TCPServerThread.lock.unlock()
-        
-class TCPServerThread(QThread):
-    '''Called by TCP Server upon new connection'''
-    lock = QReadWriteLock()
 
-    def __init__(self, socketid, parent):
-        super(TCPServerThread, self).__init__(parent)
-        self.socketid = socketid
+        job = QString()
+        frame = QString()
+        host = QString()
+        stdout = QString()
+        output = QStringList()
 
-    def run(self):
-        '''Run this one the thread is created'''
-        print "TCPServerThread() - DEBUG - Started thread"
+        stream >> job >> frame >> host >> stdout
 
-        socket =  QTcpSocket()
-        if not socket.setSocketDescriptor(self.socketid):
-            self.emit(SIGNAL("error(int)"), socket.error())
-            return
-        while socket.state() == QAbstractSocket.ConnectedState:
-            nextBlockSize = 0
-            stream = QDataStream(socket)
-            stream.setVersion(QDataStream.Qt_4_2)
-            while True:
-                socket.waitForReadyRead(-1)
-                if socket.bytesAvailable() >= SIZEOF_UINT16:
-                    nextBlockSize = stream.readUInt16()
-                    break
-            if socket.bytesAvailable() < nextBlockSize:
-                while True:
-                    socket.waitForReadyRead(-1)
-                    if socket.bytesAvailable() >= nextBlockSize:
-                        break
-            action = QString()
-            room = QString()
-            date = QDate()
-            stream >> action
-            if action in ("BOOK", "UNBOOK"):
-                stream >> room >> date
-                try:
-                    TCPServerThread.lock.lockForRead()
-                finally:
-                    TCPServerThread.lock.unlock()
+        for arg in (job, frame, stdout, host):
+            output.append(arg)
 
-                uroom = unicode(room)
+        self.emit(SIGNAL("emitStdOutLine"), output)
 
-class TCPServer(QTcpServer):
+class TCPServerStdOut(QTcpServer):
     '''Threaded CP Server used to handle incoming requests'''
     def __init__(self, parent=None):
-        super(TCPServer, self).__init__(parent)
+        super(TCPServerStdOut, self).__init__(parent)
 
     def incomingConnection(self, socketid):
         '''If a new connection is found, start a thread for it'''
-        thread = TCPServerThread(socketid, self)
-        print "TCPServer() - DEBUG - Got incoming connection at %s" % socketid
+        print "Got incoming connection"
+        thread = TCPServerStdOutThread(socketid, self)
+        #print "TCPServer() - DEBUG - Got incoming connection at %s" % socketid
+        self.connect(thread, SIGNAL("emitStdOutLine"), self.emitLine)
         self.connect(thread, SIGNAL("finished()"), thread, SLOT("deleteLater()"))
         thread.start()
 
+    def emitLine(self, line):
+        self.emit(SIGNAL("emitStdOutLine"), line)
 
 
+class TCPServerStdOutThread2(QThread):
+    '''
+    Threaded TCP Server used to handle all incoming
+    standard output information.
+    '''
+    lock = QReadWriteLock()
+    def __init__(self, socketid, parent):
+        super(TCPServerStdOutThread2, self).__init__(parent)
+        self.socketid = socketid
+
+    def run(self):
+        '''Start the server'''
+        #print "TCPServerStdOutThread() - DEBUG - Started Thread"
+        socket = QTcpSocket()
+        #socket.setReadBufferSize(500000000)
+        #socket.setWriteBufferSize(500000000)
+        print "Running thread"
+
+
+        if not socket.setSocketDescriptor(self.socketid):
+            print "setSocketDescriptor(%s) is NOT 1" % self.socketid
+            self.emit(SIGNAL("error(int)"), socket.error())
+            return
+
+        # while we are connected, do this
+        while socket.state() == QAbstractSocket.ConnectedState:
+            nextBlockSize = 0
+            stream = QDataStream(socket) # the stream is a QDataStream
+            stream.setVersion(QDataStream.Qt_4_2) # set the version of the stream
+            while True:
+                #try:
+                    #TCPServerStdOutThread2.lock.lockForRead()
+                socket.waitForReadyRead(-1)
+                if socket.bytesAvailable() >= SIZEOF_UINT16:
+                    nextBlockSize = stream.readUInt16()
+                    job = QString()
+                    frame = QString()
+                    stdout = QString()
+                    host = QString()
+                    output = QStringList()
+                    stream >> job >> frame >>  host >> stdout
+                    for arg in (job, frame, host, stdout):
+                        output.append(arg)
+
+                    self.emit(SIGNAL("emitStdOutLine"), output)
+
+            if socket.bytesAvailable() < nextBlockSize:
+                while True:
+                    socket.waitForReadyRead(-1)
+                    if socket.bytesAvailable() >= nextBlockSize:
+                       pass
+
+        socket.close()
+
+class TCPServerStdOut2(QTcpServer):
+    '''Threaded CP Server used to handle incoming requests'''
+    def __init__(self, parent=None):
+        super(TCPServerStdOut2, self).__init__(parent)
+
+    def incomingConnection(self, socketid):
+        '''If a new connection is found, start a thread for it'''
+        print "Incoming Connection"
+        thread = TCPServerStdOutThread2(socketid, self)
+        self.connect(thread, SIGNAL("emitStdOutLine"), self.emitLine)
+        self.connect(thread, SIGNAL("finished()"), thread, SLOT("deleteLater()"))
+        thread.start()
+
+    def emitLine(self, line):
+        self.emit(SIGNAL("emitStdOutLine"), line)
 
 class TCPStdOutClient(QTcpSocket):
     '''TCP Socket client to send standard output to server'''
-    def __init__(self, host='localhost', port=TCP_PORT, parent=None):
+    def __init__(self, host='0.0.0.0', port=TCP_PORT, parent=None):
+        self.lock = QReadWriteLock()
         super(TCPStdOutClient, self).__init__(parent)
         self.host = host
         self.port = port
         self.socket = QTcpSocket()
         self.nextBlockSize = 0
         self.output = None
-        
+        self.line = 1
+
         # setup the connection
         self.connect(self.socket, SIGNAL("connected()"), self.sendRequest)
-        self.connect(self.socket, SIGNAL("readyRead()"), self.readResponse)
         self.connect(self.socket, SIGNAL("disconnected()"), self.serverHasStopped)
         self.connect(self.socket, SIGNAL("error(QAbstractSocket::SocketError)"), self.serverHasError)
-        
+
+
     def pack(self, job, frame, stdout, host=socket.gethostname()):
         '''
         Pack the information into a packet
@@ -278,80 +299,60 @@ class TCPStdOutClient(QTcpSocket):
             job (string) - job NUMBER
             frame (string) - frame to render, query, etc.
         '''
-        #self.localhost = socket.gethostname()
+
+        job = QString(job)
+        frame = QString(frame)
+        host = QString(host)
+        stdout = QString(stdout)
         self.output = QByteArray()
         stream = QDataStream(self.output, QIODevice.WriteOnly)
         stream.setVersion(QDataStream.Qt_4_2)
         stream.writeUInt16(0)
 
         # pack the data
-        stream << job << frame << stdout << host
+        stream << job << frame << host << stdout
         stream.device().seek(0)
         stream.writeUInt16(self.output.size() - SIZEOF_UINT16)
 
-        # if the socket is open, close it
-        if self.socket.isOpen():
-            self.socket.close()
-
         # once the socket emits connected() self.sendRequest is called
-        self.socket.connectToHost(self.host, self.port)
-        
+        if not self.socket.state() == 3:
+            print "Connecting to %s..." % self.host
+            self.socket.connectToHost(self.host, self.port)
+            #self.sendRequest()
+        else:
+            self.sendRequest()
+
     def sendRequest(self):
         '''Send the packed packet'''
         self.nextBlockSize = 0
-        self.socket.write(self.request)
-        self.request = None
-
-    def readResponse(self):
-        '''Read the response from the server'''
-        stream = QDataStream(self.socket)
-        stream.setVersion(QDataStream.Qt_4_2)
-
-        # while there is streaming data
-        while True:
-            if self.nextBlockSize == 0:
-                if self.socket.bytesAvailable() < SIZEOF_UINT16:
-                    break
-                self.nextBlockSize = stream.readUInt16()
-            if self.socket.bytesAvailable() < self.nextBlockSize:
-                break
-
-            action = QString()
-            software = QString()
-            options = QString()
-            job = QString()
-            frame = QString()
-            scene = QString()
-
-            stream >> action >> job >> frame
-            if action == "ERROR":
-                msg = QString("Error: %1").arg(command)
-            elif action == "RENDER":
-                msg = QString("Rendering frame %2 of job %1").arg(job).arg(frame)
-                self._updateStatus('TCPServer', msg, 'green')
-            self.nextBlockSize = 0
+        print "%i - Sending Line" % self.line
+        self.socket.write(self.output)
+        self.line +=1
+        self.output = None
 
     def serverHasStopped(self):
         '''If the server has stopped or been shutdown, close the socket'''
-        self.socket.close()
+        print "Server is disconnected"
+        self.socket.disconnectFromHost()
+        self.emit(SIGNAL("serverDied"))
 
     def serverHasError(self, error):
         '''Gather errors then close the connection'''
         print QString("Error: %1").arg(self.socket.errorString())
-        self.socket.close()
-        
+        self.socket.disconnectFromHost()
 
 
+class TCPServer(QTcpServer):
+    '''Threaded CP Server used to handle incoming requests'''
+    def __init__(self, parent=None):
+        super(TCPServer, self).__init__(parent)
 
-
-
-
-
-
-
-
-
-
+    def incomingConnection(self, socketid):
+        '''If a new connection is found, start a thread for it'''
+        thread = TCPServerThread(socketid, self)
+        print "TCPServer() - DEBUG - Got incoming connection at %s" % socketid
+        self.connect(thread, SIGNAL("finished()"), thread, SLOT("deleteLater()"))
+        thread.start()
 
 
 class TCPClient(QTcpSocket):
@@ -360,7 +361,7 @@ class TCPClient(QTcpSocket):
         super(TCPClient, self).__init__(parent)
         self.host = host
         self.port = port
-        self.socket = QTcpSocket()
+        self.socket = QTcpSocket(parent)
         self.nextBlockSize = 0
         self.request = None
 
@@ -400,7 +401,7 @@ class TCPClient(QTcpSocket):
 
         # if the socket is open, close it
         if self.socket.isOpen():
-            self.socket.close()
+            self.socket.disconnectFromHost()
 
         # once the socket emits connected() self.sendRequest is called
         self.socket.connectToHost(self.host, self.port)
@@ -442,47 +443,12 @@ class TCPClient(QTcpSocket):
 
     def serverHasStopped(self):
         '''If the server has stopped or been shutdown, close the socket'''
-        self.socket.close()
+        self.socket.disconnectFromHost()
 
     def serverHasError(self, error):
         '''Gather errors then close the connection'''
         print QString("Error: %1").arg(self.socket.errorString())
-        self.socket.close()
-
-class WakeOnLan(object):
-    '''Designed to utilize wake on lan to startup a remote machine'''
-    def wake( macaddress ):
-        '''
-        Wake computer with given mac address
-
-        NOTE: address can either include or omit the colons.
-        '''
-        # if the len of macaddress = 12 do nothing
-        if len(macaddress) == 12:
-            pass
-
-        # if it does not, add : every third character
-        elif len(macaddress) == 12 + 5:
-            sep = macaddress[2]
-            macaddress = macaddress.replace(sep, '')
-
-        # unless they did something wrong.....
-        else:
-            raise ValueError('Incorrect MAC address format')
-
-        # Pad the synchronization stream.
-        data = ''.join(['FFFFFFFFFFFF', macaddress * 20])
-        send_data = ''
-
-        # Split up the hex values and pack.
-        for i in range(0, len(data), 2):
-            send_data = ''.join([send_data,
-                                 struct.pack('B', int(data[i: i + 2], 16))])
-
-        # Broadcast it to the LAN.
-        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
-        sock.sendto(send_data, ('<broadcast>', 7))
+        self.socket.disconnectFromHost()
 
 def ResolveHost(host):
     '''

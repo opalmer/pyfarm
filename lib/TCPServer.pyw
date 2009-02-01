@@ -35,23 +35,28 @@ class Thread(QThread):
 
     def run(self):
         socket = QTcpSocket()
+
         if not socket.setSocketDescriptor(self.socketId):
             self.emit(SIGNAL("error(int)"), socket.error())
             return
+
         while socket.state() == QAbstractSocket.ConnectedState:
             nextBlockSize = 0
             stream = QDataStream(socket)
             stream.setVersion(QDataStream.Qt_4_2)
+
             while True:
                 socket.waitForReadyRead(-1)
                 if socket.bytesAvailable() >= SIZEOF_UINT16:
                     nextBlockSize = stream.readUInt16()
                     break
+
             if socket.bytesAvailable() < nextBlockSize:
                 while True:
                     socket.waitForReadyRead(-1)
                     if socket.bytesAvailable() >= nextBlockSize:
                         break
+
             action = QString()
             room = QString()
             date = QDate()

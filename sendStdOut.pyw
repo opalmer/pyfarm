@@ -24,19 +24,29 @@ class QProcessTest(QWidget):
         self.errorOutLine = 1
         self.debugOutLine = 1
 
-        # setup QProcess
-        self.command = self.ui.command.text()
+        # set defaults
+        self.ui.command.setText('ping')
+        self.ui.arguments.setText('-c 4 localhost')
+        self.command = QString('ping')
         self.arguments = QStringList()
+        self.arguments.append('-c')
+        self.arguments.append('5')
+        self.arguments.append('localhost')
+
+        # setup QProcess
         self.process = QProcess(self)
-        self.socket = TCPStdOutClient()
+        self.socket = TCPStdOutClient(self)
         self.connect(self.process, SIGNAL("started()"), self.processRunning)
         self.connect(self.process, SIGNAL("finished(int)"), self.processFinished)
         self.connect(self.process, SIGNAL("readyReadStandardOutput()"), self.readStandardOutput)
         self.connect(self.process, SIGNAL("readyReadStandardError()"), self.readErrorOutput)
 
+        # start running
+        self.startCommand()
+
     def setCommand(self):
         '''Called by the command line edit, sets self.command'''
-        self.command = self.ui.command.text()
+        #self.command = self.ui.command.text()
         self.debugOut("Command: %s" % self.command)
 
     def setArguments(self):
