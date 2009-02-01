@@ -165,6 +165,7 @@ class TCPServerStdOutThread(QThread):
 
         socket.close()
 
+
 class TCPServerStdOut(QTcpServer):
     '''Threaded CP Server used to handle incoming requests'''
     def __init__(self, parent=None):
@@ -180,6 +181,7 @@ class TCPServerStdOut(QTcpServer):
 
     def emitLine(self, line):
         self.emit(SIGNAL("emitStdOutLine"), line)
+
 
 class TCPStdOutClient(QTcpSocket):
     '''TCP Socket client to send standard output to server'''
@@ -259,36 +261,24 @@ class TCPStdOutClient(QTcpSocket):
         self.socket.disconnectFromHost()
 
 
-class TCPServer(QTcpServer):
-    '''Threaded CP Server used to handle incoming requests'''
-    def __init__(self, parent=None):
-        super(TCPServer, self).__init__(parent)
-
-    def incomingConnection(self, socketid):
-        '''If a new connection is found, start a thread for it'''
-        thread = TCPServerThread(socketid, self)
-        print "TCPServer() - DEBUG - Got incoming connection at %s" % socketid
-        self.connect(thread, SIGNAL("finished()"), thread, SLOT("deleteLater()"))
-        thread.start()
-
-
-class TCPClient(QTcpSocket):
-    '''TCP Client to communicate with TCP server'''
-    def __init__(self, host="localhost", port=TCP_PORT, parent=None):
-        super(TCPClient, self).__init__(parent)
+class TCPQueClient(QTcpSocket):
+    '''TCP Socket client to send standard output to server'''
+    def __init__(self, host='0.0.0.0', port=TCP_PORT, parent=None):
+        self.lock = QReadWriteLock()
+        super(TCPStdOutClient, self).__init__(parent)
         self.host = host
         self.port = port
-        self.socket = QTcpSocket(parent)
+        self.socket = QTcpSocket()
         self.nextBlockSize = 0
-        self.request = None
+        self.output = None
+        self.line = 1
 
-        # setup the connections
+        # setup the connection
         self.connect(self.socket, SIGNAL("connected()"), self.sendRequest)
-        self.connect(self.socket, SIGNAL("readyRead()"), self.readResponse)
         self.connect(self.socket, SIGNAL("disconnected()"), self.serverHasStopped)
         self.connect(self.socket, SIGNAL("error(QAbstractSocket::SocketError)"), self.serverHasError)
 
-    def pack(self, action, software, options, job, frame):
+    def pack(self, job, frame, stdout, host=socket.gethostname()):
         '''
         Pack the information into a packet
 
@@ -306,66 +296,48 @@ class TCPClient(QTcpSocket):
             job (string) - job NUMBER
             frame (string) - frame to render, query, etc.
         '''
-        self.request = QByteArray()
-        stream = QDataStream(self.request, QIODevice.WriteOnly)
+
+        job = QString(job)
+        frame = QString(frame)
+        host = QString(host)
+        stdout = QString(stdout)
+        self.output = QByteArray()
+        stream = QDataStream(self.output, QIODevice.WriteOnly)
         stream.setVersion(QDataStream.Qt_4_2)
         stream.writeUInt16(0)
 
         # pack the data
-        stream << action << software << options << job << frame
+        stream << job << frame << host << stdout
         stream.device().seek(0)
-        stream.writeUInt16(self.request.size() - SIZEOF_UINT16)
-
-        # if the socket is open, close it
-        if self.socket.isOpen():
-            self.socket.disconnectFromHost()
+        stream.writeUInt16(self.output.size() - SIZEOF_UINT16)
 
         # once the socket emits connected() self.sendRequest is called
-        self.socket.connectToHost(self.host, self.port)
+        if not self.socket.state() == 3:
+            print "Connecting to %s..." % self.host
+            self.socket.connectToHost(self.host, self.port)
+            #self.sendRequest()
+        else:
+            self.sendRequest()
 
     def sendRequest(self):
         '''Send the packed packet'''
         self.nextBlockSize = 0
-        self.socket.write(self.request)
-        self.request = None
-
-    def readResponse(self):
-        '''Read the response from the server'''
-        stream = QDataStream(self.socket)
-        stream.setVersion(QDataStream.Qt_4_2)
-
-        # while there is streaming data
-        while True:
-            if self.nextBlockSize == 0:
-                if self.socket.bytesAvailable() < SIZEOF_UINT16:
-                    break
-                self.nextBlockSize = stream.readUInt16()
-            if self.socket.bytesAvailable() < self.nextBlockSize:
-                break
-
-            action = QString()
-            software = QString()
-            options = QString()
-            job = QString()
-            frame = QString()
-            scene = QString()
-
-            stream >> action >> job >> frame
-            if action == "ERROR":
-                msg = QString("Error: %1").arg(command)
-            elif action == "RENDER":
-                msg = QString("Rendering frame %2 of job %1").arg(job).arg(frame)
-                self._updateStatus('TCPServer', msg, 'green')
-            self.nextBlockSize = 0
+        print "%i - Sending Line" % self.line
+        self.socket.write(self.output)
+        self.line +=1
+        self.output = None
 
     def serverHasStopped(self):
         '''If the server has stopped or been shutdown, close the socket'''
+        print "Server is disconnected"
         self.socket.disconnectFromHost()
+        self.emit(SIGNAL("serverDied"))
 
     def serverHasError(self, error):
         '''Gather errors then close the connection'''
         print QString("Error: %1").arg(self.socket.errorString())
         self.socket.disconnectFromHost()
+
 
 def ResolveHost(host):
     '''
