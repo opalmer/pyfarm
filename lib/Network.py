@@ -18,6 +18,7 @@ import ReadSettings as Settings
 CFG = os.getcwd()+'/settings.cfg'
 SIZEOF_UINT16 = Settings.Network(CFG).Unit16Size()
 BROADCAST_PORT = Settings.Network(CFG).BroadcastPort()
+QUE_PORT = Settings.Network(CFG).QuePort()
 STDOUT_PORT = Settings.Network(CFG).StdOutPort()
 STDERR_PORT = Settings.Network(CFG).StdErrPort()
 
@@ -49,7 +50,7 @@ class BroadcastServer(QThread):
             # get ready to broadcast
             self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
             self.sock.sendto("I'm a server, my name is %s" % socket.gethostname(), self.dest)
-            print "Looking for nodes; press Ctrl-C to stop."
+            #print "Looking for nodes; press Ctrl-C to stop."
 
             while True:
                 (message, address) = self.sock.recvfrom(2048)
@@ -98,9 +99,6 @@ class BroadcastClient(QThread):
 
                 # Now, reply back to the server with our address and message
                 self.sock.sendto("I'm a client, my name is %s" % socket.gethostname(), address)
-
-            except (KeyboardInterrupt, SystemExit):
-                sys.exit('PROGRAM TERMINATED')
 
             finally:
                 return address[0]
@@ -274,3 +272,11 @@ def ResolveHost(host):
         return "BAD_HOST"
 
     return output
+
+
+def GetLocalIP(master):
+    '''Get the ip address of the local computer'''
+    from socket import socket, SOCK_DGRAM, AF_INET
+    s = socket(AF_INET, SOCK_DGRAM)
+    s.connect((master, 0))
+    return s.getsockname()[0]

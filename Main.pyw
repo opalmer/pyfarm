@@ -81,7 +81,6 @@ class RC1(QMainWindow):
         self.scene = ''
         self.que = QueMaster()
 
-
         # setup socket vars
         self.socket = QTcpSocket()
         self.nextBlockSize = 0
@@ -272,13 +271,30 @@ class RC1(QMainWindow):
             elif self.software.currentText() == 'Shake':
                 self.command = '/opt/shake/bin/shake'
 
-            for frame in range(int(self.sFrame),int(self.eFrame)+1, int(self.bFrame)):
-                if self.rayFlag == '':
-                    self.que.put('%s -s %s -e %s -v 5 %s' % (self.command, frame, frame, self.scene))
-                else:
-                    self.que.put('%s %s -s %s -e %s -v 5 %s' % (self.command, self.rayFlag, frame, frame, self.scene))
+            self.jobName = self.ui.inputJobName.text()
 
-            self.updateStatus('JOB', '%s waiting in Que' % self.que.size(), 'blue')
+            if self.jobName == '':
+                self.criticalMessage("Missing Job Name", "You're job needs a name")
+            else:
+                for frame in range(int(self.sFrame),int(self.eFrame)+1, int(self.bFrame)):
+                    if self.rayFlag == '':
+                        self.que.put([self.jobName, frame, '%s -s %s -e %s -v 5 %s' % (self.command, frame, frame, self.scene)])
+                    else:
+                        self.que.put([self.jobName, frame, '%s %s -s %s -e %s -v 5 %s' % (self.command, self.rayFlag, frame, frame, self.scene)])
+
+                self.updateStatus('JOB', '%s frames waiting in Que' % self.que.size(), 'blue')
+                self.initJob()
+
+    def initJob(self):
+        '''Get an item from the que and send it to a client'''
+        # send out inital que items to systems
+        for host in self.hosts:
+            JOB = QUE.get()
+            host_ip = host[1]
+
+            # USE THE QUE MODULE FOR NETWORK COMS!
+            socket = lib.Que.TCPQueClient(QUE_PORT, self)
+            socket.sendFrame(JOB[0], JOB[1], JOB[2])
 
     def _findHosts(self):
         '''Get hosts via broadcast packet, add them to self.hosts'''

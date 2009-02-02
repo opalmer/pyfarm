@@ -72,34 +72,47 @@ class TCPQueClient(QTcpSocket):
         self.connect(self.socket, SIGNAL("disconnected()"), self.serverHasStopped)
         self.connect(self.socket, SIGNAL("error(QAbstractSocket::SocketError)"), self.serverHasError)
 
-    def put(self, command):
-        '''Put a command into the que, stage 1'''
-        action = QString("PUT")
-        command = QString()
-        self.request = QByteArray()
-
-        stream = QDataStream(self.request, QIODevice.WriteOnly)
-        stream.setVersion(QDataStream.Qt_4_2)
-        stream.writeUInt16(0)
-        stream << action << command
-        stream.device().seek(0)
-        stream.writeUInt16(self.request.size() - SIZEOF_UINT16)
-
-        if not self.socket.state() == 3:
-            print "Connecting to %s..." % self.host
-            self.socket.connectToHost(self.host, self.port)
-            #self.sendRequest()
-        else:
-            self.sendRequest()
-
-    def sendPut(self):
-        '''Stage 2, send the put to the server'''
-
-
     def get(self):
         '''Get a command from the Que'''
+        tmp = QUE.get()
         action = QString()
-        pass
+        job = QString(tmp[0])
+        frame = QString(tmp[1])
+        command = QString(tmp[2])
+
+
+
+
+
+
+
+        ######################
+        # SEE EXAMPLE IN TCPClient / TCPServer
+        # !!!!!LEARN TO UNDERSTAND!!!!!!!!!
+        ######################
+        # 1) Send the action (GET_FRAME)
+        # 2) use wait for ready read to get the job from the que
+        # 3) Run the process
+        # 4) go to step 1
+        ######################
+        # SEE EXAMPLE IN TCPClient / TCPServer
+        # !!!!!LEARN TO UNDERSTAND!!!!!!!!!
+        ######################
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     def pack(self, job, frame, stdout, host=socket.gethostname()):
         '''Pack the information into a packet'''
@@ -213,6 +226,7 @@ class TCPQue(QTcpServer):
         '''If a new connection is found, start a thread for it'''
         print "Incoming Connection"
         thread = TCPQueThread(socketid, self)
+        self.connect(thread, SIGNAL("FRAME_COMPLETE"), self.sendFrame)
         self.connect(thread, SIGNAL("GOT_COMMAND"), self.gotCommand)
         self.connect(thread, SIGNAL("PUT_COMMAND"), self.putCommand)
         self.connect(thread, SIGNAL("finished()"), thread, SLOT("deleteLater()"))
