@@ -17,14 +17,38 @@ from PyQt4.QtNetwork import *
 ## ui components
 from lib.ui.RC1 import Ui_RC1
 from lib.ui.CustomWidgets import *
-#from lib.ui.AddCustomHost import AddHostDialog
 ## general libs
-from lib.Util import *
-from lib.Que import *
+import lib.Que
 from lib.Network import *
+import lib.ReadSettings as Settings
 
-PORT = 9407
-SIZEOF_UINT16 = 2
+# setup the required ports (adjust these settings via settings.cfg)
+CFG = os.getcwd()+'/settings.cfg'
+QUE_PORT = Settings.Network(CFG).QuePort()
+BROADCAST_PORT = Settings.Network(CFG).BroadcastPort()
+STDOUT_PORT = Settings.Network(CFG).StdOutPort()
+STDERR_PORT = Settings.Network(CFG).StdErrPort()
+SIZEOF_UINT16 = Settings.Network(CFG).Unit16Size()
+SERVE_FROM = Settings.Network(CFG).MasterAddress()
+
+class QueMaster(object):
+    '''Master que class handles all communication with the que'''
+    def __init__(self, parent=None):
+        super(QueMaster, self).__init__(parent)
+        self.que = lib.Que.TCPQue(self)
+        self.que.listen(QHostAddress(SERVE_FROM), QUE_PORT)
+
+    def put(self, command):
+        '''Put an item into the que'''
+        lib.Que.QUE.put(command)
+
+    def get(self):
+        '''Get an item from the que'''
+        return lib.Que.QUE.get()
+
+    def size(self):
+        '''Return the size of the current que'''
+        return lib.Que.QUE.qsize()
 
 class RC1(QMainWindow):
     def __init__(self):
@@ -36,6 +60,15 @@ class RC1(QMainWindow):
 
         # add external libs
         self.netTableLib = NetworkTable()
+        self.que = lib.Que.QUE
+
+        # inform the user of their settings
+        self.updateStatus('SETTINGS', 'Got settings from ./settings.cfg', 'purple')
+        self.updateStatus('SETTINGS', 'Server IP: %s' % SERVE_FROM, 'purple')
+        self.updateStatus('SETTINGS', 'Broadcast Port: %s' % BROADCAST_PORT, 'purple')
+        self.updateStatus('SETTINGS', 'StdOut Port: %s' % STDOUT_PORT, 'purple')
+        self.updateStatus('SETTINGS', 'StdErr Port: %s' % STDERR_PORT, 'purple')
+        self.updateStatus('SETTINGS', 'Que Port: %s' % QUE_PORT, 'purple')
 
         # setup ui vars
         self.hosts = []
@@ -46,7 +79,8 @@ class RC1(QMainWindow):
         self.netTable.horizontalHeader().setStretchLastSection(True)
         self.message = QString()
         self.scene = ''
-        self.que = PriorityQueue()
+        self.que = QueMaster()
+
 
         # setup socket vars
         self.socket = QTcpSocket()
@@ -70,20 +104,7 @@ class RC1(QMainWindow):
         self.connect(self.ui.addHost, SIGNAL("pressed()"), self._customHostDialog)
         self.connect(self.ui.removeHost, SIGNAL("pressed()"), self._removeSelectedHost)
 
-        # run some programs
-        '''
-        // create table, let it be as follows
-        QTableWidget *table = new QTableWidget;
-        connect(table, SIGNAL(customContextMenuRequested ( const QPoint &)), this, SLOT(popupYourMenu(const QPoint &)));
 
-        void YourClass:popupYourMenu(const QPoint & pos)
-        {
-        // create popupMenu as QMenu object
-        // populate it
-
-        popupMenu->popup(pos);
-        }
-        '''
     def _browseForScene(self):
         '''Browse for a scene to render'''
         getScene = QFileDialog.getOpenFileName(\
@@ -93,41 +114,8 @@ class RC1(QMainWindow):
             self.trUtf8("All Files(*.*);;Maya (*.mb *.ma);;Houdini (*.hip *.ifd);;Shake(*.shk)"),
             None,
             QFileDialog.Options(QFileDialog.DontResolveSymlinks))
-
         if not getScene.isEmpty():
             self.ui.inputScene.setText(getScene)
-
-    def contextMenuEvent(self, event):
-        menu = QMenu(self)
-        oneAction = menu.addAction("&One")
-        twoAction = menu.addAction("&Two")
-        self.connect(oneAction, SIGNAL("triggered()"), self.one)
-        self.connect(twoAction, SIGNAL("triggered()"), self.two)
-        menu.exec_(event.globalPos())
-
-    def one(self):
-        self.message = QString("Menu option One")
-        print "Menu option One"
-        #self.update()
-
-    def two(self):
-        self.message = QString("Menu option Two")
-        print "Menu option Two"
-        #self.update()
-
-#    def three(self):
-#        self.message = QString("Menu option Three")
-#        print "Menu option Three"
-#        self.update()
-
-#    def event(self, event):
-#        if event.type() == QEvent.KeyPress and \
-#           event.key() == Qt.Key_Tab:
-#            self.key = QString("Tab captured in event()")
-#            print "Captured tab"
-#            self.update()
-#            return True
-#        return QWidget.event(self, event)
 
     def _removeSelectedHost(self):
         '''Remove the currently selected host'''
@@ -290,7 +278,7 @@ class RC1(QMainWindow):
                 else:
                     self.que.put('%s %s -s %s -e %s -v 5 %s' % (self.command, self.rayFlag, frame, frame, self.scene))
 
-#            self.issueRequest(QString("RENDER"), self.job, self.sFrame)
+            self.updateStatus('JOB', '%s waiting in Que' % self.que.size(), 'blue')
 
     def _findHosts(self):
         '''Get hosts via broadcast packet, add them to self.hosts'''
@@ -331,7 +319,7 @@ class RC1(QMainWindow):
         self.updateStatus('TCPClient (gui)', 'Packing request', 'green')
 
         # once the socket emits connected() self.sendRequest is called
-        self.socket.connectToHost("localhost", PORT)
+        self.socket.connectToHost("localhost", STDOUT_PORT)
 
     def sendRequest(self):
         '''Send the requested data to the remote server'''

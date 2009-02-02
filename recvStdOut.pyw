@@ -15,10 +15,10 @@ class RecvStdOut(QWidget):
         self.ui = Ui_StdOutputServer()
         self.ui.setupUi(self)
         self.stdOut = self.ui.stdOutput
-        self.server = TCPServerStdOut2(self)
+        self.server = TCPServerStdOut(self)
         self.line = 1
         self.connect(self.server, SIGNAL("emitStdOutLine"), self.logLine)
-        self.server.listen(QHostAddress("10.56.1.91"), TCP_PORT)
+        self.server.listen(QHostAddress("0.0.0.0"), TCP_PORT)
 
     def logLine(self, line):
         #print list(line)[3].replace('\n', '')

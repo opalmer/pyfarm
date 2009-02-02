@@ -5,26 +5,21 @@ INITIAL: Dec 16 2008
 PURPOSE: Network modules used to help facilitate network communication
 '''
 # python libs
+import os
 import sys
 import time
 import socket
-# pyfarm libs
-from Info import System
-from FarmLog import FarmLog
-from lib.Que import *
 # Qt libs
 from PyQt4.QtCore import *
 from PyQt4.QtNetwork import *
+import ReadSettings as Settings
 
-#from PyQt4.QtGui import *
-
-## SETUP SOME STANDARD VARS FOR NETWORK USE
-SIZEOF_UINT16 = 32
-
-## SETUP PORTS FOR NETWORK (Range: 9630-9699)
-BROADCAST_PORT = 9630
-TCP_PORT = 9631
-UDP_PORT = 9632
+# settings and ports for network usage (adjust these settings via ./settings.cfg)
+CFG = os.getcwd()+'/settings.cfg'
+SIZEOF_UINT16 = Settings.Network(CFG).Unit16Size()
+BROADCAST_PORT = Settings.Network(CFG).BroadcastPort()
+STDOUT_PORT = Settings.Network(CFG).StdOutPort()
+STDERR_PORT = Settings.Network(CFG).StdErrPort()
 
 class BroadcastServer(QThread):
     '''
@@ -125,8 +120,6 @@ class TCPServerStdOutThread(QThread):
         '''Start the server'''
         #print "TCPServerStdOutThread() - DEBUG - Started Thread"
         socket = QTcpSocket()
-        #socket.setReadBufferSize(500000000)
-        #socket.setWriteBufferSize(500000000)
         print "Running thread"
 
 
@@ -141,8 +134,6 @@ class TCPServerStdOutThread(QThread):
             stream = QDataStream(socket) # the stream is a QDataStream
             stream.setVersion(QDataStream.Qt_4_2) # set the version of the stream
             while True:
-                #try:
-                    #TCPServerStdOutThread2.lock.lockForRead()
                 socket.waitForReadyRead(-1)
                 if socket.bytesAvailable() >= SIZEOF_UINT16:
                     nextBlockSize = stream.readUInt16()
@@ -174,7 +165,7 @@ class TCPServerStdOut(QTcpServer):
     def incomingConnection(self, socketid):
         '''If a new connection is found, start a thread for it'''
         print "Incoming Connection"
-        thread = TCPServerStdOutThread2(socketid, self)
+        thread = TCPServerStdOutThread(socketid, self)
         self.connect(thread, SIGNAL("emitStdOutLine"), self.emitLine)
         self.connect(thread, SIGNAL("finished()"), thread, SLOT("deleteLater()"))
         thread.start()
@@ -185,85 +176,7 @@ class TCPServerStdOut(QTcpServer):
 
 class TCPStdOutClient(QTcpSocket):
     '''TCP Socket client to send standard output to server'''
-    def __init__(self, host='0.0.0.0', port=TCP_PORT, parent=None):
-        self.lock = QReadWriteLock()
-        super(TCPStdOutClient, self).__init__(parent)
-        self.host = host
-        self.port = port
-        self.socket = QTcpSocket()
-        self.nextBlockSize = 0
-        self.output = None
-        self.line = 1
-
-        # setup the connection
-        self.connect(self.socket, SIGNAL("connected()"), self.sendRequest)
-        self.connect(self.socket, SIGNAL("disconnected()"), self.serverHasStopped)
-        self.connect(self.socket, SIGNAL("error(QAbstractSocket::SocketError)"), self.serverHasError)
-
-    def pack(self, job, frame, stdout, host=socket.gethostname()):
-        '''
-        Pack the information into a packet
-
-        VARS:
-            action (string) - action to perform
-                    +render - render the give frame
-                    +status - current status of the render
-                        - waiting
-                        - running
-                        - failed
-                    +kill - if rendering, STOP
-                    +log - if rendering, tail the process log
-            software (string) - software to render with
-            options (string) - string of render options
-            job (string) - job NUMBER
-            frame (string) - frame to render, query, etc.
-        '''
-
-        job = QString(job)
-        frame = QString(frame)
-        host = QString(host)
-        stdout = QString(stdout)
-        self.output = QByteArray()
-        stream = QDataStream(self.output, QIODevice.WriteOnly)
-        stream.setVersion(QDataStream.Qt_4_2)
-        stream.writeUInt16(0)
-
-        # pack the data
-        stream << job << frame << host << stdout
-        stream.device().seek(0)
-        stream.writeUInt16(self.output.size() - SIZEOF_UINT16)
-
-        # once the socket emits connected() self.sendRequest is called
-        if not self.socket.state() == 3:
-            print "Connecting to %s..." % self.host
-            self.socket.connectToHost(self.host, self.port)
-            #self.sendRequest()
-        else:
-            self.sendRequest()
-
-    def sendRequest(self):
-        '''Send the packed packet'''
-        self.nextBlockSize = 0
-        print "%i - Sending Line" % self.line
-        self.socket.write(self.output)
-        self.line +=1
-        self.output = None
-
-    def serverHasStopped(self):
-        '''If the server has stopped or been shutdown, close the socket'''
-        print "Server is disconnected"
-        self.socket.disconnectFromHost()
-        self.emit(SIGNAL("serverDied"))
-
-    def serverHasError(self, error):
-        '''Gather errors then close the connection'''
-        print QString("Error: %1").arg(self.socket.errorString())
-        self.socket.disconnectFromHost()
-
-
-class TCPQueClient(QTcpSocket):
-    '''TCP Socket client to send standard output to server'''
-    def __init__(self, host='0.0.0.0', port=TCP_PORT, parent=None):
+    def __init__(self, host='0.0.0.0', port=STDOUT_PORT, parent=None):
         self.lock = QReadWriteLock()
         super(TCPStdOutClient, self).__init__(parent)
         self.host = host
