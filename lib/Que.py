@@ -29,6 +29,8 @@ import Queue
 import heapq
 import socket
 
+from Process import *
+
 import ReadSettings as Settings
 
 from PyQt4.QtCore import *
@@ -44,7 +46,7 @@ stateHelp = {0:"The socket is not connected",
                         2:"The socket has started establishing a connection",
                         3:"A connection is established",
                         4:"The socket is bound to an address and port (for servers)",
-                        5:"The socket is about to close (data may still be waiting to be written)"}
+                        6:"The socket is about to close (data may still be waiting to be written)"}
 
 class PriorityQue(Queue.Queue):
     '''
@@ -84,189 +86,22 @@ class PriorityQue(Queue.Queue):
         priority, time_posted, item = Queue.Queue.get(self, block, timeout)
         return item
 
+    def size(self):
+        '''Return the size of the que'''
+        return self.qsize()
 
-class QueServerThread(QThread):
-    '''Main que server thread, meant to be run on the master computer'''
-    lock = QReadWriteLock()
-
-    def __init__(self, socketId, parent):
-        super(Thread, self).__init__(parent)
-        self.socketId = socketId
-
-    def run(self):
-        '''Run the server thread and process the requested data'''
-        socket = QTcpSocket()
-
-        if not socket.setSocketDescriptor(self.socketId):
-            self.emit(SIGNAL("error(int)"), socket.error())
-            return
-
-        while socket.state() == QAbstractSocket.ConnectedState:
-            nextBlockSize = 0
-            stream = QDataStream(socket)
-            stream.setVersion(QDataStream.Qt_4_2)
-
-            while True:
-                socket.waitForReadyRead(-1)
-                if socket.bytesAvailable() >= SIZEOF_UINT16:
-                    nextBlockSize = stream.readUInt16()
-                    break
-
-            if socket.bytesAvailable() < nextBlockSize:
-                while True:
-                    socket.waitForReadyRead(-1)
-                    if socket.bytesAvailable() >= nextBlockSize:
-                        break
-
-            action = QString()
-            command = QString()
-
-            stream >> action
-            if action in ("GET_FRAME", "GET_QUE_SIZE"):
-                if action == "GET_FRAME":
-                    try:
-                        QueServerThread.lock.lockForWrite()
-                        job = QUE.get()
-                        command = [job[0], job[1], job[2]]
-                    finally:
-                        Thread.lock.unlock()
-                        self.sendReply(socket, job)
-                else:
-                    try:
-                        QueServerThread.lock.lockForRead()
-                        error = QString("Error: %s is not a valid action").arg(action)
-                    finally:
-                        QueServerThread.lock.unlock()
-                    self.sendError(socket, error)
-                    error = None
-                self.waitForDisconnected()
-
-        def sendError(self, socket, msg):
-            '''Send an error back to the client'''
-            reply = QByteArray()
-            stream = QDataStream(reply, QIODevice.WriteOnly)
-            stream.setVersion(QDataStream.Qt_4_2)
-            stream.writeUInt16(0)
-            # stream << ACTION << COMMAND
-            stream << QString("ERROR") << QString(msg)
-            stream.device().seek(0)
-            stream.writeUInt16(reply.size() - SIZEOF_UINT16)
-            socket.write(reply)
-
-        def sendReply(self, socket, cmd):
-            '''Send a new job frame and command back to the client'''
-            reply = QByteArray()
-            stream = QDataStream(reply, QIODevice.WriteOnly)
-            stream.setVersion(QDataStream.Qt_4_2)
-            stream.writeUInt16(0)
-            stream << cmd
-            stream.device().seek(0)
-            stream.writeUInt16(reply.size() - SIZEOF_UINT16)
-            socket.write(reply)
-
-class QueServer(QTcpServer):
-    '''Main server thread, used to receieve and start new server threads'''
-    def __init__(self, parent=None):
-        super(QueServer, self).__init__(parent)
-
-    def incomingConnection(self, socketId):
-        '''If incomingConnection(), start thread to handle connection'''
-        thread = QueServerThread(socketId, self)
-        self.connect(thread, SIGNAL("finished()"),thread, SLOT("deleteLater()"))
-        self.connect(thread, SIGNAL("stateChanged(QAbstractSocket::SocketState)"), self.reportState)
-        thread.start()
-
-    def reportState(self, state):
-        print stateHelp[state]
+    def emptyQue(self):
+        '''Empty the que'''
+        for i in range(1, QUE.qsize()+1):
+            QUE.get()
 
 
-class QueClient(QTcpSocket):
-    '''
-    Que client used to connect to main server
-
-    VARS:
-        master -- the node containing the que to connect
-        to
-        port -- the port to use for the socket connection
-    '''
-    def __init__(self, master, parent=None, port=QUE_PORT):
-        super(QueClient, self).__init__(parent)
-        self.master = master
-        self.port = port
-
-        # setup the socket
-        self.socket = QTcpSocket()
-        self.connect(self.socket, SIGNAL("connected()"), self.sendRequest)
-        self.connect(self.socket, SIGNAL("readyRead()"), self.readResponse)
-        self.connect(self.socket, SIGNAL("disconnected()"), self.serverHasStopped)
-        self.connect(self.socket, SIGNAL("stateChanged(QAbstractSocket::SocketState)"), self.reportState)
-        self.connect(self.socket, SIGNAL("error(QAbstractSocket::SocketError)"), self.serverHasError)
-
-
-    def reportState(self, state):
-        print stateHelp[state]
-
-    def issueRequest(self, action):
-        self.request = QByteArray()
-        stream = QDataStream(self.request, QIODevice.WriteOnly)
-        stream.setVersion(QDataStream.Qt_4_2)
-        stream.writeUInt16(0)
-        stream << action
-        stream.device().seek(0)
-        stream.writeUInt16(self.request.size() - SIZEOF_UINT16)
-        if self.socket.isOpen():
-            self.socket.close()
-        print "Connecting to server..."
-
-        # once the socket emits connected() self.sendRequest is called
-        self.socket.connectToHost(self.master, self.port)
-
-    def sendRequest(self):
-        print "Sending request..."
-        self.nextBlockSize = 0
-        self.socket.write(self.request)
-        self.request = None
-
-    def readResponse(self):
-        stream = QDataStream(self.socket)
-        stream.setVersion(QDataStream.Qt_4_2)
-
-        while True:
-            if self.nextBlockSize == 0:
-                if self.socket.bytesAvailable() < SIZEOF_UINT16:
-                    break
-                self.nextBlockSize = stream.readUInt16()
-            if self.socket.bytesAvailable() < self.nextBlockSize:
-                break
-
-            # prepare for info
-            action = QString()
-            command = QString()
-
-            # unpack the incoming packet (action first)
-            stream >> action
-            if action != "ERROR":
-                stream >> command
-                print command
-            if action == "ERROR":
-                msg = QString("Error: %1").arg(command)
-            print mst
-            self.nextBlockSize = 0
-
-    def serverHasStopped(self):
-        print "Error: Connection close by Que Server"
-        self.socket.close()
-
-    def serverHasError(self, error):
-        print str(QString("Error: %1").arg(self.socket.errorString()))
-        self.socket.close()
-
-class WaitOnQueThread(QThread):
+class QueSlaveServerThread(QThread):
     '''Wait for the master to ready the que, then receive the first command'''
     lock = QReadWriteLock()
 
     def __init__(self, socketId, parent):
-        super(WaitOnQueThread, self).__init__(parent)
+        super(QueSlaveServerThread, self).__init__(parent)
         self.socketId = socketId
 
     def run(self):
@@ -286,7 +121,27 @@ class WaitOnQueThread(QThread):
                 socket.waitForReadyRead(-1)
                 if socket.bytesAvailable() >= SIZEOF_UINT16:
                     nextBlockSize = stream.readUInt16()
-                    break
+
+
+
+                    JOB = QString()
+                    FRAME = QString()
+                    COMMAND = QString()
+
+                    print "Unpacking the command..."
+                    stream >> JOB >> FRAME >> COMMAND
+
+                    os.system(str(COMMAND))
+                    #process = RunProcess(COMMAND)
+                    #process.start()
+
+                    #while self.runCommand(cmd, args):
+                        #finally, ask for more work and send back the last command
+                        #  we worked with so the master computer can keep ctrack
+
+                    ACTION = QString("REQUESTING_WORK")
+                    self.sendReply(socket, ACTION, JOB, FRAME, COMMAND)
+                    socket.waitForDisconnected()
 
             if socket.bytesAvailable() < nextBlockSize:
                 while True:
@@ -294,62 +149,49 @@ class WaitOnQueThread(QThread):
                     if socket.bytesAvailable() >= nextBlockSize:
                         break
 
-            action = QString()
 
-            stream >> action
-            if action == "QUE_READY":
-                try:
-                    WaitOnQueThread.lock.lockForWrite()
-                    reply = QString("ENTERING_QUE")
-                finally:
-                    Thread.lock.unlock()
-                    self.sendReply(socket, reply)
-            else:
-                try:
-                    WaitOnQueThread.lock.lockForRead()
-                    error = QString("Error: %s is not a valid action").arg(action)
-                finally:
-                    WaitOnQueThread.lock.unlock()
-                error = None
-            self.waitForDisconnected()
+#
+#            ACTION = QString("REQUESTING_WORK")
+#            self.sendReply(socket, ACTION, JOB, FRAME, COMMAND)
+#            self.socket.waitForDisconnected()
 
-        def sendError(self, socket, msg):
-            '''Send an error back to the client'''
-            reply = QByteArray()
-            stream = QDataStream(reply, QIODevice.WriteOnly)
-            stream.setVersion(QDataStream.Qt_4_2)
-            stream.writeUInt16(0)
-            stream << QString("ERROR")
-            stream.device().seek(0)
-            stream.writeUInt16(reply.size() - SIZEOF_UINT16)
-            socket.write(reply)
+    def sendError(self, socket, msg):
+        '''Send an error back to the client'''
+        reply = QByteArray()
+        stream = QDataStream(reply, QIODevice.WriteOnly)
+        stream.setVersion(QDataStream.Qt_4_2)
+        stream.writeUInt16(0)
+        stream << QString("ERROR")
+        stream.device().seek(0)
+        stream.writeUInt16(reply.size() - SIZEOF_UINT16)
+        socket.write(reply)
+        socket.close()
 
-        def sendReply(self, socket, cmd):
-            '''Send a new job frame and command back to the client'''
-            reply = QByteArray()
-            stream = QDataStream(reply, QIODevice.WriteOnly)
-            stream.setVersion(QDataStream.Qt_4_2)
-            stream.writeUInt16(0)
-            stream << cmd
-            stream.device().seek(0)
-            stream.writeUInt16(reply.size() - SIZEOF_UINT16)
-            socket.write(reply)
+    def sendReply(self, socket, ACTION, JOB, FRAME, COMMAND):
+        print "Requesting more work..."
+        reply = QByteArray()
+        stream = QDataStream(reply, QIODevice.WriteOnly)
+        stream.setVersion(QDataStream.Qt_4_2)
+        stream.writeUInt16(0)
+        stream << ACTION << JOB << FRAME << COMMAND
+        stream.device().seek(0)
+        stream.writeUInt16(reply.size() - SIZEOF_UINT16)
+        socket.write(reply)
 
-
-class WaitOnQue(QTcpServer):
+class QueSlaveServer(QTcpServer):
     '''Main server thread, used to receieve and start new server threads'''
     def __init__(self, parent=None):
-        super(WaitOnQue, self).__init__(parent)
+        super(QueSlaveServer, self).__init__(parent)
 
     def incomingConnection(self, socketId):
         '''If incomingConnection(), start thread to handle connection'''
-        print "Got incoming que connection..."
-        thread = WaitOnQueThread(socketId, self)
+        print "Incoming!"
+        thread = QueSlaveServerThread(socketId, self)
         self.connect(thread, SIGNAL("finished()"),thread, SLOT("deleteLater()"))
         thread.start()
 
 
-class SendQueReady(QTcpSocket):
+class SendCommand(QTcpSocket):
     '''
     Que client used to connect to main server
 
@@ -359,7 +201,7 @@ class SendQueReady(QTcpSocket):
         port -- the port to use for the socket connection
     '''
     def __init__(self, client, port=QUE_PORT, parent=None):
-        super(SendQueReady, self).__init__(parent)
+        super(SendCommand, self).__init__(parent)
         self.client = client
         self.port = port
 
@@ -368,24 +210,30 @@ class SendQueReady(QTcpSocket):
         self.nextBlockSize = 0
 
         # setup the socket connections
-        self.connect(self.socket, SIGNAL("connected()"), self.sendReady)
+        self.connect(self.socket, SIGNAL("connected()"), self.sendRequest)
         self.connect(self.socket, SIGNAL("readyRead()"), self.readResponse)
         self.connect(self.socket, SIGNAL("disconnected()"), self.serverHasStopped)
-        self.connect(self.socket, SIGNAL("stateChanged(QAbstractSocket::SocketState)"), self.reportState)
+        #self.connect(self.socket, SIGNAL("stateChanged(QAbstractSocket::SocketState)"), self.reportState)
         self.connect(self.socket, SIGNAL("error(QAbstractSocket::SocketError)"), self.serverHasError)
-
-    def sendReady(self):
-        self.issueRequest(QString("QUE_READY"))
 
     def reportState(self, state):
         print stateHelp[state]
 
-    def issueRequest(self, action):
+    def issueRequest(self, inList):
+        JOB = QString(inList[0])
+        FRAME = QString(str(inList[1]))
+        COMMAND = QString(inList[2])
+
+        # use these for checks
+        self.job = JOB
+        self.frame = FRAME
+        self.command = COMMAND
+
         self.request = QByteArray()
         stream = QDataStream(self.request, QIODevice.WriteOnly)
         stream.setVersion(QDataStream.Qt_4_2)
         stream.writeUInt16(0)
-        stream << action
+        stream << JOB << FRAME << COMMAND
         stream.device().seek(0)
         stream.writeUInt16(self.request.size() - SIZEOF_UINT16)
 
@@ -395,10 +243,11 @@ class SendQueReady(QTcpSocket):
         print "Connecting to %s..." % self.client
 
         # once the socket emits connected() self.sendRequest is called
-        self.socket.connectToHost('10.56.1.51', 9633)
+        self.socket.connectToHost(self.client, QUE_PORT)
 
     def sendRequest(self):
-        print "Sending que ready to %s..." % self.client
+        print "Sending work to %s..." % self.client
+        self.emit(SIGNAL("SENDING_WORK"), [self.client, self.job, self.frame])
         self.nextBlockSize = 0
         self.socket.write(self.request)
         self.request = None
@@ -416,18 +265,29 @@ class SendQueReady(QTcpSocket):
                 break
 
             # prepare for info
-            action = QString()
+            ACTION = QString()
+            JOB = QString()
+            FRAME = QString()
+            COMMAND = QString()
 
-            # unpack the incoming packet (action first)
-            stream >> action
-            if action != "ERROR":
-                print "Reply from %s error retrieving first command..." % self.client
-            if action == "ENTERING_QUE":
-                print "%s is entering the que..." % self.client
+            # unpack the incoming packet
+            stream >> ACTION
+            if ACTION == QString("REQUESTING_WORK"):
+                stream >> JOB >> FRAME >> COMMAND
+                trueState = 0 # must == 3 to pass
+                if JOB == self.job:
+                    trueState += 1
+                if FRAME == self.frame:
+                    trueState += 1
+                if COMMAND == self.command:
+                    trueState += 1
+                if trueState == 3:
+                    self.emit(SIGNAL("WORK_COMPLETE"), [self.client, JOB, FRAME])
+
             self.nextBlockSize = 0
 
     def serverHasStopped(self):
-        print "Error: Connection close by waiting client"
+        print "Connection closed by waiting client @ %s" % self.client
         self.socket.close()
 
     def serverHasError(self, error):

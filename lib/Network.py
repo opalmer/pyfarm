@@ -70,7 +70,6 @@ class BroadcastServer(QThread):
 
             while True:
                 (message, address) = self.sock.recvfrom(2048)
-                print "Found Node: %s" % address[0]
                 self.emit(SIGNAL('gotNode'), '%s' % address[0])
 
         except (socket.timeout,  socket.error):
@@ -115,6 +114,7 @@ class BroadcastClient(QThread):
 
                 # Now, reply back to the server with our address and message
                 self.sock.sendto("I'm a client, my name is %s" % socket.gethostname(), address)
+                print "Found master @ %s" % address[0]
 
             finally:
                 return address[0]

@@ -34,7 +34,7 @@ from PyQt4.QtNetwork import *
 from lib.ui.RC1 import Ui_RC1
 from lib.ui.CustomWidgets import *
 ## general libs
-import lib.Que
+from lib.Que import *
 from lib.Network import *
 import lib.ReadSettings as Settings
 
@@ -47,29 +47,27 @@ STDERR_PORT = Settings.Network(CFG).StdErrPort()
 SIZEOF_UINT16 = Settings.Network(CFG).Unit16Size()
 SERVE_FROM = Settings.Network(CFG).MasterAddress()
 
-class QueMaster(object):
-    '''Master que class handles all communication with the que'''
-    def __init__(self, parent=None):
-        super(QueMaster, self).__init__(parent)
-        self.que = lib.Que.QueServer()
-        self.que.listen(QHostAddress(SERVE_FROM), QUE_PORT)
+class WorkerThread(QThread):
+    '''Used thread out TCP servers for worker threads'''
+    def __init__(self, host, port, parent=None):
+        super(WorkerThread, self).__init__(parent)
+        self.host = host
+        self.port = port
+        self.client = SendCommand(self.host, self.port)
+        self.connect(self.client, SIGNAL("WORK_COMPLETE"), self.workComplete)
+        self.connect(self.client, SIGNAL("SENDING_WORK"), self.workSent)
 
-    def put(self, command):
-        '''Put an item into the que'''
-        lib.Que.QUE.put(command)
+    def run(self):
+        '''Start the thread and send the first command'''
+        self.client.issueRequest(QUE.get())
 
-    def get(self):
-        '''Get an item from the que'''
-        return lib.Que.QUE.get()
+    def workComplete(self, client):
+        self.emit(SIGNAL("WORK_COMPLETE"), client)
+        self.client.issueRequest(QUE.get())
 
-    def size(self):
-        '''Return the size of the current que'''
-        return lib.Que.QUE.qsize()
+    def workSent(self, work):
+        self.emit(SIGNAL("SENDING_WORK"), work)
 
-    def emptyQue(self):
-        '''Empty the que'''
-        for i in range(1, lib.Que.QUE.qsize()+1):
-            lib.Que.QUE.get()
 
 class RC1(QMainWindow):
     def __init__(self):
@@ -99,27 +97,20 @@ class RC1(QMainWindow):
         self.netTable.horizontalHeader().setStretchLastSection(True)
         self.message = QString()
         self.scene = ''
-        self.que = QueMaster()
+        self.que = QUE
         self.ui.cancelRender.setEnabled(False)
-
-        # setup socket vars
-        self.socket = QTcpSocket()
-        self.nextBlockSize = 0
-        self.request = None
 
         # make signal connections
         ## ui signals
-        self.connect(self.ui.render, SIGNAL("pressed()"), self._gatherInfo)
-        self.connect(self.ui.cancelRender, SIGNAL("pressed()"), self.killRender)
+        self.connect(self.ui.render, SIGNAL("pressed()"), self.initJob)
+        #self.connect(self.ui.cancelRender, SIGNAL("pressed()"), self.killRender)
         self.connect(self.ui.findHosts, SIGNAL("pressed()"), self._findHosts)
         self.connect(self.ui.browseForScene, SIGNAL("pressed()"), self._browseForScene)
         self.connect(self.ui.browseOutputDir, SIGNAL("pressed()"), self._browseForOutputDir)
-
-        ## socket signals
-        self.connect(self.socket, SIGNAL("connected()"), self.sendRequest)
-        self.connect(self.socket, SIGNAL("readyRead()"), self.readResponse)
-        self.connect(self.socket, SIGNAL("disconnected()"), self.serverHasStopped)
-        self.connect(self.socket, SIGNAL("error(QAbstractSocket::SocketError)"), self.serverHasError)
+        self.connect(self.ui.queryQue, SIGNAL("pressed()"), self.queryQue)
+        self.connect(self.ui.emptyQue, SIGNAL("pressed()"), self.emptyQue)
+        self.connect(self.ui.browseForLogDir, SIGNAL("pressed()"), self._browseForLogDir)
+        self.connect(self.ui.enque, SIGNAL("pressed()"), self._gatherInfo)
 
         ## network section signals
         self.connect(self.ui.disableHost, SIGNAL("pressed()"), self._disableHosts)
@@ -129,9 +120,10 @@ class RC1(QMainWindow):
         #############
         # TMP setup for testing
         #############
-        self.ui.inputScene.setText('/farm/projects/PyFarm/trunk/RC1/Main.pyw')
-        self.ui.inputOutputDir.setText('farm/projects/PyFarm/trunk/RC1')
-        self.ui.inputJobName.setText('testjob')
+#        self.ui.inputScene.setText('/farm/projects/PyFarm/trunk/RC1/tests/maya/scenes/occlusion_test.mb')
+#        self.ui.inputOutputDir.setText('/farm/tmp/images/')
+#        self.ui.inputLogDir.setText('/farm/tmp/logs/')
+#        self.ui.inputJobName.setText('rayTest')
 
     def _browseForOutputDir(self):
         '''Get the output directory'''
@@ -144,6 +136,17 @@ class RC1(QMainWindow):
         if not getOutputDir.isEmpty():
             self.ui.inputOutputDir.setText(getOutputDir)
 
+    def _browseForLogDir(self):
+        '''Get the output directory'''
+        getLogDir = QFileDialog.getExistingDirectory(\
+            None,
+            QString(),
+            QString(),
+            QFileDialog.Options(QFileDialog.ShowDirsOnly))
+
+        if not getLogDir.isEmpty():
+            self.ui.inputLogDir.setText(getLogDir)
+
     def _browseForScene(self):
         '''Browse for a scene to render'''
         getScene = QFileDialog.getOpenFileName(\
@@ -155,6 +158,15 @@ class RC1(QMainWindow):
             QFileDialog.Options(QFileDialog.DontResolveSymlinks))
         if not getScene.isEmpty():
             self.ui.inputScene.setText(getScene)
+
+    def queryQue(self):
+        '''Query the current que'''
+        self.updateStatus('INFO', 'Number of items in que: %i' % QUE.size())
+
+    def emptyQue(self):
+        '''Remote all items from the que'''
+        QUE.emptyQue()
+        self.updateStatus('INFO', 'Que is now empty!')
 
     def _removeSelectedHost(self):
         '''Remove the currently selected host'''
@@ -277,68 +289,81 @@ class RC1(QMainWindow):
 
     def _gatherInfo(self):
         '''Gather information about the current job'''
-        self.ui.cancelRender.setEnabled(True)
-        self.ui.render.setEnabled(False)
-        if self.ui.inputScene.text() == '':
-            self.criticalMessage("No Input File Specified", "You must specify an input file to render.")
-        elif not os.path.isfile(self.ui.inputScene.text()):
-            self.criticalMessage("Input File Error","You must specify an input file to render, not a path.")
+        #self.ui.cancelRender.setEnabled(True)
+        #self.ui.render.setEnabled(False)
+        if self.ui.inputOutputDir.text() == '':
+            self.criticalMessage("No Output Directory Specified", "You must specify an output directory to send the rendered images to.")
         else:
-            self.job = self.ui.inputJobName.text()
-            self.sFrame = self.ui.inputStartFrame.text()
-            self.eFrame = self.ui.inputEndFrame.text()
-            self.bFrame = self.ui.inputByFrame.text()
-            self.scene = self.ui.inputScene.text()
-
-            #setup mentalray if activated
-            if self.ui.useMentalRay.isChecked():
-                self.rayFlag = '-r mr'
+            if self.ui.inputScene.text() == '':
+                self.criticalMessage("No Input File Specified", "You must specify an input file to render.")
+            elif not os.path.isfile(self.ui.inputScene.text()):
+                self.criticalMessage("Input File Error","You must specify an input file to render, not a path.")
             else:
-                self.rayFlag = ''
+                self.job = self.ui.inputJobName.text()
+                self.sFrame = self.ui.inputStartFrame.text()
+                self.eFrame = self.ui.inputEndFrame.text()
+                self.bFrame = self.ui.inputByFrame.text()
+                self.scene = self.ui.inputScene.text()
 
-            # get information from the drop down menu
-            if self.software.currentText() == 'Maya 2008':
-                # make sure that we are looking at maya extensions
-                #if not self._isExt(self.scene, 'ma') or self._isExt(self.scene, 'mb'):
-                    #self.criticalMessage("Bad Input File", "You are rendering with Maya please select a Maya scene.")
-                #else:
-                self.command = '/usr/autodesk/maya2008-x64/bin/Render'
+                #setup mentalray if activated
+                if self.ui.useMentalRay.isChecked():
+                    self.rayFlag = '-r mr'
+                else:
+                    self.rayFlag = ''
 
-            elif self.software.currentText() == 'Maya 2009':
-                #if not self._isExt(self.scene, 'ma') or self._isExt(self.scene, 'mb'):
-                    #self.criticalMessage("Bad Input File", "You are rendering with Maya please select a Maya scene.")
-                #else:
-                self.command = '/usr/autodesk/maya2009-x64/bin/Render'
+                # get information from the drop down menu
+                if self.software.currentText() == 'Maya 2008':
+                    # make sure that we are looking at maya extensions
+                    #if not self._isExt(self.scene, 'ma') or self._isExt(self.scene, 'mb'):
+                        #self.criticalMessage("Bad Input File", "You are rendering with Maya please select a Maya scene.")
+                    #else:
+                    self.command = '/usr/autodesk/maya2008-x64/bin/Render'
 
-            elif self.software.currentText() == 'Shake':
-                self.command = '/opt/shake/bin/shake'
+                elif self.software.currentText() == 'Maya 2009':
+                    #if not self._isExt(self.scene, 'ma') or self._isExt(self.scene, 'mb'):
+                        #self.criticalMessage("Bad Input File", "You are rendering with Maya please select a Maya scene.")
+                    #else:
+                    self.command = '/usr/autodesk/maya2009-x64/bin/Render'
 
-            self.jobName = self.ui.inputJobName.text()
+                elif self.software.currentText() == 'Shake':
+                    self.command = '/opt/shake/bin/shake'
 
-            if self.jobName == '':
-                self.criticalMessage("Missing Job Name", "You're job needs a name")
-            else:
-                for frame in range(int(self.sFrame),int(self.eFrame)+1, int(self.bFrame)):
-                    if self.rayFlag == '':
-                        self.que.put([self.jobName, frame, '%s -s %s -e %s -v 5 %s' % (self.command, frame, frame, self.scene)])
-                    else:
-                        self.que.put([self.jobName, frame, '%s %s -s %s -e %s -v 5 %s' % (self.command, self.rayFlag, frame, frame, self.scene)])
+                self.jobName = self.ui.inputJobName.text()
+                self.outputDir = self.ui.inputOutputDir.text()
+                self.logDir = self.ui.inputLogDir.text()
+                self.priority = int(self.ui.inputJobPriority.text())
 
-                self.updateStatus('JOB', '%s frames waiting in Que' % self.que.size(), 'blue')
-                self.initJob()
+                if self.jobName == '':
+                    self.criticalMessage("Missing Job Name", "You're job needs a name")
+                else:
+                    for frame in range(int(self.sFrame),int(self.eFrame)+1, int(self.bFrame)):
+                        if self.rayFlag == '':
+                            self.que.put([self.jobName, frame, '%s -s %s -e %s -v 5 -rd %s %s' % (self.command, frame, frame, self.outputDir, self.scene)], self.priority)
+                        else:
+                            self.que.put([self.jobName, frame, '%s %s -s %s -e %s -v 5 -rd %s %s' % (self.command, self.rayFlag, frame, frame, self.outputDir, self.scene)], self.priority)
+
+                    self.updateStatus('JOB', '%s frames waiting in Que' % self.que.size(), 'blue')
+                    #self.initJob()
 
     def initJob(self):
         '''Get an item from the que and send it to a client'''
         # tell the clients that the que is running
         for host in self.hosts:
-            JOB = self.que.get()
-            host_ip = host[1]
-            client = lib.Que.SendQueReady(host_ip, QUE_PORT, self)
-            client.sendReady()
+            thread = WorkerThread(host[1], QUE_PORT, self)
+            self.connect(thread, SIGNAL("WORK_COMPLETE"), self.workComplete)
+            self.connect(thread, SIGNAL("SENDING_WORK"), self.workSent)
+            thread.run()
 
-            # USE THE QUE MODULE FOR NETWORK COMS!
-            #socket = lib.Que.TCPQueClient(QUE_PORT, self)
-            #socket.sendFrame(JOB[0], JOB[1], JOB[2])
+    def workSent(self, work):
+        '''Inform the user that a job is being sent'''
+        self.updateStatus('NETWORK', 'Sending frame %s from job %s to %s' % (work[2], work[1], work[0]), 'green')
+
+    def workComplete(self, worker):
+        '''Inform the user of done frames'''
+        ip = worker[0]
+        job = worker[1]
+        frame = worker[2]
+        self.updateStatus('QUEUE', '%s completed frame %s of job %s' % (ip, frame, job), 'brown')
 
     def killRender(self):
         '''Kill the current job'''
@@ -348,10 +373,9 @@ class RC1(QMainWindow):
         self.updateStatus('JOB', '%s frames waiting in Que' % self.que.size(), 'blue')
         self.ui.render.setEnabled(True)
 
-
     def _findHosts(self):
         '''Get hosts via broadcast packet, add them to self.hosts'''
-        self.updateStatus('BroadcastClient (gui)', 'Searching for hosts...', 'green')
+        self.updateStatus('NETWORK', 'Searching for hosts...', 'green')
         findHosts = BroadcastServer(self)
         self.connect(findHosts, SIGNAL("gotNode"), self.addHostFromBroadcast)
         self.connect(findHosts,  SIGNAL("DONE"),  self._doneFindingHosts)
@@ -360,7 +384,7 @@ class RC1(QMainWindow):
     def _doneFindingHosts(self):
         '''Functions to run when done finding hosts'''
         # inform the user of the number of hosts found
-        self.updateStatus('BroadcastClient (gui)', 'Found %i new hosts, search complete.' % self.foundHosts, 'green')
+        self.updateStatus('NETWORK', 'Found %i new hosts, search complete.' % self.foundHosts, 'green')
         self.foundHosts = 0
 
     def updateStatus(self, section, msg, color='black'):
@@ -373,66 +397,6 @@ class RC1(QMainWindow):
             color (string) - The color name or hex value to set the section
         '''
         self.ui.status.append('<font color=%s><b>%s</b></font> - %s' % (color, section, msg))
-
-    def issueRequest(self, action, job, frame):
-        '''Pack the data and ready it to be sent'''
-        self.request = QByteArray()
-        stream = QDataStream(self.request, QIODevice.WriteOnly)
-        stream.setVersion(QDataStream.Qt_4_2)
-        stream.writeUInt16(0)
-        stream << action << job << frame
-        stream.device().seek(0)
-        stream.writeUInt16(self.request.size() - SIZEOF_UINT16)
-        if self.socket.isOpen():
-            self.socket.close()
-        self.updateStatus('TCPClient (gui)', 'Packing request', 'green')
-
-        # once the socket emits connected() self.sendRequest is called
-        self.socket.connectToHost("localhost", STDOUT_PORT)
-
-    def sendRequest(self):
-        '''Send the requested data to the remote server'''
-        self.updateStatus('TCPClient (gui)', 'Sending request', 'green')
-        self.nextBlockSize = 0
-        self.socket.write(self.request)
-        self.request = None
-
-    def readResponse(self):
-        '''Read the response from the server'''
-        self.updateStatus('TCPServer', 'Successful connection', 'green')
-        self.updateStatus('TCPClient (gui)', 'Reading response', 'green')
-        stream = QDataStream(self.socket)
-        stream.setVersion(QDataStream.Qt_4_2)
-
-        while True:
-            if self.nextBlockSize == 0:
-                if self.socket.bytesAvailable() < SIZEOF_UINT16:
-                    break
-                self.nextBlockSize = stream.readUInt16()
-            if self.socket.bytesAvailable() < self.nextBlockSize:
-                break
-
-            action = QString()
-            job = QString()
-            frame = QString()
-
-            stream >> action >> job >> frame
-            if action == "ERROR":
-                msg = QString("Error: %1").arg(command)
-            elif action == "RENDER":
-                msg = QString("Rendering frame %2 of job %1").arg(job).arg(frame)
-                self.updateStatus('TCPServer', msg, 'green')
-            self.nextBlockSize = 0
-
-    def serverHasStopped(self):
-        '''Run upon server shutdown'''
-        self.updateStatus('TCPClient (gui)', '<font color=red><b>Server Thread Killed</b></font>','green')
-        self.socket.close()
-
-    def serverHasError(self, error):
-        '''Gather errors then close the connection'''
-        self.updateStatus('TCPClient (gui)', QString("<font color='red'><b>Error: %1</b></font>").arg(self.socket.errorString()), 'green')
-        self.socket.close()
 
 
 app = QApplication(sys.argv)

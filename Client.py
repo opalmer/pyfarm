@@ -45,13 +45,12 @@ class Main(QObject):
         broadcast = BroadcastClient()
         self.master = broadcast.run()
         self.localhost = GetLocalIP(self.master)
-        self.waitForQueReady()
+        self.initSlave()
 
-    def waitForQueReady(self):
-        self.socket = WaitOnQue(self)
+    def initSlave(self):
+        self.socket = QueSlaveServer(self)
         if not self.socket.listen(QHostAddress(self.localhost), QUE_PORT):
-            print "ERROR"
-
+            print "Socket Error: %s " % self.socket.errorString()
         print "Waiting on Que..."
 
 app = QCoreApplication(sys.argv)
