@@ -5,6 +5,22 @@ CONTACT: opalme20@student.scad.edu || (703)725-6544
 INITIAL: Jan 12 2009
 PURPOSE: TCP client used to send information to the server and react to
 signals sent from the server
+
+    This file is part of PyFarm.
+
+    PyFarm is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    PyFarm is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
+
 '''
 # From Python
 import sys
@@ -35,7 +51,7 @@ class QueMaster(object):
     '''Master que class handles all communication with the que'''
     def __init__(self, parent=None):
         super(QueMaster, self).__init__(parent)
-        self.que = lib.Que.TCPQue(self)
+        self.que = lib.Que.QueServer()
         self.que.listen(QHostAddress(SERVE_FROM), QUE_PORT)
 
     def put(self, command):
@@ -50,6 +66,11 @@ class QueMaster(object):
         '''Return the size of the current que'''
         return lib.Que.QUE.qsize()
 
+    def emptyQue(self):
+        '''Empty the que'''
+        for i in range(1, lib.Que.QUE.qsize()+1):
+            lib.Que.QUE.get()
+
 class RC1(QMainWindow):
     def __init__(self):
         super(RC1, self).__init__()
@@ -60,7 +81,6 @@ class RC1(QMainWindow):
 
         # add external libs
         self.netTableLib = NetworkTable()
-        self.que = lib.Que.QUE
 
         # inform the user of their settings
         self.updateStatus('SETTINGS', 'Got settings from ./settings.cfg', 'purple')
@@ -80,6 +100,7 @@ class RC1(QMainWindow):
         self.message = QString()
         self.scene = ''
         self.que = QueMaster()
+        self.ui.cancelRender.setEnabled(False)
 
         # setup socket vars
         self.socket = QTcpSocket()
@@ -89,8 +110,10 @@ class RC1(QMainWindow):
         # make signal connections
         ## ui signals
         self.connect(self.ui.render, SIGNAL("pressed()"), self._gatherInfo)
+        self.connect(self.ui.cancelRender, SIGNAL("pressed()"), self.killRender)
         self.connect(self.ui.findHosts, SIGNAL("pressed()"), self._findHosts)
         self.connect(self.ui.browseForScene, SIGNAL("pressed()"), self._browseForScene)
+        self.connect(self.ui.browseOutputDir, SIGNAL("pressed()"), self._browseForOutputDir)
 
         ## socket signals
         self.connect(self.socket, SIGNAL("connected()"), self.sendRequest)
@@ -103,6 +126,23 @@ class RC1(QMainWindow):
         self.connect(self.ui.addHost, SIGNAL("pressed()"), self._customHostDialog)
         self.connect(self.ui.removeHost, SIGNAL("pressed()"), self._removeSelectedHost)
 
+        #############
+        # TMP setup for testing
+        #############
+        self.ui.inputScene.setText('/farm/projects/PyFarm/trunk/RC1/Main.pyw')
+        self.ui.inputOutputDir.setText('farm/projects/PyFarm/trunk/RC1')
+        self.ui.inputJobName.setText('testjob')
+
+    def _browseForOutputDir(self):
+        '''Get the output directory'''
+        getOutputDir = QFileDialog.getExistingDirectory(\
+            None,
+            QString(),
+            QString(),
+            QFileDialog.Options(QFileDialog.ShowDirsOnly))
+
+        if not getOutputDir.isEmpty():
+            self.ui.inputOutputDir.setText(getOutputDir)
 
     def _browseForScene(self):
         '''Browse for a scene to render'''
@@ -237,6 +277,8 @@ class RC1(QMainWindow):
 
     def _gatherInfo(self):
         '''Gather information about the current job'''
+        self.ui.cancelRender.setEnabled(True)
+        self.ui.render.setEnabled(False)
         if self.ui.inputScene.text() == '':
             self.criticalMessage("No Input File Specified", "You must specify an input file to render.")
         elif not os.path.isfile(self.ui.inputScene.text()):
@@ -287,14 +329,25 @@ class RC1(QMainWindow):
 
     def initJob(self):
         '''Get an item from the que and send it to a client'''
-        # send out inital que items to systems
+        # tell the clients that the que is running
         for host in self.hosts:
-            JOB = QUE.get()
+            JOB = self.que.get()
             host_ip = host[1]
+            client = lib.Que.SendQueReady(host_ip, QUE_PORT, self)
+            client.sendReady()
 
             # USE THE QUE MODULE FOR NETWORK COMS!
-            socket = lib.Que.TCPQueClient(QUE_PORT, self)
-            socket.sendFrame(JOB[0], JOB[1], JOB[2])
+            #socket = lib.Que.TCPQueClient(QUE_PORT, self)
+            #socket.sendFrame(JOB[0], JOB[1], JOB[2])
+
+    def killRender(self):
+        '''Kill the current job'''
+        self.ui.cancelRender.setEnabled(False)
+        self.que.emptyQue()
+        # send the kill job to clients !
+        self.updateStatus('JOB', '%s frames waiting in Que' % self.que.size(), 'blue')
+        self.ui.render.setEnabled(True)
+
 
     def _findHosts(self):
         '''Get hosts via broadcast packet, add them to self.hosts'''

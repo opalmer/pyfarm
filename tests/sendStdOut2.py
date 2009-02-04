@@ -37,7 +37,7 @@ class QProcessTest2(QObject):
         self.frame = '23'
 
         # setup QTcpSocket
-        self.socket = TCPStdOutClient("0.0.0.0")
+        self.socket = TCPStdOutClient("10.56.1.49")
         self.connect(self.socket, SIGNAL("serverDied"), self.killProcess)
 
         # setup QProcess

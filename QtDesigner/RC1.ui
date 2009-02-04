@@ -42,7 +42,7 @@
         <string/>
        </property>
        <property name="currentIndex" >
-        <number>1</number>
+        <number>0</number>
        </property>
        <widget class="QWidget" name="networkToolbox" >
         <attribute name="title" >
@@ -291,7 +291,7 @@
            <x>12</x>
            <y>26</y>
            <width>575</width>
-           <height>143</height>
+           <height>149</height>
           </rect>
          </property>
          <layout class="QVBoxLayout" name="verticalLayout" >
@@ -339,6 +339,49 @@
               </property>
               <property name="statusTip" >
                <string>Browse for scene to render</string>
+              </property>
+              <property name="text" >
+               <string>Browse</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_6" >
+            <item>
+             <widget class="QLabel" name="label" >
+              <property name="font" >
+               <font>
+                <pointsize>10</pointsize>
+                <weight>50</weight>
+                <bold>false</bold>
+               </font>
+              </property>
+              <property name="text" >
+               <string>Output Dir:</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLineEdit" name="inputOutputDir" >
+              <property name="font" >
+               <font>
+                <pointsize>10</pointsize>
+                <weight>50</weight>
+                <bold>false</bold>
+               </font>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="browseOutputDir" >
+              <property name="font" >
+               <font>
+                <pointsize>10</pointsize>
+                <weight>50</weight>
+                <bold>false</bold>
+               </font>
               </property>
               <property name="text" >
                <string>Browse</string>
@@ -665,6 +708,46 @@
           </item>
          </layout>
         </widget>
+        <widget class="QWidget" name="layoutWidget" >
+         <property name="geometry" >
+          <rect>
+           <x>510</x>
+           <y>220</y>
+           <width>82</width>
+           <height>66</height>
+          </rect>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_2" >
+          <item>
+           <widget class="QPushButton" name="render" >
+            <property name="font" >
+             <font>
+              <pointsize>10</pointsize>
+              <weight>50</weight>
+              <bold>false</bold>
+             </font>
+            </property>
+            <property name="text" >
+             <string>Render</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="cancelRender" >
+            <property name="font" >
+             <font>
+              <pointsize>10</pointsize>
+              <weight>50</weight>
+              <bold>false</bold>
+             </font>
+            </property>
+            <property name="text" >
+             <string>Cancel</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
        </widget>
        <widget class="QWidget" name="jobsToolbox" >
         <attribute name="title" >
@@ -729,13 +812,6 @@
          <string>General status overview of PyFarm</string>
         </attribute>
        </widget>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="render" >
-       <property name="text" >
-        <string>Render</string>
-       </property>
       </widget>
      </item>
      <item>
