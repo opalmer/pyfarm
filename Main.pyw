@@ -59,11 +59,19 @@ class WorkerThread(QThread):
 
     def run(self):
         '''Start the thread and send the first command'''
-        self.client.issueRequest(QUE.get())
+        if QUE.size() == 0:
+            self.terminate()
+        else:
+            self.client.issueRequest(QUE.get())
 
     def workComplete(self, client):
         self.emit(SIGNAL("WORK_COMPLETE"), client)
-        self.client.issueRequest(QUE.get())
+        if QUE.size() > 0:
+            self.client.issueRequest(QUE.get())
+        else:
+            self.client.issueRequest('TERMINATE_SELF')
+            self.emit(SIGNAL("QUE_EMPTY"), self.host)
+            self.terminate()
 
     def workSent(self, work):
         self.emit(SIGNAL("SENDING_WORK"), work)
@@ -307,7 +315,7 @@ class RC1(QMainWindow):
 
                 #setup mentalray if activated
                 if self.ui.useMentalRay.isChecked():
-                    self.rayFlag = '-r mr'
+                    self.rayFlag = '-r mr -v 5 -rt 10'
                 else:
                     self.rayFlag = ''
 
@@ -338,11 +346,11 @@ class RC1(QMainWindow):
                 else:
                     for frame in range(int(self.sFrame),int(self.eFrame)+1, int(self.bFrame)):
                         if self.rayFlag == '':
-                            self.que.put([self.jobName, frame, '%s -s %s -e %s -v 5 -rd %s %s' % (self.command, frame, frame, self.outputDir, self.scene)], self.priority)
+                            self.que.put([self.jobName, frame, '%s -s %s -e %s  -rd %s %s' % (self.command, frame, frame, self.outputDir, self.scene)], self.priority)
                         else:
-                            self.que.put([self.jobName, frame, '%s %s -s %s -e %s -v 5 -rd %s %s' % (self.command, self.rayFlag, frame, frame, self.outputDir, self.scene)], self.priority)
+                            self.que.put([self.jobName, frame, '%s %s -s %s -e %s  -rd %s %s' % (self.command, self.rayFlag, frame, frame, self.outputDir, self.scene)], self.priority)
 
-                    self.updateStatus('JOB', '%s frames waiting in Que' % self.que.size(), 'blue')
+                    self.updateStatus('QUEUE', '%s frames waiting to render' % self.que.size(), 'brown')
                     #self.initJob()
 
     def initJob(self):
@@ -352,7 +360,12 @@ class RC1(QMainWindow):
             thread = WorkerThread(host[1], QUE_PORT, self)
             self.connect(thread, SIGNAL("WORK_COMPLETE"), self.workComplete)
             self.connect(thread, SIGNAL("SENDING_WORK"), self.workSent)
+            self.connect(thread, SIGNAL("QUE_EMPTY"), self.queEmpty)
             thread.run()
+
+    def queEmpty(self, host):
+        '''Inform the user that the que is empty and rendering is complete'''
+        self.updateStatus('JOB', '<b>%s has reported rendering complete!</b>' % host, 'red')
 
     def workSent(self, work):
         '''Inform the user that a job is being sent'''
@@ -370,7 +383,7 @@ class RC1(QMainWindow):
         self.ui.cancelRender.setEnabled(False)
         self.que.emptyQue()
         # send the kill job to clients !
-        self.updateStatus('JOB', '%s frames waiting in Que' % self.que.size(), 'blue')
+        self.updateStatus('QUEUE', '%s frames waiting to render' % self.que.size(), 'brown')
         self.ui.render.setEnabled(True)
 
     def _findHosts(self):

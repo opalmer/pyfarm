@@ -130,30 +130,26 @@ class QueSlaveServerThread(QThread):
 
                     print "Unpacking the command..."
                     stream >> JOB >> FRAME >> COMMAND
+                    if JOB == 'TERMNATE_SELF':
+                        socket.close()
+                    else:
+                        os.system(str(COMMAND))
+                        #process = RunProcess(COMMAND)
+                        #process.start()
 
-                    os.system(str(COMMAND))
-                    #process = RunProcess(COMMAND)
-                    #process.start()
+                        #while self.runCommand(cmd, args):
+                            #finally, ask for more work and send back the last command
+                            #  we worked with so the master computer can keep ctrack
 
-                    #while self.runCommand(cmd, args):
-                        #finally, ask for more work and send back the last command
-                        #  we worked with so the master computer can keep ctrack
-
-                    ACTION = QString("REQUESTING_WORK")
-                    self.sendReply(socket, ACTION, JOB, FRAME, COMMAND)
-                    socket.waitForDisconnected()
+                        ACTION = QString("REQUESTING_WORK")
+                        self.sendReply(socket, ACTION, JOB, FRAME, COMMAND)
+                        socket.waitForDisconnected()
 
             if socket.bytesAvailable() < nextBlockSize:
                 while True:
                     socket.waitForReadyRead(-1)
                     if socket.bytesAvailable() >= nextBlockSize:
                         break
-
-
-#
-#            ACTION = QString("REQUESTING_WORK")
-#            self.sendReply(socket, ACTION, JOB, FRAME, COMMAND)
-#            self.socket.waitForDisconnected()
 
     def sendError(self, socket, msg):
         '''Send an error back to the client'''
@@ -220,30 +216,34 @@ class SendCommand(QTcpSocket):
         print stateHelp[state]
 
     def issueRequest(self, inList):
-        JOB = QString(inList[0])
-        FRAME = QString(str(inList[1]))
-        COMMAND = QString(inList[2])
-
-        # use these for checks
-        self.job = JOB
-        self.frame = FRAME
-        self.command = COMMAND
-
-        self.request = QByteArray()
-        stream = QDataStream(self.request, QIODevice.WriteOnly)
-        stream.setVersion(QDataStream.Qt_4_2)
-        stream.writeUInt16(0)
-        stream << JOB << FRAME << COMMAND
-        stream.device().seek(0)
-        stream.writeUInt16(self.request.size() - SIZEOF_UINT16)
-
-        if self.socket.isOpen():
+        if inList == 'TERMINATE_SELF':
+            print "It is time to die!"
             self.socket.close()
+        else:
+            JOB = QString(inList[0])
+            FRAME = QString(str(inList[1]))
+            COMMAND = QString(inList[2])
 
-        print "Connecting to %s..." % self.client
+            # use these for checks
+            self.job = JOB
+            self.frame = FRAME
+            self.command = COMMAND
 
-        # once the socket emits connected() self.sendRequest is called
-        self.socket.connectToHost(self.client, QUE_PORT)
+            self.request = QByteArray()
+            stream = QDataStream(self.request, QIODevice.WriteOnly)
+            stream.setVersion(QDataStream.Qt_4_2)
+            stream.writeUInt16(0)
+            stream << JOB << FRAME << COMMAND
+            stream.device().seek(0)
+            stream.writeUInt16(self.request.size() - SIZEOF_UINT16)
+
+            if self.socket.isOpen():
+                self.socket.close()
+
+            print "Connecting to %s..." % self.client
+
+            # once the socket emits connected() self.sendRequest is called
+            self.socket.connectToHost(self.client, QUE_PORT)
 
     def sendRequest(self):
         print "Sending work to %s..." % self.client
