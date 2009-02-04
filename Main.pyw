@@ -106,7 +106,7 @@ class RC1(QMainWindow):
         self.message = QString()
         self.scene = ''
         self.que = QUE
-        self.ui.cancelRender.setEnabled(False)
+        self.infoMessage('Welcome to PyFarm -- Release Candidate 1', 'Thank you for testing PyFarm!  Please direct all inquiries about this softare to the homepage @ http://www.opalmer.com/pyfarm')
 
         # make signal connections
         ## ui signals
@@ -294,6 +294,17 @@ class RC1(QMainWindow):
         '''
         msg = QMessageBox()
         msg.critical(None, title, unicode(message))
+
+    def infoMessage(self, title, message):
+        '''
+        Pop up critical message window
+
+        VARS:
+            title -- Title of window
+            message -- message to display
+        '''
+        msg = QMessageBox()
+        msg.information(None, title, unicode(message))
 
     def _gatherInfo(self):
         '''Gather information about the current job'''
