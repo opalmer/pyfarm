@@ -1,6 +1,6 @@
 '''
 AUTHOR: Oliver Palmer
-CONTACT: opalme20@student.scad.edu || (703)725-6544
+CONTACT: oliverpalmer@opalmer.com
 INITIAL: Dec 18 2008
 PURPOSE: Module contains multiple utilities used both by PyFarm and for
 general usage.

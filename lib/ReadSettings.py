@@ -1,6 +1,6 @@
 '''
 AUTHOR: Oliver Palmer
-CONTACT: opalme20@student.scad.edu || (703)725-6544
+CONTACT: oliverpalmer@opalmer.com
 INITIAL: Jan 1 2009
 PURPOSE: Used to read in settings of PyFarm
 

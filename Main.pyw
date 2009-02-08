@@ -1,7 +1,7 @@
 #!/usr/bin/python
 '''
 AUTHOR: Oliver Palmer
-CONTACT: opalme20@student.scad.edu || (703)725-6544
+CONTACT: oliverpalmer@opalmer.com
 INITIAL: Jan 12 2009
 PURPOSE: TCP client used to send information to the server and react to
 signals sent from the server
@@ -31,7 +31,7 @@ from PyQt4.QtGui import *
 from PyQt4.QtNetwork import *
 # From PyFarm
 ## ui components
-from lib.ui.RC1 import Ui_RC1
+from lib.ui.RC2 import Ui_RC2
 from lib.ui.CustomWidgets import *
 ## general libs
 from lib.Que import *
@@ -77,12 +77,12 @@ class WorkerThread(QThread):
         self.emit(SIGNAL("SENDING_WORK"), work)
 
 
-class RC1(QMainWindow):
+class RC2(QMainWindow):
     def __init__(self):
-        super(RC1, self).__init__()
+        super(RC2, self).__init__()
 
         # setup UI
-        self.ui = Ui_RC1()
+        self.ui = Ui_RC2()
         self.ui.setupUi(self)
 
         # add external libs
@@ -111,7 +111,7 @@ class RC1(QMainWindow):
         # make signal connections
         ## ui signals
         self.connect(self.ui.render, SIGNAL("pressed()"), self.initJob)
-        #self.connect(self.ui.cancelRender, SIGNAL("pressed()"), self.killRender)
+        #self.connect(self.ui.cancelRender, SIGNAL("pressed()"), self.killRender
         self.connect(self.ui.findHosts, SIGNAL("pressed()"), self._findHosts)
         self.connect(self.ui.browseForScene, SIGNAL("pressed()"), self._browseForScene)
         self.connect(self.ui.browseOutputDir, SIGNAL("pressed()"), self._browseForOutputDir)
@@ -119,6 +119,8 @@ class RC1(QMainWindow):
         self.connect(self.ui.emptyQue, SIGNAL("pressed()"), self.emptyQue)
         self.connect(self.ui.browseForLogDir, SIGNAL("pressed()"), self._browseForLogDir)
         self.connect(self.ui.enque, SIGNAL("pressed()"), self._gatherInfo)
+        self.connect(self.ui.loadQue, SIGNAL("triggered()"), self._loadQue)
+        self.connect(self.ui.saveQue, SIGNAL("triggered()"), self._saveQue)
 
         ## network section signals
         self.connect(self.ui.disableHost, SIGNAL("pressed()"), self._disableHosts)
@@ -166,6 +168,41 @@ class RC1(QMainWindow):
             QFileDialog.Options(QFileDialog.DontResolveSymlinks))
         if not getScene.isEmpty():
             self.ui.inputScene.setText(getScene)
+
+    def _loadQue(self):
+        '''Load que information from a file'''
+        queInFile = QFileDialog.getOpenFileName(\
+            None,
+            self.trUtf8("Select Queue To Load"),
+            QString(),
+            self.trUtf8("PyFarm Queue(*.pyq)"),
+            None,
+            QFileDialog.Options(QFileDialog.DontResolveSymlinks))
+
+        QueFile = QFile(queInFile)
+        QueFile.open(QIODevice.ReadOnly)
+
+
+    def _saveQue(self):
+        '''Save the current que for later use'''
+        queOutFile = QFileDialog.getSaveFileName(\
+            None,
+            self.trUtf8("Save Queue To File"),
+            QString(),
+            self.trUtf8("PyFarm Queue(*.pyq)"),
+            None)
+
+        self.updateStatus('SETTINGS', 'Saving que to file...', 'purple')
+        QueFile = QFile(queOutFile)
+        QueFile.open(QIODevice.WriteOnly)
+
+        for i in range(1, QUE.qsize()+1):
+            que = QUE.get()
+            QueFile.write('%s:::%s:::%s\n' % (str(que[0]), str(que[1]), str(que[2])))
+            QUE.put(que)
+
+        QueFile.close()
+        self.updateStatus('SETTINGS', 'Saving complete.', 'purple')
 
     def queryQue(self):
         '''Query the current que'''
@@ -336,7 +373,7 @@ class RC1(QMainWindow):
                     #if not self._isExt(self.scene, 'ma') or self._isExt(self.scene, 'mb'):
                         #self.criticalMessage("Bad Input File", "You are rendering with Maya please select a Maya scene.")
                     #else:
-                    self.command = '/usr/autodesk/maya2008-x64/bin/Render'
+                    self.command = '/usr/local/bin/Render'
 
                 elif self.software.currentText() == 'Maya 2009':
                     #if not self._isExt(self.scene, 'ma') or self._isExt(self.scene, 'mb'):
@@ -424,6 +461,6 @@ class RC1(QMainWindow):
 
 
 app = QApplication(sys.argv)
-ui = RC1()
+ui = RC2()
 ui.show()
 app.exec_()

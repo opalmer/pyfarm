@@ -1,7 +1,7 @@
 #!/usr/bin/python
 '''
 AUTHOR: Oliver Palmer
-CONTACT: opalme20@student.scad.edu || (703)725-6544
+CONTACT: oliverpalmer@opalmer.com
 INITIAL: Jan 31 2009
 PURPOSE: To handle and run all client connections on a remote machine
 

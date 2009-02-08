@@ -1,6 +1,6 @@
 '''
 AUTHOR: Oliver Palmer
-CONTACT: oliverpalmer@opalmer.com || (703)725-6544
+CONTACT: oliverpalmer@opalmer.com
 INITIAL: Dec 15 2008
 PURPOSE: Module used to control the output of logging
 

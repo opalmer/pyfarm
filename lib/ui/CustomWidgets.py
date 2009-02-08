@@ -1,13 +1,13 @@
 '''
 AUTHOR: Oliver Palmer
-CONTACT: oliverpalmer@opalmer.com || (703)725-6544
+CONTACT: oliverpalmer@opalmer.com
 INITIAL: Jan 24 2009
 PURPOSE: Module full of 'general widgets', widgets used inside of other widgets.
 '''
 
 from PyQt4.QtGui import *
 from PyQt4.QtCore import *
-from RC1 import *
+from RC2 import *
 
 class HostStatus(QComboBox):
     '''Combo box used to enable/disable hosts'''

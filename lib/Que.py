@@ -1,6 +1,6 @@
 '''
 AUTHOR: Oliver Palmer
-CONTACT: opalme20@student.scad.edu || (703)725-6544
+CONTACT: oliverpalmer@opalmer.com
 INITIAL: Jan 20 2008
 PURPOSE: Module used to manage ques inside of the program.
 Module also includes required network functions
