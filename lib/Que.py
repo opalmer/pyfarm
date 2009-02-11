@@ -22,23 +22,24 @@ Module also includes required network functions
 
 
 '''
-
+# Python Libs
 import os
 import time
 import Queue
 import heapq
 import socket
 
+# PyFarm Libs
 from Process import *
-
+from Util import ModulePath
 import ReadSettings as Settings
 
+# PyQt Libs
 from PyQt4.QtCore import *
 from PyQt4.QtNetwork import *
 
 # setup the required ports (adjust these settings via settings.cfg)
-CFG = os.getcwd()+'/settings.cfg'
-QUE_PORT = Settings.Network(CFG).QuePort()
+QUE_PORT = Settings.Network().QuePort()
 SIZEOF_UINT16 = 2
 
 stateHelp = {0:"The socket is not connected",

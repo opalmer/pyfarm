@@ -4,7 +4,7 @@ CONTACT: oliverpalmer@opalmer.com
 INITIAL: Jan 1 2009
 PURPOSE: Used to read in settings of PyFarm
 
-    This file is part of PyFarm.
+    This self.file is part of PyFarm.
 
     PyFarm is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -20,8 +20,9 @@ PURPOSE: Used to read in settings of PyFarm
     along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
 '''
-
+from Util import ModulePath
 COMMENT = '#'
+SETTINGS_FILE = ModulePath(__file__, 1)+'settings.cfg'
 
 def isMatch(line, search):
     '''
@@ -48,8 +49,8 @@ def getValue(openFile,search):
 
 class Network(object):
     '''Read and output the network related settings'''
-    def __init__(self, settings_file):
-        self.file = open(settings_file)
+    def __init__(self):
+        self.file = open(SETTINGS_FILE)
         self.keys = ['MASTER_ADDRESS','BROADCAST_PORT',\
                             'TCP_STD_OUT','TCP_STD_ERR',\
                             'TCP_QUE', 'SIZE_OF_UNIT16']

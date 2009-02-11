@@ -3,7 +3,8 @@ AUTHOR: Oliver Palmer
 CONTACT: oliverpalmer@opalmer.com
 INITIAL: Feb 6 2009
 PURPOSE: Module used to configure a command line render based on operating system
-and architecture.
+and architecture.   This module first looks at the operating system, then the arhitecture.
+After discovering this information it will then try and discover the currently installed software.
 
     This file is part of PyFarm.
 
@@ -23,17 +24,19 @@ and architecture.
 '''
 
 import os
-from os.path import isfile
+import glob
+import fnmatch
+from os.path import isfile, islink
 
 def GetOs():
     '''
     Get the type of os and the architecture
-    
+
     OUTPUT:
         [ operating_system, arhitecture ]
     '''
     output = []
-    
+
     # if linux, do this
     if os.name == 'posix' and os.uname()[0] != 'Darwin':
         output.append('linux')
@@ -41,24 +44,38 @@ def GetOs():
             output.append('x64')
         elif os.uname()[4] == 'i386' or os.uname()[4] == 'i686' or os.uname()[4] == 'x86':
             output.append('x86')
-    
+
     # if mac, do this
     elif os.name == 'posix' and os.uname()[0] == 'Darwin':
         output.append('mac')
         if os.uname()[4] == 'i386' or os.uname[4] == 'i686':
             output.append('x86')
-        
+
     elif os.name == 'nt':
         output.append('windows')
         output.append(os.getenv(PROCESSOR_ARCHITECTURE))
-        
+
     return output
-        
+
+def FindProgram(pattern, rootPath):
+    '''
+    Locate all files matching supplied filename pattern in and below
+    supplied root directory
+
+    INPUT:
+        pattern (string) -- file to search for
+        rootPath (string) -- Path to start search at
+    '''
+    for path, dirs, files in os.walk(os.path.abspath(rootPath)):
+        for file in files:
+          if glob.fnmatch.fnmatch(file, pattern):
+            yield os.path.join(path, file)
+
 
 class SoftwareInstalled(object):
     '''
     Preconfigure the software
-    
+
     INITIAL VARS:
         self.os -- the os of the system (linux, mac, windows)
         self.arch -- the architecture of the processor (x86, x64)
@@ -66,46 +83,57 @@ class SoftwareInstalled(object):
     def __init__(self):
         self.os = GetOs()[0]
         self.arch = GetOs()[1]
-        
+
     def maya(self):
         '''
         Return all of the installed versions of maya as a dictionary
-        
+
         OUTPUT:
             { /
                 'maya2008', '/path/to/2008/render/program' /
                 'maya2009', '/path/to/2009/render/program' /
             }
         '''
+        OUTPUT = {}
         if self.os == 'linux':
-            self.prefix = '/usr/autodesk/maya'
-            maya2008x64 = self.prefix+'2008-x64/bin/Render'
-            maya2008x86 = self.prefix+'2008/bin/Render'
-            maya2009x64 = self.prefix+'2009-x64/bin/Render'
-            maya2009x86 = self.prefix+'2009/bin/Render'
-            
-            # if we are running on a 64-bit system, run these checks
-            if self.arch == 'x64':
-                if isfile(maya2008x64):
-                #if not isfile(maya2008x64):
-                    print "Maya 2008 (64-bit) is installed @ %s" % maya2008x64
-                if isfile(maya2009x64):
-                #if not isfile(maya2009x64):
-                    print "Maya 2009 (64-bit) is installed @ %s" % maya2009x64
-            
-            elif self.arch == 'x86':
-                #if isfile(maya2008x86):
-                if not isfile(maya2008x86):
-                    print "Maya 2008 (32-bit) is installed @ %s" % maya2008x86
-                #if isfile(maya2009x86):
-                if not isfile(maya2009x86):
-                    print "Maya 2009 (32-bit) is installed @ %s" % maya2009x86
-                    
+            self.prefix = '/usr/autodesk'
+            for result in FindProgram('Render', self.prefix):
+                # TRY AND USE A REGULAR EXPRESSION
+                # TRY AND USE A REGULAR EXPRESSION
+                # TRY AND USE A REGULAR EXPRESSION
+                # TRY AND USE A REGULAR EXPRESSION
+                # TRY AND USE A REGULAR EXPRESSION
+                # TRY AND USE A REGULAR EXPRESSION
+                for i in result.split('/'):
+                    if len(i.split('-')) > 1:
+                        OUTPUT[i.split('-')[0]] = result
+                    else:
+                        pass
+            return OUTPUT
+
         elif self.os == 'mac':
             self.prefix = '/Applications/Autodesk/maya'
-            
+
         elif self.os == 'windows':
             self.prefix = 'C:\Program Files\Autodesk\Maya'
-            
-a = SoftwareInstalled()
-a.maya()
+
+    def shake(self):
+        '''
+        Return the installation of shake, if it is installed
+
+        OUTPUT:
+        { /
+            'shake', '/path/to/shake/installation' /
+        }
+        '''
+        OUTPUT = {}
+
+        if self.os == 'linux':
+            shake0 = '/usr/apple/shake-v4.00.0607/bin/shake'
+            shake1 = '/opt/shake/bin/shake'
+            if isfile(shake0):
+                pass
+
+mya = SoftwareInstalled()
+maya = mya.maya()
+print maya['maya2008']

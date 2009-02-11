@@ -24,18 +24,20 @@ PURPOSE: To handle and run all client connections on a remote machine
 
 import os
 import sys
+import os.path
+import traceback
 from lib.Network import *
 from lib.Que import *
-from PyQt4.QtCore import QCoreApplication
+from PyQt4.QtCore import *
 
-CFG = os.getcwd()+'/settings.cfg'
-SIZEOF_UINT16 = Settings.Network(CFG).Unit16Size()
-BROADCAST_PORT = Settings.Network(CFG).BroadcastPort()
-QUE_PORT = Settings.Network(CFG).QuePort()
-STDOUT_PORT = Settings.Network(CFG).StdOutPort()
-STDERR_PORT = Settings.Network(CFG).StdErrPort()
-#MASTER = Settings.Network(CFG).MasterAddress()
+
+SIZEOF_UINT16 = Settings.Network().Unit16Size()
+BROADCAST_PORT = Settings.Network().BroadcastPort()
+QUE_PORT = Settings.Network().QuePort()
+STDOUT_PORT = Settings.Network().StdOutPort()
+STDERR_PORT = Settings.Network().StdErrPort()
 USE_STATIC_CLIENT = False
+
 
 class Main(QObject):
     def __init__(self, parent=None):
@@ -54,6 +56,9 @@ class Main(QObject):
         print "Waiting on Que..."
 
 app = QCoreApplication(sys.argv)
+#keys.grabKeyboard()
+#QObject.connect(app)
 main = Main()
 main.startBroadcast()
+app.processEvents()
 app.exec_()

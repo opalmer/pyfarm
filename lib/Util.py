@@ -21,6 +21,8 @@ general usage.
     along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
 '''
+from os import sep
+from os.path import dirname, join
 import Info
 
 # TODO: Turn this line conversion into a working class! SEE ALSO: crlf.py & lfcr.py which come with python
@@ -68,3 +70,18 @@ class StringUtil(object):
             return str.split('\n')[0]
         elif Info.os() == 'windows':
             return str.split('\r\n')[0]
+
+
+def ModulePath(module, level=0):
+    '''Given a module return it's path to the n'th level'''
+    if level == 0:
+        return dirname(module)+'/'
+
+    else:
+        OUT = ''
+        path = dirname(module).split(sep)
+
+        for i in path[:len(path)-level]:
+            OUT += '%s/' % i
+
+        return OUT

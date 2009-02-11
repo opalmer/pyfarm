@@ -33,19 +33,18 @@ from PyQt4.QtNetwork import *
 ## ui components
 from lib.ui.RC2 import Ui_RC2
 from lib.ui.CustomWidgets import *
+import lib.ReadSettings as Settings
 ## general libs
 from lib.Que import *
 from lib.Network import *
-import lib.ReadSettings as Settings
 
 # setup the required ports (adjust these settings via settings.cfg)
-CFG = os.getcwd()+'/settings.cfg'
-QUE_PORT = Settings.Network(CFG).QuePort()
-BROADCAST_PORT = Settings.Network(CFG).BroadcastPort()
-STDOUT_PORT = Settings.Network(CFG).StdOutPort()
-STDERR_PORT = Settings.Network(CFG).StdErrPort()
-SIZEOF_UINT16 = Settings.Network(CFG).Unit16Size()
-SERVE_FROM = Settings.Network(CFG).MasterAddress()
+QUE_PORT = Settings.Network().QuePort()
+BROADCAST_PORT = Settings.Network().BroadcastPort()
+STDOUT_PORT = Settings.Network().StdOutPort()
+STDERR_PORT = Settings.Network().StdErrPort()
+SIZEOF_UINT16 = Settings.Network().Unit16Size()
+SERVE_FROM = Settings.Network().MasterAddress()
 
 class WorkerThread(QThread):
     '''Used thread out TCP servers for worker threads'''
