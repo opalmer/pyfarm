@@ -106,7 +106,9 @@ class RC2(QMainWindow):
         self.message = QString()
         self.scene = ''
         self.que = QUE
-        self.infoMessage('Welcome to PyFarm -- Release Candidate 1', 'Thank you for testing PyFarm!  Please direct all inquiries about this softare to the homepage @ http://www.opalmer.com/pyfarm')
+
+        # Display information about pyfarm and support
+        #self.infoMessage('Welcome to PyFarm -- Release Candidate 1', 'Thank you for testing PyFarm!  Please direct all inquiries about this softare to the homepage @ http://www.opalmer.com/pyfarm')
 
         # make signal connections
         ## ui signals
@@ -117,10 +119,11 @@ class RC2(QMainWindow):
         self.connect(self.ui.browseOutputDir, SIGNAL("pressed()"), self._browseForOutputDir)
         self.connect(self.ui.queryQue, SIGNAL("pressed()"), self.queryQue)
         self.connect(self.ui.emptyQue, SIGNAL("pressed()"), self.emptyQue)
-        self.connect(self.ui.browseForLogDir, SIGNAL("pressed()"), self._browseForLogDir)
+        #self.connect(self.ui.inputProject, SIGNAL("pressed()"), self._inputProject)
         self.connect(self.ui.enque, SIGNAL("pressed()"), self._gatherInfo)
         self.connect(self.ui.loadQue, SIGNAL("triggered()"), self._loadQue)
         self.connect(self.ui.saveQue, SIGNAL("triggered()"), self._saveQue)
+        self.connect(self.ui.browseForProject, SIGNAL("pressed()"), self._inputProject)
 
         ## network section signals
         self.connect(self.ui.disableHost, SIGNAL("pressed()"), self._disableHosts)
@@ -146,16 +149,16 @@ class RC2(QMainWindow):
         if not getOutputDir.isEmpty():
             self.ui.inputOutputDir.setText(getOutputDir)
 
-    def _browseForLogDir(self):
+    def _inputProject(self):
         '''Get the output directory'''
-        getLogDir = QFileDialog.getExistingDirectory(\
+        projectFile = QFileDialog.getOpenFileName(\
             None,
+            self.trUtf8("Choose Project File"),
             QString(),
-            QString(),
-            QFileDialog.Options(QFileDialog.ShowDirsOnly))
+            self.trUtf8("Maya Project File(workspace.mel)"),
+            None)
 
-        if not getLogDir.isEmpty():
-            self.ui.inputLogDir.setText(getLogDir)
+        self.ui.inputProject.setText(projectFile)
 
     def _browseForScene(self):
         '''Browse for a scene to render'''
@@ -181,7 +184,6 @@ class RC2(QMainWindow):
 
         QueFile = QFile(queInFile)
         QueFile.open(QIODevice.ReadOnly)
-
 
     def _saveQue(self):
         '''Save the current que for later use'''
@@ -386,7 +388,7 @@ class RC2(QMainWindow):
 
                 self.jobName = self.ui.inputJobName.text()
                 self.outputDir = self.ui.inputOutputDir.text()
-                self.logDir = self.ui.inputLogDir.text()
+                self.projectFile = self.ui.inputProject.text()
                 self.priority = int(self.ui.inputJobPriority.text())
 
                 if self.jobName == '':
@@ -394,9 +396,9 @@ class RC2(QMainWindow):
                 else:
                     for frame in range(int(self.sFrame),int(self.eFrame)+1, int(self.bFrame)):
                         if self.rayFlag == '':
-                            self.que.put([self.jobName, frame, '%s -s %s -e %s  -rd %s %s' % (self.command, frame, frame, self.outputDir, self.scene)], self.priority)
+                            self.que.put([self.jobName, frame, '%s -proj %s -s %s -e %s -rd %s %s' % (self.command, self.projectFile, frame, frame, self.outputDir, self.scene)], self.priority)
                         else:
-                            self.que.put([self.jobName, frame, '%s %s -s %s -e %s  -rd %s %s' % (self.command, self.rayFlag, frame, frame, self.outputDir, self.scene)], self.priority)
+                            self.que.put([self.jobName, frame, '%s %s -proj %s -s %s -e %s  -rd %s %s' % (self.command, self.rayFlag, self.projectFile, frame, frame, self.outputDir, self.scene)], self.priority)
 
                     self.updateStatus('QUEUE', '%s frames waiting to render' % self.que.size(), 'brown')
                     #self.initJob()
