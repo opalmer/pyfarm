@@ -5,7 +5,7 @@ build:
 	cp -Rfuv settings.cfg GNU-GPL_License_v3.html Main.pyw Client.py build/source
 	rsync -vruP --exclude="*.pyc" --exclude="old" lib/ build/source/lib/
 	
-frozen:
+freeze:
 	cp -fvu /farm/projects/PyFarm/trunk/RC2/*.py /farm/projects/PyFarm/trunk/Frozen
 	cp -fvu /farm/projects/PyFarm/trunk/RC2/*.pyw /farm/projects/PyFarm/trunk/Frozen
 	cp -fvu /farm/projects/PyFarm/trunk/RC2/settings.cfg /farm/projects/PyFarm/trunk/Frozen

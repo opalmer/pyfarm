@@ -95,15 +95,11 @@ class SoftwareInstalled(object):
             }
         '''
         OUTPUT = {}
+        mayaRegEx = QRegExp(r"""[m|M]aya(200[89]|8.[05]|8[05]|7(.0|0))""")
         if self.os == 'linux':
             self.prefix = '/usr/autodesk'
             for result in FindProgram('Render', self.prefix):
-                # TRY AND USE A REGULAR EXPRESSION
-                # TRY AND USE A REGULAR EXPRESSION
-                # TRY AND USE A REGULAR EXPRESSION
-                # TRY AND USE A REGULAR EXPRESSION
-                # TRY AND USE A REGULAR EXPRESSION
-                # TRY AND USE A REGULAR EXPRESSION
+            # impliment mayaRegEx from above
                 for i in result.split('/'):
                     if len(i.split('-')) > 1:
                         OUTPUT[i.split('-')[0]] = result
@@ -116,6 +112,19 @@ class SoftwareInstalled(object):
 
         elif self.os == 'windows':
             self.prefix = 'C:\Program Files\Autodesk\Maya'
+
+    def houdini(self):
+        '''
+        Return all of the houdini versions installed
+
+        OUTPUT:
+            { /
+                '9.5.244', '/opt/hfs9.5.244/bin/hrender'
+            }
+        '''
+        OUTPUT = {}
+        regexp = QRegExp(r"""hfs9.[15].[0-9]+""")
+
 
     def shake(self):
         '''
