@@ -393,11 +393,15 @@ class RC2(QMainWindow):
                 if self.jobName == '':
                     self.criticalMessage("Missing Job Name", "You're job needs a name")
                 else:
-                    for frame in range(int(self.sFrame),int(self.eFrame)+1, int(self.bFrame)):
-                        if self.rayFlag == '':
-                            self.que.put([self.jobName, frame, '%s -proj %s -s %s -e %s -rd %s %s' % (self.command, self.projectFile, frame, frame, self.outputDir, self.scene)], self.priority)
-                        else:
-                            self.que.put([self.jobName, frame, '%s %s -proj %s -s %s -e %s  -rd %s %s' % (self.command, self.rayFlag, self.projectFile, frame, frame, self.outputDir, self.scene)], self.priority)
+                    if self.software.currentText() != 'Shake':
+                        for frame in range(int(self.sFrame),int(self.eFrame)+1, int(self.bFrame)):
+                            if self.rayFlag == '':
+                                self.que.put([self.jobName, frame, '%s -proj %s -s %s -e %s -rd %s %s' % (self.command, self.projectFile, frame, frame, self.outputDir, self.scene)], self.priority)
+                            else:
+                                self.que.put([self.jobName, frame, '%s %s -proj %s -s %s -e %s  -rd %s %s' % (self.command, self.rayFlag, self.projectFile, frame, frame, self.outputDir, self.scene)], self.priority)
+                    else:
+                        for frame in range(int(self.sFrame),int(self.eFrame)+1, int(self.bFrame)):
+                            self.que.put([self.jobName, frame, '%s -v -t %s-%sx1 -exec %s' % (self.command, frame, frame, self.scene)], self.priority)
 
                     self.updateStatus('QUEUE', '%s frames waiting to render' % self.que.size(), 'brown')
                     #self.initJob()
