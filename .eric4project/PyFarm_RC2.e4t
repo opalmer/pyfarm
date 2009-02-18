@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Tasks SYSTEM "Tasks-4.2.dtd">
 <!-- eric4 tasks file for project PyFarm_RC2 -->
-<!-- Saved: 2009-02-17, 20:30:27 -->
+<!-- Saved: 2009-02-18, 01:46:27 -->
 <Tasks version="4.2">
   <Task priority="1" completed="False" bugfix="False">
     <Summary>TODO: Add software discovery to Info module</Summary>

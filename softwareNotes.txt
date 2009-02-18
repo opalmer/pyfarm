@@ -1,44 +1,44 @@
 Maya 2008 (32-bit):
-	Windows:C:\Program Files\Autodesk\Maya2008\bin\Render.exe
-	Linux: 
-	Mac:/Applications/Autodesk/maya2008/Maya.app/Contents/bin/Render
-	
+    Windows:C:\Program Files\Autodesk\Maya2008\bin\Render.exe
+    Linux:
+    Mac:/Applications/Autodesk/maya2008/Maya.app/Contents/bin/Render
+
 Maya 2008 (64-bit):
-	Windows:
-	Linux:/usr/autodesk/maya2008-x64/bin/Render
-	Mac:
-	
+    Windows:
+    Linux:/usr/autodesk/maya2008-x64/bin/Render
+    Mac:
+
 Maya 2009 (32-bit):
-	Windows:C:\Program Files\Autodesk\Maya2009\bin\Render
-	Linux:
-	Mac:/Applications/Autodesk/maya2009/Maya.app/Contents/bin/Render
-	
+    Windows:C:\Program Files\Autodesk\Maya2009\bin\Render
+    Linux:
+    Mac:/Applications/Autodesk/maya2009/Maya.app/Contents/bin/Render
+
 Maya 2009 (64-bit):
-	Windows:
-	Linux:/usr/autodesk/maya2009-x64/bin/Render.exe
-	Mac:
-	
+    Windows:
+    Linux:/usr/autodesk/maya2009-x64/bin/Render.exe
+    Mac:
+
 Houdini 9.5.303 (64-bit):
-	Windows:
-	Linux:/opt/hfs9.5.303/bin/hrender
-	Mac:
-	
+    Windows:
+    Linux:/opt/hfs9.5.303/bin/hrender
+    Mac:
+
 Houdini 9.5.303 (32-bit):
-	Windows: C:\Program Files\Side Effects Software\Houdini 9.5.303\hrender.exe
-	Linux:/opt/hfs9.5.303/bin/hrender
-	Mac:
-	
+    Windows: C:\Program Files\Side Effects Software\Houdini 9.5.303\hrender.exe
+    Linux:/opt/hfs9.5.303/bin/hrender
+    Mac:
+
 Shake:
-	HELP: shake -v -t 1-10x2 (verbose, frames 1-10, by frame 2)
-	Linux:/usr/apple/shake-v4.00.0607/bin/shake;;/opt/shake/bin/shake
-	Mac: /Applications/Shake/shake.app/Contents/MacOS/shake
+    HELP: shake -v -t 1-10x2 (verbose, frames 1-10, by frame 2)
+    Linux:/usr/apple/shake-v4.00.0607/bin/shake;;/opt/shake/bin/shake
+    Mac: /Applications/Shake/shake.app/Contents/MacOS/shake
 
 use os.name to get os type
 
 Windows (Env Vars):
-	XP 32:
-		PROCESSOR_ARCHITECTURE = x86 (32-bit os)
-		OS = Windows_NT (xp)
-		
+    XP 32:
+        PROCESSOR_ARCHITECTURE = x86 (32-bit os)
+        OS = Windows_NT (xp)
+
 Linux (Env Vars):
-	use os.uname for specific linux
+    use os.uname for specific linux

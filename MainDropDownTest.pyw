@@ -24,11 +24,7 @@ PURPOSE: Drop down menu testing
 import sys
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
-from PyQt4.QtNetwork import *
 from lib.ui.DropDownMenuTest import Ui_DropDownMenuTest
-from lib.ui.RenderOptionsMaya import Ui_RenderOptionsMaya
-from lib.ui.RenderOptionsHoudini import Ui_RenderOptionsHoudini
-from lib.ui.RenderOptionsShake import Ui_RenderOptionsShake
 from lib.RenderConfig import SoftwareInstalled
 
 # get ready to find the currently installed software
@@ -49,29 +45,33 @@ class DropDownMenuTest(QWidget):
         self.ui.setupUi(self)
 
         # make connections
-        self.connect(self.ui.softwareSelection, SIGNAL("activated (const QString&)"), self.setSoftware)
+        self.connect(self.ui.softwareSelection, SIGNAL("activated (const QString&)"), self.configure_renderer)
 
         for (software,path) in LOCAL_SOFTWARE.items():
             self.ui.softwareSelection.addItem(software)
 
-    def configRenderOptions(self, software):
-        if software[:4] == 'Maya':
+        self.configure_renderer(self.ui.softwareSelection.currentText())
+
+    def configure_renderer(self, software):
+        '''
+        Given an incoming program, change the rendering options
+        and self.software
+        '''
+        program = str(software)
+        self.software = [program, LOCAL_SOFTWARE[program]]
+        #self.configRenderOptions(self.software[0])
+
+        if program[:4] == 'Maya':
+            print self.software
             self.ui.optionStack.setCurrentIndex(0)
 
-        elif software[:4] == 'Houd':
+        elif program[:4] == 'Houd':
+            print self.software
             self.ui.optionStack.setCurrentIndex(1)
 
-        elif software[:4] == 'Shak':
+        elif program[:4] == 'Shak':
+            print self.software
             self.ui.optionStack.setCurrentIndex(2)
-
-        else:
-            print software
-
-    def setSoftware(self, software):
-        '''Setup the software command and call the correct gui'''
-        programName = str(software)
-        self.software = [programName, LOCAL_SOFTWARE[programName]]
-        self.configRenderOptions(self.software[0])
 
 
 app = QApplication(sys.argv)

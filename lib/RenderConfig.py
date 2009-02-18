@@ -89,6 +89,10 @@ class SoftwareInstalled(object):
     INITIAL VARS:
         self.os -- the os of the system (linux, mac, windows)
         self.arch -- the architecture of the processor (x86, x64)
+
+    NOTES:
+        -Each program config function contains a prefixList, this is the path
+        to search for the installed software
     '''
     def __init__(self):
         self.os = GetOs()[0]
@@ -136,10 +140,10 @@ class SoftwareInstalled(object):
             return OUTPUT
 
         elif self.os == 'mac':
-            self.prefix = '/Applications/Autodesk/maya'
+            prefixList = ['/Applications/Autodesk/']
 
         elif self.os == 'windows':
-            self.prefix = 'C:\Program Files\Autodesk\Maya'
+            prefixList = ['C:\Program Files\Autodesk']
 
     def houdini(self, extraPath=[]):
         '''
@@ -170,6 +174,14 @@ class SoftwareInstalled(object):
                             if isfile('%s/%s/bin/hrender' % (prefix, result)):
                                 OUTPUT['Houdini '+str(houRegEx.cap(0))[3:]] = '%s/%s/bin/hrender' % (prefix, result)
 
+        elif self.os == 'mac':
+            pass
+
+        elif self.os == 'windows':
+            #C:\Program Files\Side Effects Software\Houdini 9.5.303\hrender.exe
+            prefixList = ['C:\Program Files\Side Effects Software']
+
+
         return OUTPUT
 
     def shake(self, extraPath=[]):
@@ -199,16 +211,24 @@ class SoftwareInstalled(object):
                         if isfile('%s/%s/shake' % (prefix, result)):
                             OUTPUT["Shake"] = '%s/%s/shake' % (prefix, result)
 
+        if self.os == 'mac':
+            prefixList = ['/Applications/Shake/shake.app/Contents/MacOS/shake']
+
         return OUTPUT
 
-## get ready to find the currently installed software
-#LOCAL_SOFTWARE = {}
-#software = SoftwareInstalled()
-#
-## find the software and add it to the dictionary
-#LOCAL_SOFTWARE.update(software.maya())
-#LOCAL_SOFTWARE.update(software.houdini())
-#LOCAL_SOFTWARE.update(software.shake())
-#
-#for (software,path) in LOCAL_SOFTWARE.items():
-#    print 'Found %s at %s' % (software,path)
+'''
+# small set of tests
+
+# get ready to find the currently installed software
+LOCAL_SOFTWARE = {}
+software = SoftwareInstalled()
+
+# find the software and add it to the dictionary
+LOCAL_SOFTWARE.update(software.maya())
+LOCAL_SOFTWARE.update(software.houdini())
+LOCAL_SOFTWARE.update(software.shake())
+
+for (software,path) in LOCAL_SOFTWARE.items():
+    print 'Found %s at %s' % (software,path)
+
+'''
