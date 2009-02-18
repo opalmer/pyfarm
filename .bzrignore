@@ -7,3 +7,5 @@
 *.pywc
 *BACKUP*
 *.pyc
+testQueSave
+Client.pyc

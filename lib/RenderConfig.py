@@ -115,7 +115,7 @@ class SoftwareInstalled(object):
         for newPath in AddExtraPath(extraPath):
             print newPath
             prefixList.append(newPath)
-        
+
         if self.os == 'linux':
             # paths to search for maya
             prefixList = ['/usr/autodesk']
@@ -125,13 +125,14 @@ class SoftwareInstalled(object):
                     for result in os.listdir(prefix): # for each dir in the search dir
                         if not mayaRegEx.indexIn(result): # if we find a match
                             if isfile("%s/%s/bin/Render" % (prefix, result)): #check to see if if this is the render path
-                                OUTPUT[str(mayaRegEx.cap(0))] = "%s/%s/bin/Render" % (prefix, result)
+                                OUTPUT['Maya '+str(mayaRegEx.cap(0))[4:]] = "%s/%s/bin/Render" % (prefix, result)
 
                             elif isfile("%s/%s/bin/render" % (prefix, result)): # or if this is the render path
-                                OUTPUT[str(mayaRegEx.cap(0))] = "%s/%s/bin/Render" % (prefix, result)
+                                OUTPUT['Maya '+str(mayaRegEx.cap(0))[4:]] = "%s/%s/bin/Render" % (prefix, result)
 
                             else: #If the render path is not a default, inform the user
                                 print "ERROR: Non default path for %s's renderer" % mayaRegEx.cap(0)
+
             return OUTPUT
 
         elif self.os == 'mac':
@@ -165,16 +166,16 @@ class SoftwareInstalled(object):
             for prefix in prefixList:
                 if isdir(prefix):
                     for result in os.listdir(prefix):
-                        if not houRegEx.indexIn(result):
+                        if not houRegEx.indexIn(result): # if we the regular expression matches
                             if isfile('%s/%s/bin/hrender' % (prefix, result)):
-                                OUTPUT[result] = '%s/%s/bin/hrender' % (prefix, result)
+                                OUTPUT['Houdini '+str(houRegEx.cap(0))[3:]] = '%s/%s/bin/hrender' % (prefix, result)
 
         return OUTPUT
 
     def shake(self, extraPath=[]):
         '''
         Return the installation of shake, if it is installed
-        
+
         INPUT:
             extraPath -- Add extra path(s) to search for
 
@@ -186,25 +187,28 @@ class SoftwareInstalled(object):
         OUTPUT = {}
         prefixList = ['/usr/apple/shake-v4.00.0607', '/opt/shake', \
                            '/usr/local/shake']
-        
+
         # if we find extra paths to use, add them
         for newPath in AddExtraPath(extraPath):
             prefixList.append(newPath)
-            
+
         if self.os == 'linux':
             for prefix in prefixList:
                 if isdir(prefix):
                     for result in os.listdir(prefix):
                         if isfile('%s/%s/shake' % (prefix, result)):
-                            OUTPUT["shake"] = '%s/%s/shake' % (prefix, result)
+                            OUTPUT["Shake"] = '%s/%s/shake' % (prefix, result)
+
         return OUTPUT
 
-# get ready to find the currently installed software
-LOCAL_SOFTWARE = {}
-software = SoftwareInstalled()
-LOCAL_SOFTWARE.update(software.maya())
-LOCAL_SOFTWARE.update(software.houdini())
-LOCAL_SOFTWARE.update(software.shake())
-
-for (software,path) in LOCAL_SOFTWARE.items():
-    print 'Found %s at %s' % (software,path)
+## get ready to find the currently installed software
+#LOCAL_SOFTWARE = {}
+#software = SoftwareInstalled()
+#
+## find the software and add it to the dictionary
+#LOCAL_SOFTWARE.update(software.maya())
+#LOCAL_SOFTWARE.update(software.houdini())
+#LOCAL_SOFTWARE.update(software.shake())
+#
+#for (software,path) in LOCAL_SOFTWARE.items():
+#    print 'Found %s at %s' % (software,path)

@@ -3,8 +3,7 @@
 AUTHOR: Oliver Palmer
 CONTACT: oliverpalmer@opalmer.com
 INITIAL: Jan 12 2009
-PURPOSE: TCP client used to send information to the server and react to
-signals sent from the server
+PURPOSE: Main program to run and manage PyFarm
 
     This file is part of PyFarm.
 
