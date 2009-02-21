@@ -113,6 +113,9 @@ class SoftwareInstalled(object):
         '''
         OUTPUT = {}
         prefixList = []
+        commonName = 'maya'
+        fileGrep = 'Maya Scene File (*.mb *.ma)'
+        widgetIndex = '0'
         mayaRegEx = QRegExp(r"""[m|M]aya(200[89]|8.[05]|8[05]|7(.0|0))""")
 
         # if we find extra paths to use, add them
@@ -129,10 +132,10 @@ class SoftwareInstalled(object):
                     for result in os.listdir(prefix): # for each dir in the search dir
                         if not mayaRegEx.indexIn(result): # if we find a match
                             if isfile("%s/%s/bin/Render" % (prefix, result)): #check to see if if this is the render path
-                                OUTPUT['Maya '+str(mayaRegEx.cap(0))[4:]] = "%s/%s/bin/Render" % (prefix, result)
+                                OUTPUT['Maya '+str(mayaRegEx.cap(0))[4:]] = "%s/%s/bin/Render::%s::%s::%s" % (prefix, result, commonName, fileGrep, widgetIndex)
 
                             elif isfile("%s/%s/bin/render" % (prefix, result)): # or if this is the render path
-                                OUTPUT['Maya '+str(mayaRegEx.cap(0))[4:]] = "%s/%s/bin/Render" % (prefix, result)
+                                OUTPUT['Maya '+str(mayaRegEx.cap(0))[4:]] = "%s/%s/bin/Render::%s::%s::%s" % (prefix, result, commonName, fileGrep, widgetIndex)
 
                             else: #If the render path is not a default, inform the user
                                 print "ERROR: Non default path for %s's renderer" % mayaRegEx.cap(0)
@@ -159,6 +162,9 @@ class SoftwareInstalled(object):
         '''
         OUTPUT = {}
         prefixList = []
+        commonName = 'houdini'
+        fileGrep = 'Houdini File (*.hip)'
+        widgetIndex = '1'
         houRegEx = QRegExp(r"""hfs9.[15].[0-9]+""")
 
         # if we find extra paths to use, add them
@@ -172,7 +178,7 @@ class SoftwareInstalled(object):
                     for result in os.listdir(prefix):
                         if not houRegEx.indexIn(result): # if we the regular expression matches
                             if isfile('%s/%s/bin/hrender' % (prefix, result)):
-                                OUTPUT['Houdini '+str(houRegEx.cap(0))[3:]] = '%s/%s/bin/hrender' % (prefix, result)
+                                OUTPUT['Houdini '+str(houRegEx.cap(0))[3:]] = '%s/%s/bin/hrender::%s::%s::%s' % (prefix, result, commonName, fileGrep, widgetIndex)
 
         elif self.os == 'mac':
             pass
@@ -195,8 +201,17 @@ class SoftwareInstalled(object):
         { /
             'shake', '/path/to/shake/installation' /
         }
+
+        FLAG NOTES:
+            v/vv -- Verbose
+            cpus -- number of cpus to use
+            sequential -- will process each file out node in turn. (-vv just gives you a percentage as the frames render) .
+            t -- fram range (ex. 1-10)
         '''
         OUTPUT = {}
+        commonName = 'shake'
+        fileGrep = 'Shake Script (*.shk)'
+        widgetIndex = '2'
         prefixList = ['/usr/apple/shake-v4.00.0607', '/opt/shake', \
                            '/usr/local/shake']
 
@@ -209,26 +224,73 @@ class SoftwareInstalled(object):
                 if isdir(prefix):
                     for result in os.listdir(prefix):
                         if isfile('%s/%s/shake' % (prefix, result)):
-                            OUTPUT["Shake"] = '%s/%s/shake' % (prefix, result)
+                            OUTPUT["Shake"] = '%s/%s/shake::%s::%s::%s' % (prefix, result, commonName, fileGrep, widgetIndex)
 
         if self.os == 'mac':
             prefixList = ['/Applications/Shake/shake.app/Contents/MacOS/shake']
 
         return OUTPUT
 
-'''
+class ConfigureCommand(object):
+    '''
+    Given an input dictionary and a program (ex. self.maya)
+    yield the output commands
+    '''
+    def __init__(self, softwareDict):
+      self.software = softwareDict
+
+    def maya(self, ver, sFrame, eFrame, bFrame, rayRender):
+      '''
+      Yield the sequence of frames for maya
+
+      VARS:
+         ver -- Version of maya to pull from self.software
+         sFrame -- Start frame of sequence
+         eFrame -- End Frame of sequence
+         bFrame -- By frame or sequence step
+         rayRender -- If using mental ray, set to true
+      '''
+      version = self.sofware[ver]
+
+    def houdini(self, ver, sFrame, eFrame, bFrame):
+      '''
+      Yield the sequence of frames for houdini
+
+      VARS:
+        ver -- Version of houdini to pull from self.software
+        sFrame -- Start frame of sequence
+        eFrame -- End Frame of sequence
+        bFrame -- By frame or sequence step
+      '''
+      version = self.sofware[ver]
+
+    def shake(self, version, sFrame, eFrame, bFrame):
+      '''
+      Yield the sequence of frames for shake
+
+      VARS:
+        ver -- Version of shake to pull from self.software
+        sFrame -- Start frame of sequence
+        eFrame -- End Frame of sequence
+        bFrame -- By frame or sequence step
+      '''
+      version = self.sofware[ver]
+
+
+
 # small set of tests
 
 # get ready to find the currently installed software
-LOCAL_SOFTWARE = {}
-software = SoftwareInstalled()
+#LOCAL_SOFTWARE = {}
+#software = SoftwareInstalled()
 
 # find the software and add it to the dictionary
-LOCAL_SOFTWARE.update(software.maya())
-LOCAL_SOFTWARE.update(software.houdini())
-LOCAL_SOFTWARE.update(software.shake())
+#LOCAL_SOFTWARE.update(software.maya())
+#LOCAL_SOFTWARE.update(software.houdini())
+#LOCAL_SOFTWARE.update(software.shake())
 
-for (software,path) in LOCAL_SOFTWARE.items():
-    print 'Found %s at %s' % (software,path)
-
-'''
+#for (software,path) in LOCAL_SOFTWARE.items():
+#    print path.split('::')[1]
+#    print 'Found %s at %s' % (software,path)
+#
+#print LOCAL_SOFTWARE

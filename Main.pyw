@@ -36,6 +36,7 @@ import lib.ReadSettings as Settings
 ## general libs
 from lib.Que import *
 from lib.Network import *
+from lib.RenderConfig import *
 
 # setup the required ports (adjust these settings via settings.cfg)
 QUE_PORT = Settings.Network().QuePort()
@@ -44,6 +45,14 @@ STDOUT_PORT = Settings.Network().StdOutPort()
 STDERR_PORT = Settings.Network().StdErrPort()
 SIZEOF_UINT16 = Settings.Network().Unit16Size()
 SERVE_FROM = Settings.Network().MasterAddress()
+
+LOCAL_SOFTWARE = {}
+software = SoftwareInstalled()
+
+# find the installed software and add it the LOCAL_SOFTWARE
+LOCAL_SOFTWARE.update(software.maya())
+LOCAL_SOFTWARE.update(software.houdini())
+LOCAL_SOFTWARE.update(software.shake())
 
 class WorkerThread(QThread):
     '''Used thread out TCP servers for worker threads'''
@@ -76,6 +85,18 @@ class WorkerThread(QThread):
 
 
 class RC2(QMainWindow):
+    '''
+    This is the controlling class for the main gui
+
+    NOTES:
+        + Functions that are CAPITALIZED from the start are primary
+        functions.  For example a function that brings up a file browsing
+        gui would be a primary function
+
+        + Functions that do not fall into the above category are utility
+        functions.  They are used more often and over a broader spectrum.
+        For example the setStartFrame is called whenever a new start frame is declared.
+    '''
     def __init__(self):
         super(RC2, self).__init__()
 
@@ -94,15 +115,16 @@ class RC2(QMainWindow):
         self.updateStatus('SETTINGS', 'StdErr Port: %s' % STDERR_PORT, 'purple')
         self.updateStatus('SETTINGS', 'Que Port: %s' % QUE_PORT, 'purple')
 
+        # populate the avaliable list of renderers
+        self.UpdateSoftwareList()
+
         # setup ui vars
         self.hosts = []
         self.foundHosts = 0
         self.ui.networkTable.setAlternatingRowColors(True)
-        self.software = self.ui.softwarePackages
         self.netTable = self.ui.networkTable
         self.netTable.horizontalHeader().setStretchLastSection(True)
         self.message = QString()
-        self.scene = ''
         self.que = QUE
 
         # Display information about pyfarm and support
@@ -111,18 +133,29 @@ class RC2(QMainWindow):
         # make signal connections
         ## ui signals
         self.connect(self.ui.render, SIGNAL("pressed()"), self.initJob)
-        #self.connect(self.ui.cancelRender, SIGNAL("pressed()"), self.killRender
         self.connect(self.ui.findHosts, SIGNAL("pressed()"), self._findHosts)
-        self.connect(self.ui.browseForScene, SIGNAL("pressed()"), self._browseForScene)
-        self.connect(self.ui.browseOutputDir, SIGNAL("pressed()"), self._browseForOutputDir)
         self.connect(self.ui.queryQue, SIGNAL("pressed()"), self.queryQue)
         self.connect(self.ui.emptyQue, SIGNAL("pressed()"), self.emptyQue)
-        #self.connect(self.ui.inputProject, SIGNAL("pressed()"), self._inputProject)
         self.connect(self.ui.enque, SIGNAL("pressed()"), self._gatherInfo)
         self.connect(self.ui.loadQue, SIGNAL("triggered()"), self._loadQue)
         self.connect(self.ui.saveQue, SIGNAL("triggered()"), self._saveQue)
-        self.connect(self.ui.browseForProject, SIGNAL("pressed()"), self._inputProject)
 
+        # connect ui widgets related to global job info
+        self.connect(self.ui.inputStartFrame, SIGNAL("valueChanged(int)"), self.setStartFrame)
+        self.connect(self.ui.inputEndFrame, SIGNAL("valueChanged(int)"), self.setEndFrame)
+        self.connect(self.ui.inputByFrame, SIGNAL("valueChanged(int)"), self.setByFrame)
+        self.connect(self.ui.inputJobName, SIGNAL("editingFinished()"), self.setJobName)
+        self.connect(self.ui.inputJobPriority, SIGNAL("valueChanged(int)"), self.setJobPriority)
+        self.connect(self.ui.softwareSelection, SIGNAL("currentIndexChanged(const QString&)"), self.SetSoftware)
+
+        # connect specific render option vars
+        ## maya
+        self.connect(self.ui.mayaBrowseForScene, SIGNAL("pressed()"), self.BrowseForInput)
+        self.connect(self.ui.mayaBrowseForOutputDir, SIGNAL("pressed()"), self.setMayaImageOutDir)
+        self.connect(self.ui.mayaBrowseForProject, SIGNAL("pressed()"), self.setMayaProjectFile)
+        self.connect(self.ui.useMentalRay, SIGNAL("stateChanged(int)"), self.setMayaMentalRay)
+
+        # connect ui vars for
         ## network section signals
         self.connect(self.ui.disableHost, SIGNAL("pressed()"), self._disableHosts)
         self.connect(self.ui.addHost, SIGNAL("pressed()"), self._customHostDialog)
@@ -136,39 +169,137 @@ class RC2(QMainWindow):
 #        self.ui.inputLogDir.setText('/farm/tmp/logs/')
 #        self.ui.inputJobName.setText('rayTest')
 
-    def _browseForOutputDir(self):
-        '''Get the output directory'''
-        getOutputDir = QFileDialog.getExistingDirectory(\
+    def setStartFrame(self, frame):
+        '''Set the start frame value'''
+        self.sFrame = frame
+
+    def setEndFrame(self, frame):
+        '''Set the end frame value'''
+        self.eFrame = frame
+
+    def setByFrame(self, frame):
+        '''Set the by frame value'''
+        self.byFrame = frame
+
+    def setJobName(self):
+        '''Set the job name'''
+        self.jobName = self.ui.inputJobName.text()
+        print self.jobName
+
+    def setJobPriority(self, priority):
+        '''Set the job priority'''
+        self.jobPriority = priority
+
+    def BrowseForInput(self):
+        '''
+        Given an input program, present a search dialog
+        so the user can search for the scene/script/etc.
+        '''
+        render_file = QFileDialog.getOpenFileName(\
             None,
+            self.trUtf8("Select File To Render"),
             QString(),
-            QString(),
-            QFileDialog.Options(QFileDialog.ShowDirsOnly))
-
-        if not getOutputDir.isEmpty():
-            self.ui.inputOutputDir.setText(getOutputDir)
-
-    def _inputProject(self):
-        '''Get the output directory'''
-        projectFile = QFileDialog.getOpenFileName(\
-            None,
-            self.trUtf8("Choose Project File"),
-            QString(),
-            self.trUtf8("Maya Project File(workspace.mel)"),
-            None)
-
-        self.ui.inputProject.setText(projectFile)
-
-    def _browseForScene(self):
-        '''Browse for a scene to render'''
-        getScene = QFileDialog.getOpenFileName(\
-            None,
-            self.trUtf8("Select File"),
-            QString(),
-            self.trUtf8("All Files(*.*);;Maya (*.mb *.ma);;Houdini (*.hip *.ifd);;Shake(*.shk)"),
+            self.trUtf8(self.fileGrep),
             None,
             QFileDialog.Options(QFileDialog.DontResolveSymlinks))
-        if not getScene.isEmpty():
-            self.ui.inputScene.setText(getScene)
+
+        self.scene.setText(render_file)
+
+    def SetSoftware(self, newSoftware):
+        '''
+        If the software selction is changed, setup the
+        relevant info.  This includes the sofware generic name (maya),
+        command, file grep list, scene ui ref, etc.
+
+        OUTPUTS:
+            self.command -- the command used to render
+            self.programName -- the common name of the program
+            self.fileGrep -- file grep used to search for files to render
+            self.scene -- path to ui component used to hold the file to render
+        '''
+        # convert the QSting to a string
+        selected_software = str(newSoftware)
+        self.command = LOCAL_SOFTWARE[selected_software].split('::')[0]
+        self.program_name = LOCAL_SOFTWARE[selected_software].split('::')[1]
+        self.fileGrep = LOCAL_SOFTWARE[selected_software].split('::')[2]
+        self.widgetIndex = int(LOCAL_SOFTWARE[selected_software].split('::')[3])
+
+        self.ui.optionStack.setCurrentIndex(self.widgetIndex)
+        # if we are using maya
+        if self.program_name == 'maya':
+            self.ui.optionStack.setCurrentWidget
+            self.scene = self.ui.mayaScene
+            self.browseForScene = self.ui.mayaBrowseForScene
+
+        # if we are using houdini
+        elif self.program_name == 'houidini':
+            self.scene = self.ui.houdiniFile
+            self.browseForScene = self.ui.houdiniBrowseForScene
+
+        # if we are using shake
+        elif self.program_name == 'shake':
+            self.scene = self.ui.shakeScript
+            self.browseForScene = self.ui.shakeBrowseForScript
+
+    def UpdateSoftwareList(self):
+        '''
+        Given a software list of installed software, add
+        it the list of avaliable software to render with.
+        '''
+        for (software, path) in LOCAL_SOFTWARE.items():
+           self.ui.softwareSelection.addItem(str(software))
+
+        self.SetSoftware(self.ui.softwareSelection.currentText())
+
+################################
+################################
+## BEGIN Maya Settings
+################################
+################################
+
+    def setMayaImageOutDir(self):
+        '''
+        Browse for an output Directory, send the selection to
+        the input widget.
+        '''
+        outDir = QFileDialog.getExistingDirectory(\
+            None,
+            self.trUtf8("Select A Directory"),
+            QString(),
+            QFileDialog.Options(QFileDialog.DontResolveSymlinks | QFileDialog.ShowDirsOnly))
+
+        if outDir != '':
+            self.ui.mayaOutputDir.setText(outDir)
+
+    def setMayaProjectFile(self):
+        '''
+        Set the maya project file
+        '''
+        projectFile = QFileDialog.getOpenFileName(\
+            None,
+            self.trUtf8("Select Your Maya Project File"),
+            QString(),
+            self.trUtf8("Maya Project File(*.mel)"),
+            None,
+            QFileDialog.Options(QFileDialog.DontResolveSymlinks))
+
+        if projectFile != '':
+            self.ui.mayaProjectFile.setText(projectFile)
+
+    def setMayaMentalRay(self, val):
+        '''
+        Given a value setup the global var
+        '''
+        if val == 2:
+            self.useMentalRay = 1
+        else:
+            self.useMentalRay = 0
+
+################################
+################################
+## END Maya Settings
+################################
+################################
 
     def _loadQue(self):
         '''Load que information from a file'''
@@ -462,7 +593,6 @@ class RC2(QMainWindow):
             color (string) - The color name or hex value to set the section
         '''
         self.ui.status.append('<font color=%s><b>%s</b></font> - %s' % (color, section, msg))
-
 
 app = QApplication(sys.argv)
 ui = RC2()
