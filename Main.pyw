@@ -139,6 +139,7 @@ class RC2(QMainWindow):
         self.connect(self.ui.enque, SIGNAL("pressed()"), self._gatherInfo)
         self.connect(self.ui.loadQue, SIGNAL("triggered()"), self._loadQue)
         self.connect(self.ui.saveQue, SIGNAL("triggered()"), self._saveQue)
+        self.connect(self.ui.currentJobs, SIGNAL("customContextMenuRequested(const QPoint &)"), self.currentJobsContextMenu)
 
         # connect ui widgets related to global job info
         self.connect(self.ui.inputStartFrame, SIGNAL("valueChanged(int)"), self.setStartFrame)
@@ -167,7 +168,35 @@ class RC2(QMainWindow):
 #        self.ui.inputScene.setText('/farm/projects/PyFarm/trunk/RC1/tests/maya/scenes/occlusion_test.mb')
 #        self.ui.inputOutputDir.setText('/farm/tmp/images/')
 #        self.ui.inputLogDir.setText('/farm/tmp/logs/')
-#        self.ui.inputJobName.setText('rayTest')
+#        self.ui.inputJobName.setText('rayTest'
+
+    def globalPoint(self, widget, point):
+        '''
+        Return the global position for a given point
+        '''
+        return widget.mapToGlobal(point)
+        #print pos.manhattanLength()
+        #print pos.x
+        #print pos.y
+        #return QPoint.manhattanLength(pos)
+
+    def CreateContextMenus(self):
+        '''
+        Create the custom context menus in advance so
+        they will not need to be created later.
+        '''
+        # create a context menu for the job table
+        jobContext = QMenu()
+        jobContext.addAction('Hello')
+        self.jobContextMenu = jobContext
+
+    def currentJobsContextMenu(self, pos):
+        menu = QMenu()
+        menu.addAction('Job Details')
+        menu.addAction('Remove Job')
+        menu.addAction('Error Logs')
+        #self.absolutePoint(pos)
+        menu.exec_(self.globalPoint(self.ui.currentJobs, pos))
 
     def setStartFrame(self, frame):
         '''Set the start frame value'''

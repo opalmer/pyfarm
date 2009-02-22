@@ -202,10 +202,10 @@ class SoftwareInstalled(object):
             'shake', '/path/to/shake/installation' /
         }
 
-        FLAG NOTES:
-            v/vv -- Verbose
+        SHAKE FLAG NOTES:
+            v/vv -- Verbose(-vv just gives you a percentage as the frames render) .
             cpus -- number of cpus to use
-            sequential -- will process each file out node in turn. (-vv just gives you a percentage as the frames render) .
+            sequential -- will process each file out node in turn.
             t -- fram range (ex. 1-10)
         '''
         OUTPUT = {}
@@ -275,6 +275,24 @@ class ConfigureCommand(object):
         bFrame -- By frame or sequence step
       '''
       version = self.sofware[ver]
+
+
+class RenderLayerBreakdown(object):
+    '''
+    Breakdown an input file into individual layers.
+    Yield each layer back to the ui.
+    '''
+    def __init__(self, inputFile):
+        self.file = inputFile
+
+    def houdini(self):
+        '''Output the houdini mantra nodes'''
+        hip = open(self.file)
+        exp = QRegExp(r"""[0-9]+out/[0-9a-zA-Z]+[.]parm""")
+
+        for line in hip.readline():
+            if not exp.indexIn(line):
+                yield line
 
 
 
