@@ -23,54 +23,11 @@ After discovering this information it will then try and discover the currently i
 
 '''
 
-import os
-import glob
-import fnmatch
-from os.path import isfile, islink, isdir
+from os import listdir, system
+from os.path import isfile, islink, isdir, normpath
+from Util import GetOs
 from PyQt4.QtCore import QRegExp
 
-def GetOs():
-    '''
-    Get the type of os and the architecture
-
-    OUTPUT:
-        [ operating_system, arhitecture ]
-    '''
-    output = []
-
-    # if linux, do this
-    if os.name == 'posix' and os.uname()[0] != 'Darwin':
-        output.append('linux')
-        if os.uname()[4] == 'x86_64':
-            output.append('x64')
-        elif os.uname()[4] == 'i386' or os.uname()[4] == 'i686' or os.uname()[4] == 'x86':
-            output.append('x86')
-
-    # if mac, do this
-    elif os.name == 'posix' and os.uname()[0] == 'Darwin':
-        output.append('mac')
-        if os.uname()[4] == 'i386' or os.uname[4] == 'i686':
-            output.append('x86')
-
-    elif os.name == 'nt':
-        output.append('windows')
-        output.append(os.getenv(PROCESSOR_ARCHITECTURE))
-
-    return output
-
-def FindProgram(pattern, rootPath):
-    '''
-    Locate all files matching supplied filename pattern in and below
-    supplied root directory
-
-    INPUT:
-        pattern (string) -- file to search for
-        rootPath (string) -- Path to start search at
-    '''
-    for path, dirs, files in os.walk(os.path.abspath(rootPath)):
-        for file in files:
-          if glob.fnmatch.fnmatch(file, pattern):
-            yield os.path.join(path, file)
 
 def AddExtraPath(inputPath):
     '''
@@ -80,7 +37,8 @@ def AddExtraPath(inputPath):
     if len(inputPath)>=1:
         for addPath in inputPath:
             yield addPath
-
+    else:
+        pass
 
 class SoftwareInstalled(object):
     '''
@@ -95,8 +53,53 @@ class SoftwareInstalled(object):
         to search for the installed software
     '''
     def __init__(self):
-        self.os = GetOs()[0]
-        self.arch = GetOs()[1]
+        os_arch = GetOs()
+        self.os = os_arch[0]
+        self.arch = os_arch[1]
+
+    def _findProgram(self, expession, expCapStart, prefixes, renderSearchPath, commonName, fileGrep, widgetIndex):
+        '''
+        Given a regular expression and other information,
+        search for and return all results.
+
+        INPUT:
+            expession -- regular expression to use in search
+            expCapStart -- Position to return cap from
+            prefixes -- paths to searh for programs
+            renderSearchPath -- final path to renderer, used in search bu adding the prefix+searchresult
+            commonName -- common program name to add to output
+            fileGrep, -- grep used to search for scene/script files
+            widgetIndex -- widget index value for gui
+        '''
+        exp = QRegExp(expession) # declare the regular expression
+
+        # linux/mac loop
+        if self.os == 'linux' or self.os == 'mac':
+            for prefix in prefixes:
+                if isdir(prefix):
+                    for result in listdir(prefix):
+                        if not exp.indexIn(result): # use a regular expression
+                            # if the forward slash exists, remove it
+                            if renderSearchPath[0] == '/':
+                                renderer = renderSearchPath[1:]
+
+                            if isfile('%s/%s/%s' % (prefix, result, renderer)):
+                                yield [str(exp.cap(0)[expCapStart:]), '%s/%s/%s::%s::%s::%s' \
+                                                      % (prefix, result, renderer, commonName, fileGrep, widgetIndex)]
+
+        # see above if statement for documentation
+        # windows loop
+        elif self.os == 'windows':
+            for prefix in prefixes:
+                if isdir(prefix):
+                    for result in listdir(prefix):
+                        if not exp.indexIn(result):
+                            if renderSearchPath[0:1] == '\\':
+                                renderer = renderSearchPath[1:]
+
+                            if isfile('%s\\%s\\%s' % (prefix, result, renderer)):
+                                yield [str(exp.cap(0)[expCapStart:]), '%s\\%s\\%s::%s::%s::%s' \
+                                                      % (prefix, result, renderer, commonName, fileGrep, widgetIndex)]
 
     def maya(self, extraPath=[]):
         '''
@@ -104,49 +107,41 @@ class SoftwareInstalled(object):
 
         INPUT:
             extraPath -- Add extra path(s) to search for
-
-        OUTPUT:
-            { /
-                'maya2008', '/path/to/2008/render/program' /
-                'maya2009', '/path/to/2009/render/program' /
-            }
         '''
         OUTPUT = {}
         prefixList = []
         commonName = 'maya'
         fileGrep = 'Maya Scene File (*.mb *.ma)'
         widgetIndex = '0'
-        mayaRegEx = QRegExp(r"""[m|M]aya(200[89]|8.[05]|8[05]|7(.0|0))""")
+        expression = r"""[m|M]aya(200[89]|8.[05]|8[05]|7(.0|0))"""
 
-        # if we find extra paths to use, add them
+
+        # if we find user declared paths to use, add them
         for newPath in AddExtraPath(extraPath):
-            print newPath
             prefixList.append(newPath)
 
         if self.os == 'linux':
             # paths to search for maya
-            prefixList = ['/usr/autodesk']
+            prefixList.append('/usr/autodesk')
 
-            for prefix in prefixList:
-                if isdir(prefix):
-                    for result in os.listdir(prefix): # for each dir in the search dir
-                        if not mayaRegEx.indexIn(result): # if we find a match
-                            if isfile("%s/%s/bin/Render" % (prefix, result)): #check to see if if this is the render path
-                                OUTPUT['Maya '+str(mayaRegEx.cap(0))[4:]] = "%s/%s/bin/Render::%s::%s::%s" % (prefix, result, commonName, fileGrep, widgetIndex)
-
-                            elif isfile("%s/%s/bin/render" % (prefix, result)): # or if this is the render path
-                                OUTPUT['Maya '+str(mayaRegEx.cap(0))[4:]] = "%s/%s/bin/Render::%s::%s::%s" % (prefix, result, commonName, fileGrep, widgetIndex)
-
-                            else: #If the render path is not a default, inform the user
-                                print "ERROR: Non default path for %s's renderer" % mayaRegEx.cap(0)
-
-            return OUTPUT
+            for result in self._findProgram(expression, 4, prefixList, '/bin/Render', commonName, fileGrep, widgetIndex):
+                OUTPUT['Maya '+ result[0]] = result[1]
 
         elif self.os == 'mac':
-            prefixList = ['/Applications/Autodesk/']
+            prefixList.append('/Applications/Autodesk/')
 
         elif self.os == 'windows':
-            prefixList = ['C:\Program Files\Autodesk']
+            ###########################
+            # system call note below: NOTE THE DOUBLE QUOTES!
+            #system('"%s\\%s\\%s"' % (prefix, result, renderPath))
+            ###########################
+            prefixList.append('C:\\Program Files\\Autodesk')
+
+            for result in self._findProgram(expression, 4, prefixList, '\\bin\\Render.exe', commonName, fileGrep, widgetIndex):
+                OUTPUT['Maya '+ result[0]] = result[1]
+
+        return OUTPUT
+
 
     def houdini(self, extraPath=[]):
         '''
@@ -155,38 +150,36 @@ class SoftwareInstalled(object):
         INPUT:
             extraPath -- Add extra path(s) to search for
 
-        OUTPUT:
-            { /
-                '9.5.244', '/opt/hfs9.5.244/bin/hrender'
-            }
+        RENDERING NOTES:
+            usage: hscript <random_seed>_<project_name>.<frame_num>.cmd
         '''
         OUTPUT = {}
         prefixList = []
         commonName = 'houdini'
         fileGrep = 'Houdini File (*.hip)'
         widgetIndex = '1'
-        houRegEx = QRegExp(r"""hfs9.[15].[0-9]+""")
+        expression = r"""hfs9.[15].[0-9]+"""
+        win_expression = r"""Houdini 9.[15].[0-9]+"""
 
         # if we find extra paths to use, add them
         for newPath in AddExtraPath(extraPath):
             prefixList.append(newPath)
 
         if self.os == 'linux':
-            prefixList = ['/opt', '/usr']
-            for prefix in prefixList:
-                if isdir(prefix):
-                    for result in os.listdir(prefix):
-                        if not houRegEx.indexIn(result): # if we the regular expression matches
-                            if isfile('%s/%s/bin/hrender' % (prefix, result)):
-                                OUTPUT['Houdini '+str(houRegEx.cap(0))[3:]] = '%s/%s/bin/hrender::%s::%s::%s' % (prefix, result, commonName, fileGrep, widgetIndex)
+            prefixList.append('/opt')
+            prefixList.append('/usr')
+
+            for result in self._findProgram(expression, 3, prefixList, '/bin/hbatch', commonName, fileGrep, widgetIndex):
+                OUTPUT['Houdini '+ result[0]] = result[1]
 
         elif self.os == 'mac':
             pass
 
         elif self.os == 'windows':
-            #C:\Program Files\Side Effects Software\Houdini 9.5.303\hrender.exe
-            prefixList = ['C:\Program Files\Side Effects Software']
+            prefixList.append('C:\\Program Files\\Side Effects Software')
 
+            for result in self._findProgram(win_expression, 8, prefixList, '\\bin\\hbatch.exe', commonName, fileGrep, widgetIndex):
+                OUTPUT['Houdini '+ result[0]] = result[1]
 
         return OUTPUT
 
@@ -196,11 +189,6 @@ class SoftwareInstalled(object):
 
         INPUT:
             extraPath -- Add extra path(s) to search for
-
-        OUTPUT:
-        { /
-            'shake', '/path/to/shake/installation' /
-        }
 
         SHAKE FLAG NOTES:
             v/vv -- Verbose(-vv just gives you a percentage as the frames render) .
@@ -222,7 +210,7 @@ class SoftwareInstalled(object):
         if self.os == 'linux':
             for prefix in prefixList:
                 if isdir(prefix):
-                    for result in os.listdir(prefix):
+                    for result in listdir(prefix):
                         if isfile('%s/%s/shake' % (prefix, result)):
                             OUTPUT["Shake"] = '%s/%s/shake::%s::%s::%s' % (prefix, result, commonName, fileGrep, widgetIndex)
 

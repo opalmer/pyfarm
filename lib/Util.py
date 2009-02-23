@@ -21,39 +21,17 @@ general usage.
     along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
 '''
-from os import sep
-from os.path import dirname, join
-import Info
+try:
+    from os import uname
 
-# TODO: Turn this line conversion into a working class! SEE ALSO: crlf.py & lfcr.py which come with python
-# TODO: Add other 'file utilities' to Util lib
-class ConvertLineEndings(object):
-    '''
-    Used to Convert unix line endings to windows line endings
-    and vise-versa
+# if we get an import error pass it
+except ImportError:
+    pass
 
-    VARIABLES:
-        os (string) -- Target operating system
-        target (string) -- Target file to run operation on
-    '''
-    def __init__(self,  os,  target):
-        self.os = os.upper()
-        self.target = target
-
-    def run(self):
-        '''Run the operation on the specified file'''
-        for line in self.target.readline():
-            if self.os == 'UNIX':
-                    temp = string.replace(temp, '\r\n', '\n')
-                    temp = string.replace(temp, '\r', '\n')
-            elif self.os == 'MAC':
-                    temp = string.replace(temp, '\r\n', '\r')
-                    temp = string.replace(temp, '\n', '\r')
-            elif self.os == 'DOS':
-                    import re
-                    temp = re.sub("\r(?!\n)|(?<!\r)\n", "\r\n", temp)
-            return temp
-
+finally:
+    from os import sep, name, getenv
+    from os.path import dirname, join
+    import Info
 
 class StringUtil(object):
     '''General utilities for string formatting'''
@@ -85,3 +63,33 @@ def ModulePath(module, level=0):
             OUT += '%s/' % i
 
         return OUT
+
+def GetOs():
+    '''
+    Get the type of os and the architecture
+
+    OUTPUT:
+        [ operating_system, arhitecture ]
+    '''
+    output = []
+
+    if name == 'posix' and uname()[0] != 'Darwin':
+        output.append('linux')
+        if uname()[4] == 'x86_64':
+            output.append('x64')
+        elif uname()[4] == 'i386' or uname()[4] == 'i686' or uname()[4] == 'x86':
+            output.append('x86')
+
+    # if mac, do this
+    elif name == 'posix' and uname()[0] == 'Darwin':
+        output.append('mac')
+        if uname()[4] == 'i386' or uname[4] == 'i686':
+            output.append('x86')
+
+    elif name == 'nt':
+        output.append('windows')
+        output.append(getenv('PROCESSOR_ARCHITECTURE'))
+
+
+    # finally return the output
+    return output

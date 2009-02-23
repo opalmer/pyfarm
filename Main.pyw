@@ -156,29 +156,28 @@ class RC2(QMainWindow):
         self.connect(self.ui.mayaBrowseForProject, SIGNAL("pressed()"), self.setMayaProjectFile)
         self.connect(self.ui.useMentalRay, SIGNAL("stateChanged(int)"), self.setMayaMentalRay)
 
+        ## houdini
+        self.connect(self.ui.houdiniOutputCustomImageRes, SIGNAL("stateChanged(int)"), self.setHoudiniCustomResState)
+        self.connect(self.ui.houdiniOutputKeepAspect, SIGNAL("stateChanged(int)"), self.setHoudiniKeepAspectRatio)
+        self.connect(self.ui.houdiniOutputWidth, SIGNAL("valueChanged(int)"), self.setHoudiniWidth)
+        self.connect(self.ui.houdiniOutputPixelAspect, SIGNAL("valueChanged(double)"), self.setHoudiniAspectRatio)
+        self.connect(self.ui.houdiniBrowseForScene, SIGNAL("pressed()"), self.setHoudiniScene)
+        self.connect(self.ui.houdiniNodeList, SIGNAL("customContextMenuRequested(const QPoint &)"), self.houdiniNodeListMenu)
+
         # connect ui vars for
         ## network section signals
         self.connect(self.ui.disableHost, SIGNAL("pressed()"), self._disableHosts)
         self.connect(self.ui.addHost, SIGNAL("pressed()"), self._customHostDialog)
         self.connect(self.ui.removeHost, SIGNAL("pressed()"), self._removeSelectedHost)
 
-        #############
-        # TMP setup for testing
-        #############
-#        self.ui.inputScene.setText('/farm/projects/PyFarm/trunk/RC1/tests/maya/scenes/occlusion_test.mb')
-#        self.ui.inputOutputDir.setText('/farm/tmp/images/')
-#        self.ui.inputLogDir.setText('/farm/tmp/logs/')
-#        self.ui.inputJobName.setText('rayTest'
-
+################################
+## BEGIN Context Menus
+################################
     def globalPoint(self, widget, point):
         '''
         Return the global position for a given point
         '''
         return widget.mapToGlobal(point)
-        #print pos.manhattanLength()
-        #print pos.x
-        #print pos.y
-        #return QPoint.manhattanLength(pos)
 
     def CreateContextMenus(self):
         '''
@@ -195,9 +194,24 @@ class RC2(QMainWindow):
         menu.addAction('Job Details')
         menu.addAction('Remove Job')
         menu.addAction('Error Logs')
-        #self.absolutePoint(pos)
         menu.exec_(self.globalPoint(self.ui.currentJobs, pos))
 
+    def houdiniNodeListMenu(self, pos):
+        '''
+        Popup a custom context menu for the houdini
+        node list
+        '''
+        menu = QMenu()
+        menu.addAction('Add Node')
+        menu.addAction('Remove Node', self.houdiniNodeListRemoveSelected)
+        menu.addAction('Empty List', self.houdiniNodeListEmpty)
+        menu.exec_(self.globalPoint(self.ui.houdiniNodeList, pos))
+
+#############################
+## END Context Menus
+################################
+## BEGIN General Job Settings
+################################
     def setStartFrame(self, frame):
         '''Set the start frame value'''
         self.sFrame = frame
@@ -219,6 +233,11 @@ class RC2(QMainWindow):
         '''Set the job priority'''
         self.jobPriority = priority
 
+################################
+## END General Job Settings
+################################
+## BEGIN Software Discovery
+################################
     def BrowseForInput(self):
         '''
         Given an input program, present a search dialog
@@ -281,11 +300,10 @@ class RC2(QMainWindow):
         self.SetSoftware(self.ui.softwareSelection.currentText())
 
 ################################
+## END Software Discovery
 ################################
 ## BEGIN Maya Settings
 ################################
-################################
-
     def setMayaImageOutDir(self):
         '''
         Browse for an output Directory, send the selection to
@@ -325,11 +343,144 @@ class RC2(QMainWindow):
             self.useMentalRay = 0
 
 ################################
-################################
 ## END Maya Settings
 ################################
+## BEGIN Houdini Settings
 ################################
+    def houdiniNodeListRemoveSelected(self):
+        '''
+        Remove the currently selected node(s) from
+        the node list.
+        '''
+        for item in self.ui.houdiniNodeList.selectedItems():
+            #print item
+            item.setHidden(1)
 
+    def houdiniNodeListEmpty(self):
+        '''
+        Clear all nodes from the node list
+        '''
+        self.ui.houdiniNodeList.clear()
+
+    def setHoudiniScene(self):
+        '''
+        Display a search gui then set the houdini scene.
+        Lastly, gather all of the output nodes from the file.
+        '''
+        projectFile = QFileDialog.getOpenFileName(\
+            None,
+            self.trUtf8("Select Your Houdini Scene"),
+            QString(),
+            self.trUtf8(self.fileGrep),
+            None,
+            QFileDialog.Options(QFileDialog.DontResolveSymlinks))
+
+        if projectFile != '':
+            self.ui.houdiniFile.setText(projectFile)
+            self.houdiniFindOutputNodes(projectFile)
+
+
+    def houdiniFindOutputNodes(self, inFile):
+        '''
+        Given an input file, find all of the output nodes and
+        display them in the node table.
+        '''
+        hou = open(inFile)
+        exp = QRegExp(r"""[0-9]+out/[0-9a-zA-Z]+[.]parm""")
+
+        for line in hou.readlines():
+            if not exp.indexIn(line):
+                self.ui.houdiniNodeList.addItem(QString(line.split('/')[1].split('.')[0]))
+                #print "Found: %s" %
+
+    def setHoudiniCustomResState(self, newState):
+        '''
+        Based on user pref, setup the ui for custom image resolution
+        '''
+        widgets = [\
+                    self.ui.houdiniOutputKeepAspect,
+                    self.ui.houdiniOutputWidth,
+                    self.ui.houdiniOutputWidthLabel,
+                    self.ui.houdiniOutputPixelAspect,
+                    self.ui.houdiniOutputPixelAspectLabel]
+
+        if newState:
+            for widget in widgets:
+                widget.setEnabled(0)
+
+            self.ui.houdiniOutputHeight.setEnabled(0)
+            self.ui.houdiniOutputHeightLabel.setEnabled(0)
+
+        else:
+            for widget in widgets:
+                widget.setEnabled(1)
+
+            if self.houdiniKeepAspectRatio():
+                self.ui.houdiniOutputHeight.setEnabled(0)
+                self.ui.houdiniOutputHeightLabel.setEnabled(0)
+            else:
+                self.ui.houdiniOutputHeight.setEnabled(1)
+                self.ui.houdiniOutputHeightLabel.setEnabled(1)
+
+    def setHoudiniKeepAspectRatio(self, newState):
+        '''
+        Given newState set the global var accordingly and
+        enable/disable the appropriate combo box.
+        '''
+        # if the box is checked, keep the aspect ratio
+        if newState:
+            self.ui.houdiniOutputHeight.setEnabled(0)
+            self.ui.houdiniOutputHeightLabel.setEnabled(0)
+        else:
+            self.ui.houdiniOutputHeight.setEnabled(1)
+            self.ui.houdiniOutputHeightLabel.setEnabled(1)
+
+    def setHoudiniWidth(self, width):
+        '''
+        Set the width of the output image
+        '''
+        if not self.houdiniKeepAspectRatio():
+            pass
+        else:
+            a = float(width)
+            b = float(self.houdiniAspectRatio())
+            self.ui.houdiniOutputHeight.setValue(a//b)
+
+    def setHoudiniHeight(self, height):
+        '''
+        Set the height of the output image
+        '''
+        try:
+            if not self.houdiniKeepAspect:
+                pass
+        except AttributeError:
+            self.houdiniKeepAspect = 1
+
+    def setHoudiniAspectRatio(self, aspectRatio):
+        '''
+        Set the aspect ratio of the render
+        '''
+        self.setHoudiniWidth(self.ui.houdiniOutputWidth.value())
+
+    def houdiniAspectRatio(self):
+        '''
+        Return the current aspect ratio from
+        the interface.
+        '''
+        return self.ui.houdiniOutputPixelAspect.value()
+
+    def houdiniKeepAspectRatio(self):
+        '''
+        Return the state of the keep aspect ratio check
+        box.
+        '''
+        return self.ui.houdiniOutputKeepAspect.isChecked()
+
+################################
+## END Houdini Settings
+################################
+## BEGIN Que Management
+################################
     def _loadQue(self):
         '''Load que information from a file'''
         queInFile = QFileDialog.getOpenFileName(\
@@ -373,6 +524,11 @@ class RC2(QMainWindow):
         QUE.emptyQue()
         self.updateStatus('INFO', 'Que is now empty!')
 
+################################
+## END Que Management
+################################
+## BEGIN Host Management
+################################
     def _removeSelectedHost(self):
         '''Remove the currently selected host'''
         lineHost = self._getHostSelection()
@@ -468,41 +624,11 @@ class RC2(QMainWindow):
         item = QTableWidgetItem('Offline')
         self.netTable.setItem(2, row, item)
 
-    def _isExt(self, inFile, trueExtension):
-        '''
-        Returns true if the extension of the input
-
-        VARS:
-            inFile -- The file that comes from inputScene
-            trueExtension --  The extesion that you are expecting
-        '''
-        if os.path.splitext(str(inFile))[1].split('.')[1] == trueExtension:
-            return True
-        else:
-            return False
-
-    def criticalMessage(self, title, message):
-        '''
-        Pop up critical message window
-
-        VARS:
-            title -- Title of window
-            message -- message to display
-        '''
-        msg = QMessageBox()
-        msg.critical(None, title, unicode(message))
-
-    def infoMessage(self, title, message):
-        '''
-        Pop up critical message window
-
-        VARS:
-            title -- Title of window
-            message -- message to display
-        '''
-        msg = QMessageBox()
-        msg.information(None, title, unicode(message))
-
+################################
+## END Host Management
+################################
+## BEGIN Status/Message System
+################################
     def _gatherInfo(self):
         '''Gather information about the current job'''
         #self.ui.cancelRender.setEnabled(True)
@@ -529,16 +655,9 @@ class RC2(QMainWindow):
 
                 # get information from the drop down menu
                 if self.software.currentText() == 'Maya 2008':
-                    # make sure that we are looking at maya extensions
-                    #if not self._isExt(self.scene, 'ma') or self._isExt(self.scene, 'mb'):
-                        #self.criticalMessage("Bad Input File", "You are rendering with Maya please select a Maya scene.")
-                    #else:
                     self.command = '/usr/local/bin/Render'
 
                 elif self.software.currentText() == 'Maya 2009':
-                    #if not self._isExt(self.scene, 'ma') or self._isExt(self.scene, 'mb'):
-                        #self.criticalMessage("Bad Input File", "You are rendering with Maya please select a Maya scene.")
-                    #else:
                     self.command = '/usr/autodesk/maya2009-x64/bin/Render'
 
                 elif self.software.currentText() == 'Shake':
@@ -612,6 +731,34 @@ class RC2(QMainWindow):
         self.updateStatus('NETWORK', 'Found %i new hosts, search complete.' % self.foundHosts, 'green')
         self.foundHosts = 0
 
+################################
+## END Host Management
+################################
+## BEGIN Status/Message System
+################################
+
+    def criticalMessage(self, title, message):
+        '''
+        Pop up critical message window
+
+        VARS:
+            title -- Title of window
+            message -- message to display
+        '''
+        msg = QMessageBox()
+        msg.critical(None, title, unicode(message))
+
+    def infoMessage(self, title, message):
+        '''
+        Pop up critical message window
+
+        VARS:
+            title -- Title of window
+            message -- message to display
+        '''
+        msg = QMessageBox()
+        msg.information(None, title, unicode(message))
+
     def updateStatus(self, section, msg, color='black'):
         '''
         Update the ui's status window
@@ -622,6 +769,16 @@ class RC2(QMainWindow):
             color (string) - The color name or hex value to set the section
         '''
         self.ui.status.append('<font color=%s><b>%s</b></font> - %s' % (color, section, msg))
+
+################################
+## END Status/Message System
+################################
+## BEGIN General Utilities
+################################
+
+################################
+## END General Utilities
+################################
 
 app = QApplication(sys.argv)
 ui = RC2()
