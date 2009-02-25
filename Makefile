@@ -14,3 +14,5 @@ freeze:
 	
 clean:
 	rm -Rfv lib/*.pyc
+	rm -Rfv lib/ui/*.pyc
+	rm -Rfv *.pyc
