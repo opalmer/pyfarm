@@ -8,6 +8,7 @@ PURPOSE: Main program to run and manage PyFarm
     This file is part of PyFarm.
 
     PyFarm is free software: you can redistribute it and/or modify
+
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
@@ -265,29 +266,34 @@ class RC2(QMainWindow):
             self.fileGrep -- file grep used to search for files to render
             self.scene -- path to ui component used to hold the file to render
         '''
-        # convert the QSting to a string
-        selected_software = str(newSoftware)
-        self.command = LOCAL_SOFTWARE[selected_software].split('::')[0]
-        self.program_name = LOCAL_SOFTWARE[selected_software].split('::')[1]
-        self.fileGrep = LOCAL_SOFTWARE[selected_software].split('::')[2]
-        self.widgetIndex = int(LOCAL_SOFTWARE[selected_software].split('::')[3])
+        try:
+            # convert the QSting to a string
+            selected_software = str(newSoftware)
+            self.command = LOCAL_SOFTWARE[selected_software].split('::')[0]
+            self.program_name = LOCAL_SOFTWARE[selected_software].split('::')[1]
+            self.fileGrep = LOCAL_SOFTWARE[selected_software].split('::')[2]
+            self.widgetIndex = int(LOCAL_SOFTWARE[selected_software].split('::')[3])
+            self.ui.optionStack.setCurrentIndex(self.widgetIndex)
 
-        self.ui.optionStack.setCurrentIndex(self.widgetIndex)
-        # if we are using maya
-        if self.program_name == 'maya':
-            self.ui.optionStack.setCurrentWidget
-            self.scene = self.ui.mayaScene
-            self.browseForScene = self.ui.mayaBrowseForScene
+            # if we are using maya
+            if self.program_name == 'maya':
+                self.ui.optionStack.setCurrentWidget
+                self.scene = self.ui.mayaScene
+                self.browseForScene = self.ui.mayaBrowseForScene
 
-        # if we are using houdini
-        elif self.program_name == 'houidini':
-            self.scene = self.ui.houdiniFile
-            self.browseForScene = self.ui.houdiniBrowseForScene
+            # if we are using houdini
+            elif self.program_name == 'houidini':
+                self.scene = self.ui.houdiniFile
+                self.browseForScene = self.ui.houdiniBrowseForScene
 
-        # if we are using shake
-        elif self.program_name == 'shake':
-            self.scene = self.ui.shakeScript
-            self.browseForScene = self.ui.shakeBrowseForScript
+            # if we are using shake
+            elif self.program_name == 'shake':
+                self.scene = self.ui.shakeScript
+                self.browseForScene = self.ui.shakeBrowseForScript
+
+        # if we can't find the software, return an error
+        except KeyError:
+            self.criticalMessage('Could Not Find Programs', 'Sorry but we could not find any software installed on your system to render with.\n\nExit Code: 1', 1)
 
     def UpdateSoftwareList(self):
         '''
@@ -737,16 +743,17 @@ class RC2(QMainWindow):
 ## BEGIN Status/Message System
 ################################
 
-    def criticalMessage(self, title, message):
+    def criticalMessage(self, title, message, code):
         '''
         Pop up critical message window
 
         VARS:
-            title -- Title of window
-            message -- message to display
+            title (str) -- Title of window
+            message (str) -- message to display
+            code (int) -- exit code to give to sys.exit
         '''
-        msg = QMessageBox()
-        msg.critical(None, title, unicode(message))
+        QMessageBox().critical(None, title, unicode(message))
+        sys.exit(code)
 
     def infoMessage(self, title, message):
         '''
