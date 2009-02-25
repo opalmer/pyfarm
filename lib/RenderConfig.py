@@ -26,6 +26,7 @@ After discovering this information it will then try and discover the currently i
 from os import listdir, system
 from os.path import isfile, islink, isdir, normpath
 from Util import GetOs
+from ReadSettings import SoftwareSearchPaths
 from PyQt4.QtCore import QRegExp
 
 
@@ -101,7 +102,7 @@ class SoftwareInstalled(object):
                                 yield [str(exp.cap(0)[expCapStart:]), '%s\\%s\\%s::%s::%s::%s' \
                                                       % (prefix, result, renderer, commonName, fileGrep, widgetIndex)]
 
-    def maya(self, extraPath=[]):
+    def maya(self):
         '''
         Return all of the installed versions of maya as a dictionary
 
@@ -115,14 +116,13 @@ class SoftwareInstalled(object):
         widgetIndex = '0'
         expression = r"""[m|M]aya(200[89]|8.[05]|8[05]|7(.0|0))"""
 
-
         # if we find user declared paths to use, add them
-        for newPath in AddExtraPath(extraPath):
-            prefixList.append(newPath)
+        for extraPath in SoftwareSearchPaths().Maya():
+            prefixList.append(extraPath)
 
         if self.os == 'linux':
             # paths to search for maya
-            prefixList.append('/usr/autodesk')
+            #prefixList.append('/usr/autodesk')
 
             for result in self._findProgram(expression, 4, prefixList, '/bin/Render', commonName, fileGrep, widgetIndex):
                 OUTPUT['Maya '+ result[0]] = result[1]
@@ -135,7 +135,7 @@ class SoftwareInstalled(object):
             # system call note below: NOTE THE DOUBLE QUOTES!
             #system('"%s\\%s\\%s"' % (prefix, result, renderPath))
             ###########################
-            prefixList.append('C:\\Program Files\\Autodesk')
+            #prefixList.append('C:\\Program Files\\Autodesk')
 
             for result in self._findProgram(expression, 4, prefixList, '\\bin\\Render.exe', commonName, fileGrep, widgetIndex):
                 OUTPUT['Maya '+ result[0]] = result[1]
@@ -143,7 +143,7 @@ class SoftwareInstalled(object):
         return OUTPUT
 
 
-    def houdini(self, extraPath=[]):
+    def houdini(self):
         '''
         Return all of the houdini versions installed
 
@@ -162,8 +162,8 @@ class SoftwareInstalled(object):
         win_expression = r"""Houdini 9.[15].[0-9]+"""
 
         # if we find extra paths to use, add them
-        for newPath in AddExtraPath(extraPath):
-            prefixList.append(newPath)
+        for extraPath in SoftwareSearchPaths().Houdini():
+            prefixList.append(extraPath)
 
         if self.os == 'linux':
             prefixList.append('/opt')
@@ -183,7 +183,7 @@ class SoftwareInstalled(object):
 
         return OUTPUT
 
-    def shake(self, extraPath=[]):
+    def shake(self):
         '''
         Return the installation of shake, if it is installed
 
@@ -204,8 +204,8 @@ class SoftwareInstalled(object):
                            '/usr/local/shake']
 
         # if we find extra paths to use, add them
-        for newPath in AddExtraPath(extraPath):
-            prefixList.append(newPath)
+        for extraPath in SoftwareSearchPaths().Shake():
+            prefixList.append(extraPath)
 
         if self.os == 'linux':
             for prefix in prefixList:

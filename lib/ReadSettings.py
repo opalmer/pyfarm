@@ -20,9 +20,17 @@ PURPOSE: Used to read in settings of PyFarm
     along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
 '''
+from Util import GetOs
 from Util import ModulePath
+
 COMMENT = '#'
 SETTINGS_FILE = ModulePath(__file__, 1)+'settings.cfg'
+
+def CloseFile(openFile):
+    '''
+    Close the given open file instance
+    '''
+    openFile.close()
 
 def isMatch(line, search):
     '''
@@ -34,47 +42,144 @@ def isMatch(line, search):
     if lineSplit[0] == search:
         return lineSplit[1]
 
-def getValue(openFile,search):
-    '''Retrun the requested var'''
+def getValue(openFile, search):
+    '''
+    Return the requested var
+
+    INPUT:
+        openFile -- File to searchin
+        search -- line to search for
+    '''
     while 1:
             lines = file.readlines(openFile)
             if not lines:
+                CloseFile(openFile)
                 break
 
             for line in lines:
                 if line.split('\n')[0].split('::')[0] == search:
                     return line.split('\n')[0].split('::')[1]
                 else:
-                    pass
+                    CloseFile(openFile)
+
+def getPaths(openFile, search):
+    '''
+    return all paths given by settings.cfg
+
+    INPUT:
+        openFile -- File to searchin
+        search -- line to search for
+    '''
+    while 1:
+        lines = file.readlines(openFile)
+        if not lines:
+            break
+
+        for line in lines:
+            if line.split('\n')[0].split('::')[0] == search:
+                if line.split('\n')[0].split('::')[1] != 'NONE':
+                    for newPath in line.split('\n')[0].split('::')[1].split(':'):
+                        yield newPath
+            else:
+               pass
 
 class Network(object):
     '''Read and output the network related settings'''
     def __init__(self):
-        self.file = open(SETTINGS_FILE)
-        self.keys = ['MASTER_ADDRESS','BROADCAST_PORT',\
-                            'TCP_STD_OUT','TCP_STD_ERR',\
-                            'TCP_QUE', 'SIZE_OF_UNIT16']
+        self.file = open(SETTINGS_FILE, 'r')
 
     def MasterAddress(self):
         '''Return the master's address'''
-        return getValue(self.file, self.keys[0])
+        return getValue(self.file, 'MASTER_ADDRESS')
 
     def BroadcastPort(self):
         '''Return the port of broadcast coms'''
-        return int(getValue(self.file, self.keys[1]))
+        return int(getValue(self.file, 'BROADCAST_PORT'))
 
     def StdOutPort(self):
         '''Return the standard output TCP port'''
-        return int(getValue(self.file, self.keys[2]))
+        return int(getValue(self.file, 'TCP_STD_OUT'))
 
     def StdErrPort(self):
         '''Return the standard error TCP port'''
-        return int(getValue(self.file, self.keys[3]))
+        return int(getValue(self.file, 'TCP_STD_ERR'))
 
     def QuePort(self):
         '''Return the Que TCP port'''
-        return int(getValue(self.file, self.keys[4]))
+        return int(getValue(self.file, 'TCP_QUE'))
 
     def Unit16Size(self):
         '''Return the size of a unit 16 packet'''
-        return int(getValue(self.file, self.keys[5]))
+        return int(getValue(self.file, 'SIZE_OF_UNIT16'))
+
+
+class SoftwareSearchPaths(object):
+    '''Read and output the network related settings'''
+    def __init__(self):
+        self.file = open(SETTINGS_FILE, 'r')
+        os_arch = GetOs()
+        self.os = os_arch[0]
+        self.arch = os_arch[1]
+
+    def Maya(self):
+        '''Yield any extra paths that the user has given for maya'''
+        if self.os == 'linux' and self.arch == 'x86':
+            for path in getPaths(self.file, 'custom_path_maya_linux_x86'):
+                yield path
+
+        elif self.os == 'linux' and self.arch == 'x64':
+            for path in getPaths(self.file, 'custom_path_maya_linux_x64'):
+                yield path
+
+        elif self.os == 'mac' and self.arch == 'x86':
+            for path in getPaths(self.file, 'custom_path_maya_mac_x86'):
+                yield path
+
+        elif self.os == 'mac' and self.arch == 'x64':
+            for path in getPaths(self.file, 'custom_path_maya_mac_x64'):
+                yield path
+
+        elif self.os == 'windows' and self.arch == 'x86':
+            for path in getPaths(self.file, 'custom_path_maya_win_x86'):
+                yield path
+
+        elif self.os == 'windows' and self.arch == 'x64':
+            for path in getPaths(self.file, 'custom_path_maya_win_x64'):
+                yield path
+
+    def Houdini(self):
+        '''Yield any extra paths that the user has given for houdini'''
+        if self.os == 'linux' and self.arch == 'x86':
+            for path in getPaths(self.file, 'custom_path_maya_linux_x86'):
+                yield path
+
+        elif self.os == 'linux' and self.arch == 'x64':
+            for path in getPaths(self.file, 'custom_path_houdini_linux_x64'):
+                yield path
+
+        elif self.os == 'mac' and self.arch == 'x86':
+            for path in getPaths(self.file, 'custom_path_houdini_mac_x86'):
+                yield path
+
+        elif self.os == 'mac' and self.arch == 'x64':
+            for path in getPaths(self.file, 'custom_path_houdini_mac_x64'):
+                yield path
+
+        elif self.os == 'windows' and self.arch == 'x86':
+            for path in getPaths(self.file, 'custom_path_houdini_win_x86'):
+                yield path
+
+        elif self.os == 'windows' and self.arch == 'x64':
+            for path in getPaths(self.file, 'custom_path_houdini_win_x64'):
+                yield path
+
+
+    def Shake(self):
+        '''Yield any extra paths that the user has given for shake'''
+        if self.os == 'linux':
+            for path in getPaths(self.file, 'custom_path_shake_linux'):
+                yield path
+
+        elif self.os == 'mac':
+            for path in getPaths(self.file, 'custom_path_shake_mac'):
+                yield path

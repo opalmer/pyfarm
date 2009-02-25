@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Project SYSTEM "Project-4.4.dtd">
 <!-- eric4 project file for project PyFarm -->
-<!-- Saved: 2009-02-25, 11:46:30 -->
+<!-- Saved: 2009-02-25, 13:07:30 -->
 <!-- Copyright (C) 2009 ,  -->
 <Project version="4.4">
   <ProgLanguage mixed="0">Python</ProgLanguage>
@@ -41,9 +41,6 @@
     <Source>lib/ui/DropDownMenuTest.py</Source>
     <Source>lib/ui/RC2.py</Source>
     <Source>lib/ui/__init__.py</Source>
-    <Source>settings.cfg</Source>
-    <Source>Makefile</Source>
-    <Source>softwareNotes.txt</Source>
   </Sources>
   <Forms>
     <Form>QtDesigner/DropDowntest.ui</Form>
@@ -57,7 +54,6 @@
   </Interfaces>
   <Others>
   </Others>
-  <MainScript>PyFarm/trunk/RC2/Main.pyw</MainScript>
   <Vcs>
     <VcsType>None</VcsType>
   </Vcs>
