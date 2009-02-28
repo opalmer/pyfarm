@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Project SYSTEM "Project-4.4.dtd">
 <!-- eric4 project file for project PyFarm -->
-<!-- Saved: 2009-02-25, 13:07:30 -->
+<!-- Saved: 2009-02-28, 03:41:00 -->
 <!-- Copyright (C) 2009 ,  -->
 <Project version="4.4">
   <ProgLanguage mixed="0">Python</ProgLanguage>
@@ -12,7 +12,6 @@
   <Email></Email>
   <Sources>
     <Source>Main.pyw</Source>
-    <Source>MainDropDownTest.pyw</Source>
     <Source>build/source/Main.pyw</Source>
     <Source>Client.py</Source>
     <Source>build/source/Client.py</Source>
@@ -35,12 +34,14 @@
     <Source>lib/Que.py</Source>
     <Source>lib/ReadSettings.py</Source>
     <Source>lib/RenderConfig.py</Source>
-    <Source>lib/Util.py</Source>
     <Source>lib/__init__.py</Source>
     <Source>lib/ui/CustomWidgets.py</Source>
     <Source>lib/ui/DropDownMenuTest.py</Source>
     <Source>lib/ui/RC2.py</Source>
     <Source>lib/ui/__init__.py</Source>
+    <Source>settings.cfg</Source>
+    <Source>softwareNotes.txt</Source>
+    <Source>Makefile</Source>
   </Sources>
   <Forms>
     <Form>QtDesigner/DropDowntest.ui</Form>

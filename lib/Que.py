@@ -31,7 +31,6 @@ import socket
 
 # PyFarm Libs
 from Process import *
-from Util import ModulePath
 import ReadSettings as Settings
 
 # PyQt Libs

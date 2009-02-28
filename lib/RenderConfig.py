@@ -22,12 +22,11 @@ After discovering this information it will then try and discover the currently i
     along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
 '''
-
+import Info
+from PyQt4.QtCore import *
 from os import listdir, system
 from os.path import isfile, islink, isdir, normpath
-from Util import GetOs
 from ReadSettings import SoftwareSearchPaths
-from PyQt4.QtCore import QRegExp
 
 
 def AddExtraPath(inputPath):
@@ -54,7 +53,7 @@ class SoftwareInstalled(object):
         to search for the installed software
     '''
     def __init__(self):
-        os_arch = GetOs()
+        os_arch = Info.System().os()
         self.os = os_arch[0]
         self.arch = os_arch[1]
 
@@ -121,21 +120,18 @@ class SoftwareInstalled(object):
             prefixList.append(extraPath)
 
         if self.os == 'linux':
-            # paths to search for maya
-            #prefixList.append('/usr/autodesk')
-
             for result in self._findProgram(expression, 4, prefixList, '/bin/Render', commonName, fileGrep, widgetIndex):
                 OUTPUT['Maya '+ result[0]] = result[1]
 
         elif self.os == 'mac':
-            prefixList.append('/Applications/Autodesk/')
+            pass
 
         elif self.os == 'windows':
             ###########################
             # system call note below: NOTE THE DOUBLE QUOTES!
-            #system('"%s\\%s\\%s"' % (prefix, result, renderPath))
+            # system('"%s\\%s\\%s"' % (prefix, result, renderPath))
             ###########################
-            #prefixList.append('C:\\Program Files\\Autodesk')
+            # prefixList.append('C:\\Program Files\\Autodesk')
 
             for result in self._findProgram(expression, 4, prefixList, '\\bin\\Render.exe', commonName, fileGrep, widgetIndex):
                 OUTPUT['Maya '+ result[0]] = result[1]
@@ -166,9 +162,6 @@ class SoftwareInstalled(object):
             prefixList.append(extraPath)
 
         if self.os == 'linux':
-            prefixList.append('/opt')
-            prefixList.append('/usr')
-
             for result in self._findProgram(expression, 3, prefixList, '/bin/hbatch', commonName, fileGrep, widgetIndex):
                 OUTPUT['Houdini '+ result[0]] = result[1]
 
@@ -176,8 +169,6 @@ class SoftwareInstalled(object):
             pass
 
         elif self.os == 'windows':
-            prefixList.append('C:\\Program Files\\Side Effects Software')
-
             for result in self._findProgram(win_expression, 8, prefixList, '\\bin\\hbatch.exe', commonName, fileGrep, widgetIndex):
                 OUTPUT['Houdini '+ result[0]] = result[1]
 
@@ -200,8 +191,7 @@ class SoftwareInstalled(object):
         commonName = 'shake'
         fileGrep = 'Shake Script (*.shk)'
         widgetIndex = '2'
-        prefixList = ['/usr/apple/shake-v4.00.0607', '/opt/shake', \
-                           '/usr/local/shake']
+        prefixList = []
 
         # if we find extra paths to use, add them
         for extraPath in SoftwareSearchPaths().Shake():
@@ -215,7 +205,11 @@ class SoftwareInstalled(object):
                             OUTPUT["Shake"] = '%s/%s/shake::%s::%s::%s' % (prefix, result, commonName, fileGrep, widgetIndex)
 
         if self.os == 'mac':
-            prefixList = ['/Applications/Shake/shake.app/Contents/MacOS/shake']
+            for prefix in prefixList:
+                if isdir(prefix):
+                    for result in listdir(prefix):
+                        if isfile('%s/%s' % (prefix, result)) and result == 'shake':
+                            OUTPUT["Shake"] = '%s/%s::%s::%s::%s' % (prefix, result, commonName, fileGrep, widgetIndex)
 
         return OUTPUT
 
@@ -265,12 +259,13 @@ class ConfigureCommand(object):
       version = self.sofware[ver]
 
 
-class RenderLayerBreakdown(object):
+class RenderLayerBreakdown(QObject):
     '''
     Breakdown an input file into individual layers.
     Yield each layer back to the ui.
     '''
-    def __init__(self, inputFile):
+    def __init__(self, inputFile, parent=None):
+        super(RenderLayerBreakdown, self).__init__(parent)
         self.file = inputFile
 
     def houdini(self):
@@ -282,21 +277,30 @@ class RenderLayerBreakdown(object):
             if not exp.indexIn(line):
                 yield line
 
+        hip.close()
 
+class MayaCamAndLayers(QThread):
+    '''
+    Search the given maya file and return layers and cameras
+    '''
+    def __init__(self, file, parent=None):
+        super(MayaCamAndLayers, self).__init__(parent)
+        self.scene = open(file, 'r')
 
-# small set of tests
+    def run(self):
+        layerRegEx = QRegExp(r"""createNode renderLayer -n .+""")
+        cameraRegEx = QRegExp(r"""createNode camera -n .+""")
 
-# get ready to find the currently installed software
-#LOCAL_SOFTWARE = {}
-#software = SoftwareInstalled()
+        for line in self.scene.readlines():
+            if not layerRegEx.indexIn(line):
+                cap = str(layerRegEx.cap()).split('"')
+                layer = cap[len(cap)-2]
+                if layer != 'defaultRenderLayer':
+                    self.emit(SIGNAL("gotMayaLayer"), layer)
 
-# find the software and add it to the dictionary
-#LOCAL_SOFTWARE.update(software.maya())
-#LOCAL_SOFTWARE.update(software.houdini())
-#LOCAL_SOFTWARE.update(software.shake())
+            if not cameraRegEx.indexIn(line):
+                cap = str(cameraRegEx.cap()).split('"')
+                camera = cap[len(cap)-2]
+                self.emit(SIGNAL("gotMayaCamera"), camera)
 
-#for (software,path) in LOCAL_SOFTWARE.items():
-#    print path.split('::')[1]
-#    print 'Found %s at %s' % (software,path)
-#
-#print LOCAL_SOFTWARE
+        self.scene.close()

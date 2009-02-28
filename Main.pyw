@@ -31,9 +31,10 @@ from PyQt4.QtGui import *
 from PyQt4.QtNetwork import *
 # From PyFarm
 ## ui components
+import lib.Info as Info
+import lib.ReadSettings as Settings
 from lib.ui.RC2 import Ui_RC2
 from lib.ui.CustomWidgets import *
-import lib.ReadSettings as Settings
 ## general libs
 from lib.Que import *
 from lib.Network import *
@@ -116,6 +117,10 @@ class RC2(QMainWindow):
         self.updateStatus('SETTINGS', 'StdErr Port: %s' % STDERR_PORT, 'purple')
         self.updateStatus('SETTINGS', 'Que Port: %s' % QUE_PORT, 'purple')
 
+        for (program, value) in LOCAL_SOFTWARE.items():
+            outVal = value.split("::")[0]
+            self.updateStatus('SETTINGS', '%s: %s' % (program, outVal), 'purple')
+
         # populate the avaliable list of renderers
         self.UpdateSoftwareList()
 
@@ -155,7 +160,7 @@ class RC2(QMainWindow):
         self.connect(self.ui.mayaBrowseForScene, SIGNAL("pressed()"), self.BrowseForInput)
         self.connect(self.ui.mayaBrowseForOutputDir, SIGNAL("pressed()"), self.setMayaImageOutDir)
         self.connect(self.ui.mayaBrowseForProject, SIGNAL("pressed()"), self.setMayaProjectFile)
-        self.connect(self.ui.useMentalRay, SIGNAL("stateChanged(int)"), self.setMayaMentalRay)
+        self.connect(self.ui.mayaRenderLayers, SIGNAL("customContextMenuRequested(const QPoint &)"), self.mayaRenderLayersListMenu)
 
         ## houdini
         self.connect(self.ui.houdiniOutputCustomImageRes, SIGNAL("stateChanged(int)"), self.setHoudiniCustomResState)
@@ -208,6 +213,17 @@ class RC2(QMainWindow):
         menu.addAction('Empty List', self.houdiniNodeListEmpty)
         menu.exec_(self.globalPoint(self.ui.houdiniNodeList, pos))
 
+    def mayaRenderLayersListMenu(self, pos):
+        '''
+        Popup a custom context menu for the maya render
+        layer list
+        '''
+        menu = QMenu()
+        menu.addAction('Add Layer')
+        menu.addAction('Remove Layer', self.mayaRenderLayerRemove)
+        menu.addAction('Empty List', self.mayaRenderLayerEmpty)
+        menu.exec_(self.globalPoint(self.ui.mayaRenderLayers, pos))
+
 #############################
 ## END Context Menus
 ################################
@@ -253,6 +269,9 @@ class RC2(QMainWindow):
             QFileDialog.Options(QFileDialog.DontResolveSymlinks))
 
         self.scene.setText(render_file)
+
+        if self.program_name == 'maya':
+            self.mayaGetLayersAndCams()
 
     def SetSoftware(self, newSoftware):
         '''
@@ -310,6 +329,63 @@ class RC2(QMainWindow):
 ################################
 ## BEGIN Maya Settings
 ################################
+    def mayaGetLayersAndCams(self):
+        '''
+        Given a file get of of the layers and cameras
+        '''
+        self.mayaEmptyLayersAndCameras()
+
+        if self.scene.text() == '':
+            pass
+        else:
+            ext = Info.File(self.scene.text()).ext()
+            #scene = open(self.scene.text(), 'r')
+            layerRegEx = QRegExp(r"""createNode renderLayer -n .+""")
+            cameraRegEx = QRegExp(r"""createNode camera -n .+""")
+
+            if ext != 'ma':
+                self.infoMessage('Cannot Auto Detect Cameras and Layers', 'Sorry we could not detect your camers and layers automatically.  Please use a Maya ASCII file if you wish to use auto detection.')
+            else:
+                multiPass = MayaCamAndLayers(self.scene.text())
+                self.connect(multiPass, SIGNAL("gotMayaLayer"), self.ui.mayaRenderLayers.addItem)
+                self.connect(multiPass, SIGNAL("gotMayaCamera"), self.ui.mayaCamera.addItem)
+                multiPass.run()
+
+#                for line in scene.readlines():
+#                    if not layerRegEx.indexIn(line):
+#                        cap = str(layerRegEx.cap()).split('"')
+#                        layer = cap[len(cap)-2]
+#                        if layer != 'defaultRenderLayer':
+#                            self.ui.mayaRenderLayers.addItem(layer)
+#
+#                    if not cameraRegEx.indexIn(line):
+#                        cap = str(cameraRegEx.cap()).split('"')
+#                        camera = cap[len(cap)-2]
+#                        self.ui.mayaCamera.addItem(camera)
+#
+#            scene.close()
+
+    def mayaEmptyLayersAndCameras(self):
+        '''
+        Empty render layer list and the camera list
+        '''
+        self.ui.mayaRenderLayers.clear()
+        self.ui.mayaCamera.clear()
+
+    def mayaRenderLayerRemove(self):
+        '''
+        Remove the currently selected layer(s) from
+        the node list.
+        '''
+        for item in self.ui.mayaRenderLayers.selectedItems():
+            item.setHidden(1)
+
+    def mayaRenderLayerEmpty(self):
+        '''
+        Clear all nodes from the node list
+        '''
+        self.ui.mayaRenderLayers.clear()
+
     def setMayaImageOutDir(self):
         '''
         Browse for an output Directory, send the selection to
@@ -359,7 +435,6 @@ class RC2(QMainWindow):
         the node list.
         '''
         for item in self.ui.houdiniNodeList.selectedItems():
-            #print item
             item.setHidden(1)
 
     def houdiniNodeListEmpty(self):
@@ -385,7 +460,6 @@ class RC2(QMainWindow):
             self.ui.houdiniFile.setText(projectFile)
             self.houdiniFindOutputNodes(projectFile)
 
-
     def houdiniFindOutputNodes(self, inFile):
         '''
         Given an input file, find all of the output nodes and
@@ -397,7 +471,6 @@ class RC2(QMainWindow):
         for line in hou.readlines():
             if not exp.indexIn(line):
                 self.ui.houdiniNodeList.addItem(QString(line.split('/')[1].split('.')[0]))
-                #print "Found: %s" %
 
     def setHoudiniCustomResState(self, newState):
         '''

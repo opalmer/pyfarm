@@ -20,11 +20,19 @@ PURPOSE: Used to read in settings of PyFarm
     along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
 '''
-from Util import GetOs
-from Util import ModulePath
+import Info
 
+SysInfo = Info.System()
 COMMENT = '#'
-SETTINGS_FILE = ModulePath(__file__, 1)+'settings.cfg'
+KEY_SPLIT = '::'
+PATH_SEP = ','
+SETTINGS_FILE = Info.ModulePath(__file__, 1)+'settings.cfg'
+
+# setup proper line termination
+if SysInfo.os()[0] == 'windows':
+    LINE_TERM = '\n'
+else:
+    LINE_TERM = '\n'
 
 def CloseFile(openFile):
     '''
@@ -37,7 +45,7 @@ def isMatch(line, search):
     Returs the value of the given line if
     the requested search matches
     '''
-    lineSplit = line.split('::')
+    lineSplit = line.split(KEY_SPLIT)
     output = ''
     if lineSplit[0] == search:
         return lineSplit[1]
@@ -57,8 +65,8 @@ def getValue(openFile, search):
                 break
 
             for line in lines:
-                if line.split('\n')[0].split('::')[0] == search:
-                    return line.split('\n')[0].split('::')[1]
+                if line.split(LINE_TERM)[0].split(KEY_SPLIT)[0] == search:
+                    return line.split(LINE_TERM)[0].split(KEY_SPLIT)[1]
                 else:
                     CloseFile(openFile)
 
@@ -76,9 +84,9 @@ def getPaths(openFile, search):
             break
 
         for line in lines:
-            if line.split('\n')[0].split('::')[0] == search:
-                if line.split('\n')[0].split('::')[1] != 'NONE':
-                    for newPath in line.split('\n')[0].split('::')[1].split(':'):
+            if line.split(LINE_TERM)[0].split(KEY_SPLIT)[0] == search:
+                if line.split(LINE_TERM)[0].split(KEY_SPLIT)[1] != 'NONE':
+                    for newPath in line.split(LINE_TERM)[0].split(KEY_SPLIT)[1].split(PATH_SEP):
                         yield newPath
             else:
                pass
@@ -117,7 +125,7 @@ class SoftwareSearchPaths(object):
     '''Read and output the network related settings'''
     def __init__(self):
         self.file = open(SETTINGS_FILE, 'r')
-        os_arch = GetOs()
+        os_arch = SysInfo.os()
         self.os = os_arch[0]
         self.arch = os_arch[1]
 
