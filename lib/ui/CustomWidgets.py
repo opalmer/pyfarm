@@ -140,10 +140,66 @@ class NetworkTable(object):
                 self.ui.networkTable.setItem(x, y, item)
                 y += 1
 
-    #        a = QTableWidgetItem()
-    #        b = HostStatusMenu(self)
-    #        a.setData(0, QVariant(b.resize(300, 300)))
-    #        b.show()
-    #        self.ui.networkTable.setItem(x, 2, a)
+class DialogBox(QDialog):
+    def __init__(self, parent=None):
+        super(DialogBox, self).__init__(parent)
 
-            #self.netTable.resizeColumnsToContents()
+
+    def setupUi(self, parent=None):
+        super(Ui_DialogBox).__init__(QWidget)
+        parent.setObjectName("parent")
+        parent.resize(354, 118)
+        self.widget = QWidget(parent)
+        self.widget.setGeometry(QRect(11, 13, 332, 96))
+        self.widget.setObjectName("widget")
+        self.verticalLayout = QVBoxLayout(self.widget)
+        self.verticalLayout.setObjectName("verticalLayout")
+        self.horizontalLayout_2 = QHBoxLayout()
+        self.horizontalLayout_2.setObjectName("horizontalLayout_2")
+        self.label = QLabel(self.widget)
+        self.label.setObjectName("label")
+        self.horizontalLayout_2.addWidget(self.label)
+        spacerItem = QSpacerItem(248, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+        self.horizontalLayout_2.addItem(spacerItem)
+        self.verticalLayout.addLayout(self.horizontalLayout_2)
+        self.customObjectName = QLineEdit(self.widget)
+        self.customObjectName.setObjectName("customObjectName")
+        self.verticalLayout.addWidget(self.customObjectName)
+        self.buttonBox = QDialogButtonBox(self.widget)
+        self.buttonBox.setOrientation(Qt.Horizontal)
+        self.buttonBox.setStandardButtons(QDialogButtonBox.Cancel|QDialogButtonBox.Ok)
+        self.buttonBox.setObjectName("buttonBox")
+        self.verticalLayout.addWidget(self.buttonBox)
+
+        self.retranslateUi(parent)
+        QObject.connect(self.buttonBox, SIGNAL("rejected()"), parent.close)
+        QMetaObject.connectSlotsByName(parent)
+        parent.exec_()
+
+    def retranslateUi(self, parent):
+        parent.setWindowTitle(QApplication.translate("parent", "Add Custom Object", None, QApplication.UnicodeUTF8))
+        self.label.setText(QApplication.translate("parent", "Object Name:", None, QApplication.UnicodeUTF8))
+
+
+class CustomObjectDialog(QDialog):
+    def __init__(self, parent=None):
+        super(CustomObjectDialog, self).__init__(parent)
+
+        lineEditLabel = QLabel("Object Name:")
+        self.objectEditName = QLineEdit()
+        buttonBox = QDialogButtonBox(QDialogButtonBox.Ok|QDialogButtonBox.Cancel)
+
+        grid = QGridLayout()
+        grid.addWidget(lineEditLabel, 0, 0)
+        grid.addWidget(self.objectEditName, 1, 0)
+        grid.addWidget(buttonBox, 4, 0, 1, 2)
+        self.setLayout(grid)
+
+        self.connect(buttonBox, SIGNAL("accepted()"), self, SLOT("accept()"))
+        self.connect(buttonBox, SIGNAL("rejected()"), self, SLOT("reject()"))
+        self.setWindowTitle("Add Custom Object")
+
+
+    def accept(self):
+        self.emit(SIGNAL("objectName"), self.objectEditName.text())
+        QDialog.accept(self)

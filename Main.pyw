@@ -161,6 +161,7 @@ class RC2(QMainWindow):
         self.connect(self.ui.mayaBrowseForOutputDir, SIGNAL("pressed()"), self.setMayaImageOutDir)
         self.connect(self.ui.mayaBrowseForProject, SIGNAL("pressed()"), self.setMayaProjectFile)
         self.connect(self.ui.mayaRenderLayers, SIGNAL("customContextMenuRequested(const QPoint &)"), self.mayaRenderLayersListMenu)
+        self.connect(self.ui.mayaAddCamera, SIGNAL("clicked()"), self.mayaCameraEditMenu)
 
         ## houdini
         self.connect(self.ui.houdiniOutputCustomImageRes, SIGNAL("stateChanged(int)"), self.setHoudiniCustomResState)
@@ -208,10 +209,21 @@ class RC2(QMainWindow):
         node list
         '''
         menu = QMenu()
-        menu.addAction('Add Node')
+        menu.addAction('Add Node', self.houdiniAddOutputNode)
         menu.addAction('Remove Node', self.houdiniNodeListRemoveSelected)
         menu.addAction('Empty List', self.houdiniNodeListEmpty)
         menu.exec_(self.globalPoint(self.ui.houdiniNodeList, pos))
+
+    def mayaCameraEditMenu(self):
+        '''
+        Popup small menu to edit the camera list
+        '''
+        widget = self.ui.mayaAddCamera
+        menu = QMenu()
+        menu.addAction('Add Camera', self.mayaAddCamera)
+        menu.addAction('Remove Camera', self.mayaRemoveCamera)
+        menu.addAction('Empty List', self.ui.mayaCamera.clear)
+        menu.exec_(self.globalPoint(widget, -widget.mapToParent(-widget.pos())))
 
     def mayaRenderLayersListMenu(self, pos):
         '''
@@ -219,7 +231,7 @@ class RC2(QMainWindow):
         layer list
         '''
         menu = QMenu()
-        menu.addAction('Add Layer')
+        menu.addAction('Add Layer', self.mayaAddLayer)
         menu.addAction('Remove Layer', self.mayaRenderLayerRemove)
         menu.addAction('Empty List', self.mayaRenderLayerEmpty)
         menu.exec_(self.globalPoint(self.ui.mayaRenderLayers, pos))
@@ -244,7 +256,6 @@ class RC2(QMainWindow):
     def setJobName(self):
         '''Set the job name'''
         self.jobName = self.ui.inputJobName.text()
-        print self.jobName
 
     def setJobPriority(self, priority):
         '''Set the job priority'''
@@ -329,6 +340,29 @@ class RC2(QMainWindow):
 ################################
 ## BEGIN Maya Settings
 ################################
+    def mayaRemoveCamera(self):
+        '''
+        Remove the currently selected camera
+        '''
+        widget = self.ui.mayaCamera
+        widget.removeItem(widget.currentIndex())
+
+    def mayaAddCamera(self):
+        '''
+        Add a custom camera to maya
+        '''
+        dialog = CustomObjectDialog(self)
+        self.connect(dialog, SIGNAL("objectName"), self.ui.mayaCamera.addItem)
+        dialog.exec_()
+
+    def mayaAddLayer(self):
+        '''
+        Add a custom layer to maya
+        '''
+        dialog = CustomObjectDialog(self)
+        self.connect(dialog, SIGNAL("objectName"), self.ui.mayaRenderLayers.addItem)
+        dialog.exec_()
+
     def mayaGetLayersAndCams(self):
         '''
         Given a file get of of the layers and cameras
@@ -350,20 +384,6 @@ class RC2(QMainWindow):
                 self.connect(multiPass, SIGNAL("gotMayaLayer"), self.ui.mayaRenderLayers.addItem)
                 self.connect(multiPass, SIGNAL("gotMayaCamera"), self.ui.mayaCamera.addItem)
                 multiPass.run()
-
-#                for line in scene.readlines():
-#                    if not layerRegEx.indexIn(line):
-#                        cap = str(layerRegEx.cap()).split('"')
-#                        layer = cap[len(cap)-2]
-#                        if layer != 'defaultRenderLayer':
-#                            self.ui.mayaRenderLayers.addItem(layer)
-#
-#                    if not cameraRegEx.indexIn(line):
-#                        cap = str(cameraRegEx.cap()).split('"')
-#                        camera = cap[len(cap)-2]
-#                        self.ui.mayaCamera.addItem(camera)
-#
-#            scene.close()
 
     def mayaEmptyLayersAndCameras(self):
         '''
@@ -429,6 +449,14 @@ class RC2(QMainWindow):
 ################################
 ## BEGIN Houdini Settings
 ################################
+    def houdiniAddOutputNode(self):
+        '''
+        Add an output node too the node list
+        '''
+        dialog = CustomObjectDialog(self)
+        self.connect(dialog, SIGNAL("objectName"), self.ui.houdiniNodeList.addItem)
+        dialog.exec_()
+
     def houdiniNodeListRemoveSelected(self):
         '''
         Remove the currently selected node(s) from
