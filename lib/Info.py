@@ -130,6 +130,31 @@ class System(object):
         return mac
 
 
+class Numbers(object):
+    '''
+    Provides several functions for creating, converting,
+    and evaling numbers
+    '''
+    def __init__(self):
+        pass
+
+    def int2hex(self, intIn):
+        '''Convert an integer to hexadecimal'''
+        return "%x" % intIn
+
+    def hex2int(self, inHex):
+        '''Convert an hexadecimal to integer'''
+        return int(inHex, 16)
+
+    def randhex(self):
+        '''Produces hex value based on time'''
+        return "%x" % int(time.time())
+
+    def randint(self):
+        '''Produces rand int based on time'''
+        return int(time.time())
+
+
 class File(object):
     '''
     Large file class meant to handle multiple tasks

@@ -133,13 +133,9 @@ class QueSlaveServerThread(QThread):
                     if JOB == 'TERMNATE_SELF':
                         socket.close()
                     else:
-                        os.system(str(COMMAND))
-                        #process = RunProcess(COMMAND)
-                        #process.start()
 
-                        #while self.runCommand(cmd, args):
-                            #finally, ask for more work and send back the last command
-                            #  we worked with so the master computer can keep ctrack
+                        os.system(str(COMMAND))
+
 
                         ACTION = QString("REQUESTING_WORK")
                         self.sendReply(socket, ACTION, JOB, FRAME, COMMAND)
@@ -176,8 +172,10 @@ class QueSlaveServerThread(QThread):
 
 class QueSlaveServer(QTcpServer):
     '''Main server thread, used to receieve and start new server threads'''
-    def __init__(self, parent=None):
+    def __init__(self, software, parent=None):
         super(QueSlaveServer, self).__init__(parent)
+        self.software = software
+        print software
 
     def incomingConnection(self, socketId):
         '''If incomingConnection(), start thread to handle connection'''

@@ -219,20 +219,47 @@ class ConfigureCommand(object):
     yield the output commands
     '''
     def __init__(self, softwareDict):
-      self.software = softwareDict
+        self.software = softwareDict
 
-    def maya(self, ver, sFrame, eFrame, bFrame, rayRender):
-      '''
-      Yield the sequence of frames for maya
+    def maya(self, ver, sFrame, eFrame, bFrame, renderer, scene, layer='', camera='', outDir='', project=''):
+        '''
+        Yield the sequence of frames for maya
 
-      VARS:
-         ver -- Version of maya to pull from self.software
-         sFrame -- Start frame of sequence
-         eFrame -- End Frame of sequence
-         bFrame -- By frame or sequence step
-         rayRender -- If using mental ray, set to true
-      '''
-      version = self.sofware[ver]
+        VARS:
+        ver -- Version of maya to pull from self.software
+        sFrame -- Start frame of sequence
+        eFrame -- End Frame of sequence
+        bFrame -- By frame or sequence step
+        rayRender -- If using mental ray, set to true
+
+        NOTE: The client will have to break down the command, as it is not cross-platoform.
+        '''
+        #command = Program(self.software[ver])
+        # software flag setup
+        if renderer == 'Software':
+            renderer = '-r sw'
+        elif renderer == 'Mental Ray':
+            renderer = '-r mr -v 5'
+        elif renderer == 'Scene Preset':
+            renderer = ''
+
+        # render layer setup
+        if not layer == '':
+            layer = '-rl %s ' % layer
+
+        # camera setup
+        if not camera == '':
+            camera = '-cam %s ' % camera
+
+        # render directory config
+        if not outDir == '':
+            outDir = '-rd %s ' % outDir
+
+        if not project == '':
+            project = '-proj %s ' % project
+
+        for frame in range(sFrame, eFrame+1, bFrame):
+            yield '%s::%s -s %s -e %s %s%s%s%s%s' % (ver, renderer, frame, frame, layer, camera, outDir, project, scene)
 
     def houdini(self, ver, sFrame, eFrame, bFrame):
       '''
@@ -244,7 +271,8 @@ class ConfigureCommand(object):
         eFrame -- End Frame of sequence
         bFrame -- By frame or sequence step
       '''
-      version = self.sofware[ver]
+      command = Program(self.sofware[ver])
+
 
     def shake(self, version, sFrame, eFrame, bFrame):
       '''
@@ -304,3 +332,7 @@ class MayaCamAndLayers(QThread):
                 self.emit(SIGNAL("gotMayaCamera"), camera)
 
         self.scene.close()
+
+def Program(inString):
+    '''Return the program of a dictionary entry'''
+    return inString.split('::')[0]

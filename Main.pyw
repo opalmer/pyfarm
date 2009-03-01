@@ -25,6 +25,7 @@ PURPOSE: Main program to run and manage PyFarm
 # From Python
 import sys
 import os.path
+from time import time
 # From PyQt
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
@@ -142,17 +143,13 @@ class RC2(QMainWindow):
         self.connect(self.ui.findHosts, SIGNAL("pressed()"), self._findHosts)
         self.connect(self.ui.queryQue, SIGNAL("pressed()"), self.queryQue)
         self.connect(self.ui.emptyQue, SIGNAL("pressed()"), self.emptyQue)
-        self.connect(self.ui.enque, SIGNAL("pressed()"), self._gatherInfo)
+        self.connect(self.ui.enque, SIGNAL("pressed()"), self.SubmitToQue)
         self.connect(self.ui.loadQue, SIGNAL("triggered()"), self._loadQue)
         self.connect(self.ui.saveQue, SIGNAL("triggered()"), self._saveQue)
         self.connect(self.ui.currentJobs, SIGNAL("customContextMenuRequested(const QPoint &)"), self.currentJobsContextMenu)
 
         # connect ui widgets related to global job info
-        self.connect(self.ui.inputStartFrame, SIGNAL("valueChanged(int)"), self.setStartFrame)
-        self.connect(self.ui.inputEndFrame, SIGNAL("valueChanged(int)"), self.setEndFrame)
-        self.connect(self.ui.inputByFrame, SIGNAL("valueChanged(int)"), self.setByFrame)
         self.connect(self.ui.inputJobName, SIGNAL("editingFinished()"), self.setJobName)
-        self.connect(self.ui.inputJobPriority, SIGNAL("valueChanged(int)"), self.setJobPriority)
         self.connect(self.ui.softwareSelection, SIGNAL("currentIndexChanged(const QString&)"), self.SetSoftware)
 
         # connect specific render option vars
@@ -241,25 +238,9 @@ class RC2(QMainWindow):
 ################################
 ## BEGIN General Job Settings
 ################################
-    def setStartFrame(self, frame):
-        '''Set the start frame value'''
-        self.sFrame = frame
-
-    def setEndFrame(self, frame):
-        '''Set the end frame value'''
-        self.eFrame = frame
-
-    def setByFrame(self, frame):
-        '''Set the by frame value'''
-        self.byFrame = frame
-
     def setJobName(self):
         '''Set the job name'''
         self.jobName = self.ui.inputJobName.text()
-
-    def setJobPriority(self, priority):
-        '''Set the job priority'''
-        self.jobPriority = priority
 
 ################################
 ## END General Job Settings
@@ -281,7 +262,7 @@ class RC2(QMainWindow):
 
         self.scene.setText(render_file)
 
-        if self.program_name == 'maya':
+        if self.software_generic == 'maya':
             self.mayaGetLayersAndCams()
 
     def SetSoftware(self, newSoftware):
@@ -298,26 +279,26 @@ class RC2(QMainWindow):
         '''
         try:
             # convert the QSting to a string
-            selected_software = str(newSoftware)
-            self.command = LOCAL_SOFTWARE[selected_software].split('::')[0]
-            self.program_name = LOCAL_SOFTWARE[selected_software].split('::')[1]
-            self.fileGrep = LOCAL_SOFTWARE[selected_software].split('::')[2]
-            self.widgetIndex = int(LOCAL_SOFTWARE[selected_software].split('::')[3])
+            self.software = str(newSoftware)
+            self.command = LOCAL_SOFTWARE[self.software].split('::')[0]
+            self.software_generic = LOCAL_SOFTWARE[self.software].split('::')[1]
+            self.fileGrep = LOCAL_SOFTWARE[self.software].split('::')[2]
+            self.widgetIndex = int(LOCAL_SOFTWARE[self.software].split('::')[3])
             self.ui.optionStack.setCurrentIndex(self.widgetIndex)
 
             # if we are using maya
-            if self.program_name == 'maya':
+            if self.software_generic == 'maya':
                 self.ui.optionStack.setCurrentWidget
                 self.scene = self.ui.mayaScene
                 self.browseForScene = self.ui.mayaBrowseForScene
 
             # if we are using houdini
-            elif self.program_name == 'houidini':
+            elif self.software_generic == 'houidini':
                 self.scene = self.ui.houdiniFile
                 self.browseForScene = self.ui.houdiniBrowseForScene
 
             # if we are using shake
-            elif self.program_name == 'shake':
+            elif self.software_generic == 'shake':
                 self.scene = self.ui.shakeScript
                 self.browseForScene = self.ui.shakeBrowseForScript
 
@@ -734,62 +715,74 @@ class RC2(QMainWindow):
 ################################
 ## END Host Management
 ################################
-## BEGIN Status/Message System
+## BEGIN Job/Que System
 ################################
-    def _gatherInfo(self):
+    def SubmitToQue(self):
         '''Gather information about the current job'''
-        #self.ui.cancelRender.setEnabled(True)
-        #self.ui.render.setEnabled(False)
-        if self.ui.inputOutputDir.text() == '':
-            self.criticalMessage("No Output Directory Specified", "You must specify an output directory to send the rendered images to.")
+        # first make a copy of self.software
+        config = ConfigureCommand(LOCAL_SOFTWARE)
+        jobID = self.runChecks()
+
+        if jobID:
+            startSize = self.que.size()
+            sFrame = self.ui.inputStartFrame.value()
+            eFrame = self.ui.inputEndFrame.value()
+            bFrame = self.ui.inputByFrame.value()
+            priority = self.ui.inputJobPriority.value()
+            jobName = self.ui.inputJobName.text()
+            outDir = self.ui.mayaOutputDir.text()
+            project = self.ui.mayaProjectFile.text()
+            scene = self.scene.text()
+            commands = []
+
+            if self.software_generic == 'maya':
+                renderer = str(self.ui.mayaRenderer.currentText())
+                layers = self.ui.mayaRenderLayers.selectedItems()
+                camera = self.ui.mayaCamera.currentText()
+
+                if len(layers) >= 1:
+                    for layer in layers:
+                        for command in config.maya(self.software, sFrame, eFrame, bFrame,\
+                            renderer, scene, layer.text(), camera, outDir, project):
+                                self.que.put([jobID, jobName, command], priority)
+                else:
+                    for command in config.maya(self.software, sFrame, eFrame, bFrame,\
+                        renderer, scene, '', camera, outDir, project):
+                            self.que.put([jobID, jobName, command], priority)
+
+                newFrames = self.que.size()-startSize
+
+                self.updateStatus('QUE', 'Added %s frames to job %s(%s) with priority %s' % \
+                                  (newFrames, jobName, jobID, priority), 'black')
+
+            elif self.software_generic == 'houdini':
+                pass
+            elif self.software_generic == 'shake':
+                pass
         else:
-            if self.ui.inputScene.text() == '':
-                self.criticalMessage("No Input File Specified", "You must specify an input file to render.")
-            elif not os.path.isfile(self.ui.inputScene.text()):
-                self.criticalMessage("Input File Error","You must specify an input file to render, not a path.")
-            else:
-                self.job = self.ui.inputJobName.text()
-                self.sFrame = self.ui.inputStartFrame.text()
-                self.eFrame = self.ui.inputEndFrame.text()
-                self.bFrame = self.ui.inputByFrame.text()
-                self.scene = self.ui.inputScene.text()
+            pass
 
-                #setup mentalray if activated
-                if self.ui.useMentalRay.isChecked():
-                    self.rayFlag = '-r mr -v 5 -rt 10'
-                else:
-                    self.rayFlag = ''
-
-                # get information from the drop down menu
-                if self.software.currentText() == 'Maya 2008':
-                    self.command = '/usr/local/bin/Render'
-
-                elif self.software.currentText() == 'Maya 2009':
-                    self.command = '/usr/autodesk/maya2009-x64/bin/Render'
-
-                elif self.software.currentText() == 'Shake':
-                    self.command = '/opt/shake/bin/shake'
-
-                self.jobName = self.ui.inputJobName.text()
-                self.outputDir = self.ui.inputOutputDir.text()
-                self.projectFile = self.ui.inputProject.text()
-                self.priority = int(self.ui.inputJobPriority.text())
-
+    def runChecks(self):
+        '''
+        Check to be sure the user has entered the minium values
+        '''
+        if self.scene.text() == '':
+            self.warningMessage('Missing File', 'You must provide a file to render')
+            return 0
+        elif not os.path.isfile(self.scene.text()):
+            self.warningMessage('Please Select a File', 'You must provide a file to render, links or directories will not suffice.')
+            return 0
+        else:
+            try:
                 if self.jobName == '':
-                    self.criticalMessage("Missing Job Name", "You're job needs a name")
-                else:
-                    if self.software.currentText() != 'Shake':
-                        for frame in range(int(self.sFrame),int(self.eFrame)+1, int(self.bFrame)):
-                            if self.rayFlag == '':
-                                self.que.put([self.jobName, frame, '%s -proj %s -s %s -e %s -rd %s %s' % (self.command, self.projectFile, frame, frame, self.outputDir, self.scene)], self.priority)
-                            else:
-                                self.que.put([self.jobName, frame, '%s %s -proj %s -s %s -e %s  -rd %s %s' % (self.command, self.rayFlag, self.projectFile, frame, frame, self.outputDir, self.scene)], self.priority)
-                    else:
-                        for frame in range(int(self.sFrame),int(self.eFrame)+1, int(self.bFrame)):
-                            self.que.put([self.jobName, frame, '%s -v -t %s-%sx1 -exec %s' % (self.command, frame, frame, self.scene)], self.priority)
-
-                    self.updateStatus('QUEUE', '%s frames waiting to render' % self.que.size(), 'brown')
-                    #self.initJob()
+                    self.warningMessage('Missing Job Name', 'You name your job before you rendering')
+                    return 0
+            except AttributeError:
+                self.warningMessage('Missing Job Name', 'You name your job before you rendering')
+                return 0
+            finally:
+                # get a random number and return the hexadecimal value
+                return Info.Numbers().randhex()
 
     def initJob(self):
         '''Get an item from the que and send it to a client'''
@@ -839,7 +832,7 @@ class RC2(QMainWindow):
         self.foundHosts = 0
 
 ################################
-## END Host Management
+## END Job/Que System
 ################################
 ## BEGIN Status/Message System
 ################################
@@ -853,8 +846,19 @@ class RC2(QMainWindow):
             message (str) -- message to display
             code (int) -- exit code to give to sys.exit
         '''
-        QMessageBox().critical(None, title, unicode(message))
+        QMessageBox().critical(self, title, unicode(message))
         sys.exit(code)
+
+    def warningMessage(self, title, message):
+        '''
+        Pop up critical message window
+
+        VARS:
+            title -- Title of window
+            message -- message to display
+        '''
+        msg = QMessageBox()
+        msg.warning(self, title, unicode(message))
 
     def infoMessage(self, title, message):
         '''
@@ -865,7 +869,7 @@ class RC2(QMainWindow):
             message -- message to display
         '''
         msg = QMessageBox()
-        msg.information(None, title, unicode(message))
+        msg.information(self, title, unicode(message))
 
     def updateStatus(self, section, msg, color='black'):
         '''
