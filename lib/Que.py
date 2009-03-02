@@ -179,6 +179,7 @@ class QueSlaveServerThread(QThread):
         stream.writeUInt16(reply.size() - SIZEOF_UINT16)
         socket.write(reply)
 
+
 class QueSlaveServer(QTcpServer):
     '''Main server thread, used to receieve and start new server threads'''
     def __init__(self, parent=None):
@@ -190,7 +191,6 @@ class QueSlaveServer(QTcpServer):
         thread = QueSlaveServerThread(socketId, self)
         self.connect(thread, SIGNAL("finished()"),thread, SLOT("deleteLater()"))
         thread.start()
-
 
 class SendCommand(QTcpSocket):
     '''
