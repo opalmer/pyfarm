@@ -21,36 +21,41 @@ or PyFarm itself.
     along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
 '''
+try:
+    from os import uname
+    from os import loadavg
 
-import os
-import sys
-import uuid
-import time
-import socket
-from FarmLog import FarmLog
-from subprocess import Popen,PIPE
+# if we get an import error pass it
+except ImportError:
+    pass
 
-log = FarmLog('lib.Info')
+finally:
+    import Info
+    from os import sep, name, getenv
+    import sys
+    import uuid
+    import time
+    import socket
+    from subprocess import Popen,PIPE
+    from os.path import dirname, join
 
-# TODO: Add software discovery to Info module
+def ModulePath(module, level=0):
+    '''Given a module return it's path to the n'th level'''
+    if level == 0:
+        return dirname(module)+'/'
+
+    else:
+        OUT = ''
+        path = dirname(module).split(sep)
+
+        for i in path[:len(path)-level]:
+            OUT += '%s/' % i
+
+        return OUT
+
 class System(object):
     '''
     Return important information about the system
-
-    REQUIRES:
-        Python:
-            os
-            sys
-            uuid
-            time
-            subprocess
-
-        PyFarm:
-            FarmLog
-            Info (this module)
-
-    INPUT:
-        None
     '''
     def __init__(self):
         super(System,  self).__init__()
@@ -59,51 +64,54 @@ class System(object):
         '''Return the current system time to the user'''
         return time.strftime("%d %b %Y %H:%M:%S")
 
-    # TODO: Find cross-platform ways to get CPU load
-    def cpuLoad(self):
+    def os(self):
         '''
-        Return the current CPU load to the user
+        Get the type of os and architecture
 
         OUTPUT:
-            3 value array
-            array[0] -- 1 min cpu load
-            array[1] -- 5 min cpu load
-            array[2] -- 15 min cpu load
+            [ operating_system, arhitecture ]
+        '''
+        output = []
+
+        if name == 'posix' and uname()[0] != 'Darwin':
+            output.append('linux')
+            if uname()[4] == 'x86_64':
+                output.append('x64')
+            elif uname()[4] == 'i386' or uname()[4] == 'i686' or uname()[4] == 'x86':
+                output.append('x86')
+
+        # if mac, do this
+        elif name == 'posix' and uname()[0] == 'Darwin':
+            output.append('mac')
+            if uname()[4] == 'i386' or uname[4] == 'i686':
+                output.append('x86')
+
+        elif name == 'nt':
+            output.append('windows')
+            output.append(getenv('PROCESSOR_ARCHITECTURE'))
+
+        return output
+
+    def load(self):
+        '''
+        Return the average CPU load to the user
         '''
         if self.os() == 'linux':
-            a = Popen('uptime', bufsize=1024, stdout=PIPE)
-            load = a.stdout.read().split('\n')[0].split(', ')[2:5]
-            one = load[0][15:]
-            five = load[1]
-            fifteen = load[2]
-
-            return [one, five, fifteen]
+            return loadavg()
 
         elif self.os() == 'windows':
-            sys.exit(log.error('Only linux systems can call System.cpuLoad()'))
+            # there is a not a way to do this on windows...yet
+            pass
 
-    def isRoot(self):
-        '''Return false if not running as root, true if you are.'''
-        if self.os() == 'linux':
-            if os.getuid() == 0:
-                return True
-            else:
-                return False
-        else:
-            sys.exit(log.error('os.getuid() can only be called on linux!'))
+    def coreCount(self):
+        '''Return the number of cores installed on the system'''
+        # OS X: sysctl -n hw.logicalcpu
+        # Win: getEnv(NUMBER_OF_PROCESSORS)
+        # Linux: cat /proc/cpuinfo | grep siblings | awk {'print $3'}
 
-    def os(self):
-        '''Return the os type to PyFarm (win,irux,etc.)'''
-        if os.name == 'posix':
-            return 'linux'
-        elif os.name == 'nt':
-            return 'windows'
-        elif os.name == 'mac':
-            return'mac'
-        elif os.name == 'dos':
-            return 'dos'
-        elif os.name == 'os2':
-            pass # TODO: Figure out what to do with 'os2'
+    def hostname(self):
+        '''Return the name of the computer'''
+        return socket.gethostname()
 
     def macAddress(self):
         '''Return a list of mac address to the user'''
@@ -119,15 +127,42 @@ class System(object):
 
         elif self.os() == 'windows':
             p = Popen(['ipconfig'])
-
         return mac
 
-    def hostname(self):
-        '''Return the name of the computer'''
-        return socket.gethostname()
 
-# TODO: Begin work on job info class
-class Job(object):
-    '''Return info about a specific job'''
-    def __init__(self,  jobid):
-        self.jobid = jobid
+class Numbers(object):
+    '''
+    Provides several functions for creating, converting,
+    and evaling numbers
+    '''
+    def __init__(self):
+        pass
+
+    def int2hex(self, intIn):
+        '''Convert an integer to hexadecimal'''
+        return "%x" % intIn
+
+    def hex2int(self, inHex):
+        '''Convert an hexadecimal to integer'''
+        return int(inHex, 16)
+
+    def randhex(self):
+        '''Produces hex value based on time'''
+        return "%x" % int(time.time())
+
+    def randint(self):
+        '''Produces rand int based on time'''
+        return int(time.time())
+
+
+class File(object):
+    '''
+    Large file class meant to handle multiple tasks
+    including readline, file size, get extension, etc.
+    '''
+    def __init__(self, file):
+        self.file = file
+
+    def ext(self):
+        '''Return the extension of the file'''
+        return self.file.split('.')[len(self.file.split('.'))-1]

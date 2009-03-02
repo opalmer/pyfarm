@@ -17,3 +17,17 @@ Client.pyc
 *Apple*
 *apple*
 _OLD
+build/source/lib/FarmLog.py
+build/source/lib/Info.py
+build/source/lib/__init__.py
+build/source/lib/Network.py
+build/source/lib/Process.py
+build/source/lib/Que.py
+build/source/lib/ReadSettings.py
+build/source/lib/RenderConfig.py
+build/source/lib/ui
+build/source/*
+build/source
+build/source/*/*
+build/binaries
+build/source

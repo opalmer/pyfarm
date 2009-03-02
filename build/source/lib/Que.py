@@ -22,23 +22,24 @@ Module also includes required network functions
 
 
 '''
-
+# Python Libs
 import os
 import time
 import Queue
 import heapq
 import socket
 
+# PyFarm Libs
 from Process import *
-
 import ReadSettings as Settings
+from lib.RenderConfig import SoftwareInstalled
 
+# PyQt Libs
 from PyQt4.QtCore import *
 from PyQt4.QtNetwork import *
 
 # setup the required ports (adjust these settings via settings.cfg)
-CFG = os.getcwd()+'/settings.cfg'
-QUE_PORT = Settings.Network(CFG).QuePort()
+QUE_PORT = Settings.Network().QuePort()
 SIZEOF_UINT16 = 2
 
 stateHelp = {0:"The socket is not connected",
@@ -47,6 +48,15 @@ stateHelp = {0:"The socket is not connected",
                         3:"A connection is established",
                         4:"The socket is bound to an address and port (for servers)",
                         6:"The socket is about to close (data may still be waiting to be written)"}
+
+# setup and find all of the local software
+LOCAL_SOFTWARE = {}
+software = SoftwareInstalled()
+
+# find the installed software and add it the LOCAL_SOFTWARE
+LOCAL_SOFTWARE.update(software.maya())
+LOCAL_SOFTWARE.update(software.houdini())
+LOCAL_SOFTWARE.update(software.shake())
 
 class PriorityQue(Queue.Queue):
     '''
@@ -122,27 +132,22 @@ class QueSlaveServerThread(QThread):
                 if socket.bytesAvailable() >= SIZEOF_UINT16:
                     nextBlockSize = stream.readUInt16()
 
-
-
                     JOB = QString()
                     FRAME = QString()
+                    SOFTWARE = QString()
                     COMMAND = QString()
 
                     print "Unpacking the command..."
-                    stream >> JOB >> FRAME >> COMMAND
+                    stream >> JOB >> FRAME >> SOFTWARE >> COMMAND
                     if JOB == 'TERMNATE_SELF':
                         socket.close()
                     else:
-                        os.system(str(COMMAND))
-                        #process = RunProcess(COMMAND)
-                        #process.start()
-
-                        #while self.runCommand(cmd, args):
-                            #finally, ask for more work and send back the last command
-                            #  we worked with so the master computer can keep ctrack
+                        print "Running Render..."
+                        SWPATH = LOCAL_SOFTWARE[str(SOFTWARE)].split("::")[0]
+                        os.system("%s %s" % (SWPATH, COMMAND))
 
                         ACTION = QString("REQUESTING_WORK")
-                        self.sendReply(socket, ACTION, JOB, FRAME, COMMAND)
+                        self.sendReply(socket, ACTION, JOB, FRAME, SOFTWARE, COMMAND)
                         socket.waitForDisconnected()
 
             if socket.bytesAvailable() < nextBlockSize:
@@ -163,13 +168,13 @@ class QueSlaveServerThread(QThread):
         socket.write(reply)
         socket.close()
 
-    def sendReply(self, socket, ACTION, JOB, FRAME, COMMAND):
+    def sendReply(self, socket, ACTION, JOB, FRAME, SOFTWARE, COMMAND):
         print "Requesting more work..."
         reply = QByteArray()
         stream = QDataStream(reply, QIODevice.WriteOnly)
         stream.setVersion(QDataStream.Qt_4_2)
         stream.writeUInt16(0)
-        stream << ACTION << JOB << FRAME << COMMAND
+        stream << ACTION << JOB << FRAME << SOFTWARE << COMMAND
         stream.device().seek(0)
         stream.writeUInt16(reply.size() - SIZEOF_UINT16)
         socket.write(reply)
@@ -221,8 +226,9 @@ class SendCommand(QTcpSocket):
             self.socket.close()
         else:
             JOB = QString(inList[0])
-            FRAME = QString(str(inList[1]))
-            COMMAND = QString(inList[2])
+            FRAME = QString(inList[1])
+            SOFTWARE = QString(inList[2])
+            COMMAND = QString(inList[3])
 
             # use these for checks
             self.job = JOB
@@ -233,7 +239,7 @@ class SendCommand(QTcpSocket):
             stream = QDataStream(self.request, QIODevice.WriteOnly)
             stream.setVersion(QDataStream.Qt_4_2)
             stream.writeUInt16(0)
-            stream << JOB << FRAME << COMMAND
+            stream << JOB << FRAME << SOFTWARE << COMMAND
             stream.device().seek(0)
             stream.writeUInt16(self.request.size() - SIZEOF_UINT16)
 
@@ -268,12 +274,13 @@ class SendCommand(QTcpSocket):
             ACTION = QString()
             JOB = QString()
             FRAME = QString()
+            SOFTWARE = QString()
             COMMAND = QString()
 
             # unpack the incoming packet
             stream >> ACTION
             if ACTION == QString("REQUESTING_WORK"):
-                stream >> JOB >> FRAME >> COMMAND
+                stream >> JOB >> FRAME >> SOFTWARE >> COMMAND
                 trueState = 0 # must == 3 to pass
                 if JOB == self.job:
                     trueState += 1

@@ -32,6 +32,7 @@ import socket
 # PyFarm Libs
 from Process import *
 import ReadSettings as Settings
+from lib.RenderConfig import SoftwareInstalled
 
 # PyQt Libs
 from PyQt4.QtCore import *
@@ -47,6 +48,15 @@ stateHelp = {0:"The socket is not connected",
                         3:"A connection is established",
                         4:"The socket is bound to an address and port (for servers)",
                         6:"The socket is about to close (data may still be waiting to be written)"}
+
+# setup and find all of the local software
+LOCAL_SOFTWARE = {}
+software = SoftwareInstalled()
+
+# find the installed software and add it the LOCAL_SOFTWARE
+LOCAL_SOFTWARE.update(software.maya())
+LOCAL_SOFTWARE.update(software.houdini())
+LOCAL_SOFTWARE.update(software.shake())
 
 class PriorityQue(Queue.Queue):
     '''
@@ -124,23 +134,20 @@ class QueSlaveServerThread(QThread):
 
                     JOB = QString()
                     FRAME = QString()
-                    SWVERSION = QString()
+                    SOFTWARE = QString()
                     COMMAND = QString()
 
                     print "Unpacking the command..."
-                    stream >> JOB >> FRAME >> SWVERSION >> COMMAND
+                    stream >> JOB >> FRAME >> SOFTWARE >> COMMAND
                     if JOB == 'TERMNATE_SELF':
                         socket.close()
                     else:
-
-                        print "Running Render:"
-                        print "\tJOB: %s" % JOB
-                        print "\tFRAME: %s" % FRAME
-                        print "\tSOFTWARE: %s" % SWVERSION
-                        print "\tARGUMENTS: %s" % COMMAND
+                        print "Running Render..."
+                        SWPATH = LOCAL_SOFTWARE[str(SOFTWARE)].split("::")[0]
+                        os.system("%s %s" % (SWPATH, COMMAND))
 
                         ACTION = QString("REQUESTING_WORK")
-                        self.sendReply(socket, ACTION, JOB, FRAME, SWVERSION, COMMAND)
+                        self.sendReply(socket, ACTION, JOB, FRAME, SOFTWARE, COMMAND)
                         socket.waitForDisconnected()
 
             if socket.bytesAvailable() < nextBlockSize:
@@ -161,13 +168,13 @@ class QueSlaveServerThread(QThread):
         socket.write(reply)
         socket.close()
 
-    def sendReply(self, socket, ACTION, JOB, FRAME, SWVERSION, COMMAND):
+    def sendReply(self, socket, ACTION, JOB, FRAME, SOFTWARE, COMMAND):
         print "Requesting more work..."
         reply = QByteArray()
         stream = QDataStream(reply, QIODevice.WriteOnly)
         stream.setVersion(QDataStream.Qt_4_2)
         stream.writeUInt16(0)
-        stream << ACTION << JOB << FRAME << SWVERSION << COMMAND
+        stream << ACTION << JOB << FRAME << SOFTWARE << COMMAND
         stream.device().seek(0)
         stream.writeUInt16(reply.size() - SIZEOF_UINT16)
         socket.write(reply)
@@ -220,7 +227,7 @@ class SendCommand(QTcpSocket):
         else:
             JOB = QString(inList[0])
             FRAME = QString(inList[1])
-            SWVERSION = QString(inList[2])
+            SOFTWARE = QString(inList[2])
             COMMAND = QString(inList[3])
 
             # use these for checks
@@ -232,7 +239,7 @@ class SendCommand(QTcpSocket):
             stream = QDataStream(self.request, QIODevice.WriteOnly)
             stream.setVersion(QDataStream.Qt_4_2)
             stream.writeUInt16(0)
-            stream << JOB << FRAME << SWVERSION << COMMAND
+            stream << JOB << FRAME << SOFTWARE << COMMAND
             stream.device().seek(0)
             stream.writeUInt16(self.request.size() - SIZEOF_UINT16)
 
@@ -267,13 +274,13 @@ class SendCommand(QTcpSocket):
             ACTION = QString()
             JOB = QString()
             FRAME = QString()
-            SWVERSION = QString()
+            SOFTWARE = QString()
             COMMAND = QString()
 
             # unpack the incoming packet
             stream >> ACTION
             if ACTION == QString("REQUESTING_WORK"):
-                stream >> JOB >> FRAME >> SWVERSION >> COMMAND
+                stream >> JOB >> FRAME >> SOFTWARE >> COMMAND
                 trueState = 0 # must == 3 to pass
                 if JOB == self.job:
                     trueState += 1

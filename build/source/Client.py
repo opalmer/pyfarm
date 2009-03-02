@@ -22,33 +22,46 @@ PURPOSE: To handle and run all client connections on a remote machine
 
 '''
 
-import os
 import sys
+import os.path
+import traceback
+
 from lib.Network import *
 from lib.Que import *
-from PyQt4.QtCore import QCoreApplication
+from PyQt4.QtCore import *
 
-CFG = os.getcwd()+'/settings.cfg'
-SIZEOF_UINT16 = Settings.Network(CFG).Unit16Size()
-BROADCAST_PORT = Settings.Network(CFG).BroadcastPort()
-QUE_PORT = Settings.Network(CFG).QuePort()
-STDOUT_PORT = Settings.Network(CFG).StdOutPort()
-STDERR_PORT = Settings.Network(CFG).StdErrPort()
-#MASTER = Settings.Network(CFG).MasterAddress()
+# port settings
+SIZEOF_UINT16 = Settings.Network().Unit16Size()
+BROADCAST_PORT = Settings.Network().BroadcastPort()
+QUE_PORT = Settings.Network().QuePort()
+STDOUT_PORT = Settings.Network().StdOutPort()
+STDERR_PORT = Settings.Network().StdErrPort()
 USE_STATIC_CLIENT = False
 
 class Main(QObject):
     def __init__(self, parent=None):
         super(Main, self).__init__(parent)
+        # check and see if the user has requested
+        #  a local only client
+        try:
+            if sys.argv[1] == 'local':
+                self.LOCAL = True
+        except IndexError:
+            self.LOCAL = False
 
     def startBroadcast(self):
-        broadcast = BroadcastClient()
-        self.master = broadcast.run()
-        self.localhost = GetLocalIP(self.master)
-        self.initSlave()
+        if not self.LOCAL:
+            broadcast = BroadcastClient()
+            self.master = broadcast.run()
+            self.localhost = GetLocalIP(self.master)
+            self.initSlave()
+        else:
+            self.localhost = '127.0.0.1'
+            self.initSlave()
 
     def initSlave(self):
         self.socket = QueSlaveServer(self)
+        # if we only want to run this locally
         if not self.socket.listen(QHostAddress(self.localhost), QUE_PORT):
             print "Socket Error: %s " % self.socket.errorString()
         print "Waiting on Que..."
@@ -56,4 +69,5 @@ class Main(QObject):
 app = QCoreApplication(sys.argv)
 main = Main()
 main.startBroadcast()
+app.processEvents()
 app.exec_()

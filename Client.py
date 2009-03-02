@@ -41,15 +41,27 @@ USE_STATIC_CLIENT = False
 class Main(QObject):
     def __init__(self, parent=None):
         super(Main, self).__init__(parent)
+        # check and see if the user has requested
+        #  a local only client
+        try:
+            if sys.argv[1] == 'local':
+                self.LOCAL = True
+        except IndexError:
+            self.LOCAL = False
 
     def startBroadcast(self):
-        broadcast = BroadcastClient()
-        self.master = broadcast.run()
-        self.localhost = GetLocalIP(self.master)
-        self.initSlave()
+        if not self.LOCAL:
+            broadcast = BroadcastClient()
+            self.master = broadcast.run()
+            self.localhost = GetLocalIP(self.master)
+            self.initSlave()
+        else:
+            self.localhost = '127.0.0.1'
+            self.initSlave()
 
     def initSlave(self):
         self.socket = QueSlaveServer(self)
+        # if we only want to run this locally
         if not self.socket.listen(QHostAddress(self.localhost), QUE_PORT):
             print "Socket Error: %s " % self.socket.errorString()
         print "Waiting on Que..."

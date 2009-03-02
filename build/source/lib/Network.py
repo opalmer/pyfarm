@@ -25,18 +25,19 @@ import os
 import sys
 import time
 import socket
+import os.path
 # Qt libs
 from PyQt4.QtCore import *
 from PyQt4.QtNetwork import *
+# PyFarm Libs
 import ReadSettings as Settings
 
 # settings and ports for network usage (adjust these settings via ./settings.cfg)
-CFG = os.getcwd()+'/settings.cfg'
-SIZEOF_UINT16 = Settings.Network(CFG).Unit16Size()
-BROADCAST_PORT = Settings.Network(CFG).BroadcastPort()
-QUE_PORT = Settings.Network(CFG).QuePort()
-STDOUT_PORT = Settings.Network(CFG).StdOutPort()
-STDERR_PORT = Settings.Network(CFG).StdErrPort()
+SIZEOF_UINT16 = Settings.Network().Unit16Size()
+BROADCAST_PORT = Settings.Network().BroadcastPort()
+QUE_PORT = Settings.Network().QuePort()
+STDOUT_PORT = Settings.Network().StdOutPort()
+STDERR_PORT = Settings.Network().StdErrPort()
 
 class BroadcastServer(QThread):
     '''
