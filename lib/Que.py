@@ -124,20 +124,23 @@ class QueSlaveServerThread(QThread):
 
                     JOB = QString()
                     FRAME = QString()
+                    SWVERSION = QString()
                     COMMAND = QString()
 
                     print "Unpacking the command..."
-                    stream >> JOB >> FRAME >> COMMAND
+                    stream >> JOB >> FRAME >> SWVERSION >> COMMAND
                     if JOB == 'TERMNATE_SELF':
                         socket.close()
                     else:
 
-                        #os.system(str(COMMAND))
-                        print FRAME
-
+                        print "Running Render:"
+                        print "\tJOB: %s" % JOB
+                        print "\tFRAME: %s" % FRAME
+                        print "\tSOFTWARE: %s" % SWVERSION
+                        print "\tARGUMENTS: %s" % COMMAND
 
                         ACTION = QString("REQUESTING_WORK")
-                        self.sendReply(socket, ACTION, JOB, FRAME, COMMAND)
+                        self.sendReply(socket, ACTION, JOB, FRAME, SWVERSION, COMMAND)
                         socket.waitForDisconnected()
 
             if socket.bytesAvailable() < nextBlockSize:
@@ -158,23 +161,21 @@ class QueSlaveServerThread(QThread):
         socket.write(reply)
         socket.close()
 
-    def sendReply(self, socket, ACTION, JOB, FRAME, COMMAND):
+    def sendReply(self, socket, ACTION, JOB, FRAME, SWVERSION, COMMAND):
         print "Requesting more work..."
         reply = QByteArray()
         stream = QDataStream(reply, QIODevice.WriteOnly)
         stream.setVersion(QDataStream.Qt_4_2)
         stream.writeUInt16(0)
-        stream << ACTION << JOB << FRAME << COMMAND
+        stream << ACTION << JOB << FRAME << SWVERSION << COMMAND
         stream.device().seek(0)
         stream.writeUInt16(reply.size() - SIZEOF_UINT16)
         socket.write(reply)
 
 class QueSlaveServer(QTcpServer):
     '''Main server thread, used to receieve and start new server threads'''
-    def __init__(self, software, parent=None):
+    def __init__(self, parent=None):
         super(QueSlaveServer, self).__init__(parent)
-        self.software = software
-        print software
 
     def incomingConnection(self, socketId):
         '''If incomingConnection(), start thread to handle connection'''
@@ -218,8 +219,9 @@ class SendCommand(QTcpSocket):
             self.socket.close()
         else:
             JOB = QString(inList[0])
-            FRAME = QString(str(inList[1]))
-            COMMAND = QString(inList[2])
+            FRAME = QString(inList[1])
+            SWVERSION = QString(inList[2])
+            COMMAND = QString(inList[3])
 
             # use these for checks
             self.job = JOB
@@ -230,7 +232,7 @@ class SendCommand(QTcpSocket):
             stream = QDataStream(self.request, QIODevice.WriteOnly)
             stream.setVersion(QDataStream.Qt_4_2)
             stream.writeUInt16(0)
-            stream << JOB << FRAME << COMMAND
+            stream << JOB << FRAME << SWVERSION << COMMAND
             stream.device().seek(0)
             stream.writeUInt16(self.request.size() - SIZEOF_UINT16)
 
@@ -265,12 +267,13 @@ class SendCommand(QTcpSocket):
             ACTION = QString()
             JOB = QString()
             FRAME = QString()
+            SWVERSION = QString()
             COMMAND = QString()
 
             # unpack the incoming packet
             stream >> ACTION
             if ACTION == QString("REQUESTING_WORK"):
-                stream >> JOB >> FRAME >> COMMAND
+                stream >> JOB >> FRAME >> SWVERSION >> COMMAND
                 trueState = 0 # must == 3 to pass
                 if JOB == self.job:
                     trueState += 1

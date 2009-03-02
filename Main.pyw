@@ -663,7 +663,7 @@ class RC2(QMainWindow):
         '''
         # check to make sure the host is valid
         if ResolveHost(host) == 'BAD_HOST':
-            self.criticalMessage("Bad host or IP", "Sorry %s could not be resolved, please check your entry and try again." % host)
+            self.warningMessage("Bad host or IP", "Sorry %s could not be resolved, please check your entry and try again." % host)
         else:
             # prepare the information
             self.currentHost = []
@@ -744,10 +744,10 @@ class RC2(QMainWindow):
                     for layer in layers:
                         for command in config.maya(str(self.software), sFrame, eFrame, bFrame,\
                             renderer, scene, str(layer.text()), camera, outDir, project):
-                                #self.que.put([jobName, command[0], command[1], str(command[2])], priority)
+                                self.que.put([jobName, command[0], command[1], str(command[2])], priority)
                                 frame = QString(command[0])
                                 cmd = QString(str(command[2]))
-                                self.que.put([jobName, frame, cmd], priority)
+                                #self.que.put([jobName, frame, cmd], priority)
                 else:
                     for command in config.maya(str(self.software), sFrame, eFrame, bFrame,\
                         renderer, scene, '', camera, outDir, project):

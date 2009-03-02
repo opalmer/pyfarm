@@ -258,7 +258,7 @@ class ConfigureCommand(object):
             project = '-proj %s ' % project
 
         for frame in range(sFrame, eFrame+1, bFrame):
-            yield [frame, str(ver), '%s -s %s -e %s %s%s%s%s%s' % (renderer, frame, frame, layer, camera, outDir, project, scene)]
+            yield [str(frame), str(ver), str('%s -s %s -e %s %s%s%s%s%s') % (renderer, frame, frame, layer, camera, outDir, project, scene)]
 
     def houdini(self, ver, sFrame, eFrame, bFrame):
         '''

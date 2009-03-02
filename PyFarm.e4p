@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Project SYSTEM "Project-4.6.dtd">
 <!-- eric4 project file for project PyFarm -->
-<!-- Saved: 2009-03-02, 11:38:45 -->
+<!-- Saved: 2009-03-02, 11:40:34 -->
 <!-- Copyright (C) 2009 ,  -->
 <Project version="4.6">
   <Language>en</Language>
@@ -50,15 +50,6 @@
     <Source>_OLD/Main.pyw</Source>
     <Source>_OLD/MainDropDownTest.pyw</Source>
     <Source>_OLD/MainOLD.pyw</Source>
-    <Source>RC2/lib/FarmLog.py</Source>
-    <Source>RC2/lib/Info.py</Source>
-    <Source>RC2/lib/Network.py</Source>
-    <Source>RC2/lib/Process.py</Source>
-    <Source>RC2/lib/Que.py</Source>
-    <Source>RC2/lib/QueNew.py</Source>
-    <Source>RC2/lib/ReadSettings.py</Source>
-    <Source>RC2/lib/RenderConfig.py</Source>
-    <Source>RC2/lib/__init__.py</Source>
     <Source>_OLD/lib/FarmLog.py</Source>
     <Source>_OLD/lib/Info.py</Source>
     <Source>_OLD/lib/Network.py</Source>
@@ -67,10 +58,6 @@
     <Source>_OLD/lib/ReadSettings.py</Source>
     <Source>_OLD/lib/RenderConfig.py</Source>
     <Source>_OLD/lib/__init__.py</Source>
-    <Source>RC2/lib/ui/CustomWidgets.py</Source>
-    <Source>RC2/lib/ui/DropDownMenuTest.py</Source>
-    <Source>RC2/lib/ui/RC2.py</Source>
-    <Source>RC2/lib/ui/__init__.py</Source>
     <Source>_OLD/build/source/Client.py</Source>
     <Source>_OLD/build/source/Main.pyw</Source>
     <Source>_OLD/lib/ui/CustomWidgets.py</Source>
@@ -94,9 +81,6 @@
     <Form>QtDesigner/DropDowntest.ui</Form>
     <Form>QtDesigner/RC2.ui</Form>
     <Form>QtDesigner/DialogBox.ui</Form>
-    <Form>RC2/QtDesigner/DialogBox.ui</Form>
-    <Form>RC2/QtDesigner/DropDowntest.ui</Form>
-    <Form>RC2/QtDesigner/RC2.ui</Form>
     <Form>_OLD/QtDesigner/DialogBox.ui</Form>
     <Form>_OLD/QtDesigner/DropDowntest.ui</Form>
     <Form>_OLD/QtDesigner/RC2.ui</Form>
