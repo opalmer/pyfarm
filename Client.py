@@ -22,7 +22,6 @@ PURPOSE: To handle and run all client connections on a remote machine
 
 '''
 
-import os
 import sys
 import os.path
 import traceback
@@ -31,8 +30,6 @@ from lib.Network import *
 from lib.Que import *
 from PyQt4.QtCore import *
 
-from lib.RenderConfig import *
-
 # port settings
 SIZEOF_UINT16 = Settings.Network().Unit16Size()
 BROADCAST_PORT = Settings.Network().BroadcastPort()
@@ -40,13 +37,6 @@ QUE_PORT = Settings.Network().QuePort()
 STDOUT_PORT = Settings.Network().StdOutPort()
 STDERR_PORT = Settings.Network().StdErrPort()
 USE_STATIC_CLIENT = False
-
-# local software dictionary
-LOCAL_SOFTWARE = {}
-software = SoftwareInstalled()
-LOCAL_SOFTWARE.update(software.maya())
-LOCAL_SOFTWARE.update(software.houdini())
-LOCAL_SOFTWARE.update(software.shake())
 
 class Main(QObject):
     def __init__(self, parent=None):
@@ -59,7 +49,7 @@ class Main(QObject):
         self.initSlave()
 
     def initSlave(self):
-        self.socket = QueSlaveServer(LOCAL_SOFTWARE, self)
+        self.socket = QueSlaveServer(self)
         if not self.socket.listen(QHostAddress(self.localhost), QUE_PORT):
             print "Socket Error: %s " % self.socket.errorString()
         print "Waiting on Que..."

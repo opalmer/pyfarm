@@ -138,7 +138,6 @@ class SoftwareInstalled(object):
 
         return OUTPUT
 
-
     def houdini(self):
         '''
         Return all of the houdini versions installed
@@ -259,19 +258,19 @@ class ConfigureCommand(object):
             project = '-proj %s ' % project
 
         for frame in range(sFrame, eFrame+1, bFrame):
-            yield '%s::%s -s %s -e %s %s%s%s%s%s' % (ver, renderer, frame, frame, layer, camera, outDir, project, scene)
+            yield [frame, str(ver), '%s -s %s -e %s %s%s%s%s%s' % (renderer, frame, frame, layer, camera, outDir, project, scene)]
 
     def houdini(self, ver, sFrame, eFrame, bFrame):
-      '''
-      Yield the sequence of frames for houdini
+        '''
+        Yield the sequence of frames for houdini
 
-      VARS:
-        ver -- Version of houdini to pull from self.software
-        sFrame -- Start frame of sequence
-        eFrame -- End Frame of sequence
-        bFrame -- By frame or sequence step
-      '''
-      command = Program(self.sofware[ver])
+        VARS:
+            ver -- Version of houdini to pull from self.software
+            sFrame -- Start frame of sequence
+            eFrame -- End Frame of sequence
+            bFrame -- By frame or sequence step
+        '''
+        command = Program(self.sofware[ver])
 
 
     def shake(self, version, sFrame, eFrame, bFrame):

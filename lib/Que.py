@@ -122,8 +122,6 @@ class QueSlaveServerThread(QThread):
                 if socket.bytesAvailable() >= SIZEOF_UINT16:
                     nextBlockSize = stream.readUInt16()
 
-
-
                     JOB = QString()
                     FRAME = QString()
                     COMMAND = QString()
@@ -134,7 +132,8 @@ class QueSlaveServerThread(QThread):
                         socket.close()
                     else:
 
-                        os.system(str(COMMAND))
+                        #os.system(str(COMMAND))
+                        print FRAME
 
 
                         ACTION = QString("REQUESTING_WORK")

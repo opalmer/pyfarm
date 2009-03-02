@@ -58,7 +58,7 @@ LOCAL_SOFTWARE.update(software.houdini())
 LOCAL_SOFTWARE.update(software.shake())
 
 class WorkerThread(QThread):
-    '''Used thread out TCP servers for worker threads'''
+    '''Used work out to a worker TCP server'''
     def __init__(self, host, port, parent=None):
         super(WorkerThread, self).__init__(parent)
         self.host = host
@@ -729,30 +729,37 @@ class RC2(QMainWindow):
             eFrame = self.ui.inputEndFrame.value()
             bFrame = self.ui.inputByFrame.value()
             priority = self.ui.inputJobPriority.value()
-            jobName = self.ui.inputJobName.text()
-            outDir = self.ui.mayaOutputDir.text()
-            project = self.ui.mayaProjectFile.text()
-            scene = self.scene.text()
+            jobName = str(self.ui.inputJobName.text())
+            outDir = str(self.ui.mayaOutputDir.text())
+            project = str(self.ui.mayaProjectFile.text())
+            scene = str(self.scene.text())
             commands = []
 
             if self.software_generic == 'maya':
                 renderer = str(self.ui.mayaRenderer.currentText())
                 layers = self.ui.mayaRenderLayers.selectedItems()
-                camera = self.ui.mayaCamera.currentText()
+                camera = str(self.ui.mayaCamera.currentText())
 
                 if len(layers) >= 1:
                     for layer in layers:
-                        for command in config.maya(self.software, sFrame, eFrame, bFrame,\
-                            renderer, scene, layer.text(), camera, outDir, project):
-                                self.que.put([jobID, jobName, command], priority)
+                        for command in config.maya(str(self.software), sFrame, eFrame, bFrame,\
+                            renderer, scene, str(layer.text()), camera, outDir, project):
+                                #self.que.put([jobName, command[0], command[1], str(command[2])], priority)
+                                frame = QString(command[0])
+                                cmd = QString(str(command[2]))
+                                self.que.put([jobName, frame, cmd], priority)
                 else:
-                    for command in config.maya(self.software, sFrame, eFrame, bFrame,\
+                    for command in config.maya(str(self.software), sFrame, eFrame, bFrame,\
                         renderer, scene, '', camera, outDir, project):
-                            self.que.put([jobID, jobName, command], priority)
+                            frame = QString(command[0])
+                            cmd = QString(str(command[2]))
+                            print frame
+                            print cmd
+                            self.que.put([jobName, frame, cmd], priority)
 
                 newFrames = self.que.size()-startSize
 
-                self.updateStatus('QUE', 'Added %s frames to job %s(%s) with priority %s' % \
+                self.updateStatus('QUE', 'Added %s frames to job %s(ID: %s) with priority %s' % \
                                   (newFrames, jobName, jobID, priority), 'black')
 
             elif self.software_generic == 'houdini':
