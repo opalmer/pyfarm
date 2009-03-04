@@ -894,7 +894,9 @@ class RC2(QMainWindow):
 ################################
 ## BEGIN General Utilities
 ################################
-
+    def closeEvent(self, event):
+        '''Run when the window is trying to close'''
+        print "Now Closing"
 ################################
 ## END General Utilities
 ################################

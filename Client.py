@@ -95,7 +95,7 @@ class Main(QObject):
     def initSlave(self):
         '''Startup all servers and beging listening for connections'''
         # start the admin server
-        self.admin.boot(self.localhost)
+        #self.admin.boot(self.localhost)
 
         # start the que server
         self.socket = QueSlaveServer(self)

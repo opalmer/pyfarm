@@ -331,6 +331,93 @@ class WaitForQueServer(QTcpServer):
     def emitLine(self, line):
         self.emit(SIGNAL("emitStdOutLine"), line)
 
+
+class AdminServerThread(QThread):
+    '''Administrator server thread used to manage the client'''
+    lock = QReadWriteLock()
+
+    def __init__(self, socketId, parent):
+        super(QueSlaveServerThread, self).__init__(parent)
+        self.socketId = socketId
+
+    def run(self):
+        '''Run the server thread and process the requested data'''
+        socket = QTcpSocket()
+
+        if not socket.setSocketDescriptor(self.socketId):
+            self.emit(SIGNAL("error(int)"), socket.error())
+            return
+
+        while socket.state() == QAbstractSocket.ConnectedState:
+            nextBlockSize = 0
+            stream = QDataStream(socket)
+            stream.setVersion(QDataStream.Qt_4_2)
+
+            while True:
+                socket.waitForReadyRead(-1)
+                if socket.bytesAvailable() >= SIZEOF_UINT16:
+                    nextBlockSize = stream.readUInt16()
+
+                    JOB = QString()
+                    FRAME = QString()
+                    SOFTWARE = QString()
+                    COMMAND = QString()
+
+                    print "Unpacking the command..."
+                    stream >> JOB >> FRAME >> SOFTWARE >> COMMAND
+                    if JOB == 'TERMNATE_SELF':
+                        socket.close()
+                    else:
+                        print "Running Render..."
+                        SWPATH = LOCAL_SOFTWARE[str(SOFTWARE)].split("::")[0]
+                        os.system("%s %s" % (SWPATH, COMMAND))
+
+                        ACTION = QString("REQUESTING_WORK")
+                        self.sendReply(socket, ACTION, JOB, FRAME, SOFTWARE, COMMAND)
+                        socket.waitForDisconnected()
+
+            if socket.bytesAvailable() < nextBlockSize:
+                while True:
+                    socket.waitForReadyRead(-1)
+                    if socket.bytesAvailable() >= nextBlockSize:
+                        break
+
+    def sendError(self, socket, msg):
+        '''Send an error back to the client'''
+        reply = QByteArray()
+        stream = QDataStream(reply, QIODevice.WriteOnly)
+        stream.setVersion(QDataStream.Qt_4_2)
+        stream.writeUInt16(0)
+        stream << QString("ERROR")
+        stream.device().seek(0)
+        stream.writeUInt16(reply.size() - SIZEOF_UINT16)
+        socket.write(reply)
+        socket.close()
+
+    def sendReply(self, socket, ACTION, JOB, FRAME, SOFTWARE, COMMAND):
+        print "Requesting more work..."
+        reply = QByteArray()
+        stream = QDataStream(reply, QIODevice.WriteOnly)
+        stream.setVersion(QDataStream.Qt_4_2)
+        stream.writeUInt16(0)
+        stream << ACTION << JOB << FRAME << SOFTWARE << COMMAND
+        stream.device().seek(0)
+        stream.writeUInt16(reply.size() - SIZEOF_UINT16)
+        socket.write(reply)
+
+
+class AdminServer(QTcpServer):
+    '''Main admin server thread, used to receieve and start new admin server threads'''
+    def __init__(self, parent=None):
+        super(AdminServer, self).__init__(parent)
+
+    def incomingConnection(self, socketId):
+        '''If incomingConnection(), start thread to handle connection'''
+        print "Incoming!"
+        thread = QueSlaveServerThread(socketId, self)
+        self.connect(thread, SIGNAL("finished()"),thread, SLOT("deleteLater()"))
+        thread.start()
+
 def ResolveHost(host):
     '''
     Given IP address or hostname, return hostname and IP

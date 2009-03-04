@@ -36,7 +36,36 @@ BROADCAST_PORT = Settings.Network().BroadcastPort()
 QUE_PORT = Settings.Network().QuePort()
 STDOUT_PORT = Settings.Network().StdOutPort()
 STDERR_PORT = Settings.Network().StdErrPort()
+ADMIN_PORT = Settings.Network().Admin()
 USE_STATIC_CLIENT = False
+
+class Admin(QObject):
+    '''Administrator class used to manage the client.'''
+    def __init__(self, parent=None):
+        super(Admin, self).__init__(parent)
+        self.admin = AdminServer()
+        self.connect(self.admin, SIGNAL("RESTART"), self.emit)
+        self.connect(self.admin, SIGNAL("SHUTDOWN"), self.emit)
+
+    def Restart(self):
+        '''Inform the client to restart'''
+        self.emit(SIGNAL("RESTART"))
+
+    def Shutdown(self):
+        '''Shutdown the client and close all connections'''
+        self.emit(SIGNAL("SHUTDOWN"))
+
+    def boot(self, address):
+        '''Start the admin server'''
+        if not self.admin.listen(QHostAddress(self.listen), ADMIN_PORT):
+            print "Socket Error: %s " % self.socket.errorString()
+        print "Admin Server Running..."
+
+    def kill(self):
+        '''Kill the current admin server'''
+        print "Closing the admin server..."
+        self.socket.close()
+        print "Admin server closed!"
 
 class Main(QObject):
     def __init__(self, parent=None):
@@ -49,6 +78,10 @@ class Main(QObject):
         except IndexError:
             self.LOCAL = False
 
+        self.admin = Admin()
+        self.connect(self.admin, SIGNAL("RESTART"), self.RestartClient)
+        self.connect(self.admin, SIGNAL("SHUTDOWN"), self.Shutdown)
+
     def startBroadcast(self):
         if not self.LOCAL:
             broadcast = BroadcastClient()
@@ -60,11 +93,25 @@ class Main(QObject):
             self.initSlave()
 
     def initSlave(self):
+        '''Startup all servers and beging listening for connections'''
+        # start the admin server
+        #self.admin.boot(self.localhost)
+
+        # start the que server
         self.socket = QueSlaveServer(self)
-        # if we only want to run this locally
         if not self.socket.listen(QHostAddress(self.localhost), QUE_PORT):
             print "Socket Error: %s " % self.socket.errorString()
-        print "Waiting on Que..."
+        print "Que server waiting for jobs..."
+
+    def RestartClient(self):
+        '''Close all connections and restart the client'''
+        self.socket.close()
+        self.startBroadcast()
+
+    def Shutdown(self):
+        '''Close all connections and shutdown the client'''
+        self.socket.close()
+        sys.exit("Client Shutdown Via Admin")
 
 app = QCoreApplication(sys.argv)
 main = Main()

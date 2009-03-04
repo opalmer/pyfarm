@@ -143,8 +143,10 @@ class QueSlaveServerThread(QThread):
                         socket.close()
                     else:
                         print "Running Render..."
-                        SWPATH = LOCAL_SOFTWARE[str(SOFTWARE)].split("::")[0]
-                        os.system("%s %s" % (SWPATH, COMMAND))
+                        program = LOCAL_SOFTWARE[str(SOFTWARE)].split("::")[0]
+                        scene = COMMAND.split(' ')[len(COMMAND.split(' '))-1]
+
+                        os.system("%s %s" % (program, COMMAND))
 
                         ACTION = QString("REQUESTING_WORK")
                         self.sendReply(socket, ACTION, JOB, FRAME, SOFTWARE, COMMAND)
@@ -155,6 +157,9 @@ class QueSlaveServerThread(QThread):
                     socket.waitForReadyRead(-1)
                     if socket.bytesAvailable() >= nextBlockSize:
                         break
+
+    def readStdOut(self, line):
+        print QString(self.process.readAllStandardError()).trimmed()
 
     def sendError(self, socket, msg):
         '''Send an error back to the client'''
@@ -179,6 +184,7 @@ class QueSlaveServerThread(QThread):
         stream.writeUInt16(reply.size() - SIZEOF_UINT16)
         socket.write(reply)
 
+
 class QueSlaveServer(QTcpServer):
     '''Main server thread, used to receieve and start new server threads'''
     def __init__(self, parent=None):
@@ -190,7 +196,6 @@ class QueSlaveServer(QTcpServer):
         thread = QueSlaveServerThread(socketId, self)
         self.connect(thread, SIGNAL("finished()"),thread, SLOT("deleteLater()"))
         thread.start()
-
 
 class SendCommand(QTcpSocket):
     '''

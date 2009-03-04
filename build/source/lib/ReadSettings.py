@@ -116,6 +116,15 @@ class Network(object):
         '''Return the Que TCP port'''
         return int(getValue(self.file, 'TCP_QUE'))
 
+    def Admin(self):
+        '''
+        Return the administration port.  This port is used to inform
+        the main client thread of what it needs to do.  Example, the main
+        gui is closing so therefore we need to put all clients back into a listen
+        state.
+        '''
+        return int(getValue(self.file, 'ADMIN'))
+
     def Unit16Size(self):
         '''Return the size of a unit 16 packet'''
         return int(getValue(self.file, 'SIZE_OF_UNIT16'))

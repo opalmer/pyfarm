@@ -29,15 +29,38 @@ class RunProcess(QObject):
     INPUT:
         command (string) - full command to run
     '''
-    def __init__(self, command, parent=None):
+    def __init__(self, command, arguments, parent=None):
         super(RunProcess, self).__init__(parent)
-        self.cmd = QString(command.split(' ')[0])
-        self.args = QStringList()
+        self.arguments = QStringList()
 
-        for arg in command.split(' ')[1:]:
-            self.args.append(arg)
+        formattedArgs = ''
+        sp = arguments.split(' ')
+
+        for arg in sp[0:len(sp)-1]:
+            formattedArgs += "%s " % arg
+
+        self.command = QString("%s%s" % (command, formattedArgs))
+        self.arguments = QStringList()
+        self.arguments.append(QString(sp[len(sp)-1]))
+
+
+#        sp = arguments.split(' ')[1:len(sp)-1]
+#        args = sp[1:len(sp)-1]
+#        scene = sp[len(sp)-1]
+#        OUT = ''
+#
+#        for i in args:
+#            OUT+= " %s" % i
+#
+#        self.arguments = QStringList()
+#        self.arguments.append(QString(OUT))
+#        self.arguments.append(QString(scene))
+#        print self.command
+#        print list(self.arguments)
+        #self.arguments.append(QString(arg))
 
         self.process = QProcess()
+
         # setup the connections
         self.connect(self.process, SIGNAL("started()"), self.started)
         self.connect(self.process, SIGNAL("stateChanged(QProcess::ProcessState)"), self.stateChanged)
@@ -46,12 +69,10 @@ class RunProcess(QObject):
         self.connect(self.process, SIGNAL("error(QProcess::ProcessError)"), self.error)
         self.connect(self.process, SIGNAL("finished(int)"), self.processFinished)
 
-
     def start(self):
         '''start the program from here'''
-        self.process.start(self.cmd, self.args)
-        #if self.process.state() ==
-
+        self.process.start(self.command, self.arguments)
+        #self.process.waitForFinished(-1)
 
     def started(self):
         '''Called when process has started'''
@@ -75,5 +96,7 @@ class RunProcess(QObject):
 
     def processFinished(self, exitStatus):
         '''Run when self.process emits finished(int), exit code captured'''
-        self.process.close()
-        #self.emit(SIGNAL("PROCESS_COMPLETE"), exitStatus)
+        return self.process.close()
+
+    def finished(self):
+        pass

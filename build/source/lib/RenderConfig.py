@@ -236,9 +236,9 @@ class ConfigureCommand(object):
         #command = Program(self.software[ver])
         # software flag setup
         if renderer == 'Software':
-            renderer = ' -r sw'
+            renderer = ' -r sw -verb'
         elif renderer == 'Mental Ray':
-            renderer = ' -r mr -v 5'
+            renderer = ' -r mr -v 5 -rt 6'
         elif renderer == 'Scene Preset':
             renderer = ''
 
