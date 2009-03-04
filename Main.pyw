@@ -133,6 +133,7 @@ class RC2(QMainWindow):
         self.netTable.horizontalHeader().setStretchLastSection(True)
         self.message = QString()
         self.que = QUE
+        self.InitialStatus()
 
         # Display information about pyfarm and support
         #self.infoMessage('Welcome to PyFarm -- Release Candidate 1', 'Thank you for testing PyFarm!  Please direct all inquiries about this softare to the homepage @ http://www.opalmer.com/pyfarm')
@@ -888,6 +889,50 @@ class RC2(QMainWindow):
             color (string) - The color name or hex value to set the section
         '''
         self.ui.status.append('<font color=%s><b>%s</b></font> - %s' % (color, section, msg))
+
+    def SetStatus(self, obj, txt, color='black'):
+        '''Set the text of a specific status label'''
+        R = '#FF0000'
+        G = 'green'
+        B = '#0000FF'
+        if txt == 'Inactive':
+            color = R
+        elif txt == 'Active':
+            color = G
+        elif txt == 0:
+            color = R
+        elif txt == "No Frames In Que":
+            color = R
+
+        # format the cpu time
+        if self.ui.status_general_cpu_time_used != 0:
+            # get the latest cpu time, add it to the current usage, update the ui
+            #txt = Elapsed(txt, currentTime)
+            pass
+
+        text = QString('<FONT COLOR="%s">%s</FONT>' % (color, txt))
+        obj.setText(text)
+
+    def InitialStatus(self):
+        '''Set the initial status states'''
+        a = 'Active'
+        i = 'Inactive'
+        nf = 'No Frames In Que'
+        status_objects = [{self.ui.status_pyfarm_master : i, self.ui.status_pyfarm_network : i, self.ui.status_pyfarm_que : i},
+                                    {self.ui.status_network_connected : 0, self.ui.status_network_active : 0},
+                                    {self.ui.status_que_system_status : a, self.ui.status_que_system_failure : 0},
+                                    {self.ui.status_que_jobs_waiting : 0, self.ui.status_que_jobs_running : 0, self.ui.status_que_jobs_failed : 0, self.ui.status_que_jobs_complete : 0},
+                                    {self.ui.status_que_frames_waiting: 0, self.ui.status_que_frames_running : 0, self.ui.status_que_frames_failed : 0, self.ui.status_que_frames_complete : 0},
+                                    {self.ui.status_general_time_remaining : nf, self.ui.status_general_cpu_time_used : 0, self.ui.status_general_time_elapsed : 0,
+                                    self.ui.status_general_average_time_per_frame : 0, self.ui.status_general_shortest_time : 0, self.ui.status_general_longest_time : 0,
+                                    self.ui.status_general_average_memory_usage : 0, self.ui.status_general_average_frame_size : 0}]
+
+        for obj in status_objects:
+            for key, value in obj.items():
+                    self.SetStatus(key, value)
+
+        self.SetStatus(self.ui.status_general_version, "RC2.5", 'black')
+        self.SetStatus(self.ui.status_general_random_wiki, "<a href='http://www.opalmer.com/pyfarm/wiki'>Link</a>", 'black')
 
 ################################
 ## END Status/Message System
