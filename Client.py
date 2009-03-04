@@ -57,6 +57,7 @@ class Admin(QObject):
 
     def boot(self, address):
         '''Start the admin server'''
+        print address
         if not self.admin.listen(QHostAddress(self.listen), ADMIN_PORT):
             print "Socket Error: %s " % self.socket.errorString()
         print "Admin Server Running..."
