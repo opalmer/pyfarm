@@ -31,3 +31,11 @@ build/source
 build/source/*/*
 build/binaries
 build/source
+.eric4project/RC2-Demo.e4q
+.eric4project/RC2-Demo.e4t
+build/source
+build
+RC2-Demo.e4p
+build
+GNU-GPL_License_v3.html
+build
