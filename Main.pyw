@@ -34,7 +34,7 @@ from PyQt4.QtNetwork import *
 ## ui components
 import lib.Info as Info
 import lib.ReadSettings as Settings
-from lib.ui.RC2 import Ui_RC2
+from lib.ui.RC3 import Ui_RC3
 from lib.ui.CustomWidgets import *
 ## general libs
 from lib.Que import *
@@ -87,7 +87,7 @@ class WorkerThread(QThread):
         self.emit(SIGNAL("SENDING_WORK"), work)
 
 
-class RC2(QMainWindow):
+class RC3(QMainWindow):
     '''
     This is the controlling class for the main gui
 
@@ -101,10 +101,10 @@ class RC2(QMainWindow):
         For example the setStartFrame is called whenever a new start frame is declared.
     '''
     def __init__(self):
-        super(RC2, self).__init__()
+        super(RC3, self).__init__()
 
         # setup UI
-        self.ui = Ui_RC2()
+        self.ui = Ui_RC3()
         self.ui.setupUi(self)
 
         # add external libs
@@ -931,7 +931,7 @@ class RC2(QMainWindow):
             for key, value in obj.items():
                     self.SetStatus(key, value)
 
-        self.SetStatus(self.ui.status_general_version, "RC2.5", 'black')
+        self.SetStatus(self.ui.status_general_version, "RC3.5", 'black')
         self.SetStatus(self.ui.status_general_random_wiki, "<a href='http://www.opalmer.com/pyfarm/wiki'>Link</a>", 'black')
 
 ################################
@@ -947,6 +947,6 @@ class RC2(QMainWindow):
 ################################
 
 app = QApplication(sys.argv)
-ui = RC2()
+ui = RC3()
 ui.show()
 app.exec_()

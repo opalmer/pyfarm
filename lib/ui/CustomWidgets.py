@@ -7,7 +7,7 @@ PURPOSE: Module full of 'general widgets', widgets used inside of other widgets.
 
 from PyQt4.QtGui import *
 from PyQt4.QtCore import *
-from RC2 import *
+from RC3 import *
 
 class HostStatus(QComboBox):
     '''Combo box used to enable/disable hosts'''
