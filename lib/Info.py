@@ -254,13 +254,13 @@ class Job(QObject):
         '''
         if self.minFrameTime and self.maxFrameTime and self.avgFrameTime:
             if frameTime > self.maxFrameTime:
-                self.setMaxFrameTime(frameTime)
+                self._setMaxFrameTime(frameTime)
             elif frameTime < self.minFrameTime:
-                self.setMinFrameTime(frameTime)
+                self._setMinFrameTime(frameTime)
 
-            self.setAvgFrameTime(frameTime)
+            self._setAvgFrameTime(frameTime)
 
         else:
-            self.setMinFrameTime(frameTime)
-            self.setMaxFrameTime(frameTime)
-            self.avgMaxFrameTime(frameTime)
+            self._setMinFrameTime(frameTime)
+            self._setMaxFrameTime(frameTime)
+            self._avgMaxFrameTime(frameTime)
