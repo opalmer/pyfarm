@@ -25,7 +25,8 @@ PURPOSE: Main program to run and manage PyFarm
 # From Python
 import sys
 import os.path
-from time import time
+from time import time, sleep
+from random import randrange
 # From PyQt
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
@@ -36,6 +37,7 @@ import lib.Info as Info
 import lib.ReadSettings as Settings
 from lib.ui.RC3 import Ui_RC3
 from lib.ui.CustomWidgets import *
+from lib.Process import FakeProgressBar
 ## general libs
 from lib.Que import *
 from lib.Network import *
@@ -107,6 +109,15 @@ class RC3(QMainWindow):
         self.ui = Ui_RC3()
         self.ui.setupUi(self)
 
+        # setup some basic colors
+        self.red = QColor(255, 0, 0)
+        self.green = QColor(0, 128, 0)
+        self.blue = QColor(0, 0, 255)
+        self.purple = QColor(128, 0, 128)
+        self.white = QColor(255, 255, 255)
+        self.black = QColor(0, 0, 0)
+        self.orange = QColor(255, 165, 0)
+
         # add external libs
         self.netTableLib = NetworkTable()
 
@@ -131,9 +142,9 @@ class RC3(QMainWindow):
         self.ui.networkTable.setAlternatingRowColors(True)
         self.netTable = self.ui.networkTable
         self.netTable.horizontalHeader().setStretchLastSection(True)
+        self.ui.currentJobs.horizontalHeader().setStretchLastSection(True)
         self.message = QString()
         self.que = QUE
-        self.InitialStatus()
 
         # Display information about pyfarm and support
         #self.infoMessage('Welcome to PyFarm -- Release Candidate 1', 'Thank you for testing PyFarm!  Please direct all inquiries about this softare to the homepage @ http://www.opalmer.com/pyfarm')
@@ -174,6 +185,11 @@ class RC3(QMainWindow):
         self.connect(self.ui.disableHost, SIGNAL("pressed()"), self._disableHosts)
         self.connect(self.ui.addHost, SIGNAL("pressed()"), self._customHostDialog)
         self.connect(self.ui.removeHost, SIGNAL("pressed()"), self._removeSelectedHost)
+
+        # GENERATE SOME FAKE DATA
+        self.connect(self.ui.currentJobs, SIGNAL("cellActivated(int,int)"), self.fakePrintTableSelection)
+        self.fakeSetup()
+        self.InitialStatus()
 
 ################################
 ## BEGIN Context Menus
@@ -933,9 +949,58 @@ class RC3(QMainWindow):
 
         self.SetStatus(self.ui.status_general_version, "RC3.5", 'black')
         self.SetStatus(self.ui.status_general_random_wiki, "<a href='http://www.opalmer.com/pyfarm/wiki'>Link</a>", 'black')
-
 ################################
 ## END Status/Message System
+################################
+## BEGIN Job System Manager
+################################
+    def fakePrintTableSelection(self, x, y):
+        '''Print the current table selection'''
+        print "X: %i Y: %i" % (x, y)
+
+    def fakeSetup(self):
+        '''Setup the fake information for presentation'''
+        self.fakeTableEntries()
+
+    def fakeTableEntries(self):
+        '''Add a fake progress bar to the table'''
+        jobs = self.ui.currentJobs
+        jobNames = ["VSFX350_particle_simulation_final", "TECH420_final_shake_comp_render", "Studio_reel_final_render_version_2"]
+        states = [["Waiting", [self.black, self.white]], ["Rendering", [self.white, self.green]]]
+
+        for row in range(0, len(jobNames)):
+            jobs.insertRow(row)
+
+            # configure the job name
+            name = QTableWidgetItem(QString(jobNames[row]))
+
+            # configure job status
+            state = states[randrange(0, len(states))]
+            status = QTableWidgetItem()
+            status.setText(QString(state[0]))
+            status.setTextColor(state[1][0])
+            status.setBackgroundColor(state[1][1])
+
+            # add progress bar
+            s = 1
+            e = 500
+            progress = QProgressBar(self)
+            progress.setRange(s, e)
+            progress.setValue(randrange(s, e))
+
+            # add items
+            jobs.setItem(row, 0, name)
+            jobs.setItem(row, 1, status)
+            jobs.setCellWidget(row, 2, progress)
+            jobs.resizeColumnsToContents()
+
+            fakeProgress = FakeProgressBar(progress, self)
+            self.connect(fakeProgress, SIGNAL("increment"), progress.setValue)
+            fakeProgress.run()
+            #self.fakeProgressRun(progress)
+
+################################
+## END Job System Manager
 ################################
 ## BEGIN General Utilities
 ################################

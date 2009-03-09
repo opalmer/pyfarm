@@ -25,7 +25,9 @@ try:
     from os import uname
     from os import loadavg
 
-# if we get an import error pass it
+# if we get an import error do nothing,
+#  error usually caused by trying to import a lib
+#  that is designed for another operating system
 except ImportError:
     pass
 
@@ -264,3 +266,18 @@ class Job(QObject):
             self._setMinFrameTime(frameTime)
             self._setMaxFrameTime(frameTime)
             self._avgMaxFrameTime(frameTime)
+
+    def minFrameTime(self):
+        '''Return the minium frame time'''
+        self.emit(SIGNAL("minFrameTime"), self.minFrameTime)
+        return self.minFrameTime
+
+    def maxFrameTime(self):
+        '''Return the maxium frame time'''
+        self.emit(SIGNAL("maxFrameTime"), self.maxFrameTime)
+        return self.maxFrameTime
+
+    def avgFrameTime(self):
+        '''Return the average frame time'''
+        self.emit(SIGNAL("avgFrameTime"), self.avgFrameTime)
+        return self.avgFrameTime
