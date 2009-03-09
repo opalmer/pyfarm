@@ -38,6 +38,15 @@ finally:
     import socket
     from subprocess import Popen,PIPE
     from os.path import dirname, join
+    from PyQt4.QtCore import QObject
+
+def Int2Time(s):
+        '''Given an input integer, return time elapsed'''
+        #s=ms/1000
+        m,s=divmod(s,60)
+        h,m=divmod(m,60)
+        d,h=divmod(h,24)
+        return d,h,m,s
 
 def ModulePath(module, level=0):
     '''Given a module return it's path to the n'th level'''
@@ -154,7 +163,6 @@ class Numbers(object):
         '''Produces rand int based on time'''
         return int(time.time())
 
-
 class File(object):
     '''
     Large file class meant to handle multiple tasks
@@ -166,3 +174,93 @@ class File(object):
     def ext(self):
         '''Return the extension of the file'''
         return self.file.split('.')[len(self.file.split('.'))-1]
+
+
+class Job(QObject):
+    '''
+    Contains information related to the state of a job
+
+    NOTES:
+    -Any function starting with count returns a quantity (int)
+    -Any function starting with state return a boolean (True/False)
+    '''
+    def __init__(self, parnet=None):
+        super(Job, self).__init__(parent)
+        self.startTime = time.time()
+
+        # setup frame related vars
+        self.avgFrameTime = 0
+        self.maxFrameTime = 0
+        self.minFrameTime = 0
+
+####
+# counting functions
+###
+
+    def countSubJobs(self):
+        '''Return the number of sub jobs'''
+        pass
+
+    def countTotalFrames(self):
+        '''Number of frame total in job (reguardless of state)'''
+        pass
+
+    def countFramesRendering(self):
+        '''Number of frames currently rendering'''
+        pass
+
+    def countFramesComplete(self):
+        '''Number of frames compelete'''
+        pass
+
+    def countFramesFailed(self):
+        '''Number of errors returned by clients'''
+        pass
+
+    def jobState(self):
+        '''Return the current state of the job'''
+        pass
+
+    def frameState(self, job, id, frame):
+        '''Return the current state of a given frame'''
+        pass
+
+    def timeElapsed(self):
+        '''Time elapsed since start of job'''
+        return self.startTime + time.time()
+
+####
+# Frame time related functions
+###
+
+    def _setMinFrameTime(self, frameTime):
+        '''Set the new min. frame time and emit signal'''
+        self.minFrameTime = frameTime
+        self.emit(SIGNAL("minFrameTime"), frameTime)
+
+    def _setMaxFrameTime(self, frameTime):
+        '''Set the new max. frame time and emit signal'''
+        self.maxFrameTime = frameTime
+        self.emit(SIGNAL("maxFrameTime"), frameTime)
+
+    def _setAvgFrameTime(self, frameTime):
+        '''Set the avg min. frame time and emit signal'''
+        self.avgFrameTime = (self.avgFrameTime+frameTime) / 2
+        self.emit(SIGNAL("avgFrameTime"), self.avgFrameTime)
+
+    def setFrameTime(self, frameTime):
+        '''Check and see if frameTime is longer than the previous
+        longest frame time.  If it is, set a new longestFrameTime
+        '''
+        if self.minFrameTime and self.maxFrameTime and self.avgFrameTime:
+            if frameTime > self.maxFrameTime:
+                self.setMaxFrameTime(frameTime)
+            elif frameTime < self.minFrameTime:
+                self.setMinFrameTime(frameTime)
+
+            self.setAvgFrameTime(frameTime)
+
+        else:
+            self.setMinFrameTime(frameTime)
+            self.setMaxFrameTime(frameTime)
+            self.avgMaxFrameTime(frameTime)
