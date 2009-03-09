@@ -965,39 +965,127 @@ class RC3(QMainWindow):
     def fakeTableEntries(self):
         '''Add a fake progress bar to the table'''
         jobs = self.ui.currentJobs
-        jobNames = ["VSFX350_particle_simulation_final", "TECH420_final_shake_comp_render", "Studio_reel_final_render_version_2"]
-        states = [["Waiting", [self.black, self.white]], ["Rendering", [self.white, self.green]]]
+        jobNames = ["VSFX350 particle_simulation final", "TECH420 final shake comp render", "Studio reel final render version 2", "Final gather test render", "MEL Script Test"]
+        self.jobNames = jobNames
+        states = [["Waiting", [self.black, self.white]], ["Rendering", [self.white, self.green]], ["Failed", [self.white, self.red]]]
+        statusKeys = [["Rendering", [self.black, self.orange]],
+                                    ["Rendering", [self.black, self.orange]],
+                                    ["Rendering", [self.black, self.orange]],
+                                    ["Failed",[self.black, self.red]],
+                                    ["Waiting", [self.black, self.white]]
+                                    ]
 
+        # setup the names
         for row in range(0, len(jobNames)):
             jobs.insertRow(row)
-
-            # configure the job name
             name = QTableWidgetItem(QString(jobNames[row]))
 
-            # configure job status
-            state = states[randrange(0, len(states))]
-            status = QTableWidgetItem()
-            status.setText(QString(state[0]))
-            status.setTextColor(state[1][0])
-            status.setBackgroundColor(state[1][1])
+            # set the status (inluding color)
+            status = QTableWidgetItem(statusKeys[row][0])
+            status.setTextColor(statusKeys[row][1][0])
+            status.setBackgroundColor(statusKeys[row][1][1])
 
-            # add progress bar
+            # set the progress bar
             s = 1
-            e = 500
-            progress = QProgressBar(self)
+            e = 50
+            self.s = s
+            self.e = e
+            progress = QProgressBar()
             progress.setRange(s, e)
-            progress.setValue(randrange(s, e))
+            progress.setValue(1)
 
-            # add items
             jobs.setItem(row, 0, name)
             jobs.setItem(row, 1, status)
             jobs.setCellWidget(row, 2, progress)
             jobs.resizeColumnsToContents()
 
-            fakeProgress = FakeProgressBar(progress, self)
-            self.connect(fakeProgress, SIGNAL("increment"), progress.setValue)
-            fakeProgress.run()
-            #self.fakeProgressRun(progress)
+
+            # change the color of the and progress area, based on status
+            if jobs.item(row, 1).text() == 'Failed':
+                #self.addProgressBar()
+                status = QTableWidgetItem(QString("Rendering"))
+                status.setTextColor(self.black)
+                status.setBackgroundColor(self.orange)
+                jobs.setItem(row, 1, status)
+
+                # connect to fake failure
+                self.fakeProgressFailure = FakeProgressBarFailure(progress, self)
+                self.connect(self.fakeProgressFailure, SIGNAL("increment"), progress.setValue)
+                self.connect(self.fakeProgressFailure, SIGNAL("failed"), self.fakeFailRender)
+                self.fakeProgressFailure.start()
+
+            elif jobs.item(row, 1).text() == 'Waiting':
+                progress.setDisabled(1)
+                jobs.setCellWidget(row, 2, progress)
+            else:
+                fakeProgress = FakeProgressBar(progress, jobNames[row], row, self)
+                self.connect(fakeProgress, SIGNAL("increment"), progress.setValue)
+                self.connect(fakeProgress, SIGNAL("complete"), self.fakeSetRenderComplete)
+                fakeProgress.start()
+
+    def fakeFailRender(self):
+        '''Fake a failed render'''
+        self.fakeProgressFailure.quit()
+
+        newStatus = QTableWidgetItem(QString("Failed"))
+        newStatus.setTextColor(self.black)
+        newStatus.setBackgroundColor(self.red)
+
+        newName = QTableWidgetItem(QString("Final gather test render"))
+        newName.setTextColor(self.black)
+        newName.setBackgroundColor(self.red)
+
+        replaceProgress = QTableWidgetItem(QString("FRAME FAILED TO RENDER (SEE THE LOGS)"))
+        replaceProgress.setTextColor(self.black)
+        replaceProgress.setBackgroundColor(self.red)
+
+        self.ui.currentJobs.setItem(3, 0, newName)
+        self.ui.currentJobs.setItem(3, 1, newStatus)
+        self.ui.currentJobs.setItem(3, 2, replaceProgress)
+
+        self.fakeStartWaitingRender()
+
+    def fakeStartWaitingRender(self):
+        '''Fake a waiting render start'''
+        progress = QProgressBar()
+        progress.setRange(self.s, self.e)
+        progress.setValue(1)
+
+        newStatus = QTableWidgetItem(QString("Rendering"))
+        newStatus.setTextColor(self.black)
+        newStatus.setBackgroundColor(self.orange)
+
+        self.ui.currentJobs.setItem(4, 1, newStatus)
+        self.ui.currentJobs.setCellWidget(4, 2, progress)
+
+        fakeProgress = FakeProgressBar(progress, "MEL Script Test", 4, self)
+        self.connect(fakeProgress, SIGNAL("increment"), progress.setValue)
+        self.connect(fakeProgress, SIGNAL("complete"), self.fakeSetRenderComplete)
+        fakeProgress.start()
+
+    def fakeSetRenderComplete(self, inList):
+        '''Change the colors of complere renders'''
+        oldName = inList[0]
+        row = inList[1]
+
+        newName = QTableWidgetItem(QString(oldName))
+        newName.setTextColor(self.white)
+        newName.setBackgroundColor(self.green)
+
+        newStatus = QTableWidgetItem(QString("Complete"))
+        newStatus.setTextColor(self.white)
+        newStatus.setBackgroundColor(self.green)
+
+        progress = QTableWidgetItem()
+        progress.setBackgroundColor(self.green)
+
+        self.ui.currentJobs.setItem(row, 0, newName)
+        self.ui.currentJobs.setItem(row, 1, newStatus)
+        self.ui.currentJobs.setItem(row, 2, progress)
+
+    def AddProgressBar(self, widget, start, end, table, row, col):
+        '''Add a progress bar to the following widget'''
+        pass
 
 ################################
 ## END Job System Manager
