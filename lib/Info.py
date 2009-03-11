@@ -40,7 +40,7 @@ finally:
     import socket
     from subprocess import Popen,PIPE
     from os.path import dirname, join
-    from PyQt4.QtCore import QObject
+    from PyQt4.QtCore import QObject, QThread
 
 def Int2Time(s):
         '''Given an input integer, return time elapsed'''
@@ -63,6 +63,7 @@ def ModulePath(module, level=0):
             OUT += '%s/' % i
 
         return OUT
+
 
 class System(object):
     '''
@@ -141,6 +142,28 @@ class System(object):
         return mac
 
 
+class Stopwatch(QThread):
+    '''Threaded stopwatch for general usage'''
+    def __init(self, parent=None):
+        super(Stopwatch, self).__init__(parent)
+
+    def run(self):
+        '''Start the stopwatch'''
+        self.start = time.time()
+        while 1:
+            time.sleep(1)
+            print self.elapsed()
+
+    def stop(self):
+        '''Stop the stopwatch'''
+        self.stop = time.time()
+
+    def elapsed(self, formatted=True):
+        '''Return the elapsed time since start'''
+        if formatted:
+            return Int2Time(time.time()-self.start)
+
+
 class Numbers(object):
     '''
     Provides several functions for creating, converting,
@@ -164,6 +187,7 @@ class Numbers(object):
     def randint(self):
         '''Produces rand int based on time'''
         return int(time.time())
+
 
 class File(object):
     '''

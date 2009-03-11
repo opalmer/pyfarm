@@ -1,4 +1,4 @@
-# USAGE: hython HythonTest.py
+# USAGE: Use hython HythonTest.py
 
 hou.hipFile.load('/media/projects/graphics/TECH420/P3_Final/houdini/P3_palmer_scene_v8.hip')
 

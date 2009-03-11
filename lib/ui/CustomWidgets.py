@@ -8,6 +8,8 @@ PURPOSE: Module full of 'general widgets', widgets used inside of other widgets.
 from PyQt4.QtGui import *
 from PyQt4.QtCore import *
 from RC3 import *
+from JobDetails import *
+from LogViewer import *
 
 class HostStatus(QComboBox):
     '''Combo box used to enable/disable hosts'''
@@ -203,3 +205,16 @@ class CustomObjectDialog(QDialog):
     def accept(self):
         self.emit(SIGNAL("objectName"), self.objectEditName.text())
         QDialog.accept(self)
+
+
+class JobDetails(QDialog):
+    def __init__(self, parent=None):
+        super(JobDetails, self).__init__(parent)
+        self.ui = Ui_JobDetails()
+        self.ui.setupUi(self)
+
+class LogViewer(QDialog):
+    def __init__(self, parent=None):
+        super(LogViewer, self).__init__(parent)
+        self.ui = Ui_LogViewer()
+        self.ui.setupUi(self)

@@ -1,0 +1,81 @@
+<ui version="4.0" >
+ <class>LogViewer</class>
+ <widget class="QDialog" name="LogViewer" >
+  <property name="geometry" >
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>602</width>
+    <height>709</height>
+   </rect>
+  </property>
+  <property name="windowTitle" >
+   <string>Render Log View</string>
+  </property>
+  <widget class="QGroupBox" name="groupBox" >
+   <property name="geometry" >
+    <rect>
+     <x>20</x>
+     <y>10</y>
+     <width>561</width>
+     <height>651</height>
+    </rect>
+   </property>
+   <property name="font" >
+    <font>
+     <pointsize>12</pointsize>
+    </font>
+   </property>
+   <property name="title" >
+    <string>Frame Log</string>
+   </property>
+   <widget class="QTextBrowser" name="log" >
+    <property name="geometry" >
+     <rect>
+      <x>10</x>
+      <y>30</y>
+      <width>541</width>
+      <height>611</height>
+     </rect>
+    </property>
+    <property name="font" >
+     <font>
+      <pointsize>10</pointsize>
+     </font>
+    </property>
+   </widget>
+  </widget>
+  <widget class="QPushButton" name="closeLogViewer" >
+   <property name="geometry" >
+    <rect>
+     <x>500</x>
+     <y>670</y>
+     <width>80</width>
+     <height>28</height>
+    </rect>
+   </property>
+   <property name="text" >
+    <string>Close</string>
+   </property>
+  </widget>
+ </widget>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>closeLogViewer</sender>
+   <signal>pressed()</signal>
+   <receiver>LogViewer</receiver>
+   <slot>close()</slot>
+   <hints>
+    <hint type="sourcelabel" >
+     <x>539</x>
+     <y>683</y>
+    </hint>
+    <hint type="destinationlabel" >
+     <x>300</x>
+     <y>354</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+</ui>

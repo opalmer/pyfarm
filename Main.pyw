@@ -212,9 +212,9 @@ class RC3(QMainWindow):
 
     def currentJobsContextMenu(self, pos):
         menu = QMenu()
-        menu.addAction('Job Details')
-        menu.addAction('Remove Job')
-        menu.addAction('Error Logs')
+        menu.addAction('Job Details', self.JobDetails)
+        menu.addAction('Remove Job', self.RemoveJobFromTable)
+        #menu.addAction('Error Logs')
         menu.exec_(self.globalPoint(self.ui.currentJobs, pos))
 
     def houdiniNodeListMenu(self, pos):
@@ -716,14 +716,6 @@ class RC3(QMainWindow):
             self.ui.networkTable.setItem(x, y, item)
             y += 1
 
-#        a = QTableWidgetItem()
-#        b = HostStatusMenu(self)
-#        a.setData(0, QVariant(b.resize(300, 300)))
-#        b.show()
-#        self.ui.networkTable.setItem(x, 2, a)
-
-        #self.netTable.resizeColumnsToContents()
-
     def _disableHosts(self):
         row = self._getHostSelection()[0]
         item = QTableWidgetItem('Offline')
@@ -934,20 +926,20 @@ class RC3(QMainWindow):
         a = 'Active'
         i = 'Inactive'
         nf = 'No Frames In Que'
-        status_objects = [{self.ui.status_pyfarm_master : i, self.ui.status_pyfarm_network : i, self.ui.status_pyfarm_que : i},
-                                    {self.ui.status_network_connected : 0, self.ui.status_network_active : 0},
-                                    {self.ui.status_que_system_status : a, self.ui.status_que_system_failure : 0},
-                                    {self.ui.status_que_jobs_waiting : 0, self.ui.status_que_jobs_running : 0, self.ui.status_que_jobs_failed : 0, self.ui.status_que_jobs_complete : 0},
-                                    {self.ui.status_que_frames_waiting: 0, self.ui.status_que_frames_running : 0, self.ui.status_que_frames_failed : 0, self.ui.status_que_frames_complete : 0},
-                                    {self.ui.status_general_time_remaining : nf, self.ui.status_general_cpu_time_used : 0, self.ui.status_general_time_elapsed : 0,
-                                    self.ui.status_general_average_time_per_frame : 0, self.ui.status_general_shortest_time : 0, self.ui.status_general_longest_time : 0,
-                                    self.ui.status_general_average_memory_usage : 0, self.ui.status_general_average_frame_size : 0}]
+        status_objects = [{self.ui.status_pyfarm_master : a, self.ui.status_pyfarm_network : a, self.ui.status_pyfarm_que : a},
+                                    {self.ui.status_network_connected : 4, self.ui.status_network_active : 4},
+                                    {self.ui.status_que_system_status : a, self.ui.status_que_system_failure : '5%'},
+                                    {self.ui.status_que_jobs_waiting : 0, self.ui.status_que_jobs_running : 4, self.ui.status_que_jobs_failed : 1, self.ui.status_que_jobs_complete : 0},
+                                    {self.ui.status_que_frames_waiting: 247, self.ui.status_que_frames_running : 4, self.ui.status_que_frames_failed : 15, self.ui.status_que_frames_complete : 27},
+                                    {self.ui.status_general_time_remaining : '10m 43s', self.ui.status_general_cpu_time_used : '45m 19s', self.ui.status_general_time_elapsed : '9m 3s',
+                                    self.ui.status_general_average_time_per_frame : '1m 23s', self.ui.status_general_shortest_time : '12s', self.ui.status_general_longest_time : '4m 23s',
+                                    self.ui.status_general_average_memory_usage : '457 MB', self.ui.status_general_average_frame_size : '4 MB'}]
 
         for obj in status_objects:
             for key, value in obj.items():
                     self.SetStatus(key, value)
 
-        self.SetStatus(self.ui.status_general_version, "RC3.5", 'black')
+        self.SetStatus(self.ui.status_general_version, "RC3", 'black')
         self.SetStatus(self.ui.status_general_random_wiki, "<a href='http://www.opalmer.com/pyfarm/wiki'>Link</a>", 'black')
 ################################
 ## END Status/Message System
@@ -965,7 +957,7 @@ class RC3(QMainWindow):
     def fakeTableEntries(self):
         '''Add a fake progress bar to the table'''
         jobs = self.ui.currentJobs
-        jobNames = ["VSFX350 particle_simulation final", "TECH420 final shake comp render", "Studio reel final render version 2", "Final gather test render", "MEL Script Test"]
+        jobNames = ["job1", "job2", "job3", "job4", "job5"]
         self.jobNames = jobNames
         states = [["Waiting", [self.black, self.white]], ["Rendering", [self.white, self.green]], ["Failed", [self.white, self.red]]]
         statusKeys = [["Rendering", [self.black, self.orange]],
@@ -975,7 +967,6 @@ class RC3(QMainWindow):
                                     ["Waiting", [self.black, self.white]]
                                     ]
 
-        # setup the names
         for row in range(0, len(jobNames)):
             jobs.insertRow(row)
             name = QTableWidgetItem(QString(jobNames[row]))
@@ -993,12 +984,10 @@ class RC3(QMainWindow):
             progress = QProgressBar()
             progress.setRange(s, e)
             progress.setValue(1)
-
             jobs.setItem(row, 0, name)
             jobs.setItem(row, 1, status)
             jobs.setCellWidget(row, 2, progress)
             jobs.resizeColumnsToContents()
-
 
             # change the color of the and progress area, based on status
             if jobs.item(row, 1).text() == 'Failed':
@@ -1031,7 +1020,7 @@ class RC3(QMainWindow):
         newStatus.setTextColor(self.black)
         newStatus.setBackgroundColor(self.red)
 
-        newName = QTableWidgetItem(QString("Final gather test render"))
+        newName = QTableWidgetItem(QString(self.jobNames[3]))
         newName.setTextColor(self.black)
         newName.setBackgroundColor(self.red)
 
@@ -1082,6 +1071,65 @@ class RC3(QMainWindow):
         self.ui.currentJobs.setItem(row, 0, newName)
         self.ui.currentJobs.setItem(row, 1, newStatus)
         self.ui.currentJobs.setItem(row, 2, progress)
+
+    def JobDetails(self):
+        '''Bring up some fake job information'''
+        # setup some common vars
+        jobs = self.ui.currentJobs
+        currentRow = jobs.currentRow()
+        jobName = jobs.item(currentRow, 0).text()
+        jobStatus = jobs.item(currentRow, 1).text()
+        groups = ['af9c477', '3c4cb7d']
+
+        if jobStatus == 'Failed':
+            status = QString('<font color="red">Failed</font>')
+        elif jobStatus == 'Rendering':
+            status = QString('<font color="orange">Rendering</font>')
+        elif jobStatus == 'Complete':
+            status = QString('<font color="green">Complete</font>')
+        else:
+            status = QString(jobStatus)
+
+        # setup the widget
+        widget = JobDetails()
+        widget.ui.jobDetails_job_name.setText(jobName)
+        widget.ui.jobDetails_job_status.setText(status)
+
+        for row in range(0, 75):
+
+            progressBar = QProgressBar()
+            progressBar.setValue(randrange(2, 80))
+            stat = QTableWidgetItem(jobStatus)
+            stat.setTextColor(self.red)
+            id = QTableWidgetItem(QString(groups[randrange(0, 2)]))
+            button =QPushButton(QString("Open"), widget.ui.frameTable)
+            self.connect(button, SIGNAL("pressed()"), self.openLog)
+
+            # insert the items into the row
+            widget.ui.frameTable.insertRow(int(row))
+            widget.ui.frameTable.setItem(row , 0, stat)
+            widget.ui.frameTable.setItem(row , 1, id)
+            widget.ui.frameTable.setCellWidget(row , 2, progressBar)
+            widget.ui.frameTable.setCellWidget(row , 3, button)
+            widget.ui.frameTable.setColumnWidth(2, 200)
+
+        widget.exec_()
+
+    def openLog(self):
+        '''Open up the frame log and show it to the user'''
+        log = open("/farm/projects/PyFarm/trunk/RC3/job4_log.001.txt", 'r')
+        widget = LogViewer()
+
+        # add the contents of the log to the gui
+        for line in log:
+            widget.ui.log.append(line)
+
+        widget.exec_()
+
+    def RemoveJobFromTable(self):
+        '''Remove the fake bad job'''
+        jobs = self.ui.currentJobs
+        jobs.removeRow(jobs.currentRow())
 
     def AddProgressBar(self, widget, start, end, table, row, col):
         '''Add a progress bar to the following widget'''
