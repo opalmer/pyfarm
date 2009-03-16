@@ -79,19 +79,32 @@ class Main(QObject):
         except IndexError:
             self.LOCAL = False
 
-        self.admin = Admin()
-        self.connect(self.admin, SIGNAL("RESTART"), self.RestartClient)
-        self.connect(self.admin, SIGNAL("SHUTDOWN"), self.Shutdown)
+#        self.admin = Admin()
+#        self.connect(self.admin, SIGNAL("RESTART"), self.RestartClient)
+#        self.connect(self.admin, SIGNAL("SHUTDOWN"), self.Shutdown)
 
     def startBroadcast(self):
         if not self.LOCAL:
             broadcast = BroadcastClient()
             self.master = broadcast.run()
             self.localhost = GetLocalIP(self.master)
+            self.StartAdminServer()
             self.initSlave()
         else:
             self.localhost = '127.0.0.1'
+            self.StartAdminServer()
             self.initSlave()
+
+    def StartAdminServer(self):
+        '''Start the admin server, listen changes'''
+        print "PyFarm :: Client.StartAdminServer :: Starting Admin Server"
+        self.admin = AdminServer()
+
+        self.connect(self.admin, SIGNAL("RESTART"), self.RestartClient)
+        self.connect(self.admin, SIGNAL("SHUTDOWN"), self.Shutdown)
+
+        if not self.admin.listen(QHostAddress(self.localhost), ADMIN_PORT):
+            print "Socket Error: %s " % self.admin.errorString()
 
     def initSlave(self):
         '''Startup all servers and beging listening for connections'''
@@ -102,7 +115,7 @@ class Main(QObject):
         self.socket = QueSlaveServer(self)
         if not self.socket.listen(QHostAddress(self.localhost), QUE_PORT):
             print "Socket Error: %s " % self.socket.errorString()
-        print "Que server waiting for jobs..."
+        print "PyFarm :: Client.initSlave :: Waiting for jobs..."
 
     def RestartClient(self):
         '''Close all connections and restart the client'''
@@ -112,7 +125,7 @@ class Main(QObject):
     def Shutdown(self):
         '''Close all connections and shutdown the client'''
         self.socket.close()
-        sys.exit("Client Shutdown Via Admin")
+        sys.exit("PyFarm :: Client :: Client Shutdown by Admin")
 
 app = QCoreApplication(sys.argv)
 main = Main()

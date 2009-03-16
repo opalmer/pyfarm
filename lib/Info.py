@@ -209,99 +209,102 @@ class Job(QObject):
     NOTES:
     -Any function starting with count returns a quantity (int)
     -Any function starting with state return a boolean (True/False)
+
+    SIGNALS:
+        minRenderTime - Emits the min. render time
+        maxRenderTime - Emits the max. render time
+        avgRenderTime - Emits the avg. render time
+        totalFrameCount - total frames in job
+        subJobCount - number of sub-jobs
     '''
     def __init__(self, parnet=None):
         super(Job, self).__init__(parent)
         self.startTime = time.time()
 
         # setup frame related vars
-        self.avgFrameTime = 0
-        self.maxFrameTime = 0
-        self.minFrameTime = 0
+        self.avgRenderTime = 0
+        self.maxRenderTime = 0
+        self.minRenderTime = 0
+        self.totalFrames = 0
+        self.jobCount = 0
+        self.failedRenders = 0
 
-####
-# counting functions
-###
-
-    def countSubJobs(self):
+    def SubJobCount(self):
         '''Return the number of sub jobs'''
-        pass
+        self.emit(SIGNAL("subJobCount"), subCount)
 
-    def countTotalFrames(self):
+    def TotalFrames(self):
         '''Number of frame total in job (reguardless of state)'''
         pass
 
-    def countFramesRendering(self):
+    def FramesRenderingCount(self):
         '''Number of frames currently rendering'''
         pass
 
-    def countFramesComplete(self):
+    def FramesCompleteCount(self):
         '''Number of frames compelete'''
         pass
 
-    def countFramesFailed(self):
+    def failedRendersCount(self):
         '''Number of errors returned by clients'''
         pass
 
-    def jobState(self):
+    def State(self):
         '''Return the current state of the job'''
         pass
 
-    def frameState(self, job, id, frame):
+    def FrameState(self, job, id, frame):
         '''Return the current state of a given frame'''
         pass
 
-    def timeElapsed(self):
+    def Elapsed(self):
         '''Time elapsed since start of job'''
         return self.startTime + time.time()
 
-####
-# Frame time related functions
-###
-
-    def _setMinFrameTime(self, frameTime):
+    def _setminRenderTime(self, frameTime):
         '''Set the new min. frame time and emit signal'''
-        self.minFrameTime = frameTime
-        self.emit(SIGNAL("minFrameTime"), frameTime)
+        self.minRenderTime = frameTime
+        self.emit(SIGNAL("minRenderTime"), frameTime)
 
-    def _setMaxFrameTime(self, frameTime):
+    def _setmaxRenderTime(self, frameTime):
         '''Set the new max. frame time and emit signal'''
-        self.maxFrameTime = frameTime
-        self.emit(SIGNAL("maxFrameTime"), frameTime)
+        self.maxRenderTime = frameTime
+        self.emit(SIGNAL("maxRenderTime"), frameTime)
 
-    def _setAvgFrameTime(self, frameTime):
+    def _setavgRenderTime(self, frameTime):
         '''Set the avg min. frame time and emit signal'''
-        self.avgFrameTime = (self.avgFrameTime+frameTime) / 2
-        self.emit(SIGNAL("avgFrameTime"), self.avgFrameTime)
+        self.avgRenderTime = (self.avgRenderTime+frameTime) / 2
+        self.emit(SIGNAL("avgRenderTime"), self.avgRenderTime)
 
-    def setFrameTime(self, frameTime):
-        '''Check and see if frameTime is longer than the previous
-        longest frame time.  If it is, set a new longestFrameTime
+    def CheckRenderTime(self, frameTime):
         '''
-        if self.minFrameTime and self.maxFrameTime and self.avgFrameTime:
-            if frameTime > self.maxFrameTime:
-                self._setMaxFrameTime(frameTime)
-            elif frameTime < self.minFrameTime:
-                self._setMinFrameTime(frameTime)
+        Check and see if the latest frame render time is greater than
+        the previous max frame time
+        '''
+        if self.minRenderTime and self.maxRenderTime and self.avgRenderTime:
+            if frameTime > self.maxRenderTime:
+                self._setmaxRenderTime(frameTime)
+            elif frameTime < self.minRenderTime:
+                self._setminRenderTime(frameTime)
 
-            self._setAvgFrameTime(frameTime)
+            self._setavgRenderTime(frameTime)
 
         else:
-            self._setMinFrameTime(frameTime)
-            self._setMaxFrameTime(frameTime)
-            self._avgMaxFrameTime(frameTime)
+            self._setminRenderTime(frameTime)
+            self._setmaxRenderTime(frameTime)
+            self._avgmaxRenderTime(frameTime)
 
-    def minFrameTime(self):
+    def MinRenderTime(self):
         '''Return the minium frame time'''
-        self.emit(SIGNAL("minFrameTime"), self.minFrameTime)
-        return self.minFrameTime
+        self.emit(SIGNAL("minRenderTime"), self.minRenderTime)
+        return self.minRenderTime
 
-    def maxFrameTime(self):
+    def MaxRenerTime(self):
         '''Return the maxium frame time'''
-        self.emit(SIGNAL("maxFrameTime"), self.maxFrameTime)
-        return self.maxFrameTime
+        self.emit(SIGNAL("maxRenderTime"), self.maxRenderTime)
+        return self.maxRenderTime
 
-    def avgFrameTime(self):
+    def AvgRenderTime(self):
         '''Return the average frame time'''
-        self.emit(SIGNAL("avgFrameTime"), self.avgFrameTime)
-        return self.avgFrameTime
+        self.emit(SIGNAL("avgRenderTime"), self.avgRenderTime)
+        return self.avgRenderTime

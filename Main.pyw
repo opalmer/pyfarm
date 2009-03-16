@@ -1141,8 +1141,12 @@ class RC3(QMainWindow):
 ## BEGIN General Utilities
 ################################
     def closeEvent(self, event):
-        '''Run when the window is trying to close'''
-        print "Now Closing"
+        '''Run when closing the main gui, used to "cleanup" the program state'''
+        print "PyFarm :: Main.closeEvent :: Shutting Down Clients..."
+        for host in self.hosts:
+            client = AdminClient(host[1])
+            client.shutdown()
+
 ################################
 ## END General Utilities
 ################################
