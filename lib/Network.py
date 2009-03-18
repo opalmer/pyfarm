@@ -343,7 +343,7 @@ class AdminServerThread(QThread):
     def __init__(self, socketId, parent):
         super(AdminServerThread, self).__init__(parent)
         self.socketId = socketId
-        self.modName = 'Network.AdminClient'
+        self.modName = 'Network.AdminServerThread'
 
     def run(self):
         '''
@@ -515,7 +515,7 @@ class AdminClient(QObject):
 
         print "PyFarm :: %s :: Connecting to server" % self.modName
         self.socket.connectToHost(self.client, self.port)
-        self.socket.waitForDisconnected(-1)
+        self.socket.waitForDisconnected(800) # wait to finish transmission to each admin server
 
     def sendRequest(self):
         print "PyFarm :: %s :: Sending signal to server" % self.modName

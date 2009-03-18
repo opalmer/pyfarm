@@ -39,35 +39,35 @@ STDERR_PORT = Settings.Network().StdErrPort()
 ADMIN_PORT = Settings.Network().Admin()
 USE_STATIC_CLIENT = False
 
-class StartAdminServer(QObject):
-    '''
-    Main function that spawns admin servers and other functions
-    and waits for their shutdown/restart/halt signals
-    '''
-    def __init__(self, parent=None):
-        super(StartAdminServer, self).__init__(parent)
-
-        self.admin = AdminServer(self)
-        self.connect(self.admin, SIGNAL("SHUTDOWN"), self.shutdown)
-        self.connect(self.admin, SIGNAL("RESTART"), self.restart)
-        self.connect(self.admin, SIGNAL("HALT"), self.halt)
-
-        if not self.admin.listen(QHostAddress("0.0.0.0"), ADMIN_PORT):
-            print "PyFarm :: Main.AdminServer :: Could not start the server"
-            return
-
-    def shutdown(self):
-        '''If the admin servers calls for it, shutdown the client'''
-        self.admin.close()
-        sys.exit("PyFarm :: Network.AdminMain :: Closed by Admin Server")
-
-    def restart(self):
-        '''If the admin servers calls for it, restart the client'''
-        pass
-
-    def halt(self):
-        '''If the admin servers calls for it, half the client'''
-        pass
+#class StartAdminServer(QObject):
+#    '''
+#    Main function that spawns admin servers and other functions
+#    and waits for their shutdown/restart/halt signals
+#    '''
+#    def __init__(self, parent=None):
+#        super(StartAdminServer, self).__init__(parent)
+#
+#        self.admin = AdminServer(self)
+#        self.connect(self.admin, SIGNAL("SHUTDOWN"), self.shutdown)
+#        self.connect(self.admin, SIGNAL("RESTART"), self.restart)
+#        self.connect(self.admin, SIGNAL("HALT"), self.halt)
+#
+#        if not self.admin.listen(QHostAddress("0.0.0.0"), ADMIN_PORT):
+#            print "PyFarm :: Main.AdminServer :: Could not start the server"
+#            return
+#
+#    def shutdown(self):
+#        '''If the admin servers calls for it, shutdown the client'''
+#        self.admin.close()
+#        sys.exit("PyFarm :: Network.AdminMain :: Closed by Admin Server")
+#
+#    def restart(self):
+#        '''If the admin servers calls for it, restart the client'''
+#        pass
+#
+#    def halt(self):
+#        '''If the admin servers calls for it, half the client'''
+#        pass
 
 
 class Main(QObject):
@@ -119,7 +119,7 @@ class Main(QObject):
 
     def restart(self):
         '''Close all connections and restart the client'''
-        self.shutdown()
+        self.shutdownServers()
         self.startBroadcast()
 
     def shutdown(self):
@@ -134,5 +134,4 @@ class Main(QObject):
 app = QCoreApplication(sys.argv)
 main = Main()
 main.startBroadcast()
-#app.processEvents()
 app.exec_()

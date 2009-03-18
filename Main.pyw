@@ -1141,12 +1141,47 @@ class RC3(QMainWindow):
 ################################
 ## BEGIN General Utilities
 ################################
-    def closeEvent(self, event):
-        '''Run when closing the main gui, used to "cleanup" the program state'''
-        print "PyFarm :: Main.closeEvent :: Shutting Down Clients..."
+    def shutdownHosts(self):
+        '''Shutdown all remote hosts'''
         for host in self.hosts:
             client = AdminClient(host[1], ADMIN_PORT)
             client.shutdown()
+
+    def restartHosts(self):
+        '''Restart all remote hosts'''
+        for host in self.hosts:
+            client = AdminClient(host[1], ADMIN_PORT)
+            client.restart()
+
+    def hostStateHelp(self):
+        '''
+        Inform the user of what/why hosts are restarted or
+        shutdown
+        '''
+        pass
+
+    def hostExitDialog(self):
+        '''Present a host shutdown dialog to the user'''
+        return QMessageBox.question(self,
+                    QString("Select Client Action"),
+                    QString("Would you like to shutdown all remote client nodes?"),
+                    QMessageBox.Yes|QMessageBox.No|QMessageBox.Help)
+
+    def closeEvent(self, event):
+        '''Run when closing the main gui, used to "cleanup" the program state'''
+        exit_dialog = self.hostExitDialog()
+
+        if exit_dialog == QMessageBox.Yes:
+            print "PyFarm :: Main.closeEvent :: Shutting Down Clients..."
+            self.shutdownHosts()
+
+        elif exit_dialog == QMessageBox.No:
+            print "PyFarm :: Main.closeEvent :: Restarting clients..."
+            self.restartHosts()
+
+        elif exit_dialog == QMessageBox.Help:
+            print "PyFarm :: Main.closeEvent :: Presenting host help"
+            self.hostStateHelp()
 
 ################################
 ## END General Utilities
@@ -1155,4 +1190,4 @@ class RC3(QMainWindow):
 app = QApplication(sys.argv)
 ui = RC3()
 ui.show()
-app.exec_()
+sys.exit(app.exec_())
