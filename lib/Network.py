@@ -54,7 +54,7 @@ class BroadcastServer(QThread):
     '''
     def __init__(self,  parent, host='', timeout=5):
         super(BroadcastServer,  self).__init__(parent)
-        print "PyFarm :: Network.BroadcastServer :: Server Running"
+        print "PyFarm :: Network.BroadcastServer :: Sending Broadcast"
         self.port = BROADCAST_PORT
         self.host = host
         self.dest = ('<broadcast>', self.port)
@@ -80,6 +80,7 @@ class BroadcastServer(QThread):
 
         finally:
             self.done = True
+            print "PyFarm :: Network.BroadcastServer :: Broadcast Complete"
             self.emit(SIGNAL('DONE'), self.done)
 
 
@@ -108,7 +109,7 @@ class BroadcastClient(QThread):
         self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
         self.sock.bind((self.host, self.port)) #setup a socket to receieve a connection
-        print "PyFarm :: Network.BroadcastClient :: Waiting on master..."
+        print "PyFarm :: Network.BroadcastClient :: Waiting for Broadcast..."
 
         while True:
             try:
@@ -207,6 +208,9 @@ class TCPStdOutClient(QTcpSocket):
         self.connect(self.socket, SIGNAL("connected()"), self.sendRequest)
         self.connect(self.socket, SIGNAL("disconnected()"), self.serverHasStopped)
         self.connect(self.socket, SIGNAL("error(QAbstractSocket::SocketError)"), self.serverHasError)
+
+    def  shutdown():
+        self.pack('hello', '1', 'this is the mnessage')
 
     def pack(self, job, frame, stdout, host=socket.gethostname()):
         '''
@@ -335,44 +339,38 @@ class WaitForQueServer(QTcpServer):
 
 
 class AdminServerThread(QThread):
-    '''ADMIN_PORTistrator server thread used to manage the client'''
-    lock = QReadWriteLock()
-
+    '''Admin server thread spawned by AdminServer'''
     def __init__(self, socketId, parent):
         super(AdminServerThread, self).__init__(parent)
-        print "PyFarm :: Network.AdminServerThread :: Running Thread"
         self.socketId = socketId
+        self.modName = 'Network.AdminClient'
 
     def run(self):
-        '''Run the server thread and process the requested data'''
+        '''
+        The main function of the thread as called by
+        AdminServer @ AdminServerThread.start()
+        '''
         socket = QTcpSocket()
+        print "PyFarm :: %s :: Running server" % self.modName
 
         if not socket.setSocketDescriptor(self.socketId):
             self.emit(SIGNAL("error(int)"), socket.error())
             return
 
+        # while we are connected
         while socket.state() == QAbstractSocket.ConnectedState:
             nextBlockSize = 0
-            stream = QDataStream(socket)
+            stream = QDataStream(socket) # create a data stream
             stream.setVersion(QDataStream.Qt_4_2)
 
             while True:
+                # wait for the stream to be ready to read
                 socket.waitForReadyRead(-1)
+
+                # load next block size with the total size of the stream
                 if socket.bytesAvailable() >= SIZEOF_UINT16:
                     nextBlockSize = stream.readUInt16()
-
-                    command = QString()
-
-                    print "PyFarm :: Network.AdminServerThread :: Unpacking Command"
-                    stream >> command
-                    if command == 'SHUTDOWN':
-                        print "TIME TO KILL"
-                    if command == 'TERMNATE_SELF':
-                        socket.close()
-                    else:
-                        print "PyFarm :: Network.AdminServerThread :: Running Command"
-                        self.sendReply(socket, command)
-                        socket.waitForDisconnected()
+                    break
 
             if socket.bytesAvailable() < nextBlockSize:
                 while True:
@@ -380,112 +378,184 @@ class AdminServerThread(QThread):
                     if socket.bytesAvailable() >= nextBlockSize:
                         break
 
+            # prepare vars for input stream
+            action = QString()
+            options = QString()
+            print "PyFarm :: %s :: Unpacking packet" % self.modName
+            stream >> action
+
+            # if the action is a preset
+            if action in ("SHUTDOWN", "RESTART", "HALT"):
+                stream >> options # unpack the stream
+                if action == "SHUTDOWN":
+                    #self.quit("SHUTDOWN")
+                    self.emit(SIGNAL("SHUTDOWN"))
+                elif action == "RESTART":
+                    self.emit(SIGNAL("RESTART"))
+                elif action == "HALT":
+                    self.emit(SIGNAL("HALT"))
+
+                # final send a back the original host
+                self.sendReply(socket, action, options)
+
+            # unless the user requested an action that does
+            #  not exist
+            else:
+                    self.sendError(socket, "%s is not a valid option" % action)
+            socket.waitForDisconnected()
+
     def sendError(self, socket, msg):
-        '''Send an error back to the client'''
         reply = QByteArray()
         stream = QDataStream(reply, QIODevice.WriteOnly)
         stream.setVersion(QDataStream.Qt_4_2)
         stream.writeUInt16(0)
-        stream << QString("ERROR")
+        stream << QString("ERROR") << QString(msg)
         stream.device().seek(0)
         stream.writeUInt16(reply.size() - SIZEOF_UINT16)
         socket.write(reply)
-        socket.close()
 
-    def sendReply(self, socket, COMMAND):
-        print "PyFarm :: Network.AdminServerThread :: Requesting More Data"
+    def sendReply(self, socket, action, options):
         reply = QByteArray()
         stream = QDataStream(reply, QIODevice.WriteOnly)
         stream.setVersion(QDataStream.Qt_4_2)
         stream.writeUInt16(0)
-        stream << COMMAND
+        stream << action << options
         stream.device().seek(0)
         stream.writeUInt16(reply.size() - SIZEOF_UINT16)
         socket.write(reply)
 
 
 class AdminServer(QTcpServer):
-    '''Main ADMIN_PORT server thread, used to receieve and start new ADMIN_PORT server threads'''
+    '''
+    Primary Admin Server
+    Takes incomingConnection and starts a thread
+    to handle the connection, keeps the connection from blocking.
+    '''
     def __init__(self, parent=None):
         super(AdminServer, self).__init__(parent)
-        print "PyFarm :: Network.AdminServer :: Starting Server"
+        self.modName = 'Network.AdminServer'
 
     def incomingConnection(self, socketId):
-        '''If incomingConnection(), start thread to handle connection'''
-        print "PyFarm :: Network.AdminServer:: Incoming Connection!"
-        thread = AdminServerThread(socketId, self)
-        self.connect(thread, SIGNAL("finished()"),thread, SLOT("deleteLater()"))
-        thread.start()
+        print "PyFarm :: %s :: Incoming connection" % self.modName
+        self.serverThread = AdminServerThread(socketId, self)
+        self.connect(self.serverThread, SIGNAL("finished()"), self.serverThread, SLOT("deleteLater()"))
+        self.connect(self.serverThread, SIGNAL("SHUTDOWN"), self.emitShutdown)
+        self.connect(self.serverThread, SIGNAL("RESTART"), self.emitRestart)
+        self.connect(self.serverThread, SIGNAL("HALT"), self.emitHalt)
+        self.serverThread.start()
+
+    def shutdown(self):
+        '''Shutdown the server and try to terminate all threads'''
+        self.serverThread.terminate()
+        self.serverThread.wait()
+        self.close()
+
+    def emitShutdown(self):
+        '''
+        After receiving the shutdown signal from the thread,
+        emit SHUTDOWN to the parent.
+        '''
+        self.emit(SIGNAL("SHUTDOWN"))
+
+    def emitRestart(self):
+        '''
+        After receiving the restart signal from the thread,
+        emit RESTART to the parent.
+        '''
+        self.emit(SIGNAL("RESTART"))
+
+    def emitHalt(self):
+        '''
+        After receiving the restart signal from the thread,
+        emit HALT to the parent.
+        '''
+        self.emit(SIGNAL("HALT"))
 
 
-class AdminClient(QTcpSocket):
-    '''TCP Socket client to send standard output to server'''
-    def __init__(self, host='0.0.0.0', port=ADMIN_PORT, parent=None):
-        print "PyFarm :: Network.AdminClient :: Starting Client"
-        self.lock = QReadWriteLock()
+class AdminClient(QObject):
+    def __init__(self, client, port=ADMIN_PORT, parent=None):
         super(AdminClient, self).__init__(parent)
-        self.host = host
-        self.port = port
-        self.socket = QTcpSocket()
-        self.nextBlockSize = 0
-        self.output = None
-        self.line = 1
+        self.modName = 'Network.AdminClient'
 
-        # setup the connection
-        self.connect(self.socket, SIGNAL("connected()"), self.sendRequest)
+        self.socket = QTcpSocket()
+        self.client = client
+        self.port = port
+        self.nextBlockSize = 0
+        self.request = None
+
+        self.connect(self.socket, SIGNAL("connected()"),self.sendRequest)
+        self.connect(self.socket, SIGNAL("readyRead()"), self.readResponse)
         self.connect(self.socket, SIGNAL("disconnected()"), self.serverHasStopped)
         self.connect(self.socket, SIGNAL("error(QAbstractSocket::SocketError)"), self.serverHasError)
 
     def shutdown(self):
         '''Shutdown the client'''
-        self.pack('shutdown')
+        self.issueRequest(QString("SHUTDOWN"), QString("all processes"))
 
     def restart(self):
         '''Restart the client'''
-        self.pack('restart')
+        self.issueRequest(QString("RESTART"), QString("kill renders"))
 
-    def pack(self, command, host=socket.gethostname()):
-        '''
-        Pack the information into a packet
-        '''
-        command = QString(command)
-        host = QString(host)
-        self.output = QByteArray()
-        stream = QDataStream(self.output, QIODevice.WriteOnly)
+    def halt(self):
+        '''Hault the client but do not restart or shutdown'''
+        self.issueRequest(QString("HALT"), QString("kill renders"))
+
+    def issueRequest(self, action, options):
+        self.request = QByteArray()
+        stream = QDataStream(self.request, QIODevice.WriteOnly)
         stream.setVersion(QDataStream.Qt_4_2)
         stream.writeUInt16(0)
-
-        # pack the data
-        stream << command
+        stream << action << options
         stream.device().seek(0)
-        stream.writeUInt16(self.output.size() - SIZEOF_UINT16)
+        stream.writeUInt16(self.request.size() - SIZEOF_UINT16)
 
-        # once the socket emits connected() self.sendRequest is called
-        if not self.socket.state() == 3:
-            print "Connecting to %s..." % self.host
-            self.socket.connectToHost(self.host, self.port)
-            #self.sendRequest()
-        else:
-            self.sendRequest()
+        if self.socket.isOpen():
+            print "PyFarm :: %s :: Already connected, closing socket" % self.modName
+            self.socket.close()
+
+        print "PyFarm :: %s :: Connecting to server" % self.modName
+        self.socket.connectToHost(self.client, self.port)
+        self.socket.waitForDisconnected(-1)
 
     def sendRequest(self):
-        '''Send the packed packet'''
+        print "PyFarm :: %s :: Sending signal to server" % self.modName
         self.nextBlockSize = 0
-        print "%i - Sending Line" % self.line
-        self.socket.write(self.output)
-        self.line +=1
-        self.output = None
+        self.socket.write(self.request)
+        self.request = None
+
+    def readResponse(self):
+        print "PyFarm :: %s :: Reading response" % self.modName
+        stream = QDataStream(self.socket)
+        stream.setVersion(QDataStream.Qt_4_2)
+
+        while True:
+            if self.nextBlockSize == 0:
+                if self.socket.bytesAvailable() < SIZEOF_UINT16:
+                    break
+                self.nextBlockSize = stream.readUInt16()
+            if self.socket.bytesAvailable() < self.nextBlockSize:
+                break
+            action = QString()
+            options = QString()
+            stream >> action
+            self.nextBlockSize = 0
+
+            if action in ("SHUTDOWN", "RESTART", "HALT"):
+                if action == "SHUTDOWN":
+                    print "PyFarm :: %s :: %s is shutting down" % (self.modName, self.client)
+                elif action == "RESTART":
+                    print "PyFarm :: %s :: %s is restarting" % (self.modName, self.client)
+                elif action == "HALT":
+                    print "PyFarm :: %s :: %s is halting" % (self.modName, self.client)
 
     def serverHasStopped(self):
-        '''If the server has stopped or been shutdown, close the socket'''
-        print "PyFarm :: Network.TCPStdOutClient :: Disconnected"
-        self.socket.disconnectFromHost()
-        self.emit(SIGNAL("serverDied"))
+        print "PyFarm :: %s :: Server has stopped" % self.modName
+        self.socket.close()
 
     def serverHasError(self, error):
-        '''Gather errors then close the connection'''
-        print QString("Error: %1").arg(self.socket.errorString())
-        self.socket.disconnectFromHost()
+        print "PyFarm :: %s :: Server has error: %s" % (self.modName, self.socket.errorString())
+        self.socket.close()
+
 
 def ResolveHost(host):
     '''

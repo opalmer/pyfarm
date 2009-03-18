@@ -189,13 +189,25 @@ class QueSlaveServer(QTcpServer):
     '''Main server thread, used to receieve and start new server threads'''
     def __init__(self, parent=None):
         super(QueSlaveServer, self).__init__(parent)
+        self.modName = 'Que.QueSlaveServer'
 
     def incomingConnection(self, socketId):
         '''If incomingConnection(), start thread to handle connection'''
-        print "Incoming!"
-        thread = QueSlaveServerThread(socketId, self)
-        self.connect(thread, SIGNAL("finished()"),thread, SLOT("deleteLater()"))
-        thread.start()
+        print "PyFarm :: %s :: Incoming connection" % self.modName
+        self.queSlaveThread = QueSlaveServerThread(socketId, self)
+        self.connect(self.queSlaveThread, SIGNAL("finished()"), self.queSlaveThread, SLOT("deleteLater()"))
+        self.queSlaveThread.start()
+
+    def shutdown(self):
+        '''Try to shutdown the QueSlave server and all threads'''
+        try:
+            self.queSlaveThread.terminate()
+            self.queSlaveThread.wait()
+        except AttributeError:
+            print "PyFarm :: %s :: No threads to terminate" % self.modName
+        finally:
+            self.close()
+
 
 class SendCommand(QTcpSocket):
     '''

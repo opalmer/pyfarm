@@ -39,34 +39,36 @@ STDERR_PORT = Settings.Network().StdErrPort()
 ADMIN_PORT = Settings.Network().Admin()
 USE_STATIC_CLIENT = False
 
-class Admin(QObject):
-    '''Administrator class used to manage the client.'''
+class StartAdminServer(QObject):
+    '''
+    Main function that spawns admin servers and other functions
+    and waits for their shutdown/restart/halt signals
+    '''
     def __init__(self, parent=None):
-        super(Admin, self).__init__(parent)
-        self.admin = AdminServer()
-        self.connect(self.admin, SIGNAL("RESTART"), self.emit)
-        self.connect(self.admin, SIGNAL("SHUTDOWN"), self.emit)
+        super(StartAdminServer, self).__init__(parent)
 
-    def Restart(self):
-        '''Inform the client to restart'''
-        self.emit(SIGNAL("RESTART"))
+        self.admin = AdminServer(self)
+        self.connect(self.admin, SIGNAL("SHUTDOWN"), self.shutdown)
+        self.connect(self.admin, SIGNAL("RESTART"), self.restart)
+        self.connect(self.admin, SIGNAL("HALT"), self.halt)
 
-    def Shutdown(self):
-        '''Shutdown the client and close all connections'''
-        self.emit(SIGNAL("SHUTDOWN"))
+        if not self.admin.listen(QHostAddress("0.0.0.0"), ADMIN_PORT):
+            print "PyFarm :: Main.AdminServer :: Could not start the server"
+            return
 
-    def boot(self, address):
-        '''Start the admin server'''
-        print address
-        if not self.admin.listen(QHostAddress(self.listen), ADMIN_PORT):
-            print "Socket Error: %s " % self.socket.errorString()
-        print "Admin Server Running..."
+    def shutdown(self):
+        '''If the admin servers calls for it, shutdown the client'''
+        self.admin.close()
+        sys.exit("PyFarm :: Network.AdminMain :: Closed by Admin Server")
 
-    def kill(self):
-        '''Kill the current admin server'''
-        print "Closing the admin server..."
-        self.socket.close()
-        print "Admin server closed!"
+    def restart(self):
+        '''If the admin servers calls for it, restart the client'''
+        pass
+
+    def halt(self):
+        '''If the admin servers calls for it, half the client'''
+        pass
+
 
 class Main(QObject):
     def __init__(self, parent=None):
@@ -79,56 +81,58 @@ class Main(QObject):
         except IndexError:
             self.LOCAL = False
 
-#        self.admin = Admin()
-#        self.connect(self.admin, SIGNAL("RESTART"), self.RestartClient)
-#        self.connect(self.admin, SIGNAL("SHUTDOWN"), self.Shutdown)
-
     def startBroadcast(self):
         if not self.LOCAL:
             broadcast = BroadcastClient()
             self.master = broadcast.run()
             self.localhost = GetLocalIP(self.master)
-            self.StartAdminServer()
             self.initSlave()
         else:
             self.localhost = '127.0.0.1'
-            self.StartAdminServer()
             self.initSlave()
-
-    def StartAdminServer(self):
-        '''Start the admin server, listen changes'''
-        print "PyFarm :: Client.StartAdminServer :: Starting Admin Server"
-        self.admin = AdminServer()
-
-        self.connect(self.admin, SIGNAL("RESTART"), self.RestartClient)
-        self.connect(self.admin, SIGNAL("SHUTDOWN"), self.Shutdown)
-
-        if not self.admin.listen(QHostAddress(self.localhost), ADMIN_PORT):
-            print "Socket Error: %s " % self.admin.errorString()
 
     def initSlave(self):
         '''Startup all servers and beging listening for connections'''
         # start the admin server
-        #self.admin.boot(self.localhost)
+        self.admin = AdminServer(self)
+        self.connect(self.admin, SIGNAL("SHUTDOWN"), self.shutdown)
+        self.connect(self.admin, SIGNAL("RESTART"), self.restart)
+        self.connect(self.admin, SIGNAL("HALT"), self.halt)
+
+        if not self.admin.listen(QHostAddress(self.localhost), ADMIN_PORT):
+            print "PyFarm :: Client.AdminServer :: Could not start the server: %s" % self.admin.errorString()
+            return
+        print "PyFarm :: Client.AdminServer :: Waiting for signals..."
 
         # start the que server
-        self.socket = QueSlaveServer(self)
-        if not self.socket.listen(QHostAddress(self.localhost), QUE_PORT):
-            print "Socket Error: %s " % self.socket.errorString()
-        print "PyFarm :: Client.initSlave :: Waiting for jobs..."
+        self.que = QueSlaveServer(self)
+        if not self.que.listen(QHostAddress(self.localhost), QUE_PORT):
+            print "PyFarm :: Client.QueSlave :: Could not start the server: %s" % self.que.errorString()
+            return
 
-    def RestartClient(self):
+        print "PyFarm :: Client.QueSlave :: Waiting for jobs..."
+
+    def shutdownServers(self):
+        '''Calls the shutdown function all all servers'''
+        self.admin.shutdown()
+        self.que.shutdown()
+
+    def restart(self):
         '''Close all connections and restart the client'''
-        self.socket.close()
+        self.shutdown()
         self.startBroadcast()
 
-    def Shutdown(self):
+    def shutdown(self):
         '''Close all connections and shutdown the client'''
-        self.socket.close()
+        self.shutdownServers()
         sys.exit("PyFarm :: Client :: Client Shutdown by Admin")
+
+    def halt(self):
+        '''Close all connections and halt the client'''
+        print "SYSTEM HALTED -- NEEDS IMPLIMENTATION"
 
 app = QCoreApplication(sys.argv)
 main = Main()
 main.startBroadcast()
-app.processEvents()
+#app.processEvents()
 app.exec_()

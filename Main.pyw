@@ -152,7 +152,7 @@ class RC3(QMainWindow):
         # make signal connections
         ## ui signals
         self.connect(self.ui.render, SIGNAL("pressed()"), self.initJob)
-        self.connect(self.ui.findHosts, SIGNAL("pressed()"), self._findHosts)
+        self.connect(self.ui.findHosts, SIGNAL("pressed()"), self.findHosts)
         self.connect(self.ui.queryQue, SIGNAL("pressed()"), self.queryQue)
         self.connect(self.ui.emptyQue, SIGNAL("pressed()"), self.emptyQue)
         self.connect(self.ui.enque, SIGNAL("pressed()"), self.SubmitToQue)
@@ -190,6 +190,7 @@ class RC3(QMainWindow):
         self.connect(self.ui.currentJobs, SIGNAL("cellActivated(int,int)"), self.fakePrintTableSelection)
         self.fakeSetup()
         self.InitialStatus()
+        #self.findHosts()
 
 ################################
 ## BEGIN Context Menus
@@ -833,7 +834,7 @@ class RC3(QMainWindow):
         self.updateStatus('QUEUE', '%s frames waiting to render' % self.que.size(), 'brown')
         self.ui.render.setEnabled(True)
 
-    def _findHosts(self):
+    def findHosts(self):
         '''Get hosts via broadcast packet, add them to self.hosts'''
         self.updateStatus('NETWORK', 'Searching for hosts...', 'green')
         findHosts = BroadcastServer(self)
@@ -1144,7 +1145,7 @@ class RC3(QMainWindow):
         '''Run when closing the main gui, used to "cleanup" the program state'''
         print "PyFarm :: Main.closeEvent :: Shutting Down Clients..."
         for host in self.hosts:
-            client = AdminClient(host[1])
+            client = AdminClient(host[1], ADMIN_PORT)
             client.shutdown()
 
 ################################
