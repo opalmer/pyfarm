@@ -383,6 +383,7 @@ class AdminServerThread(QThread):
             options = QString()
             print "PyFarm :: %s :: Unpacking packet" % self.modName
             stream >> action
+            print "PyFarm :: %s :: Receieved the %s signal" % (self.modName, action)
 
             # if the action is a preset
             if action in ("SHUTDOWN", "RESTART", "HALT"):
@@ -446,7 +447,7 @@ class AdminServer(QTcpServer):
 
     def shutdown(self):
         '''Shutdown the server and try to terminate all threads'''
-        self.serverThread.terminate()
+        self.serverThread.quit()
         self.serverThread.wait()
         self.close()
 
@@ -455,6 +456,7 @@ class AdminServer(QTcpServer):
         After receiving the shutdown signal from the thread,
         emit SHUTDOWN to the parent.
         '''
+        print "PyFarm :: %s :: Broadcasting shutdown signal" % self.modName
         self.emit(SIGNAL("SHUTDOWN"))
 
     def emitRestart(self):
@@ -513,7 +515,7 @@ class AdminClient(QObject):
             print "PyFarm :: %s :: Already connected, closing socket" % self.modName
             self.socket.close()
 
-        print "PyFarm :: %s :: Connecting to server" % self.modName
+        print "PyFarm :: %s :: Connecting to %s" % (self.modName, self.client)
         self.socket.connectToHost(self.client, self.port)
         self.socket.waitForDisconnected(800) # wait to finish transmission to each admin server
 
@@ -549,11 +551,11 @@ class AdminClient(QObject):
                     print "PyFarm :: %s :: %s is halting" % (self.modName, self.client)
 
     def serverHasStopped(self):
-        print "PyFarm :: %s :: Server has stopped" % self.modName
+        print "PyFarm :: %s :: %s has stopped" % (self.modName, self.client)
         self.socket.close()
 
     def serverHasError(self, error):
-        print "PyFarm :: %s :: Server has error: %s" % (self.modName, self.socket.errorString())
+        print "PyFarm :: %s :: %s has error: %s" % (self.modName, self.client, self.socket.errorString())
         self.socket.close()
 
 
@@ -579,7 +581,6 @@ def ResolveHost(host):
         return "BAD_HOST"
 
     return output
-
 
 def GetLocalIP(master):
     '''Get the ip address of the local computer'''

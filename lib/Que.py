@@ -201,11 +201,12 @@ class QueSlaveServer(QTcpServer):
     def shutdown(self):
         '''Try to shutdown the QueSlave server and all threads'''
         try:
-            self.queSlaveThread.terminate()
-            self.queSlaveThread.wait()
+            self.queSlaveThread.quit()
+            self.queSlaveThread.wait(800)
         except AttributeError:
             print "PyFarm :: %s :: No threads to terminate" % self.modName
         finally:
+            print "PyFarm :: %s :: Shutdown complete" % self.modName
             self.close()
 
 

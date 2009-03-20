@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+IMPORTANT notes about this file:
+    1.) These default values are used inside of PyFarm, do not remove them.
+    2.) If you wish to add the search paths, use a comma to append a new path
+    3.) Changing values here can produce unexpected results
+
+This file is part of PyFarm.
+
+PyFarm is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+PyFarm is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
+-->
+
+<general>
+    <size_of_unit16>16</size_of_unit16>
+</general>
+
+<network>
+    <category="port">
+        <server_type="broadcast">
+            <announce>9630</announce>
+        </server_type>
+        <server_type="tcp">
+            <stdout>9631</stdout>
+            <stderr>9632</stdout>
+            <que>9633</que>
+            <admin>9634</admin>
+        </server_type>
+    </category>
+</network>
+
+<software>
+    <search os="linux">
+        <maya>
+            <path>/usr/autodesk</path>
+        </maya>
+        <houdini>
+            <path>/opt</path>
+            <path>/usr</path>
+        </houdini>
+        <shake>
+            <path>/usr/apple/shake-v4.00.0607</path>
+            <path>/opt/shake</path>
+            <path>/usr/local/shake</path>
+        </shake>
+    </search>
+
+    <search os="mac">
+        <maya>
+            <path>/Applications/Autodesk</path>
+        </maya>
+        <shake>
+            <path>/Applications/Shake/shake.app/Contents/MacOS</path>
+        </shake>
+    </search>
+
+    <search os="win">
+        <maya>
+            <path>C:\Program Files\Autodesk</path>
+        </maya>
+        <houdini>
+            <path>C:\Program Files\Side Effects Software</path>
+            <path>C:\Program Files(x86)\Side Effects Software</path>
+        </houdini>
+    </search>
+</software>

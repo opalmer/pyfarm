@@ -59,6 +59,8 @@ LOCAL_SOFTWARE.update(software.maya())
 LOCAL_SOFTWARE.update(software.houdini())
 LOCAL_SOFTWARE.update(software.shake())
 
+__VERSION__ = 'RC3'
+
 class WorkerThread(QThread):
     '''Used work out to a worker TCP server'''
     def __init__(self, host, port, parent=None):
@@ -89,7 +91,7 @@ class WorkerThread(QThread):
         self.emit(SIGNAL("SENDING_WORK"), work)
 
 
-class RC3(QMainWindow):
+class Main(QMainWindow):
     '''
     This is the controlling class for the main gui
 
@@ -103,7 +105,7 @@ class RC3(QMainWindow):
         For example the setStartFrame is called whenever a new start frame is declared.
     '''
     def __init__(self):
-        super(RC3, self).__init__()
+        super(Main, self).__init__()
 
         # setup UI
         self.ui = Ui_RC3()
@@ -679,9 +681,11 @@ class RC3(QMainWindow):
             warnHostExists (bool) - if false, do not popup info about
             hosts that have already been added
         '''
+        modName = 'Main.addHost'
         # check to make sure the host is valid
         if ResolveHost(host) == 'BAD_HOST':
             self.warningMessage("Bad host or IP", "Sorry %s could not be resolved, please check your entry and try again." % host)
+            print "PyFarm :: %s :: Bad host or IP, could not add %s " % (modName, host)
         else:
             # prepare the information
             self.currentHost = []
@@ -695,6 +699,7 @@ class RC3(QMainWindow):
                 self.hosts.append(self.currentHost)
                 self.addHostToTable(self.currentHost)
                 self.foundHosts += 1
+                print "PyFarm :: %s :: Found host %s" % (modName, self.currentHost)
             else:
                 if warnHostExists:
                     msg = QMessageBox()
@@ -1158,7 +1163,16 @@ class RC3(QMainWindow):
         Inform the user of what/why hosts are restarted or
         shutdown
         '''
-        pass
+        title = QString("Client Action Help")
+        help = QString("\
+        <p>When closing PyFarm you have two options to deal with\
+        remote clients:</p>\
+        <p>\
+        Select <b><i>yes<i></b> shutdown the remote clients<br>\
+        Select <b><i>no<i></b> to restart the remote clients for future use\
+        </p>")
+        QMessageBox.information(self, title, help)
+        self.closeEvent(self)
 
     def hostExitDialog(self):
         '''Present a host shutdown dialog to the user'''
@@ -1188,6 +1202,6 @@ class RC3(QMainWindow):
 ################################
 
 app = QApplication(sys.argv)
-ui = RC3()
-ui.show()
+main = Main()
+main.show()
 sys.exit(app.exec_())

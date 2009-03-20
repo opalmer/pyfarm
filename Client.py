@@ -39,36 +39,6 @@ STDERR_PORT = Settings.Network().StdErrPort()
 ADMIN_PORT = Settings.Network().Admin()
 USE_STATIC_CLIENT = False
 
-#class StartAdminServer(QObject):
-#    '''
-#    Main function that spawns admin servers and other functions
-#    and waits for their shutdown/restart/halt signals
-#    '''
-#    def __init__(self, parent=None):
-#        super(StartAdminServer, self).__init__(parent)
-#
-#        self.admin = AdminServer(self)
-#        self.connect(self.admin, SIGNAL("SHUTDOWN"), self.shutdown)
-#        self.connect(self.admin, SIGNAL("RESTART"), self.restart)
-#        self.connect(self.admin, SIGNAL("HALT"), self.halt)
-#
-#        if not self.admin.listen(QHostAddress("0.0.0.0"), ADMIN_PORT):
-#            print "PyFarm :: Main.AdminServer :: Could not start the server"
-#            return
-#
-#    def shutdown(self):
-#        '''If the admin servers calls for it, shutdown the client'''
-#        self.admin.close()
-#        sys.exit("PyFarm :: Network.AdminMain :: Closed by Admin Server")
-#
-#    def restart(self):
-#        '''If the admin servers calls for it, restart the client'''
-#        pass
-#
-#    def halt(self):
-#        '''If the admin servers calls for it, half the client'''
-#        pass
-
 
 class Main(QObject):
     def __init__(self, parent=None):
@@ -109,13 +79,12 @@ class Main(QObject):
         if not self.que.listen(QHostAddress(self.localhost), QUE_PORT):
             print "PyFarm :: Client.QueSlave :: Could not start the server: %s" % self.que.errorString()
             return
-
         print "PyFarm :: Client.QueSlave :: Waiting for jobs..."
 
     def shutdownServers(self):
         '''Calls the shutdown function all all servers'''
-        self.admin.shutdown()
         self.que.shutdown()
+        self.admin.shutdown()
 
     def restart(self):
         '''Close all connections and restart the client'''
@@ -124,6 +93,7 @@ class Main(QObject):
 
     def shutdown(self):
         '''Close all connections and shutdown the client'''
+        print "PyFarm :: Client :: Got shutdown signal from Admin Server"
         self.shutdownServers()
         sys.exit("PyFarm :: Client :: Client Shutdown by Admin")
 

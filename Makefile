@@ -15,6 +15,9 @@ frozen:
 	cp -fvu /farm/projects/PyFarm/trunk/RC2/lib/*.py /farm/projects/PyFarm/trunk/Frozen/lib
 	cp -fvu /farm/projects/PyFarm/trunk/RC2/lib/ui/*.py /farm/projects/PyFarm/trunk/Frozen/lib/ui
 
+update:
+	rsync -vruP --exclude="*.pyc" --exclude=".*" --exclude="*.txt" --exclude="*.cmd" --exclude="*.e4p" --exclude="*.html" --exclude="Makefile" --exclude="QtDesigner" --exclude="tests" /home/opalmer/PyFarm/trunk/RC3 /media/server/PyFarm/trunk
+
 lite:
 	cp -Rfuv settings.cfg GNU-GPL_License_v3.html Main.pyw Client.py build/source
 	rsync -vruP --exclude="*.pyc" --exclude="old" --exclude="*test*" --exclude="*Test*" --exclude="*new*" --exclude="*New*" lib/ build/source/lib/
