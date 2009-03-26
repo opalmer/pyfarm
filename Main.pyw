@@ -59,6 +59,7 @@ LOCAL_SOFTWARE.update(software.maya())
 LOCAL_SOFTWARE.update(software.houdini())
 LOCAL_SOFTWARE.update(software.shake())
 
+__AUTHOR__ = 'Oliver Palmer'
 __VERSION__ = 'RC3'
 
 class WorkerThread(QThread):
@@ -237,7 +238,7 @@ class Main(QMainWindow):
         '''
         widget = self.ui.mayaAddCamera
         menu = QMenu()
-        menu.addAction('Add Camera', self.mayaAddCamera)
+        menu.addAction('Add Camera',self.mayaAddCamera)
         menu.addAction('Remove Camera', self.mayaRemoveCamera)
         menu.addAction('Empty List', self.ui.mayaCamera.clear)
         menu.exec_(self.globalPoint(widget, -widget.mapToParent(-widget.pos())))
@@ -1183,19 +1184,22 @@ class Main(QMainWindow):
 
     def closeEvent(self, event):
         '''Run when closing the main gui, used to "cleanup" the program state'''
-        exit_dialog = self.hostExitDialog()
+        # if we have connected hosts
+        if len(self.hosts):
+            exit_dialog = self.hostExitDialog()
+            if exit_dialog == QMessageBox.Yes:
+                print "PyFarm :: Main.closeEvent :: Shutting Down Clients..."
+                self.shutdownHosts()
 
-        if exit_dialog == QMessageBox.Yes:
-            print "PyFarm :: Main.closeEvent :: Shutting Down Clients..."
-            self.shutdownHosts()
+            elif exit_dialog == QMessageBox.No:
+                print "PyFarm :: Main.closeEvent :: Restarting clients..."
+                self.restartHosts()
 
-        elif exit_dialog == QMessageBox.No:
-            print "PyFarm :: Main.closeEvent :: Restarting clients..."
-            self.restartHosts()
-
-        elif exit_dialog == QMessageBox.Help:
-            print "PyFarm :: Main.closeEvent :: Presenting host help"
-            self.hostStateHelp()
+            elif exit_dialog == QMessageBox.Help:
+                print "PyFarm :: Main.closeEvent :: Presenting host help"
+                self.hostStateHelp()
+        else:
+            print "PyFarm :: Main.closeEvent :: No hosts to shutdown"
 
 ################################
 ## END General Utilities

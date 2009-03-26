@@ -17,6 +17,12 @@ frozen:
 
 update:
 	rsync -vruP --exclude="*.pyc" --exclude=".*" --exclude="*.txt" --exclude="*.cmd" --exclude="*.e4p" --exclude="*.html" --exclude="Makefile" --exclude="QtDesigner" --exclude="tests" /home/opalmer/PyFarm/trunk/RC3 /media/server/PyFarm/trunk
+	
+sfdm-update:
+	rsync -vruP --exclude="*.pyc" --exclude=".*" --exclude="*.html" /home/opalme20/PyFarm/trunk/RC3 /stuhome/PyFarm/trunk
+
+linecount:
+	cat `find . -name '*.py*'` | wc -l
 
 lite:
 	cp -Rfuv settings.cfg GNU-GPL_License_v3.html Main.pyw Client.py build/source

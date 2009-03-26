@@ -212,6 +212,7 @@ class SoftwareInstalled(object):
 
         return OUTPUT
 
+
 class ConfigureCommand(object):
     '''
     Given an input dictionary and a program (ex. self.maya)

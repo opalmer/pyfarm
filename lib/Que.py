@@ -113,10 +113,12 @@ class QueSlaveServerThread(QThread):
     def __init__(self, socketId, parent):
         super(QueSlaveServerThread, self).__init__(parent)
         self.socketId = socketId
+        self.modName = 'Que.QueSlaveServerThread'
 
     def run(self):
         '''Run the server thread and process the requested data'''
         socket = QTcpSocket()
+        print "PyFarm :: %s :: Starting thread" % self.modName
 
         if not socket.setSocketDescriptor(self.socketId):
             self.emit(SIGNAL("error(int)"), socket.error())
@@ -137,16 +139,21 @@ class QueSlaveServerThread(QThread):
                     SOFTWARE = QString()
                     COMMAND = QString()
 
-                    print "Unpacking the command..."
+                    print "PyFarm :: %s :: Unpacking the command" % self.modName
                     stream >> JOB >> FRAME >> SOFTWARE >> COMMAND
                     if JOB == 'TERMNATE_SELF':
+                        print "PyFarm :: %s :: Closing connection" % self.modName
                         socket.close()
                     else:
-                        print "Running Render..."
                         program = LOCAL_SOFTWARE[str(SOFTWARE)].split("::")[0]
                         scene = COMMAND.split(' ')[len(COMMAND.split(' '))-1]
 
-                        os.system("%s %s" % (program, COMMAND))
+                        print "PyFarm :: %s :: Running render" % self.modName
+                        # now, run the command
+                        #os.system("%s %s" % (program, COMMAND))
+                        print "PyFarm :: %s :: Sending command(%s,%s)" % (self.modName, program, COMMAND)
+                        process = RunProcess(program, COMMAND)
+
 
                         ACTION = QString("REQUESTING_WORK")
                         self.sendReply(socket, ACTION, JOB, FRAME, SOFTWARE, COMMAND)
