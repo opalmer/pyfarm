@@ -34,7 +34,7 @@ from PyQt4.QtNetwork import *
 # From PyFarm
 ## ui components
 import lib.Info as Info
-import lib.ReadSettings as Settings
+from lib.ReadSettings import ParseXmlSettings
 from lib.ui.RC3 import Ui_RC3
 from lib.ui.CustomWidgets import *
 from lib.Process import FakeProgressBar
@@ -43,13 +43,7 @@ from lib.Que import *
 from lib.Network import *
 from lib.RenderConfig import *
 
-# setup the required ports (adjust these settings via settings.cfg)
-QUE_PORT = Settings.Network().QuePort()
-BROADCAST_PORT = Settings.Network().BroadcastPort()
-STDOUT_PORT = Settings.Network().StdOutPort()
-STDERR_PORT = Settings.Network().StdErrPort()
-SIZEOF_UINT16 = Settings.Network().Unit16Size()
-SERVE_FROM = Settings.Network().MasterAddress()
+settings = ParseXmlSettings('%s/settings.xml' % os.getcwd())
 
 LOCAL_SOFTWARE = {}
 software = SoftwareInstalled()
@@ -126,11 +120,11 @@ class Main(QMainWindow):
 
         # inform the user of their settings
         self.updateStatus('SETTINGS', 'Got settings from ./settings.cfg', 'purple')
-        self.updateStatus('SETTINGS', 'Server IP: %s' % SERVE_FROM, 'purple')
-        self.updateStatus('SETTINGS', 'Broadcast Port: %s' % BROADCAST_PORT, 'purple')
-        self.updateStatus('SETTINGS', 'StdOut Port: %s' % STDOUT_PORT, 'purple')
-        self.updateStatus('SETTINGS', 'StdErr Port: %s' % STDERR_PORT, 'purple')
-        self.updateStatus('SETTINGS', 'Que Port: %s' % QUE_PORT, 'purple')
+        self.updateStatus('SETTINGS', 'Server IP: %s' % settings.netGeneral('host'), 'purple')
+        self.updateStatus('SETTINGS', 'Broadcast Port: %s' % settings.netPort('broadcast'), 'purple')
+        self.updateStatus('SETTINGS', 'StdOut Port: %s' % settings.netPort('stdout'), 'purple')
+        self.updateStatus('SETTINGS', 'StdErr Port: %s' % settings.netPort('stderr'), 'purple')
+        self.updateStatus('SETTINGS', 'Que Port: %s' % settings.netPort('que'), 'purple')
 
         for (program, value) in LOCAL_SOFTWARE.items():
             outVal = value.split("::")[0]
@@ -811,7 +805,7 @@ class Main(QMainWindow):
         '''Get an item from the que and send it to a client'''
         # tell the clients that the que is running
         for host in self.hosts:
-            thread = WorkerThread(host[1], QUE_PORT, self)
+            thread = WorkerThread(host[1], settings.netPort('que'), self)
             self.connect(thread, SIGNAL("WORK_COMPLETE"), self.workComplete)
             self.connect(thread, SIGNAL("SENDING_WORK"), self.workSent)
             self.connect(thread, SIGNAL("QUE_EMPTY"), self.queEmpty)

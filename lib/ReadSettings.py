@@ -21,6 +21,8 @@ PURPOSE: Used to read in settings of PyFarm
 
 '''
 import Info
+import sys
+import xml.dom.minidom
 
 SysInfo = Info.System()
 COMMENT = '#'
@@ -91,45 +93,6 @@ def getPaths(openFile, search):
             else:
                pass
 
-class Network(object):
-    '''Read and output the network related settings'''
-    def __init__(self):
-        self.file = open(SETTINGS_FILE, 'r')
-
-    def MasterAddress(self):
-        '''Return the master's address'''
-        return getValue(self.file, 'MASTER_ADDRESS')
-
-    def BroadcastPort(self):
-        '''Return the port of broadcast coms'''
-        return int(getValue(self.file, 'BROADCAST_PORT'))
-
-    def StdOutPort(self):
-        '''Return the standard output TCP port'''
-        return int(getValue(self.file, 'TCP_STD_OUT'))
-
-    def StdErrPort(self):
-        '''Return the standard error TCP port'''
-        return int(getValue(self.file, 'TCP_STD_ERR'))
-
-    def QuePort(self):
-        '''Return the Que TCP port'''
-        return int(getValue(self.file, 'TCP_QUE'))
-
-    def Admin(self):
-        '''
-        Return the administration port.  This port is used to inform
-        the main client thread of what it needs to do.  Example, the main
-        gui is closing so therefore we need to put all clients back into a listen
-        state.
-        '''
-        return int(getValue(self.file, 'ADMIN'))
-
-    def Unit16Size(self):
-        '''Return the size of a unit 16 packet'''
-        return int(getValue(self.file, 'SIZE_OF_UNIT16'))
-
-
 class SoftwareSearchPaths(object):
     '''Read and output the network related settings'''
     def __init__(self):
@@ -190,7 +153,6 @@ class SoftwareSearchPaths(object):
             for path in getPaths(self.file, 'custom_path_houdini_win_x64'):
                 yield path
 
-
     def Shake(self):
         '''Yield any extra paths that the user has given for shake'''
         if self.os == 'linux':
@@ -200,3 +162,89 @@ class SoftwareSearchPaths(object):
         elif self.os == 'mac':
             for path in getPaths(self.file, 'custom_path_shake_mac'):
                 yield path
+
+class ParseXmlSettings(object):
+    '''
+    DESCRIPTION:
+        Used to receieve, process, and return settings from an xml file
+        to the main progam.
+
+    INPUT:
+        self.doc (str) -- The xml self.document to read from
+    '''
+    def __init__(self, doc):
+        self.doc = xml.dom.minidom.parse(doc)
+        self.modName = 'ReadSettings.XmlSettings'
+        self.os = Info.System().os()[0]
+        self.netPorts = self._netPort()
+        self.netGen = self._netGeneral()
+        self.software = self._installedSoftware()
+
+    def _getElement(self, parent, tag):
+        '''Yield all elements from parent given a tagName'''
+        for child in parent.getElementsByTagName(tag):
+            yield child
+
+    def _netPort(self):
+        '''Return a dictionary with the server name and port'''
+        portList = {}
+        for parent in self._getElement(self.doc, 'settings'):
+            for setting in self._getElement(parent, 'network'):
+                for node in self._getElement(setting, 'server'):
+                    portList[str(node.getAttribute('type'))] = int(node.getAttribute('port'))
+        return portList
+
+    def _netGeneral(self):
+        '''Return a dictionary with the general network settings'''
+        netGeneral = {}
+        for parent in self._getElement(self.doc, 'settings'):
+            for setting in self._getElement(parent, 'network'):
+                for node in self._getElement(setting, 'general'):
+                    netGeneral[str(node.getAttribute('type'))] = str(node.getAttribute('value'))
+        return netGeneral
+
+    def _installedSoftware(self):
+        '''
+        Find the currently installed software and add it
+        to the software dictionary
+        '''
+        # THIS FUNCTION STILL NEEDS TO BE WRITTEN
+        # THIS FUNCTION STILL NEEDS TO BE WRITTEN
+        # THIS FUNCTION STILL NEEDS TO BE WRITTEN
+        # THIS FUNCTION STILL NEEDS TO BE WRITTEN
+        #software_installed = SoftwareSearch()
+        software = {}
+        for parent in self._getElement(self.doc, 'software'):
+            for search in self._getElement(parent, 'search'):
+                if search.getAttribute('os') == self.os:
+                    for path in self._getElement(search, 'path'):
+                        for searchPath in path.childNodes:
+                            # THIS FUNCTION STILL NEEDS TO BE WRITTEN
+                            # software_install.atLocation(searchPath.data, search.getAttribute('software'))
+                            print searchPath.data, search.getAttribute('software')
+
+
+    def netPort(self, service):
+        '''
+        Return the port for the given service
+
+        INPUT:
+            service (str) -- service to return a listing for
+        '''
+        return self.netPorts[service]
+
+    def netGeneral(self, setting):
+        '''
+        Return the value assoicated with the given setting
+
+        INPUT:
+            settings (str) -- the setting to search for
+        '''
+        if setting == 'unit16':
+            return int(self.netGen[setting])
+        else:
+            return self.netGen[setting]
+
+    def installedSoftware(self):
+        '''Return a dictionary of the currently installed software'''
+        return self.software

@@ -20,25 +20,14 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 -->
-
 <settings>
     <network>
+        <general type="master" address="127.0.0.1" />
+        <general type="size_of_unit" value="16" />
         <server type="broadcast" port="9630" />
         <server type="stdout" port="9631" />
         <server type="stderr" port="9632" />
         <server type="que" port="9633" />
         <server type="admin" port="9634" />
     </network>
-    <ui>
-        <test>hello</test>
-    </ui>
 </settings>
-<!--
-MASTER_ADDRESS::127.0.0.1
-BROADCAST_PORT::9630
-TCP_STD_OUT::9631
-TCP_STD_ERR::9632
-TCP_QUE::9633
-ADMIN::9634
-SIZE_OF_UNIT16::16
--->

@@ -30,15 +30,9 @@ import os.path
 from PyQt4.QtCore import *
 from PyQt4.QtNetwork import *
 # PyFarm Libs
-import ReadSettings as Settings
+from ReadSettings import ParseXmlSettings
 
-# settings and ports for network usage (adjust these settings via ./settings.cfg)
-SIZEOF_UINT16 = Settings.Network().Unit16Size()
-BROADCAST_PORT = Settings.Network().BroadcastPort()
-QUE_PORT = Settings.Network().QuePort()
-STDOUT_PORT = Settings.Network().StdOutPort()
-STDERR_PORT = Settings.Network().StdErrPort()
-ADMIN_PORT = Settings.Network().Admin()
+settings = ParseXmlSettings('%s/settings.xml' % os.getcwd())
 
 class BroadcastServer(QThread):
     '''
@@ -46,7 +40,7 @@ class BroadcastServer(QThread):
 
     INPUT:
         parent (str) - the thread to parent to. Example: a = MulticastServer(self)
-        port (int) - incoming number, defaults to BROADCAST_PORT
+        port (int) - incoming number, defaults to settings.netPort('broadcast')
         host (str) - host to bind to UDP, defaults to ALL
         timeout (int) - timeout the operation after this amount of time
 
@@ -55,7 +49,7 @@ class BroadcastServer(QThread):
     def __init__(self,  parent, host='', timeout=5):
         super(BroadcastServer,  self).__init__(parent)
         print "PyFarm :: Network.BroadcastServer :: Sending Broadcast"
-        self.port = BROADCAST_PORT
+        self.port = settings.netPort('broadcast')
         self.host = host
         self.dest = ('<broadcast>', self.port)
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -89,7 +83,7 @@ class BroadcastClient(QThread):
     Threaded client to recieve a multicast packet and inform the server of ip and port
 
     INPUT:
-        port (int) - incoming number, defaults to BROADCAST_PORT
+        port (int) - incoming number, defaults to settings.netPort('broadcast')
         host (str) - host to bind to UDP, defaults to ALL
         parent - None.  By parenting to none it the client runs on its own, not bound to original thread.
 
@@ -100,7 +94,7 @@ class BroadcastClient(QThread):
     '''
     def __init__(self, host='', parent=None):
         super(BroadcastClient,  self).__init__(parent)
-        self.port = BROADCAST_PORT
+        self.port = settings.netPort('broadcast')
         self.host = host
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
@@ -152,7 +146,7 @@ class TCPServerStdOutThread(QThread):
             stream.setVersion(QDataStream.Qt_4_2) # set the version of the stream
             while True:
                 socket.waitForReadyRead(-1)
-                if socket.bytesAvailable() >= SIZEOF_UINT16:
+                if socket.bytesAvailable() >= settings.netGeneral('unit16'):
                     nextBlockSize = stream.readUInt16()
                     job = QString()
                     frame = QString()
@@ -193,7 +187,7 @@ class TCPServerStdOut(QTcpServer):
 
 class TCPStdOutClient(QTcpSocket):
     '''TCP Socket client to send standard output to server'''
-    def __init__(self, host='0.0.0.0', port=STDOUT_PORT, parent=None):
+    def __init__(self, host='0.0.0.0', port=settings.netPort('stdout'), parent=None):
         print "PyFarm :: Network.TCPStdOutClient :: Starting Client"
         self.lock = QReadWriteLock()
         super(TCPStdOutClient, self).__init__(parent)
@@ -243,7 +237,7 @@ class TCPStdOutClient(QTcpSocket):
         # pack the data
         stream << job << frame << host << stdout
         stream.device().seek(0)
-        stream.writeUInt16(self.output.size() - SIZEOF_UINT16)
+        stream.writeUInt16(self.output.size() - settings.netGeneral('unit16'))
 
         # once the socket emits connected() self.sendRequest is called
         if not self.socket.state() == 3:
@@ -299,7 +293,7 @@ class WaitForQueServerThread(QThread):
             stream.setVersion(QDataStream.Qt_4_2) # set the version of the stream
             while True:
                 socket.waitForReadyRead(-1)
-                if socket.bytesAvailable() >= SIZEOF_UINT16:
+                if socket.bytesAvailable() >= settings.netGeneral('unit16'):
                     nextBlockSize = stream.readUInt16()
                     job = QString()
                     frame = QString()
@@ -368,7 +362,7 @@ class AdminServerThread(QThread):
                 socket.waitForReadyRead(-1)
 
                 # load next block size with the total size of the stream
-                if socket.bytesAvailable() >= SIZEOF_UINT16:
+                if socket.bytesAvailable() >= settings.netGeneral('unit16'):
                     nextBlockSize = stream.readUInt16()
                     break
 
@@ -412,7 +406,7 @@ class AdminServerThread(QThread):
         stream.writeUInt16(0)
         stream << QString("ERROR") << QString(msg)
         stream.device().seek(0)
-        stream.writeUInt16(reply.size() - SIZEOF_UINT16)
+        stream.writeUInt16(reply.size() - settings.netGeneral('unit16'))
         socket.write(reply)
 
     def sendReply(self, socket, action, options):
@@ -422,7 +416,7 @@ class AdminServerThread(QThread):
         stream.writeUInt16(0)
         stream << action << options
         stream.device().seek(0)
-        stream.writeUInt16(reply.size() - SIZEOF_UINT16)
+        stream.writeUInt16(reply.size() - settings.netGeneral('unit16'))
         socket.write(reply)
 
 
@@ -475,7 +469,7 @@ class AdminServer(QTcpServer):
 
 
 class AdminClient(QObject):
-    def __init__(self, client, port=ADMIN_PORT, parent=None):
+    def __init__(self, client, port=settings.netPort('admin'), parent=None):
         super(AdminClient, self).__init__(parent)
         self.modName = 'Network.AdminClient'
 
@@ -509,7 +503,7 @@ class AdminClient(QObject):
         stream.writeUInt16(0)
         stream << action << options
         stream.device().seek(0)
-        stream.writeUInt16(self.request.size() - SIZEOF_UINT16)
+        stream.writeUInt16(self.request.size() - settings.netGeneral('unit16'))
 
         if self.socket.isOpen():
             print "PyFarm :: %s :: Already connected, closing socket" % self.modName
@@ -532,7 +526,7 @@ class AdminClient(QObject):
 
         while True:
             if self.nextBlockSize == 0:
-                if self.socket.bytesAvailable() < SIZEOF_UINT16:
+                if self.socket.bytesAvailable() < settings.netGeneral('unit16'):
                     break
                 self.nextBlockSize = stream.readUInt16()
             if self.socket.bytesAvailable() < self.nextBlockSize:

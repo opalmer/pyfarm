@@ -4,8 +4,6 @@
 import sys
 import xml.dom.minidom
 
-doc = xml.dom.minidom.parse('settings.xml')
-
 class ParseXmlSettings(object):
     '''
     DESCRIPTION:
@@ -13,12 +11,12 @@ class ParseXmlSettings(object):
         to the main progam.
 
     INPUT:
-        doc (str) -- The xml document to read from
+        self.doc (str) -- The xml self.document to read from
     '''
     def __init__(self, doc):
         self.doc = xml.dom.minidom.parse(doc)
         self.modName = 'ReadSettings.XmlSettings'
-        self.portList = self._portSettings()
+        self.portList = self._netPort()
 
     def _isDomNode(self, node):
         '''Check and see if the given node is a dom node'''
@@ -46,7 +44,7 @@ class ParseXmlSettings(object):
 
         # if given a node path
         if len(groupSearch) == 2:
-            for parent in doc.getElementsByTagName(groupSearch[0]):
+            for parent in self.doc.getElementsByTagName(groupSearch[0]):
                 for root in parent.getElementsByTagName(groupSearch[1]):
                             for child in root.childNodes:
                                 if self._isDomNode(child):
@@ -56,7 +54,7 @@ class ParseXmlSettings(object):
 
         # if given a root node
         elif len(groupSearch) == 1:
-            for child in doc.getElementsByTagName(nodeGroup):
+            for child in self.doc.getElementsByTagName(nodeGroup):
                 for children in child.childNodes:
                     if self._isDomNode(children):
                         yield children
@@ -65,8 +63,7 @@ class ParseXmlSettings(object):
         else:
             sys.exit("PyFarm :: %s :: ERROR :: Improper search parameters") % self.modName
 
-
-    def _portSettings(self):
+    def _netPort(self):
         '''Return a dictionary with the server name and port'''
         portList = {}
         for child in self._groupChildren('settings.network'):
@@ -74,7 +71,7 @@ class ParseXmlSettings(object):
 
         return portList
 
-    def portSetting(self, service):
+    def netPort(self, service):
         '''
         Return the port for the given service
 
@@ -84,10 +81,3 @@ class ParseXmlSettings(object):
         return int(self.portList[service])
 
 settings = ParseXmlSettings('settings.xml')
-print settings.portSetting('admin')
-
-
-#for settings in doc.getElementsByTagName("settings"):
-#    for section in settings.childNodes:
-#        if section.nodeType == 1:
-#            print section

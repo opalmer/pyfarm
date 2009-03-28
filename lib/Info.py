@@ -99,7 +99,7 @@ class System(object):
                 output.append('x86')
 
         elif name == 'nt':
-            output.append('windows')
+            output.append('win')
             output.append(getenv('PROCESSOR_ARCHITECTURE'))
 
         return output

@@ -2,7 +2,8 @@
 <!--
 IMPORTANT notes about this file:
     1.) These default values are used inside of PyFarm, do not remove them.
-    2.) If you wish to add the search paths, use a comma to append a new path
+    2.) If you wish to add the search paths, simply include another <path> tag
+    in the relevant locations
     3.) Changing values here can produce unexpected results
 
 This file is part of PyFarm.
@@ -20,57 +21,54 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 -->
+<PyFarm>
+    <settings>
+        <network>
+            <!-- General Network Settings -->
+            <general type="host" value="127.0.0.1" />
+            <general type="unit16" value="16" />
 
-<general>
-    <size_of_unit16>16</size_of_unit16>
-</general>
+            <!-- Server Specific Settings -->
+            <server type="admin" port="9630" />
+            <server type="broadcast" port="9631" interval="15"/>
+            <server type="que" port="9632" />
+            <server type="stderr" port="9633" />
+            <server type="stdout" port="9634" />
+        </network>
+    </settings>
 
-<network>
-    <category="port">
-        <server_type="broadcast">
-            <announce>9630</announce>
-        </server_type>
-        <server_type="tcp">
-            <stdout>9631</stdout>
-            <stderr>9632</stdout>
-            <que>9633</que>
-            <admin>9634</admin>
-        </server_type>
-    </category>
-</network>
-
-<software>
-    <search os="linux">
-        <maya>
+    <software>
+        <!-- Maya Search Declarations -->
+        <search os="linux" software="maya">
             <path>/usr/autodesk</path>
-        </maya>
-        <houdini>
+        </search>
+        <search os="mac" software="maya">
+            <path>/Applications/Autodesk</path>
+        </search>
+        <search os="win" software="maya">
+            <path>C:\Program Files\Autodesk</path>
+        </search>
+
+        <!-- Hodini Search Declarations -->
+        <search os="linux" software="houdini">
             <path>/opt</path>
             <path>/usr</path>
-        </houdini>
-        <shake>
+        </search>
+        <search os="mac" software="houdini">
+        </search>
+        <search os="win" software="houdini">
+                <path>C:\Program Files\Side Effects Software</path>
+                <path>C:\Program Files(x86)\Side Effects Software</path>
+        </search>
+
+        <!-- Shake Search Declarations -->
+        <search os="linux" software="shake">
             <path>/usr/apple/shake-v4.00.0607</path>
             <path>/opt/shake</path>
             <path>/usr/local/shake</path>
-        </shake>
-    </search>
-
-    <search os="mac">
-        <maya>
-            <path>/Applications/Autodesk</path>
-        </maya>
-        <shake>
+        </search>
+        <search os="mac" software="shake">
             <path>/Applications/Shake/shake.app/Contents/MacOS</path>
-        </shake>
-    </search>
-
-    <search os="win">
-        <maya>
-            <path>C:\Program Files\Autodesk</path>
-        </maya>
-        <houdini>
-            <path>C:\Program Files\Side Effects Software</path>
-            <path>C:\Program Files(x86)\Side Effects Software</path>
-        </houdini>
-    </search>
-</software>
+        </search>
+    </software>
+</PyFarm>

@@ -31,16 +31,14 @@ import socket
 
 # PyFarm Libs
 from Process import *
-import ReadSettings as Settings
-from lib.RenderConfig import SoftwareInstalled
+from ReadSettings import ParseXmlSettings
+from RenderConfig import SoftwareInstalled
 
 # PyQt Libs
 from PyQt4.QtCore import *
 from PyQt4.QtNetwork import *
 
-# setup the required ports (adjust these settings via settings.cfg)
-QUE_PORT = Settings.Network().QuePort()
-SIZEOF_UINT16 = 2
+settings = ParseXmlSettings('%s/settings.xml' % os.getcwd())
 
 stateHelp = {0:"The socket is not connected",
                         1:"The socket is performing a host name lookup",
@@ -131,7 +129,7 @@ class QueSlaveServerThread(QThread):
 
             while True:
                 socket.waitForReadyRead(-1)
-                if socket.bytesAvailable() >= SIZEOF_UINT16:
+                if socket.bytesAvailable() >= settings.netGeneral('unit16'):
                     nextBlockSize = stream.readUInt16()
 
                     JOB = QString()
@@ -176,7 +174,7 @@ class QueSlaveServerThread(QThread):
         stream.writeUInt16(0)
         stream << QString("ERROR")
         stream.device().seek(0)
-        stream.writeUInt16(reply.size() - SIZEOF_UINT16)
+        stream.writeUInt16(reply.size() - settings.netGeneral('unit16'))
         socket.write(reply)
         socket.close()
 
@@ -188,7 +186,7 @@ class QueSlaveServerThread(QThread):
         stream.writeUInt16(0)
         stream << ACTION << JOB << FRAME << SOFTWARE << COMMAND
         stream.device().seek(0)
-        stream.writeUInt16(reply.size() - SIZEOF_UINT16)
+        stream.writeUInt16(reply.size() - settings.netGeneral('unit16'))
         socket.write(reply)
 
 
@@ -226,7 +224,7 @@ class SendCommand(QTcpSocket):
         to
         port -- the port to use for the socket connection
     '''
-    def __init__(self, client, port=QUE_PORT, parent=None):
+    def __init__(self, client, port=settings.netPort('que'), parent=None):
         super(SendCommand, self).__init__(parent)
         self.client = client
         self.port = port
@@ -266,7 +264,7 @@ class SendCommand(QTcpSocket):
             stream.writeUInt16(0)
             stream << JOB << FRAME << SOFTWARE << COMMAND
             stream.device().seek(0)
-            stream.writeUInt16(self.request.size() - SIZEOF_UINT16)
+            stream.writeUInt16(self.request.size() - settings.netGeneral('unit16'))
 
             if self.socket.isOpen():
                 self.socket.close()
@@ -274,7 +272,7 @@ class SendCommand(QTcpSocket):
             print "Connecting to %s..." % self.client
 
             # once the socket emits connected() self.sendRequest is called
-            self.socket.connectToHost(self.client, QUE_PORT)
+            self.socket.connectToHost(self.client, settings.netPort('que'))
 
     def sendRequest(self):
         print "Sending work to %s..." % self.client
@@ -289,7 +287,7 @@ class SendCommand(QTcpSocket):
 
         while True:
             if self.nextBlockSize == 0:
-                if self.socket.bytesAvailable() < SIZEOF_UINT16:
+                if self.socket.bytesAvailable() < settings.netGeneral('unit16'):
                     break
                 self.nextBlockSize = stream.readUInt16()
             if self.socket.bytesAvailable() < self.nextBlockSize:
