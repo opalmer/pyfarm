@@ -9,7 +9,7 @@ Module also includes required network functions
 
     PyFarm is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
+    the Free software Foundation, either version 3 of the License, or
     (at your option) any later version.
 
     PyFarm is distributed in the hope that it will be useful,
@@ -32,7 +32,6 @@ import socket
 # PyFarm Libs
 from Process import *
 from ReadSettings import ParseXmlSettings
-from RenderConfig import SoftwareInstalled
 
 # PyQt Libs
 from PyQt4.QtCore import *
@@ -46,15 +45,6 @@ stateHelp = {0:"The socket is not connected",
                         3:"A connection is established",
                         4:"The socket is bound to an address and port (for servers)",
                         6:"The socket is about to close (data may still be waiting to be written)"}
-
-# setup and find all of the local software
-LOCAL_SOFTWARE = {}
-software = SoftwareInstalled()
-
-# find the installed software and add it the LOCAL_SOFTWARE
-LOCAL_SOFTWARE.update(software.maya())
-LOCAL_SOFTWARE.update(software.houdini())
-LOCAL_SOFTWARE.update(software.shake())
 
 class PriorityQue(Queue.Queue):
     '''
@@ -132,29 +122,29 @@ class QueSlaveServerThread(QThread):
                 if socket.bytesAvailable() >= settings.netGeneral('unit16'):
                     nextBlockSize = stream.readUInt16()
 
-                    JOB = QString()
-                    FRAME = QString()
-                    SOFTWARE = QString()
-                    COMMAND = QString()
+                    job = QString()
+                    frame = QString()
+                    software = QString()
+                    command = QString()
 
                     print "PyFarm :: %s :: Unpacking the command" % self.modName
-                    stream >> JOB >> FRAME >> SOFTWARE >> COMMAND
-                    if JOB == 'TERMNATE_SELF':
+                    stream >> job >> frame >> software >> command
+                    if job == 'TERMNATE_SELF':
                         print "PyFarm :: %s :: Closing connection" % self.modName
                         socket.close()
                     else:
-                        program = LOCAL_SOFTWARE[str(SOFTWARE)].split("::")[0]
-                        scene = COMMAND.split(' ')[len(COMMAND.split(' '))-1]
+                        program = settings.command(str(software))
+                        scene = command.split(' ')[len(command.split(' '))-1]
 
                         print "PyFarm :: %s :: Running render" % self.modName
                         # now, run the command
-                        #os.system("%s %s" % (program, COMMAND))
-                        print "PyFarm :: %s :: Sending command(%s,%s)" % (self.modName, program, COMMAND)
-                        process = RunProcess(program, COMMAND)
+                        #os.system("%s %s" % (program, command))
+                        print "PyFarm :: %s :: Sending command(%s,%s)" % (self.modName, program, command)
+                        process = RunProcess(program, command)
 
 
-                        ACTION = QString("REQUESTING_WORK")
-                        self.sendReply(socket, ACTION, JOB, FRAME, SOFTWARE, COMMAND)
+                        action = QString("REQUESTING_WORK")
+                        self.sendReply(socket, action, job, frame, software, command)
                         socket.waitForDisconnected()
 
             if socket.bytesAvailable() < nextBlockSize:
@@ -178,13 +168,13 @@ class QueSlaveServerThread(QThread):
         socket.write(reply)
         socket.close()
 
-    def sendReply(self, socket, ACTION, JOB, FRAME, SOFTWARE, COMMAND):
+    def sendReply(self, socket, action, job, frame, software, command):
         print "Requesting more work..."
         reply = QByteArray()
         stream = QDataStream(reply, QIODevice.WriteOnly)
         stream.setVersion(QDataStream.Qt_4_2)
         stream.writeUInt16(0)
-        stream << ACTION << JOB << FRAME << SOFTWARE << COMMAND
+        stream << action << job << frame << software << command
         stream.device().seek(0)
         stream.writeUInt16(reply.size() - settings.netGeneral('unit16'))
         socket.write(reply)
@@ -248,21 +238,21 @@ class SendCommand(QTcpSocket):
             print "It is time to die!"
             self.socket.close()
         else:
-            JOB = QString(inList[0])
-            FRAME = QString(inList[1])
-            SOFTWARE = QString(inList[2])
-            COMMAND = QString(inList[3])
+            job = QString(inList[0])
+            frame = QString(inList[1])
+            software = QString(inList[2])
+            arguments = QString(inList[3])
 
             # use these for checks
-            self.job = JOB
-            self.frame = FRAME
-            self.command = COMMAND
+            self.job = job
+            self.frame = frame
+            self.command = arguments
 
             self.request = QByteArray()
             stream = QDataStream(self.request, QIODevice.WriteOnly)
             stream.setVersion(QDataStream.Qt_4_2)
             stream.writeUInt16(0)
-            stream << JOB << FRAME << SOFTWARE << COMMAND
+            stream << job << frame << software << arguments
             stream.device().seek(0)
             stream.writeUInt16(self.request.size() - settings.netGeneral('unit16'))
 
@@ -294,25 +284,25 @@ class SendCommand(QTcpSocket):
                 break
 
             # prepare for info
-            ACTION = QString()
-            JOB = QString()
-            FRAME = QString()
-            SOFTWARE = QString()
-            COMMAND = QString()
+            action = QString()
+            job = QString()
+            frame = QString()
+            software = QString()
+            command = QString()
 
             # unpack the incoming packet
-            stream >> ACTION
-            if ACTION == QString("REQUESTING_WORK"):
-                stream >> JOB >> FRAME >> SOFTWARE >> COMMAND
+            stream >> action
+            if action == QString("REQUESTING_WORK"):
+                stream >> job >> frame >> software >> command
                 trueState = 0 # must == 3 to pass
-                if JOB == self.job:
+                if job == self.job:
                     trueState += 1
-                if FRAME == self.frame:
+                if frame == self.frame:
                     trueState += 1
-                if COMMAND == self.command:
+                if command == self.command:
                     trueState += 1
                 if trueState == 3:
-                    self.emit(SIGNAL("WORK_COMPLETE"), [self.client, JOB, FRAME])
+                    self.emit(SIGNAL("WORK_COMPLETE"), [self.client, job, frame])
 
             self.nextBlockSize = 0
 

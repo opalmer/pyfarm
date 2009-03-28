@@ -21,147 +21,98 @@ PURPOSE: Used to read in settings of PyFarm
 
 '''
 import Info
-import sys
+from sys import exit
+from os.path import isdir, isfile
+from os import listdir
+from PyQt4.QtCore import QRegExp
 import xml.dom.minidom
 
-SysInfo = Info.System()
-COMMENT = '#'
-KEY_SPLIT = '::'
-PATH_SEP = ','
-SETTINGS_FILE = Info.ModulePath(__file__, 1)+'settings.cfg'
-
-# setup proper line termination
-if SysInfo.os()[0] == 'windows':
-    LINE_TERM = '\n'
-else:
-    LINE_TERM = '\n'
-
-def CloseFile(openFile):
+class SoftwareSearch(object):
     '''
-    Close the given open file instance
+    DESCRIPTION:
+        Used to find and relay information about the currently installed
+        software to the xml parser
     '''
-    openFile.close()
-
-def isMatch(line, search):
-    '''
-    Returs the value of the given line if
-    the requested search matches
-    '''
-    lineSplit = line.split(KEY_SPLIT)
-    output = ''
-    if lineSplit[0] == search:
-        return lineSplit[1]
-
-def getValue(openFile, search):
-    '''
-    Return the requested var
-
-    INPUT:
-        openFile -- File to searchin
-        search -- line to search for
-    '''
-    while 1:
-            lines = file.readlines(openFile)
-            if not lines:
-                CloseFile(openFile)
-                break
-
-            for line in lines:
-                if line.split(LINE_TERM)[0].split(KEY_SPLIT)[0] == search:
-                    return line.split(LINE_TERM)[0].split(KEY_SPLIT)[1]
-                else:
-                    CloseFile(openFile)
-
-def getPaths(openFile, search):
-    '''
-    return all paths given by settings.cfg
-
-    INPUT:
-        openFile -- File to searchin
-        search -- line to search for
-    '''
-    while 1:
-        lines = file.readlines(openFile)
-        if not lines:
-            break
-
-        for line in lines:
-            if line.split(LINE_TERM)[0].split(KEY_SPLIT)[0] == search:
-                if line.split(LINE_TERM)[0].split(KEY_SPLIT)[1] != 'NONE':
-                    for newPath in line.split(LINE_TERM)[0].split(KEY_SPLIT)[1].split(PATH_SEP):
-                        yield newPath
-            else:
-               pass
-
-class SoftwareSearchPaths(object):
-    '''Read and output the network related settings'''
     def __init__(self):
-        self.file = open(SETTINGS_FILE, 'r')
-        os_arch = SysInfo.os()
-        self.os = os_arch[0]
-        self.arch = os_arch[1]
+        self.modName = 'ReadSettings.SoftwareSearch'
+        self.os = Info.System().os()[0]
 
-    def Maya(self):
-        '''Yield any extra paths that the user has given for maya'''
-        if self.os == 'linux' and self.arch == 'x86':
-            for path in getPaths(self.file, 'custom_path_maya_linux_x86'):
-                yield path
+    def _findProgram(self, expession, path, rendererSearch, expCapStart, programName):
+        '''
+        Given a regular expression and other information,
+        search for and return all results.
 
-        elif self.os == 'linux' and self.arch == 'x64':
-            for path in getPaths(self.file, 'custom_path_maya_linux_x64'):
-                yield path
+        INPUT:
+            expession -- regular expression to use in search
+            path -- path to start search at
+            expCapStart -- Position to return cap from
+            rendererSearch -- final path to renderer (the file to search for)
+        '''
+        exp = QRegExp(expession) # declare the regular expression
 
-        elif self.os == 'mac' and self.arch == 'x86':
-            for path in getPaths(self.file, 'custom_path_maya_mac_x86'):
-                yield path
+        if self.os == 'linux' or self.os == 'mac':
+            for result in listdir(path):
+                if not exp.indexIn(result):
+                    if isfile("%s/%s/%s" % (path, result, rendererSearch)):
+                        yield [str('%s %s' % (programName, exp.cap(0)[expCapStart:])), \
+                                   str("%s/%s/%s" % (path, result, rendererSearch))]
 
-        elif self.os == 'mac' and self.arch == 'x64':
-            for path in getPaths(self.file, 'custom_path_maya_mac_x64'):
-                yield path
+    def _maya(self, path, software):
+        '''
+        Run a search for  maya at the given path
 
-        elif self.os == 'windows' and self.arch == 'x86':
-            for path in getPaths(self.file, 'custom_path_maya_win_x86'):
-                yield path
-
-        elif self.os == 'windows' and self.arch == 'x64':
-            for path in getPaths(self.file, 'custom_path_maya_win_x64'):
-                yield path
-
-    def Houdini(self):
-        '''Yield any extra paths that the user has given for houdini'''
-        if self.os == 'linux' and self.arch == 'x86':
-            for path in getPaths(self.file, 'custom_path_maya_linux_x86'):
-                yield path
-
-        elif self.os == 'linux' and self.arch == 'x64':
-            for path in getPaths(self.file, 'custom_path_houdini_linux_x64'):
-                yield path
-
-        elif self.os == 'mac' and self.arch == 'x86':
-            for path in getPaths(self.file, 'custom_path_houdini_mac_x86'):
-                yield path
-
-        elif self.os == 'mac' and self.arch == 'x64':
-            for path in getPaths(self.file, 'custom_path_houdini_mac_x64'):
-                yield path
-
-        elif self.os == 'windows' and self.arch == 'x86':
-            for path in getPaths(self.file, 'custom_path_houdini_win_x86'):
-                yield path
-
-        elif self.os == 'windows' and self.arch == 'x64':
-            for path in getPaths(self.file, 'custom_path_houdini_win_x64'):
-                yield path
-
-    def Shake(self):
-        '''Yield any extra paths that the user has given for shake'''
+        INPUT:
+            path (str) -- path to searh for maya at
+            software (str) -- common name of program to pass
+        '''
+        expression = r"""[m|M]aya(200[89]|8.[05]|8[05]|7(.0|0))"""
         if self.os == 'linux':
-            for path in getPaths(self.file, 'custom_path_shake_linux'):
-                yield path
+            for program in  self._findProgram(expression, path, 'bin/Render', 4, 'Maya'):
+                yield [program[0], program[1], 'maya']
 
-        elif self.os == 'mac':
-            for path in getPaths(self.file, 'custom_path_shake_mac'):
-                yield path
+    def _houdini(self, path, software):
+        '''
+        Run a search for  houdini at the given path
+
+        INPUT:
+            path (str) -- path to searh for houdini at
+            software (str) -- common name of program to pass
+        '''
+        OUTPUT = {}
+        expression = r"""hfs9.[15].[0-9]+"""
+        win_expression = r"""Houdini 9.[15].[0-9]+"""
+
+    def _shake(self, path, software):
+        '''
+        Run a search for shake at the given path
+
+        INPUT:
+            path (str) -- path to searh for shake at
+            software (str) -- common name of program to pass
+        '''
+        if isfile("%s/bin/shake" % path):
+            return ['Shake', str("%s/bin/shake"% path), str(software)]
+
+    def atLocation(self, path, software):
+        '''
+        Given a path and sofware run a search
+
+        INPUT:
+            path (str) -- path to search for software
+            software (str) -- software to search for
+        '''
+        if isdir(path):
+            print 'PyFarm :: %s :: Running search @ %s for %s' % (self.modName, path, software)
+            if software == 'maya':
+                for package in self._maya(path, software):
+                    yield package
+            elif software == 'houdini':
+                self._houdini(path, software)
+            elif software == 'shake':
+                yield self._shake(path, software)
+            else:
+                exit('PyFarm :: %s :: ERROR :: %s is not a valid software package' % software)
+
 
 class ParseXmlSettings(object):
     '''
@@ -172,13 +123,35 @@ class ParseXmlSettings(object):
     INPUT:
         self.doc (str) -- The xml self.document to read from
     '''
-    def __init__(self, doc):
-        self.doc = xml.dom.minidom.parse(doc)
+    def __init__(self, doc, skipSoftware=False):
         self.modName = 'ReadSettings.XmlSettings'
         self.os = Info.System().os()[0]
+
+        # check for xml formatting errors
+        try:
+            self.doc = xml.dom.minidom.parse(doc)
+        except xml.parsers.expat.ExpatError, error:
+            exit("PyFarm :: %s :: ERROR :: Could not parse xml file: %s" % (self.modName, error))
+
+        # setup dictionaries
         self.netPorts = self._netPort()
         self.netGen = self._netGeneral()
-        self.software = self._installedSoftware()
+
+        if not skipSoftware:
+            # setup general software setting
+            softwareGen = self._softwareGeneral()
+            self.softwareWidgetIndex = softwareGen[0]
+            self.softwareFileGrep = softwareGen[1]
+
+            # gather the currently installed software and add it
+            #  to the software dictionary
+            self.softwareList = []
+            self.softwareCommand = {}
+            self.softwareCommonName = {}
+            for package in self._installedSoftware():
+                self.softwareList.append(package[0])
+                self.softwareCommand[package[0]] = package[1]
+                self.softwareCommonName[package[0]] = package[2]
 
     def _getElement(self, parent, tag):
         '''Yield all elements from parent given a tagName'''
@@ -208,21 +181,36 @@ class ParseXmlSettings(object):
         Find the currently installed software and add it
         to the software dictionary
         '''
-        # THIS FUNCTION STILL NEEDS TO BE WRITTEN
-        # THIS FUNCTION STILL NEEDS TO BE WRITTEN
-        # THIS FUNCTION STILL NEEDS TO BE WRITTEN
-        # THIS FUNCTION STILL NEEDS TO BE WRITTEN
-        #software_installed = SoftwareSearch()
-        software = {}
+        software_installed = SoftwareSearch()
         for parent in self._getElement(self.doc, 'software'):
             for search in self._getElement(parent, 'search'):
                 if search.getAttribute('os') == self.os:
                     for path in self._getElement(search, 'path'):
                         for searchPath in path.childNodes:
-                            # THIS FUNCTION STILL NEEDS TO BE WRITTEN
-                            # software_install.atLocation(searchPath.data, search.getAttribute('software'))
-                            print searchPath.data, search.getAttribute('software')
+                            for result in software_installed.atLocation(searchPath.data, search.getAttribute('software')):
+                                yield result
 
+    def _softwareGeneral(self):
+        '''
+        Find the values for each software package and
+        add it to the dictionary
+        '''
+        widgetIndexes = {}
+        softwareFileGrep = {}
+        for parent in self._getElement(self.doc, 'software'):
+            for maya in self._getElement(parent, 'maya'):
+                widgetIndexes['maya'] = str(maya.getAttribute('widgetIndex'))
+                softwareFileGrep['maya'] = str(maya.getAttribute('fileGrep'))
+
+            for houdini in self._getElement(parent, 'houdini'):
+                widgetIndexes['houdini'] = str(houdini.getAttribute('widgetIndex'))
+                softwareFileGrep['houdini'] = str(houdini.getAttribute('fileGrep'))
+
+            for shake in self._getElement(parent, 'shake'):
+                widgetIndexes['shake'] = str(shake.getAttribute('widgetIndex'))
+                softwareFileGrep['shake'] = str(shake.getAttribute('fileGrep'))
+
+        return [widgetIndexes, softwareFileGrep]
 
     def netPort(self, service):
         '''
@@ -231,7 +219,10 @@ class ParseXmlSettings(object):
         INPUT:
             service (str) -- service to return a listing for
         '''
-        return self.netPorts[service]
+        try:
+            return self.netPorts[service]
+        except KeyError, key:
+            exit('PyFarm :: %s :: ERROR:: %s is not a valid key in netPorts' % (self.modName, key))
 
     def netGeneral(self, setting):
         '''
@@ -240,11 +231,66 @@ class ParseXmlSettings(object):
         INPUT:
             settings (str) -- the setting to search for
         '''
-        if setting == 'unit16':
-            return int(self.netGen[setting])
-        else:
-            return self.netGen[setting]
+        try:
+            if setting == 'unit16':
+                return int(self.netGen[setting])
+            else:
+                return self.netGen[setting]
+        except KeyError, key:
+            exit('PyFarm :: %s :: ERROR:: %s is not a valid key in netGen' % (self.modName, key))
 
     def installedSoftware(self):
-        '''Return a dictionary of the currently installed software'''
-        return self.software
+        '''Return a list of the currently installed software'''
+        return self.softwareList
+
+    def command(self, software):
+        '''
+        Return the command assoicated with the given software
+
+        INPUT:
+            software (str) -- the software to retrieve the command for
+        '''
+        try:
+            return self.softwareCommand[software]
+        except KeyError, key:
+            exit('PyFarm :: %s :: ERROR:: %s is not a valid key in softwareCommand'% (self.modName, key))
+
+    def commandList(self):
+        '''Return the full list of render commands'''
+        return self.softwareCommand
+
+    def commonName(self, software):
+        '''
+        Return the common name of the given software
+
+        INPUT:
+            software (str) -- the software to retrieve the common name for
+        '''
+        try:
+            return self.softwareCommonName[software]
+        except KeyError, key:
+            exit('PyFarm :: %s :: ERROR:: %s is not a valid key in softwareCommonName'% (self.modName, key))
+
+    def widgetIndex(self, software):
+        '''
+       Return the index of the widget for the given software
+
+        INPUT:
+            software (str) -- software to index for (using common name)
+        '''
+        try:
+            return int(self.softwareWidgetIndex[self.commonName(software)])
+        except KeyError, key:
+            exit('PyFarm :: %s :: ERROR:: %s is not a valid key in softwareWidgetIndex' % (self.modName, key))
+
+    def fileGrep(self, software):
+        '''
+       Return the index of the widget for the given software
+
+        INPUT:
+            software (str) -- software to index for (using common name)
+        '''
+        try:
+            return self.softwareFileGrep[self.commonName(software)]
+        except KeyError, key:
+            exit('PyFarm :: %s :: ERROR:: %s is not a valid key in softwareFileGrep' % (self.modName, key))

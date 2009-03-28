@@ -32,7 +32,7 @@ from PyQt4.QtNetwork import *
 # PyFarm Libs
 from ReadSettings import ParseXmlSettings
 
-settings = ParseXmlSettings('%s/settings.xml' % os.getcwd())
+settings = ParseXmlSettings('%s/settings.xml' % os.getcwd(), skipSoftware=True)
 
 class BroadcastServer(QThread):
     '''

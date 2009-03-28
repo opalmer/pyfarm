@@ -24,21 +24,14 @@ PURPOSE: To handle and run all client connections on a remote machine
 
 import sys
 import os.path
-import traceback
 
 from lib.Network import *
 from lib.Que import *
 from PyQt4.QtCore import *
 
-# port settings
-SIZEOF_UINT16 = Settings.Network().Unit16Size()
-BROADCAST_PORT = Settings.Network().BroadcastPort()
-QUE_PORT = Settings.Network().QuePort()
-STDOUT_PORT = Settings.Network().StdOutPort()
-STDERR_PORT = Settings.Network().StdErrPort()
-ADMIN_PORT = Settings.Network().Admin()
-USE_STATIC_CLIENT = False
+from lib.ReadSettings import ParseXmlSettings
 
+settings = ParseXmlSettings('%s/settings.xml' % os.getcwd(), skipSoftware=True)
 
 class Main(QObject):
     def __init__(self, parent=None):
@@ -69,14 +62,14 @@ class Main(QObject):
         self.connect(self.admin, SIGNAL("RESTART"), self.restart)
         self.connect(self.admin, SIGNAL("HALT"), self.halt)
 
-        if not self.admin.listen(QHostAddress(self.localhost), ADMIN_PORT):
+        if not self.admin.listen(QHostAddress(self.localhost), settings.netPort('admin')):
             print "PyFarm :: Client.AdminServer :: Could not start the server: %s" % self.admin.errorString()
             return
         print "PyFarm :: Client.AdminServer :: Waiting for signals..."
 
         # start the que server
         self.que = QueSlaveServer(self)
-        if not self.que.listen(QHostAddress(self.localhost), QUE_PORT):
+        if not self.que.listen(QHostAddress(self.localhost), settings.netPort('que')):
             print "PyFarm :: Client.QueSlave :: Could not start the server: %s" % self.que.errorString()
             return
         print "PyFarm :: Client.QueSlave :: Waiting for jobs..."

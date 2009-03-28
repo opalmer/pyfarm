@@ -45,14 +45,6 @@ from lib.RenderConfig import *
 
 settings = ParseXmlSettings('%s/settings.xml' % os.getcwd())
 
-LOCAL_SOFTWARE = {}
-software = SoftwareInstalled()
-
-# find the installed software and add it the LOCAL_SOFTWARE
-LOCAL_SOFTWARE.update(software.maya())
-LOCAL_SOFTWARE.update(software.houdini())
-LOCAL_SOFTWARE.update(software.shake())
-
 __AUTHOR__ = 'Oliver Palmer'
 __VERSION__ = 'RC3'
 
@@ -126,9 +118,8 @@ class Main(QMainWindow):
         self.updateStatus('SETTINGS', 'StdErr Port: %s' % settings.netPort('stderr'), 'purple')
         self.updateStatus('SETTINGS', 'Que Port: %s' % settings.netPort('que'), 'purple')
 
-        for (program, value) in LOCAL_SOFTWARE.items():
-            outVal = value.split("::")[0]
-            self.updateStatus('SETTINGS', '%s: %s' % (program, outVal), 'purple')
+        for program in settings.installedSoftware():
+            self.updateStatus('SETTINGS', '%s: %s' % (program, settings.command(program)), 'purple')
 
         # populate the avaliable list of renderers
         self.UpdateSoftwareList()
@@ -292,42 +283,37 @@ class Main(QMainWindow):
             self.fileGrep -- file grep used to search for files to render
             self.scene -- path to ui component used to hold the file to render
         '''
-        try:
-            # convert the QSting to a string
-            self.software = str(newSoftware)
-            self.command = LOCAL_SOFTWARE[self.software].split('::')[0]
-            self.software_generic = LOCAL_SOFTWARE[self.software].split('::')[1]
-            self.fileGrep = LOCAL_SOFTWARE[self.software].split('::')[2]
-            self.widgetIndex = int(LOCAL_SOFTWARE[self.software].split('::')[3])
-            self.ui.optionStack.setCurrentIndex(self.widgetIndex)
+        # convert the QSting to a string
+        self.software = str(newSoftware)
+        self.command = settings.command(self.software)
+        self.software_generic = settings.commonName(self.software)
+        self.fileGrep = settings.fileGrep(self.software)
+        self.widgetIndex = settings.widgetIndex(self.software)
+        self.ui.optionStack.setCurrentIndex(self.widgetIndex)
 
-            # if we are using maya
-            if self.software_generic == 'maya':
-                self.ui.optionStack.setCurrentWidget
-                self.scene = self.ui.mayaScene
-                self.browseForScene = self.ui.mayaBrowseForScene
+        # if we are using maya
+        if self.software_generic == 'maya':
+            self.ui.optionStack.setCurrentWidget
+            self.scene = self.ui.mayaScene
+            self.browseForScene = self.ui.mayaBrowseForScene
 
-            # if we are using houdini
-            elif self.software_generic == 'houidini':
-                self.scene = self.ui.houdiniFile
-                self.browseForScene = self.ui.houdiniBrowseForScene
+        # if we are using houdini
+        elif self.software_generic == 'houidini':
+            self.scene = self.ui.houdiniFile
+            self.browseForScene = self.ui.houdiniBrowseForScene
 
-            # if we are using shake
-            elif self.software_generic == 'shake':
-                self.scene = self.ui.shakeScript
-                self.browseForScene = self.ui.shakeBrowseForScript
-
-        # if we can't find the software, return an error
-        except KeyError:
-            self.criticalMessage('Could Not Find Programs', 'Sorry but we could not find any software installed on your system to render with.\n\nExit Code: 1', 1)
+        # if we are using shake
+        elif self.software_generic == 'shake':
+            self.scene = self.ui.shakeScript
+            self.browseForScene = self.ui.shakeBrowseForScript
 
     def UpdateSoftwareList(self):
         '''
         Given a software list of installed software, add
         it the list of avaliable software to render with.
         '''
-        for (software, path) in LOCAL_SOFTWARE.items():
-           self.ui.softwareSelection.addItem(str(software))
+        for software in settings.installedSoftware():
+            self.ui.softwareSelection.addItem(str(software))
 
         self.SetSoftware(self.ui.softwareSelection.currentText())
 
@@ -730,7 +716,7 @@ class Main(QMainWindow):
     def SubmitToQue(self):
         '''Gather information about the current job'''
         # first make a copy of self.software
-        config = ConfigureCommand(LOCAL_SOFTWARE)
+        config = ConfigureCommand()
         jobID = self.runChecks()
 
         if jobID:
@@ -755,9 +741,6 @@ class Main(QMainWindow):
                         for command in config.maya(str(self.software), sFrame, eFrame, bFrame,\
                             renderer, scene, str(layer.text()), camera, outDir, project):
                                 self.que.put([jobName, command[0], command[1], str(command[2])], priority)
-                                frame = QString(command[0])
-                                cmd = QString(str(command[2]))
-                                #self.que.put([jobName, frame, cmd], priority)
                 else:
                     for command in config.maya(str(self.software), sFrame, eFrame, bFrame,\
                         renderer, scene, '', camera, outDir, project):
@@ -1144,13 +1127,13 @@ class Main(QMainWindow):
     def shutdownHosts(self):
         '''Shutdown all remote hosts'''
         for host in self.hosts:
-            client = AdminClient(host[1], ADMIN_PORT)
+            client = AdminClient(host[1], settings.netPort('admin'))
             client.shutdown()
 
     def restartHosts(self):
         '''Restart all remote hosts'''
         for host in self.hosts:
-            client = AdminClient(host[1], ADMIN_PORT)
+            client = AdminClient(host[1], settings.netPort('admin'))
             client.restart()
 
     def hostStateHelp(self):
