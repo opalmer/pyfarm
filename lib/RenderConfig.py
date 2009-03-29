@@ -1,6 +1,6 @@
 '''
 AUTHOR: Oliver Palmer
-CONTACT: oliverpalmer@opalmer.com
+HOMEPAGE: www.pyfarm.net
 INITIAL: Feb 6 2009
 PURPOSE: Module used to configure a command line render based on operating system
 and architecture.   This module first looks at the operating system, then the arhitecture.
@@ -20,12 +20,16 @@ After discovering this information it will then try and discover the currently i
 
     You should have received a copy of the GNU General Public License
     along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
-
 '''
-import Info
-from PyQt4.QtCore import *
+# From PyQt
 from os import listdir, system
 from os.path import isfile, islink, isdir, normpath
+
+# From PyQt
+from PyQt4.QtCore import *
+
+# From PyFarm
+import Info
 
 class ConfigureCommand(object):
     '''

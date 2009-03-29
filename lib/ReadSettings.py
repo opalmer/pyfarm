@@ -1,6 +1,6 @@
 '''
 AUTHOR: Oliver Palmer
-CONTACT: oliverpalmer@opalmer.com
+HOMEPAGE: www.pyfarm.net
 INITIAL: Jan 1 2009
 PURPOSE: Used to read in settings of PyFarm
 
@@ -18,14 +18,18 @@ PURPOSE: Used to read in settings of PyFarm
 
     You should have received a copy of the GNU General Public License
     along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
-
 '''
-import Info
+# From Python
 from sys import exit
 from os.path import isdir, isfile
 from os import listdir
-from PyQt4.QtCore import QRegExp
 import xml.dom.minidom
+
+# From PyQt
+from PyQt4.QtCore import QRegExp
+
+# From PyFarm
+import Info
 
 class SoftwareSearch(object):
     '''

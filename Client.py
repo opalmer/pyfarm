@@ -1,7 +1,7 @@
 #!/usr/bin/python
 '''
 AUTHOR: Oliver Palmer
-CONTACT: oliverpalmer@opalmer.com
+HOMEPAGE: www.pyfarm.net
 INITIAL: Jan 31 2009
 PURPOSE: To handle and run all client connections on a remote machine
 
@@ -19,16 +19,17 @@ PURPOSE: To handle and run all client connections on a remote machine
 
     You should have received a copy of the GNU General Public License
     along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
-
 '''
-
+# From Python
 import sys
 import os.path
 
-from lib.Network import *
-from lib.Que import *
+# From PyQt
 from PyQt4.QtCore import *
 
+# From PyFarm
+from lib.Network import *
+from lib.Que import *
 from lib.ReadSettings import ParseXmlSettings
 
 settings = ParseXmlSettings('%s/settings.xml' % os.getcwd(), skipSoftware=True)

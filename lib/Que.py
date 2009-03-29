@@ -1,6 +1,6 @@
 '''
 AUTHOR: Oliver Palmer
-CONTACT: oliverpalmer@opalmer.com
+HOMEPAGE: www.pyfarm.net
 INITIAL: Jan 20 2008
 PURPOSE: Module used to manage ques inside of the program.
 Module also includes required network functions
@@ -19,18 +19,14 @@ Module also includes required network functions
 
     You should have received a copy of the GNU General Public License
     along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
-
-
 '''
 # Python Libs
 import os
 import time
 import Queue
 import heapq
-import socket
 
 # PyFarm Libs
-from Process import *
 from ReadSettings import ParseXmlSettings
 
 # PyQt Libs
@@ -98,7 +94,7 @@ class QueSlaveServerThread(QThread):
     '''Wait for the master to ready the que, then receive the first command'''
     lock = QReadWriteLock()
 
-    def __init__(self, socketId, parent):
+    def __init__(self, socketId, parent=None):
         super(QueSlaveServerThread, self).__init__(parent)
         self.socketId = socketId
         self.modName = 'Que.QueSlaveServerThread'
@@ -133,18 +129,20 @@ class QueSlaveServerThread(QThread):
                         print "PyFarm :: %s :: Closing connection" % self.modName
                         socket.close()
                     else:
-                        program = settings.command(str(software))
+                        #program = settings.command(str(software))
                         scene = command.split(' ')[len(command.split(' '))-1]
+                        print "PyFarm :: %s :: Running fake command" % self.modName
 
-                        print "PyFarm :: %s :: Running render" % self.modName
-                        # now, run the command
-                        #os.system("%s %s" % (program, command))
-                        print "PyFarm :: %s :: Sending command(%s,%s)" % (self.modName, program, command)
-                        process = RunProcess(program, command)
+                        self.process = QProcess()
+                        self.processStartedCalled = 0
+                        self.connect(self.process, SIGNAL("started()"), self.processStarted)
+                        self.connect(self.process, SIGNAL("readyReadStandardOutput()"), self.processStdOut)
+                        self.connect(self.process, SIGNAL("readyReadStandardError()"), self.processStdOut)
+                        self.process.start(QString("ping -c 2 google.com"))
 
-
-                        action = QString("REQUESTING_WORK")
-                        self.sendReply(socket, action, job, frame, software, command)
+                        self.processID = self.process.pid() # get the process id
+                        self.process.waitForFinished(-1) # wait for the process to finish before continuing
+                        self.processFinished()
                         socket.waitForDisconnected()
 
             if socket.bytesAvailable() < nextBlockSize:
@@ -153,11 +151,45 @@ class QueSlaveServerThread(QThread):
                     if socket.bytesAvailable() >= nextBlockSize:
                         break
 
-    def readStdOut(self, line):
-        print QString(self.process.readAllStandardError()).trimmed()
+    def processFinished(self):
+        '''To be run when the process is finished'''
+        print "Processs %i finished with exit code %i" % (self.processID, self.process.exitCode())
+
+    def processStarted(self):
+        '''Run when the process has started'''
+        if not self.processStartedCalled:
+            print "PyFarm :: %s.Process :: Process started(PID: %i)" % (self.modName, self.processID)
+            self.processStartedCalled = 1
+        else:
+            pass
+
+    def processError(self, error):
+        print error
+
+    def processStdOut(self):
+        '''Emit the standard output line'''
+        print QString(self.process.readAllStandardOutput()).trimmed()
+
+    def processStdErr(self):
+        '''Emit the standard error line'''
+        print str(QString(self.process.readAllStandardError()).trimmed())
+
+    def processFailed(self, socket, exitCode, job, frame, software, command):
+        '''If the process failed, inform the master'''
+        print "PyFarm :: QueSlaveServerThread.Process :: Informing master of failure"
+        reply = QByteArray()
+        exit_code = QString(exitCode)
+        stream = QDataStream(reply, QIODevice.WriteOnly)
+        stream.setVersion(QDataStream.Qt_4_2)
+        stream.writeUInt16(0)
+        stream << QString("PROCESS_FAILED") << exit_code << job << frame << software << command
+        stream.device().seek(0)
+        stream.writeUInt16(reply.size() - settings.netGeneral('unit16'))
+        socket.write(reply)
+        socket.close()
 
     def sendError(self, socket, msg):
-        '''Send an error back to the client'''
+        '''Send an error back to the client for network related issues'''
         reply = QByteArray()
         stream = QDataStream(reply, QIODevice.WriteOnly)
         stream.setVersion(QDataStream.Qt_4_2)
@@ -168,9 +200,11 @@ class QueSlaveServerThread(QThread):
         socket.write(reply)
         socket.close()
 
-    def sendReply(self, socket, action, job, frame, software, command):
-        print "Requesting more work..."
+    def requestWork(self, socket, job, frame, software, command):
+        '''If the command executed succefully, request more work'''
+        print "PyFarm :: %s :: Requesting work...." % self.modName
         reply = QByteArray()
+        action = QString("REQUESTING_WORK")
         stream = QDataStream(reply, QIODevice.WriteOnly)
         stream.setVersion(QDataStream.Qt_4_2)
         stream.writeUInt16(0)
@@ -179,6 +213,9 @@ class QueSlaveServerThread(QThread):
         stream.writeUInt16(reply.size() - settings.netGeneral('unit16'))
         socket.write(reply)
 
+    def shutdownProcess(self):
+        '''Shutdown the current thread and all processes'''
+        self.process.close()
 
 class QueSlaveServer(QTcpServer):
     '''Main server thread, used to receieve and start new server threads'''
@@ -196,8 +233,8 @@ class QueSlaveServer(QTcpServer):
     def shutdown(self):
         '''Try to shutdown the QueSlave server and all threads'''
         try:
-            self.queSlaveThread.quit()
-            self.queSlaveThread.wait(800)
+            self.queSlaveThread.shutdownProcess()
+            self.queSlaveThread.terminate()
         except AttributeError:
             print "PyFarm :: %s :: No threads to terminate" % self.modName
         finally:
@@ -241,7 +278,8 @@ class SendCommand(QTcpSocket):
             job = QString(inList[0])
             frame = QString(inList[1])
             software = QString(inList[2])
-            arguments = QString(inList[3])
+#            arguments = QString(inList[3])
+            arguments = QString('-c 5 google.com')
 
             # use these for checks
             self.job = job

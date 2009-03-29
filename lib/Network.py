@@ -1,6 +1,6 @@
 '''
 AUTHOR: Oliver Palmer
-CONTACT: oliverpalmer@opalmer.com
+HOMEPAGE: www.pyfarm.net
 INITIAL: Dec 16 2008
 PURPOSE: Network modules used to help facilitate network communication
 
@@ -18,7 +18,6 @@ PURPOSE: Network modules used to help facilitate network communication
 
     You should have received a copy of the GNU General Public License
     along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
-
 '''
 # python libs
 import os
@@ -26,9 +25,11 @@ import sys
 import time
 import socket
 import os.path
+
 # Qt libs
 from PyQt4.QtCore import *
 from PyQt4.QtNetwork import *
+
 # PyFarm Libs
 from ReadSettings import ParseXmlSettings
 

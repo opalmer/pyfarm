@@ -1,6 +1,6 @@
 '''
 AUTHOR: Oliver Palmer
-CONTACT: oliverpalmer@opalmer.com
+HOMEPAGE: www.pyfarm.net
 INITIAL: Dec 8 2008
 PURPOSE: Module used to return miscellaneous info either about the system
 or PyFarm itself.
@@ -19,15 +19,10 @@ or PyFarm itself.
 
     You should have received a copy of the GNU General Public License
     along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
-
 '''
 try:
     from os import uname
     from os import loadavg
-
-# if we get an import error do nothing,
-#  error usually caused by trying to import a lib
-#  that is designed for another operating system
 except ImportError:
     pass
 

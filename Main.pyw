@@ -1,7 +1,7 @@
 #!/usr/bin/python
 '''
 AUTHOR: Oliver Palmer
-CONTACT: oliverpalmer@opalmer.com
+HOMEPAGE: www.pyfarm.net
 INITIAL: Jan 12 2009
 PURPOSE: Main program to run and manage PyFarm
 
@@ -20,33 +20,69 @@ PURPOSE: Main program to run and manage PyFarm
 
     You should have received a copy of the GNU General Public License
     along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
-
 '''
 # From Python
 import sys
 import os.path
 from time import time, sleep
 from random import randrange
+
 # From PyQt
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from PyQt4.QtNetwork import *
+
 # From PyFarm
-## ui components
 import lib.Info as Info
-from lib.ReadSettings import ParseXmlSettings
 from lib.ui.RC3 import Ui_RC3
 from lib.ui.CustomWidgets import *
-from lib.Process import FakeProgressBar
-## general libs
 from lib.Que import *
 from lib.Network import *
 from lib.RenderConfig import *
+from lib.ReadSettings import ParseXmlSettings
 
 settings = ParseXmlSettings('%s/settings.xml' % os.getcwd())
 
 __AUTHOR__ = 'Oliver Palmer'
 __VERSION__ = 'RC3'
+
+class FakeProgressBar(QThread):
+    '''Run a fake progress bar'''
+    def __init__(self, progress, jobName, jobRow, parent=None):
+        super(FakeProgressBar, self).__init__(parent)
+        self.progress = progress
+        self.jobRow = jobRow
+        self.jobName = jobName
+        self.min = progress.minimum()
+        self.max = progress.maximum()
+
+    def run(self):
+        '''Run the thread'''
+        value = self.progress.value()
+        while value <= self.max:
+            sleep(random())
+            self.emit(SIGNAL("increment"), value)
+            value += 1
+
+        self.emit(SIGNAL("complete"), [self.jobName, self.jobRow])
+
+class FakeProgressBarFailure(QThread):
+    '''Run a fake progress bar, and make it fail'''
+    def __init__(self, progress, parent=None):
+        super(FakeProgressBarFailure, self).__init__(parent)
+        self.progress = progress
+        self.min = progress.minimum()
+        self.max = progress.maximum()
+
+    def run(self):
+        '''Run the thread'''
+        value = self.progress.value()
+        while value <= 10:
+            sleep(random())
+            self.emit(SIGNAL("increment"), value)
+            value += 1
+
+        self.emit(SIGNAL("failed"))
 
 class WorkerThread(QThread):
     '''Used work out to a worker TCP server'''
@@ -746,8 +782,6 @@ class Main(QMainWindow):
                         renderer, scene, '', camera, outDir, project):
                             frame = QString(command[0])
                             cmd = QString(str(command[2]))
-                            print frame
-                            print cmd
                             self.que.put([jobName, frame, cmd], priority)
 
                 newFrames = self.que.size()-startSize
@@ -937,6 +971,10 @@ class Main(QMainWindow):
     def fakeSetup(self):
         '''Setup the fake information for presentation'''
         self.fakeTableEntries()
+        self.ui.mayaScene.setText('/farm/projects/PyFarm/trunk/RC3/test.ma')
+        self.ui.inputJobName.setText('fakeJob')
+        self.setJobName()
+        self.ui.inputEndFrame.setValue(3)
 
     def fakeTableEntries(self):
         '''Add a fake progress bar to the table'''
