@@ -33,6 +33,7 @@ finally:
     import uuid
     import time
     import socket
+    from random import randint
     from subprocess import Popen,PIPE
     from os.path import dirname, join
     from PyQt4.QtCore import QObject, QThread
@@ -44,6 +45,7 @@ def Int2Time(s):
         h,m=divmod(m,60)
         d,h=divmod(h,24)
         return d,h,m,s
+
 
 def ModulePath(module, level=0):
     '''Given a module return it's path to the n'th level'''
@@ -175,13 +177,13 @@ class Numbers(object):
         '''Convert an hexadecimal to integer'''
         return int(inHex, 16)
 
-    def randhex(self):
+    def randhex(self, s, e):
         '''Produces hex value based on time'''
-        return "%x" % int(time.time())
+        return "%x" % randint(s, e)
 
-    def randint(self):
+    def randint(self, s, e):
         '''Produces rand int based on time'''
-        return int(time.time())
+        return randint(s, e)
 
 
 class File(object):
