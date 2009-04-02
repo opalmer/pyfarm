@@ -140,6 +140,7 @@ class ParseXmlSettings(object):
         # setup dictionaries
         self.netPorts = self._netPort()
         self.netGen = self._netGeneral()
+        self.statusKeyDict = self._setStatusKeyDict()
 
         if not skipSoftware:
             # setup general software setting
@@ -215,6 +216,20 @@ class ParseXmlSettings(object):
                 softwareFileGrep['shake'] = str(shake.getAttribute('fileGrep'))
 
         return [widgetIndexes, softwareFileGrep]
+
+    def _setStatusKeyDict(self):
+        '''
+        Discover the status key entries in the xml file and
+        add them to the dictionary
+        '''
+        statusDict = {}
+        for parent in self._getElement(self.doc, 'settings'):
+            for child in self._getElement(parent, 'status'):
+                for status in child.childNodes:
+                    if status.nodeType== 1:
+                        statusDict[int(status.getAttribute('index'))] = str(status.getAttribute('text'))
+
+        return statusDict
 
     def netPort(self, service):
         '''
@@ -298,3 +313,16 @@ class ParseXmlSettings(object):
             return self.softwareFileGrep[self.commonName(software)]
         except KeyError, key:
             exit('PyFarm :: %s :: ERROR:: %s is not a valid key in softwareFileGrep' % (self.modName, key))
+
+    def statusKey(self, key):
+        '''Return the status string for a given key'''
+        try:
+            return self.statusKeyDict[key]
+        except KeyError, key:
+            exit('PyFarm :: %s :: ERROR:: %s is not a valid key in statusKeyDict' % (self.modName, str(key)))
+
+if __name__ == '__main__':
+    settings  = ParseXmlSettings('settings.xml')
+
+    settings.statusKey(0)
+

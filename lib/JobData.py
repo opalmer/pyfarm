@@ -20,58 +20,142 @@ PURPOSE: Module used to control, manage, and update the job dictionary.
     along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
 '''
-from Info import Numbers
-from pprint import pprint
+from sys import exit
+from os import getcwd
+from PyQt4.QtCore import *
+from ReadSettings import ParseXmlSettings
 
-class SubJobFrame(object):
-    def __init__(self, job, name):
-        self.job = job
-        self.name = name
+settings = ParseXmlSettings('%s/settings.xml' % getcwd(), skipSoftware=True)
 
-    def status(self):
-        print self.job
-
-
-class Subjob(object):
-    def __init__(self, job, name):
-        self.job = job
-        self.name = name
-        self.frame = SubJobFrame(job, name)
-
-    def listFrames(self):
-        print self.job
-
-    def new(self, id):
-        self.job[id] = {}
-
-
-class JobManager(object):
+class JobStatus(QObject):
     '''
-    DESCRIPTION:
-        General job manager class, all other child classes
-        are called from here.
-    '''
-    def __init__(self, name):
-        self.job = {}
-        self.name = name
-        self.subjob = Subjob(self.job, name)
+    Return status information about a job
 
-    def listSubJobs(self):
+    INPUT:
+        job (dict) -- job dictionary
+    '''
+    def __init__(self, job, parent=None):
+        super(JobStatus, self).__init__(parent)
+        self.job = job
+
+    def listSubjobs(self):
+        '''List the subjobs contained in self.job'''
         return self.job.keys()
 
+    def listFrames(self, id=False):
+        '''
+        If id is given, list the frames of the id.  If
+        id is not given, list ALL frames.
+        '''
+        if id:
+            for frame in self.job[id]["frames"].keys():
+                yield frame
+        else:
+            for subjob in self.listSubjobs():
+                for frame in self.job[subjob]["frames"].keys():
+                    yield frame
+
+    def listWaitingFrames(self, id=False):
+        '''
+        For each subjob, return a list of currently waiting
+        frames (unless we specify an id)
+        '''
+        if id:
+            pass
+        else:
+            for subjob in self.listSubjobs():
+                yield
+
+    def subjobStatus(self, id):
+        '''Return the status of a subjob'''
+        return self.job[id]["status"]
+
+    def frameStatus(self, id, frame):
+        '''Return the status of a frame'''
+        return self.job[id][frame]["status"]
+
+
+class JobData(QObject):
+    '''
+    Add or modify a job
+    '''
+    def __init__(self, job, parent=None):
+        super(JobData, self).__init__(parent)
+        self.job = job
+        self.modname = 'JobData'
+
+    def createSubjob(self, id, priority=5):
+        '''
+        Create a sub job
+
+        INPUT:
+            id (str) -- subjob id to create
+        '''
+        if priority >= 1 and priority <= 10:
+            self.job[id] = {"priority" : priority, "status" : 0, "frames" : {}}
+        else:
+            exit('PyFarm :: %s.createSubjob :: ERROR :: Priority must be <= 10 and >= 1')
+
+    def addFrame(self, id, frame, software, command):
+        '''
+        add a frame to the job
+
+        INPUT:
+            subid (str) --  subjob to add the frame to
+            frame (int) --  frame number
+            software (str) -- software packagee to render with
+            command (str) -- command to render with
+        '''
+        entry = {"status" : 0, "host" : None,
+                        "pid" : 0, "software" : software,
+                        "command" : command
+                        }
+
+        self.job[id]["frames"].update({frame : entry})
+
+
+class JobManager(QObject):
+    '''
+    General job manager used to manage and
+    setup a job
+    '''
+    def __init__(self, name, parent=None):
+        super(JobManager, self).__init__(parent)
+        self.name = name
+        self.job = {}
+        self.data = JobData(self.job, self)
+        self.status = JobStatus(self.job, self)
+
+    def showData(self):
+        '''Return the dictionary, for previewing'''
+        return self.job
+
+
 if __name__ == '__main__':
-    jobNames = ["job1", "job2", "job3"]
-    jobs = {}
-    num = Numbers()
+    class Main(QObject):
+        def __init__(self, parent=None):
+            super(Main, self).__init__(parent)
 
-    for name in jobNames:
-        jobs[name] = JobManager(name)
-        for randint in range(1, num.randint(2, 7)):
-            randhex = num.randhex(1000000, 2000000)
-            jobs[name].subjob.new(randhex)
+        def execute(self):
+            jobs = {"job1" : JobManager("job1")}
+            jobs["job1"].data.createSubjob("sbj2", 3)
+            jobs["job1"].data.createSubjob("sbj1", 1)
 
-        pprint(jobs[name].listSubJobs())
+            # add frames to subjobs
+            for subjob in jobs["job1"].status.listSubjobs():
+                for frame in range(1, randint(3, 13)):
+                    jobs["job1"].data.addFrame(subjob, frame, "Maya 2009", "render -r mr -v 5 scene.mb")
 
-    #job = Job()
-    #job.subjob.new('ia31')
-    #job.subjob.frames.status()
+
+            pprint(jobs["job1"].showData())
+            pprint(list(jobs["job1"].status.listFrames()))
+
+    from Info import Numbers
+    from pprint import pprint
+    from sys import argv, exit
+    from random import randint
+
+    app = QCoreApplication(argv)
+    main = Main()
+    exit(main.execute())
+    app.exec_()

@@ -35,6 +35,13 @@ along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
             <server type="stderr" port="9633" />
             <server type="stdout" port="9634" />
         </network>
+        <!-- Status Settings -->
+        <status>
+            <waiting text="Waiting" index="0" />
+            <rendering text="Rendering" index="1" />
+            <failed text="Failed" index="2" />
+            <paused text="Paused" index="3" />
+        </status>
     </settings>
     <software>
         <!-- General Software Settings -->

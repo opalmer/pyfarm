@@ -185,6 +185,10 @@ class Numbers(object):
         '''Produces rand int based on time'''
         return randint(s, e)
 
+    def hexid(self):
+        '''Return a hex id based on time.time()'''
+        return self.int2hex(time.time())
+
 
 class File(object):
     '''
