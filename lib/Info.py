@@ -189,6 +189,23 @@ class Numbers(object):
         '''Return a hex id based on time.time()'''
         return self.int2hex(time.time())
 
+    def mode(self, numList):
+        '''Return the mode of the given number set'''
+        # see test set BEFORE working here
+        modeData = {}
+
+        for num in numList:
+            if num in modeData:
+                modeData[x] += 1
+            else:
+                modeData[x] = 1
+
+        mode = []
+        for key in modeData.keys():
+           #if modeData[0]
+           pass
+
+
 
 class File(object):
     '''

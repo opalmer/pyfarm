@@ -34,9 +34,58 @@ class JobStatus(QObject):
     INPUT:
         job (dict) -- job dictionary
     '''
-    def __init__(self, job, parent=None):
+    def __init__(self, job, name, parent=None):
         super(JobStatus, self).__init__(parent)
         self.job = job
+        self.name = name
+        self.parent = parent
+        self.modName = 'JobStatus'
+
+    def overall(self):
+        '''
+        Return the overall job status
+
+        INPUT:
+            id (str) -- subjob id
+        '''
+        status = 0
+        for id in self.listSubjobs():
+            print self.subjob(id)
+            if self.subjob(id) > status:
+                status = self.subjob(id)
+
+        #print status
+
+    def subjob(self, id):
+        '''Return the status of a subjob'''
+        return self.job[id]["status"]
+
+    def setSubjob(self, id, status):
+        '''
+        Set the status of the given subjob
+
+        INPUT:
+            id (str) [0-3] -- subjob id
+        '''
+        if status >= 0 and status <= 3:
+            self.job[id]["status"] = status
+            self.parent.emitSignal("subjobStatusChanged", [self.name, id, status])
+        else:
+            exit("PyFarm :: %s.setSubjob :: Expected a value >= 0 and <= 3") % self.modName
+
+    def frame(self, id, frame):
+        '''Return the status of a frame'''
+        return self.job[id][frame]["status"]
+
+    def setFrame(self, id, frame):
+        '''
+        Set the status of the given frame
+
+        INPUT:
+            id (str) -- subjob id
+            frame (int) -- frame number to set
+        '''
+        pass
 
     def listSubjobs(self):
         '''List the subjobs contained in self.job'''
@@ -66,22 +115,36 @@ class JobStatus(QObject):
             for subjob in self.listSubjobs():
                 yield
 
-    def subjobStatus(self, id):
-        '''Return the status of a subjob'''
-        return self.job[id]["status"]
+    def frameCount(self, id=False):
+        '''
+        Return a frame count for the job/subjob
 
-    def frameStatus(self, id, frame):
-        '''Return the status of a frame'''
-        return self.job[id][frame]["status"]
+        INPUT:
+            id (str) -- subjob id (optional, if not set return TOTAL frame count)
+        '''
+        if id:
+            return len(self.job[id]["frames"].keys())
+        else:
+            frameTotal = 0
+            for subjob in self.listSubjobs():
+                frameTotal += len(self.job[subjob]["frames"].keys())
+
+            return frameTotal
+
+    def subjobCount(self):
+        '''Return a subjob count'''
+        return len(self.job.keys())
 
 
 class JobData(QObject):
     '''
     Add or modify a job
     '''
-    def __init__(self, job, parent=None):
+    def __init__(self, job, name, parent=None):
         super(JobData, self).__init__(parent)
         self.job = job
+        self.name = name
+        self.parent = parent
         self.modname = 'JobData'
 
     def createSubjob(self, id, priority=5):
@@ -110,8 +173,12 @@ class JobData(QObject):
                         "pid" : 0, "software" : software,
                         "command" : command
                         }
-
+        # add the frame to the frames dictionary
         self.job[id]["frames"].update({frame : entry})
+
+        # inform the gui of the new frame
+        #self.emit(SIGNAL("newFrame"), [id, frame, entry])
+        self.parent.emitSignal("newFrame", [self.name, id, frame, entry])
 
 
 class JobManager(QObject):
@@ -123,32 +190,77 @@ class JobManager(QObject):
         super(JobManager, self).__init__(parent)
         self.name = name
         self.job = {}
-        self.data = JobData(self.job, self)
-        self.status = JobStatus(self.job, self)
+        self.data = JobData(self.job, self.name, self)
+        self.status = JobStatus(self.job, self.name, self)
 
-    def showData(self):
+    def emitSignal(self, sig, emission):
+        '''
+        Pass a signal emission from a child function to the upperjob1 has 2 subjobs and 10 frames
+
+        level
+
+        INPUT:
+            sig (str) -- name of signal to emit
+            emission (str, list, dict) -- information to emit
+        '''
+        self.emit(SIGNAL(sig), emission)
+
+    def jobData(self):
         '''Return the dictionary, for previewing'''
         return self.job
 
 
 if __name__ == '__main__':
     class Main(QObject):
+        '''random test code'''
         def __init__(self, parent=None):
             super(Main, self).__init__(parent)
 
         def execute(self):
-            jobs = {"job1" : JobManager("job1")}
-            jobs["job1"].data.createSubjob("sbj2", 3)
-            jobs["job1"].data.createSubjob("sbj1", 1)
+            jobNames = ["job1", "job2"]
+            subjobs = ["sbj1", "sbj2"]
+            jobs = {}
 
-            # add frames to subjobs
-            for subjob in jobs["job1"].status.listSubjobs():
-                for frame in range(1, randint(3, 13)):
-                    jobs["job1"].data.addFrame(subjob, frame, "Maya 2009", "render -r mr -v 5 scene.mb")
+            # create jobs, connect their signals/slots, create subjobs, add frames
+            for jobName in jobNames:
+                jobs.update({jobName : JobManager(jobName)})
+                self.setupSignals(jobs[jobName])
+                for subjob in subjobs:
+                    jobs[jobName].data.createSubjob(subjob)
 
+                for subjob in jobs[jobName].status.listSubjobs():
+                    for frame in range(1, randint(3, 13)):
+                        jobs[jobName].data.addFrame(subjob, frame, "Maya 2009", "render -r mr -v 5 scene.mb")
 
-            pprint(jobs["job1"].showData())
-            pprint(list(jobs["job1"].status.listFrames()))
+            # List the subjobs for each job
+            for job in jobs.keys():
+                print "\n%s has %i subjobs and %i frames" % (job, jobs[job].status.subjobCount(), jobs[job].status.frameCount())
+                for subjob in jobs[job].status.listSubjobs():
+                    jobs[job].status.setSubjob(subjob, randint(0, 3))
+                    print "\tsubjob %s:" % subjob
+                    print "\t\tFrames: %i\n\t\tStatus: %s" % (jobs[job].status.frameCount(subjob), settings.statusKey(jobs[job].status.subjob(subjob)))
+
+                jobs[job].status.overall()
+                #print "\t\tStatus: %s" % jobs[job].status.overall()
+
+        def setupSignals(self, jobName):
+            sigSlots = {'newFrame': self.newFrameAdded, 'subjobStatusChanged': self.subjobStatusChanged}
+
+            for sig, slt in sigSlots.items():
+                self.connect(jobName, SIGNAL(sig), slt)
+
+        def newFrameAdded(self, info):
+            job = info[0]
+            id = info[1]
+            frame = info[2]
+            entry = info [3]
+            #print "Subjob %s from %s has added frame %i" % (id, job, frame)
+
+        def subjobStatusChanged(self, info):
+            job = info[0]
+            id = info[1]
+            status = info[2]
+            #print "Subjob %s from %s has changed status to %s" % (id, job, settings.statusKey(status))
 
     from Info import Numbers
     from pprint import pprint
