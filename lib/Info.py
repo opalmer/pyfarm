@@ -191,19 +191,23 @@ class Numbers(object):
 
     def mode(self, numList):
         '''Return the mode of the given number set'''
-        # see test set BEFORE working here
-        modeData = {}
+        frequency = {}
 
-        for num in numList:
-            if num in modeData:
-                modeData[x] += 1
+        for x in numList:
+            if (x in frequency):
+                frequency[x] += 1
             else:
-                modeData[x] = 1
+                frequency[x] = 1
 
-        mode = []
-        for key in modeData.keys():
-           #if modeData[0]
-           pass
+        mode = max(frequency.values())
+
+        if mode == 1:
+            mode = []
+            return
+
+        mode = [(x, mode) for x in frequency if (mode == frequency[x])]
+
+        return mode[0][0]
 
 
 

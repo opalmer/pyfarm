@@ -24,8 +24,10 @@ from sys import exit
 from os import getcwd
 from PyQt4.QtCore import *
 from ReadSettings import ParseXmlSettings
+from Info import Numbers
 
 settings = ParseXmlSettings('%s/settings.xml' % getcwd(), skipSoftware=True)
+numbers = Numbers()
 
 class JobStatus(QObject):
     '''
@@ -48,17 +50,21 @@ class JobStatus(QObject):
         INPUT:
             id (str) -- subjob id
         '''
-        status = 0
-        for id in self.listSubjobs():
-            print self.subjob(id)
-            if self.subjob(id) > status:
-                status = self.subjob(id)
+        subjobs = []
+        for subjob in self.job.keys():
+            subjobs.append()
+        return numbers.mode()
 
-        #print status
-
-    def subjob(self, id):
+    def subjob(self, id, emitSignal=False):
         '''Return the status of a subjob'''
-        return self.job[id]["status"]
+        statusList = []
+        for frame in self.job[id]["frames"].keys():
+            statusList.append(self.frame(id, frame))
+
+        # get mode, set subjob status,
+        status = numbers.mode(statusList)
+        self.setSubjob(id, status)
+        return status
 
     def setSubjob(self, id, status):
         '''
@@ -73,7 +79,7 @@ class JobStatus(QObject):
         else:
             exit("PyFarm :: %s.setSubjob :: Expected a value >= 0 and <= 3") % self.modName
 
-    def frame(self, id, frame):
+    def frame(self, id, frame, emitSignal=False):
         '''Return the status of a frame'''
         return self.job[id][frame]["status"]
 
