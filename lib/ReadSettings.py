@@ -145,6 +145,8 @@ class ParseXmlSettings(object):
         self.jobStatusDict = None
         self.hostStatusDict = None
 
+        self.boolColorDict = self._setBoolColor()
+
         if not skipSoftware:
             # setup general software setting
             softwareGen = self._softwareGeneral()
@@ -235,12 +237,13 @@ class ParseXmlSettings(object):
             for node in self._getElement(child, 'job'):
                 for status in child.childNodes:
                     if status.nodeType== 1:
-                        print status
+                        pass
                         #statusDict[int(status.getAttribute('index'))] = str(status.getAttribute('text'))
 
         return statusDict
 
     def _setHostStatusDict(self):
+        '''Sets up the host status text, index, and color'''
         statusDict = {}
         for child in self._statusKeyGenerator():
             for node in self._getElement(child, 'hosts'):
@@ -249,6 +252,20 @@ class ParseXmlSettings(object):
                         statusDict[int(status.getAttribute('index'))] = str(status.getAttribute('text'))
 
         return statusDict
+
+    def _setBoolColor(self):
+        '''Sets up the boolean color lookup'''
+        boolColor = {}
+        for parent in self._getElement(self.doc, 'settings'):
+            for setting in self._getElement(parent, 'status'):
+                for node in self._getElement(setting, 'general'):
+                    for child in node.childNodes:
+                        if child.localName == 'zeroValue':
+                            boolColor[0] = [child.getAttribute('bgColor'), child.getAttribute('txtColor')]
+                        elif child.localName == 'nonZeroValue':
+                            boolColor[1] = [child.getAttribute('bgColor'), child.getAttribute('txtColor')]
+                        else:
+                            pass
 
     def netPort(self, service):
         '''
@@ -346,3 +363,15 @@ class ParseXmlSettings(object):
             return self.statusKeyDict[key]
         except KeyError, key:
             exit('PyFarm :: %s :: ERROR:: %s is not a valid key in statusKeyDict' % (self.modName, str(key)))
+
+    def boolColor(self, isTrue):
+        '''
+        Return a color for a boolean value
+
+        INPUT:
+            isTrue (bool) -- value to check
+        '''
+        if isTrue:
+           pass
+        else:
+            pass

@@ -27,9 +27,7 @@ except ImportError:
     pass
 
 finally:
-    import Info
     from os import sep, name, getenv
-    import sys
     import uuid
     import time
     import socket
@@ -37,6 +35,7 @@ finally:
     from subprocess import Popen,PIPE
     from os.path import dirname, join
     from PyQt4.QtCore import QObject, QThread
+    from PyFarmExceptions import ErrorProcessingSetup
 
 def Int2Time(s):
         '''Given an input integer, return time elapsed'''
@@ -168,7 +167,9 @@ class Statistics(object):
     '''
     def __init__(self, parent=None):
         super(Statistics, self).__init__(parent)
-        self.modName = 'Info.Statistics'
+        moduleName = 'Info.Statistics'
+        self.error = ErrorProcessingSetup(moduleName)
+        self.typeTest = TypeTest()
 
     def get(self, data, callIn):
         '''
@@ -187,15 +188,18 @@ class Statistics(object):
             if callIn in allowedCalls:
                 self._findData(callIn)
             else:
-                sys.exit("PyFarm :: %s :: ERROR :: %s is not a recognized call") % (self.modName, callIn)
+                self.error.stringError('mean, median, mode, min, or max', callIn)
 
-        else:
+        elif type(callIn) == 'list':
             output = []
             for call in callIn:
                 if call in allowedCalls:
                     output.append(self._findData(call))
                 else:
-                    sys.exit("PyFarm :: %s :: ERROR :: %s is not a recognized call") % (self.modName, callIn)
+                    self.error.stringError('mean, median, mode, min, or max', callIn)
+
+        else:
+            self.error.typeError('string or list', self.typeTest.getType(callIn))
 
         return output
 
@@ -311,6 +315,76 @@ class File(object):
         return self.file.split('.')[len(self.file.split('.'))-1]
 
 
+class TypeTest(object):
+    '''
+    Test an object and determine if it matches the type
+    we are looking for.  If it does not match our request
+    raise an exception.
+
+    INPUT:
+        module (str) -- Module making the request
+    '''
+    def __init__(self, module=None):
+        if module:
+            self.error = ErrorProcessingSetup(module)
+
+    def _typeMatch(self, item, expected):
+        '''Return true if the type matches the expected value'''
+        if type(item) == expected:
+            return True
+        else:
+            return False
+
+    def getType(self, item):
+        '''Return the type of the item'''
+        typeInstance = type(item)
+        if typeInstance == 'str':
+            return 'string'
+        elif typeInstance == 'list':
+            return 'list'
+        elif typeInstance == 'dict':
+            return 'dictionary'
+        elif typeInstance == 'int':
+            return 'integer'
+        elif typeInstance == 'float':
+            return 'float'
+
+    def isString(self, item):
+        '''Check and see if the given item is a string'''
+        if self._typeMatch(item, 'str'):
+            return item
+        else:
+            raise self.error.typeError('string', self.getType(item))
+
+    def isList(self, item):
+        '''Check and see if the given item is a list'''
+        if self._typeMatch(item, 'list'):
+            return item
+        else:
+            raise self.error.typeError('list', self.getType(item))
+
+    def isDict(self, item):
+        '''Check and see if the given item is a dictionary'''
+        if self._typeMatch(item, 'dict'):
+            return item
+        else:
+            raise self.error.typeError('dictionary', self.getType(item))
+
+    def isInt(self, item):
+        '''Check and see if the given item is a integer'''
+        if self._typeMatch(item, 'int'):
+            return item
+        else:
+            raise self.error.typeError('integer', self.getType(item))
+
+    def isFloat(self, item):
+        '''Check and see if the given item is a float'''
+        if self._typeMatch(item, 'float'):
+            return item
+        else:
+            raise self.error.typeError('float', self.getType(item))
+
+
 if __name__ == '__main__':
     from random import randint
 
@@ -323,4 +397,3 @@ if __name__ == '__main__':
     stats = Statistics()
     stat = stats.get(numList, ['mean', 'min', 'max'])
     print "Average: %f\nMin: %i\nMax: %i"% (stat[0], stat[1], stat[2])
-

@@ -1220,6 +1220,7 @@ class Main(QMainWindow):
 ## END General Utilities
 ################################
 
+# setup and run the event loop
 app = QApplication(sys.argv)
 main = Main()
 main.show()

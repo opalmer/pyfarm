@@ -20,15 +20,23 @@ PURPOSE: Module used to control, manage, and update the job dictionary.
     along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
 '''
+# From Python
 import time
 from sys import exit
 from os import getcwd
+
+# From PyQt
 from PyQt4.QtCore import *
+
+# From PyFarm
 from ReadSettings import ParseXmlSettings
-from Info import Numbers
+from Info import Statistics, TypeTest
+from PyFarmExceptions import ErrorProcessingSetup
 
 settings = ParseXmlSettings('%s/settings.xml' % getcwd(), skipSoftware=True)
-numbers = Numbers()
+statistics = Statistics()
+typeTest = TypeTest('JobData')
+error = ErrorProcessingSetup('JobData')
 
 class JobStatus(QObject):
     '''
@@ -42,8 +50,8 @@ class JobStatus(QObject):
     '''
     def __init__(self, job, name, generalData, parent=None):
         super(JobStatus, self).__init__(parent)
-        self.job = job
-        self.name = name
+        self.job = typeTest.isString(job)
+        self.name = typeTest.isString(name)
         self.general = generalData
         self.parent = parent
         self.modName = 'JobStatus'
@@ -58,7 +66,7 @@ class JobStatus(QObject):
         subjobs = []
         for subjob in self.job.keys():
             subjobs.append(subjob)
-        return numbers.mode(subjob)
+        return statistics.mode(subjob)
 
     def subjob(self, id, emitSignal=False):
         '''Return the status of a subjob'''
@@ -67,7 +75,7 @@ class JobStatus(QObject):
             statusList.append(self.frame(id, frame))
 
         # get mode, set subjob status,
-        status = numbers.mode(statusList)
+        status = statistics.mode(statusList)
         self.setSubjob(id, status)
         return status
 
@@ -76,13 +84,16 @@ class JobStatus(QObject):
         Set the status of the given subjob
 
         INPUT:
-            id (str) [0-3] -- subjob id
+            id (str)  -- subjob id
+            status (int) [0-4] --status index of subjob
         '''
+        typeTest.isString(id)
+        typeTest.isInt(status)
         if status >= 0 and status <= 4:
             self.job[id]["status"] = status
             self.parent.emitSignal("subjobStatusChanged", [self.name, id, status])
         else:
-            exit("PyFarm :: %s.setSubjob :: Expected a value >= 0 and <= 4") % self.modName
+            raise error.valueError(0, 4, status)
 
     def frame(self, id, frame):
         '''Return the status of a frame'''
@@ -205,7 +216,7 @@ class JobData(QObject):
                                     "frames" : {}
                                     }
         else:
-            exit('PyFarm :: %s.createSubjob :: ERROR :: Priority must be <= 10 and >= 1')
+            exit('PyFarm :: %s.createSubjob :: ERROR :: Priority must be <= 10 and >= 1') % self.modName
 
     def addFrame(self, id, frame, software, command):
         '''
@@ -245,8 +256,8 @@ class JobManager(QObject):
         self.name = name
         self.general = generalData
         self.job = {}
-        self.data = JobData(self.job, self.name, self)
-        self.status = JobStatus(self.job, self.name, self)
+        self.data = JobData(self.job, self.name, self.general, self)
+        self.status = JobStatus(self.job, self.name, self.general, self)
 
     def emitSignal(self, sig, emission):
         '''
@@ -307,7 +318,7 @@ class GeneralManager(QObject):
                                             }
                                         }
 
-    def addHost(self, hostname, os, arch, software, simple=True):
+    def addHost(self, hostname, os, arch, software, simple):
         '''
         Add a host to the system information dictionary
 
@@ -318,9 +329,22 @@ class GeneralManager(QObject):
         simple (True/False) -- if true ,only add the hostname,ip address, and status
         '''
         if simple:
-            pass
+            self.data["network"]["hosts"][hostname] ={"status": 0,
+                                                                                    "rendered" : 0,
+                                                                                    "failed" : 0
+                                                                                    }
         else:
-            pass
+            if type(software) == 'dict':
+                self.data["network"]["hosts"][hostname] ={"status": 0,
+                                                                                        "os" : os,
+                                                                                        "arch" : arch,
+                                                                                        "software" : software,
+                                                                                        "rendered" : 0,
+                                                                                        "failed" : 0
+                                                                                        }
+            else:
+                sys.exit("THIS NEEDS TO BE IMPLIMENTED")
+
 
 if __name__ == '__main__':
     class Main(QObject):
@@ -329,13 +353,14 @@ if __name__ == '__main__':
             super(Main, self).__init__(parent)
 
         def execute(self):
+            general = GeneralManager()
             jobNames = ["job1", "job2"]
             subjobs = ["sbj1", "sbj2"]
             jobs = {}
 
             # create jobs, connect their signals/slots, create subjobs, add frames
             for jobName in jobNames:
-                jobs.update({jobName : JobManager(jobName)})
+                jobs.update({jobName : JobManager(jobName, general)})
                 self.setupSignals(jobs[jobName])
                 for subjob in subjobs:
                     jobs[jobName].data.createSubjob(subjob)

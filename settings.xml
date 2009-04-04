@@ -38,10 +38,10 @@ along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
         <!-- Status Settings -->
         <status>
             <!--
-		        bgColor - color of the background (table cell, etc.)
-		        txtColor - color of text
-		        maxVal - maxium value for color to apply to
-		        color - general color
+                bgColor - color of the background (table cell, etc.)
+                txtColor - color of text
+                maxVal - maxium value for color to apply to
+                color - general color
             -->
             <job>
                 <waiting text="Waiting" index="0" bgColor="255,255,255" txtColor="0,0,0"/>
