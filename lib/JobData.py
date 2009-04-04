@@ -20,6 +20,7 @@ PURPOSE: Module used to control, manage, and update the job dictionary.
     along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
 '''
+import time
 from sys import exit
 from os import getcwd
 from PyQt4.QtCore import *
@@ -34,12 +35,16 @@ class JobStatus(QObject):
     Return status information about a job
 
     INPUT:
-        job (dict) -- job dictionary
+        job (dict) -- job dictionary to work with
+        name (str) -- job name
+        generalData (mapped class) -- instance of general class that contains
+        program wide information
     '''
-    def __init__(self, job, name, parent=None):
+    def __init__(self, job, name, generalData, parent=None):
         super(JobStatus, self).__init__(parent)
         self.job = job
         self.name = name
+        self.general = generalData
         self.parent = parent
         self.modName = 'JobStatus'
 
@@ -52,8 +57,8 @@ class JobStatus(QObject):
         '''
         subjobs = []
         for subjob in self.job.keys():
-            subjobs.append()
-        return numbers.mode()
+            subjobs.append(subjob)
+        return numbers.mode(subjob)
 
     def subjob(self, id, emitSignal=False):
         '''Return the status of a subjob'''
@@ -73,15 +78,15 @@ class JobStatus(QObject):
         INPUT:
             id (str) [0-3] -- subjob id
         '''
-        if status >= 0 and status <= 3:
+        if status >= 0 and status <= 4:
             self.job[id]["status"] = status
             self.parent.emitSignal("subjobStatusChanged", [self.name, id, status])
         else:
-            exit("PyFarm :: %s.setSubjob :: Expected a value >= 0 and <= 3") % self.modName
+            exit("PyFarm :: %s.setSubjob :: Expected a value >= 0 and <= 4") % self.modName
 
-    def frame(self, id, frame, emitSignal=False):
+    def frame(self, id, frame):
         '''Return the status of a frame'''
-        return self.job[id][frame]["status"]
+        return self.job[id]["frames"][frame]["status"]
 
     def setFrame(self, id, frame):
         '''
@@ -93,6 +98,17 @@ class JobStatus(QObject):
         '''
         pass
 
+    def startFrame(self, id, frame):
+        '''
+        Set the frame start time and set
+        status to rendering.
+
+        INPUT:
+            id (str) -- subjob id
+            frame (int) -- frame to change
+        '''
+        pass
+
     def listSubjobs(self):
         '''List the subjobs contained in self.job'''
         return self.job.keys()
@@ -101,6 +117,9 @@ class JobStatus(QObject):
         '''
         If id is given, list the frames of the id.  If
         id is not given, list ALL frames.
+
+        INPUT:
+            id (str) --  subjob id (optional, if not set ALL frames will be returned)
         '''
         if id:
             for frame in self.job[id]["frames"].keys():
@@ -114,6 +133,9 @@ class JobStatus(QObject):
         '''
         For each subjob, return a list of currently waiting
         frames (unless we specify an id)
+
+        INPUT:
+            id (str) -- subjob id (optional, if not given all waiting frames will be returned)
         '''
         if id:
             pass
@@ -145,11 +167,18 @@ class JobStatus(QObject):
 class JobData(QObject):
     '''
     Add or modify a job
+
+    INPUT:
+        job (mapped class) -- job dictionary to work with
+        name (str) - job name of data
+        generalData (mapped class) -- instance of general class that contains
+        program wide information
     '''
-    def __init__(self, job, name, parent=None):
+    def __init__(self, job, name, generalData, parent=None):
         super(JobData, self).__init__(parent)
         self.job = job
         self.name = name
+        self.general = generalData
         self.parent = parent
         self.modname = 'JobData'
 
@@ -161,7 +190,20 @@ class JobData(QObject):
             id (str) -- subjob id to create
         '''
         if priority >= 1 and priority <= 10:
-            self.job[id] = {"priority" : priority, "status" : 0, "frames" : {}}
+            self.job[id] = {"priority" : priority, "status" : 0,
+                                    "statistics": {
+                                        "frames" : {
+                                            "minTime" : 0,
+                                            "maxTime" : 0,
+                                            "avgTime" : 0,
+                                            "frameCount" : 0,
+                                            "waiting": 0,
+                                            "rendering" : 0,
+                                            "failed": 0,
+                                            "paused" : 0
+                                            }},
+                                    "frames" : {}
+                                    }
         else:
             exit('PyFarm :: %s.createSubjob :: ERROR :: Priority must be <= 10 and >= 1')
 
@@ -176,15 +218,21 @@ class JobData(QObject):
             command (str) -- command to render with
         '''
         entry = {"status" : 0, "host" : None,
-                        "pid" : 0, "software" : software,
+                        "pid" : None, "software" : software,
+                        "start" : None, "end" : None, "elapsed" : None,
                         "command" : command
                         }
+
         # add the frame to the frames dictionary
         self.job[id]["frames"].update({frame : entry})
 
         # inform the gui of the new frame
-        #self.emit(SIGNAL("newFrame"), [id, frame, entry])
+        # self.emit(SIGNAL("newFrame"), [id, frame, entry])
         self.parent.emitSignal("newFrame", [self.name, id, frame, entry])
+
+        # update the subjob statistics
+        self.job[id]["statistics"]["frames"]["frameCount"] += 1
+        self.job[id]["statistics"]["frames"]["waiting"] += 1
 
 
 class JobManager(QObject):
@@ -192,9 +240,10 @@ class JobManager(QObject):
     General job manager used to manage and
     setup a job
     '''
-    def __init__(self, name, parent=None):
+    def __init__(self, name, generalData, parent=None):
         super(JobManager, self).__init__(parent)
         self.name = name
+        self.general = generalData
         self.job = {}
         self.data = JobData(self.job, self.name, self)
         self.status = JobStatus(self.job, self.name, self)
@@ -215,6 +264,63 @@ class JobManager(QObject):
         '''Return the dictionary, for previewing'''
         return self.job
 
+
+class GeneralManager(QObject):
+    '''
+    General data management, meant for
+    program wide information
+    '''
+    def __init__(self, parent=None):
+        self.data = {"queue" :{
+                                "system" : {
+                                    "status" : 0,
+                                    "failureRate" : 0
+                                    },
+                                "jobs" : {
+                                     "waiting" : 0,
+                                     "running" : 0,
+                                     "failed" : 0,
+                                     "complete" : 0},
+                                "frames":{
+                                    "minTime" : 0,
+                                    "maxTime" : 0,
+                                    "avgTime" : 0,
+                                    "frameCount" : 0,
+                                    "waiting": 0,
+                                    "rendering" : 0,
+                                    "failed": 0,
+                                    "paused" : 0},
+                                },
+                            "network" : {
+                                "info" :{
+                                    "hostCount" : 0,
+                                    "activeHosts" : 0,
+                                    "pausedHosts" : 0},
+                                "hosts" : {
+#                                    "host01": {
+#                                    "os" : "Linux",
+#                                    "arch" : "x64",
+#                                    "software" : {"maya2009" : "/path/to/maya", "shake" : "/path/to/shake"},
+#                                    "rendered" : 12,
+#                                    "failed" : 2}
+                                                }
+                                            }
+                                        }
+
+    def addHost(self, hostname, os, arch, software, simple=True):
+        '''
+        Add a host to the system information dictionary
+
+        hostname (list) -- list of host and ip address
+        os (str) -- operating system type of host
+        arch (str) -- architecture of system
+        software (dict) -- dictionary of installed software
+        simple (True/False) -- if true ,only add the hostname,ip address, and status
+        '''
+        if simple:
+            pass
+        else:
+            pass
 
 if __name__ == '__main__':
     class Main(QObject):
@@ -244,7 +350,7 @@ if __name__ == '__main__':
                 for subjob in jobs[job].status.listSubjobs():
                     jobs[job].status.setSubjob(subjob, randint(0, 3))
                     print "\tsubjob %s:" % subjob
-                    print "\t\tFrames: %i\n\t\tStatus: %s" % (jobs[job].status.frameCount(subjob), settings.statusKey(jobs[job].status.subjob(subjob)))
+                    print "\t\tFrames: %i\n\t\tStatus: %s" % (jobs[job].status.frameCount(subjob), settings.frameStatusKey(jobs[job].status.subjob(subjob)))
 
                 jobs[job].status.overall()
                 #print "\t\tStatus: %s" % jobs[job].status.overall()
@@ -266,7 +372,7 @@ if __name__ == '__main__':
             job = info[0]
             id = info[1]
             status = info[2]
-            #print "Subjob %s from %s has changed status to %s" % (id, job, settings.statusKey(status))
+            #print "Subjob %s from %s has changed status to %s" % (id, job, settings.frameStatusKey(status))
 
     from Info import Numbers
     from pprint import pprint

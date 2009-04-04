@@ -140,7 +140,10 @@ class ParseXmlSettings(object):
         # setup dictionaries
         self.netPorts = self._netPort()
         self.netGen = self._netGeneral()
-        self.statusKeyDict = self._setStatusKeyDict()
+        self.statusKeyDict = self._setJobStatusDict()
+
+        self.jobStatusDict = None
+        self.hostStatusDict = None
 
         if not skipSoftware:
             # setup general software setting
@@ -217,14 +220,30 @@ class ParseXmlSettings(object):
 
         return [widgetIndexes, softwareFileGrep]
 
-    def _setStatusKeyDict(self):
+    def _statusKeyGenerator(self):
+        for parent in self._getElement(self.doc, 'settings'):
+            for child in self._getElement(parent, 'status'):
+                yield child
+
+    def _setJobStatusDict(self):
         '''
         Discover the status key entries in the xml file and
         add them to the dictionary
         '''
         statusDict = {}
-        for parent in self._getElement(self.doc, 'settings'):
-            for child in self._getElement(parent, 'status'):
+        for child in self._statusKeyGenerator():
+            for node in self._getElement(child, 'job'):
+                for status in child.childNodes:
+                    if status.nodeType== 1:
+                        print status
+                        #statusDict[int(status.getAttribute('index'))] = str(status.getAttribute('text'))
+
+        return statusDict
+
+    def _setHostStatusDict(self):
+        statusDict = {}
+        for child in self._statusKeyGenerator():
+            for node in self._getElement(child, 'hosts'):
                 for status in child.childNodes:
                     if status.nodeType== 1:
                         statusDict[int(status.getAttribute('index'))] = str(status.getAttribute('text'))
@@ -314,15 +333,16 @@ class ParseXmlSettings(object):
         except KeyError, key:
             exit('PyFarm :: %s :: ERROR:: %s is not a valid key in softwareFileGrep' % (self.modName, key))
 
-    def statusKey(self, key):
+    def frameStatusKey(self, key):
         '''Return the status string for a given key'''
         try:
             return self.statusKeyDict[key]
         except KeyError, key:
             exit('PyFarm :: %s :: ERROR:: %s is not a valid key in statusKeyDict' % (self.modName, str(key)))
 
-if __name__ == '__main__':
-    settings  = ParseXmlSettings('settings.xml')
-
-    settings.statusKey(0)
-
+    def hostStatusKey(self, key):
+        '''Return the status string for a given key'''
+        try:
+            return self.statusKeyDict[key]
+        except KeyError, key:
+            exit('PyFarm :: %s :: ERROR:: %s is not a valid key in statusKeyDict' % (self.modName, str(key)))

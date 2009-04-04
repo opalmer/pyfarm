@@ -161,6 +161,114 @@ class Stopwatch(QThread):
             return Int2Time(time.time()-self.start)
 
 
+class Statistics(object):
+    '''
+    Statistics class used to calculate and return
+    information about an input data set.
+    '''
+    def __init__(self, parent=None):
+        super(Statistics, self).__init__(parent)
+        self.modName = 'Info.Statistics'
+
+    def get(self, data, callIn):
+        '''
+        The main calculation thread.  Run calculation in a
+        thread because of the amount of large
+
+        INPUT:
+            data (list) -- list of data to run calculation on
+            callIn (str/list) -- list of calculations to run
+        '''
+        self.data = data
+        allowedCalls = ["mean", "median", "mode", "min", "max"]
+
+        # if given a single command
+        if type(callIn) == 'str':
+            if callIn in allowedCalls:
+                self._findData(callIn)
+            else:
+                sys.exit("PyFarm :: %s :: ERROR :: %s is not a recognized call") % (self.modName, callIn)
+
+        else:
+            output = []
+            for call in callIn:
+                if call in allowedCalls:
+                    output.append(self._findData(call))
+                else:
+                    sys.exit("PyFarm :: %s :: ERROR :: %s is not a recognized call") % (self.modName, callIn)
+
+        return output
+
+    def _findData(self, func):
+        '''Given a function name, run the corrent function'''
+        if func == 'mean':
+            return self.mean()
+        elif func == 'median':
+            return self.median()
+        elif func == 'mode':
+            return self.mode()
+        elif func == 'min':
+            return self.min()
+        elif func == 'max':
+            return self.max()
+
+    def mean(self):
+        '''Return the mean (average) of the given number set'''
+        floatData = []
+        dataLen = float(len(self.data))
+        dataTotal = 0.0
+
+        for data in self.data:
+            dataTotal += float(data)
+
+        print floatData
+        return dataTotal / dataLen
+
+    def median(self):
+        '''Define the median (center) of the given data set'''
+        pass
+
+    def mode(self):
+        '''Return the mode (most occurring) of the given number set'''
+        # create an empty dictionary to hold the data
+        frequency = {}
+
+        # for each number(x) in the input list(numList)
+        for x in self.data:
+            # if the number is in the dictionary(frequency)
+            # append the count of that number, else start
+            # couting
+            if x in frequency:
+                frequency[x] += 1
+            else:
+                frequency[x] = 1
+
+        # find the maxium value(s) in the dictionary
+        mode = max(frequency.values())
+
+        if mode == 1:
+            mode = []
+            return
+
+        # loop over the data and return tuples with the mode data and value
+        mode = [(x, mode) for x in frequency if (mode == frequency[x])]
+
+        # return mode
+        # [0][0] will return the key of the first tuple.
+        # We only want the first tuple which is the lowest key, therefor
+        # the 'safest' status to return.  Otherwise me might return failed as the
+        # current status even though there are just as many rendering frames.
+        return mode[0][0]
+
+    def min(self):
+        '''Return the minium value in the given data'''
+        return min(self.data)
+
+    def max(self):
+        '''Return the maxium value in the given data'''
+        return max(self.data)
+
+
 class Numbers(object):
     '''
     Provides several functions for creating, converting,
@@ -189,27 +297,6 @@ class Numbers(object):
         '''Return a hex id based on time.time()'''
         return self.int2hex(time.time())
 
-    def mode(self, numList):
-        '''Return the mode of the given number set'''
-        frequency = {}
-
-        for x in numList:
-            if (x in frequency):
-                frequency[x] += 1
-            else:
-                frequency[x] = 1
-
-        mode = max(frequency.values())
-
-        if mode == 1:
-            mode = []
-            return
-
-        mode = [(x, mode) for x in frequency if (mode == frequency[x])]
-
-        return mode[0][0]
-
-
 
 class File(object):
     '''
@@ -224,109 +311,16 @@ class File(object):
         return self.file.split('.')[len(self.file.split('.'))-1]
 
 
-class Job(QObject):
-    '''
-    Contains information related to the state of a job
+if __name__ == '__main__':
+    from random import randint
 
-    NOTES:
-    -Any function starting with count returns a quantity (int)
-    -Any function starting with state return a boolean (True/False)
+    numList = []
+    num = 0
+    while num <= 20:
+        numList.append(randint(1, 6))
+        num += 1
 
-    SIGNALS:
-        minRenderTime - Emits the min. render time
-        maxRenderTime - Emits the max. render time
-        avgRenderTime - Emits the avg. render time
-        totalFrameCount - total frames in job
-        subJobCount - number of sub-jobs
-    '''
-    def __init__(self, parnet=None):
-        super(Job, self).__init__(parent)
-        self.startTime = time.time()
+    stats = Statistics()
+    stat = stats.get(numList, ['mean', 'min', 'max'])
+    print "Average: %f\nMin: %i\nMax: %i"% (stat[0], stat[1], stat[2])
 
-        # setup frame related vars
-        self.avgRenderTime = 0
-        self.maxRenderTime = 0
-        self.minRenderTime = 0
-        self.totalFrames = 0
-        self.jobCount = 0
-        self.failedRenders = 0
-
-    def SubJobCount(self):
-        '''Return the number of sub jobs'''
-        self.emit(SIGNAL("subJobCount"), subCount)
-
-    def TotalFrames(self):
-        '''Number of frame total in job (reguardless of state)'''
-        pass
-
-    def FramesRenderingCount(self):
-        '''Number of frames currently rendering'''
-        pass
-
-    def FramesCompleteCount(self):
-        '''Number of frames compelete'''
-        pass
-
-    def failedRendersCount(self):
-        '''Number of errors returned by clients'''
-        pass
-
-    def State(self):
-        '''Return the current state of the job'''
-        pass
-
-    def FrameState(self, job, id, frame):
-        '''Return the current state of a given frame'''
-        pass
-
-    def Elapsed(self):
-        '''Time elapsed since start of job'''
-        return self.startTime + time.time()
-
-    def _setminRenderTime(self, frameTime):
-        '''Set the new min. frame time and emit signal'''
-        self.minRenderTime = frameTime
-        self.emit(SIGNAL("minRenderTime"), frameTime)
-
-    def _setmaxRenderTime(self, frameTime):
-        '''Set the new max. frame time and emit signal'''
-        self.maxRenderTime = frameTime
-        self.emit(SIGNAL("maxRenderTime"), frameTime)
-
-    def _setavgRenderTime(self, frameTime):
-        '''Set the avg min. frame time and emit signal'''
-        self.avgRenderTime = (self.avgRenderTime+frameTime) / 2
-        self.emit(SIGNAL("avgRenderTime"), self.avgRenderTime)
-
-    def CheckRenderTime(self, frameTime):
-        '''
-        Check and see if the latest frame render time is greater than
-        the previous max frame time
-        '''
-        if self.minRenderTime and self.maxRenderTime and self.avgRenderTime:
-            if frameTime > self.maxRenderTime:
-                self._setmaxRenderTime(frameTime)
-            elif frameTime < self.minRenderTime:
-                self._setminRenderTime(frameTime)
-
-            self._setavgRenderTime(frameTime)
-
-        else:
-            self._setminRenderTime(frameTime)
-            self._setmaxRenderTime(frameTime)
-            self._avgmaxRenderTime(frameTime)
-
-    def MinRenderTime(self):
-        '''Return the minium frame time'''
-        self.emit(SIGNAL("minRenderTime"), self.minRenderTime)
-        return self.minRenderTime
-
-    def MaxRenerTime(self):
-        '''Return the maxium frame time'''
-        self.emit(SIGNAL("maxRenderTime"), self.maxRenderTime)
-        return self.maxRenderTime
-
-    def AvgRenderTime(self):
-        '''Return the average frame time'''
-        self.emit(SIGNAL("avgRenderTime"), self.avgRenderTime)
-        return self.avgRenderTime

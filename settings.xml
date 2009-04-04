@@ -37,10 +37,32 @@ along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
         </network>
         <!-- Status Settings -->
         <status>
-            <waiting text="Waiting" index="0" />
-            <rendering text="Rendering" index="1" />
-            <failed text="Failed" index="2" />
-            <paused text="Paused" index="3" />
+            <!--
+		        bgColor - color of the background (table cell, etc.)
+		        txtColor - color of text
+		        maxVal - maxium value for color to apply to
+		        color - general color
+            -->
+            <job>
+                <waiting text="Waiting" index="0" bgColor="255,255,255" txtColor="0,0,0"/>
+                <paused text="Paused" index="1" bgColor="255,255,0" txtColor="0,0,0"/>
+                <failed text="Failed" index="2" bgColor="255,0,0" txtColor="0,0,0"/>
+                <rendering text="Rendering" index="3" bgColor="255,255,255" txtColor="0,255,0"/>
+                <complete text="Complete" index="4" bgColor="0,255,0" txtColor="0,0,0"/>
+            </job>
+            <hosts>
+                <enabled text="Enabled" index="0" bgColor="255,255,255" txtColor="0,0,0"/>
+                <running text="Running" index="1" bgColor="0,255,0" txtColor="255,255,255"/>
+                <disabled text="Disabled" index="2" bgColor="255,255,0" txtColor="0,0,0"/>
+                <failed text="Failed" index="3" bgColor="255,0,0" txtColor="0,0,0"/>
+            </hosts>
+            <general>
+                <nonZeroValue bgColor="0,0,0" txtColor="255,255,255"/>
+                <zeroValue bgColor="0,0,0" txtColor="255,0,0"/>
+                <percent maxVal="25" color="255,0,0" />
+                <percent maxVal="50" color="255,255,0" />
+                <percent maxVal="75" color="255,255,255" />
+            </general>
         </status>
     </settings>
     <software>
