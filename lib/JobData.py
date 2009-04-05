@@ -330,11 +330,12 @@ class GeneralManager(QObject):
                                             }
                                         }
 
-    def addHost(self, hostname, os, arch, software, simple=True):
+    def addHost(self, ip, hostname, os, arch, software, simple=False):
         '''
         Add a host to the system information dictionary
 
-        hostname (list) -- list of host and ip address
+        ip (str) -- ip address of host
+        hostname (str) -- hostname
         os (str) -- operating system type of host
         arch (str) -- architecture of system
         software (dict) -- dictionary of installed software
@@ -347,13 +348,14 @@ class GeneralManager(QObject):
                                                                                     }
         else:
             if checkType.isDict(software):
-                self.data["network"]["hosts"][hostname] ={"status": 0,
-                                                                                        "os" : os,
-                                                                                        "arch" : arch,
-                                                                                        "software" : software,
-                                                                                        "rendered" : 0,
-                                                                                        "failed" : 0
-                                                                                        }
+                self.data["network"]["hosts"][ip] ={"hostname" : hostname,
+                                                                            "status": 0,
+                                                                            "os" : os,
+                                                                            "arch" : arch,
+                                                                            "software" : software,
+                                                                            "rendered" : 0,
+                                                                            "failed" : 0
+                                                                            }
 
 ############
 # EXAMPLE CODE

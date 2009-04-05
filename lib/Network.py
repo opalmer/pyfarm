@@ -561,7 +561,7 @@ class AdminClient(QObject):
                     print "PyFarm :: %s :: %s is restarting" % (self.modName, self.client)
                 elif action == "SYSINFO":
                     stream >> options
-                    print options
+                    return options
 
 
     def serverHasStopped(self):

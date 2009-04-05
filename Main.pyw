@@ -25,12 +25,13 @@ PURPOSE: Main program to run and manage PyFarm
 import sys
 import os.path
 from time import time, sleep
-from random import randrange
+from random import randrange, random
 
 # From PyQt
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
-from PyQt4.QtNetwork import *
+# widget, subsidgets, and utility imports
+from PyQt4.QtGui import QMainWindow, QMessageBox
+from PyQt4.QtGui import QTableWidgetItem
+from PyQt4.QtGui import QColor, QProgressBar
 
 # From PyFarm
 import lib.Info as Info
@@ -40,6 +41,7 @@ from lib.Que import *
 from lib.Network import *
 from lib.RenderConfig import *
 from lib.ReadSettings import ParseXmlSettings
+from lib.JobData import JobManager, GeneralManager
 
 settings = ParseXmlSettings('%s/settings.xml' % os.getcwd())
 
@@ -134,20 +136,23 @@ class Main(QMainWindow):
         self.ui = Ui_RC3()
         self.ui.setupUi(self)
 
+        # setup data management
+        self.netTableLib = NetworkTable()
+        self.dataGeneral = GeneralManager(self)
+        self.dataJob = {}
+
         # setup some basic colors
         self.red = QColor(255, 0, 0)
         self.green = QColor(0, 128, 0)
         self.blue = QColor(0, 0, 255)
         self.purple = QColor(128, 0, 128)
         self.white = QColor(255, 255, 255)
+        self.yellow = QColor(255, 255, 0)
         self.black = QColor(0, 0, 0)
         self.orange = QColor(255, 165, 0)
 
-        # add external libs
-        self.netTableLib = NetworkTable()
-
         # inform the user of their settings
-        self.updateStatus('SETTINGS', 'Got settings from ./settings.cfg', 'purple')
+        self.updateStatus('SETTINGS', 'Got settings from settings.xml', 'purple')
         self.updateStatus('SETTINGS', 'Server IP: %s' % settings.netGeneral('host'), 'purple')
         self.updateStatus('SETTINGS', 'Broadcast Port: %s' % settings.netPort('broadcast'), 'purple')
         self.updateStatus('SETTINGS', 'StdOut Port: %s' % settings.netPort('stdout'), 'purple')
@@ -710,6 +715,7 @@ class Main(QMainWindow):
             self.currentHost.append(ResolveHost(host)[0])
             self.currentHost.append(ResolveHost(host)[1])
             self.currentHost.append('Online')
+            self.dataGeneral.addHost(self.currentHost[1], self.currentHost[1], )
 
             # if the current host has not been added
             if self.currentHost not in self.hosts:
@@ -746,13 +752,20 @@ class Main(QMainWindow):
         item = QTableWidgetItem('Offline')
         self.netTable.setItem(2, row, item)
 
-    def queryHost(self, host):
+    def systemInfo(self, host):
         '''
-        Query the os, architecture, and software on
-        all remote systems
+        Retrieve system info on the given host
+
+        INPUT:
+            host (str) -- ip address of host
         '''
         client = AdminClient(host, settings.netPort('admin'))
+        self.connect(client, SIGNAL("newInfo"), self.newSysInfo)
         client.systemInfo()
+
+    def newSysInfo(self, info):
+        print info
+
 
 ################################
 ## END Host Management
