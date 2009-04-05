@@ -717,6 +717,8 @@ class Main(QMainWindow):
                 self.addHostToTable(self.currentHost)
                 self.foundHosts += 1
                 print "PyFarm :: %s :: Found host %s" % (modName, self.currentHost)
+                print "PyFam :: %s :: Requesting system information for %s" % (modName, self.currentHost[1])
+                self.queryHost(self.currentHost[1])
             else:
                 if warnHostExists:
                     msg = QMessageBox()
@@ -743,6 +745,14 @@ class Main(QMainWindow):
         row = self._getHostSelection()[0]
         item = QTableWidgetItem('Offline')
         self.netTable.setItem(2, row, item)
+
+    def queryHost(self, host):
+        '''
+        Query the os, architecture, and software on
+        all remote systems
+        '''
+        client = AdminClient(host, settings.netPort('admin'))
+        client.systemInfo()
 
 ################################
 ## END Host Management
@@ -1173,6 +1183,8 @@ class Main(QMainWindow):
         for host in self.hosts:
             client = AdminClient(host[1], settings.netPort('admin'))
             client.restart()
+
+
 
     def hostStateHelp(self):
         '''

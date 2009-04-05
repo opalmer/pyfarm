@@ -25,7 +25,7 @@ import sys
 import os.path
 
 # From PyQt
-from PyQt4.QtCore import *
+from PyQt4.QtCore import QObject, QCoreApplication, SIGNAL, SLOT
 
 # From PyFarm
 from lib.Network import *
@@ -61,7 +61,6 @@ class Main(QObject):
         self.admin = AdminServer(self)
         self.connect(self.admin, SIGNAL("SHUTDOWN"), self.shutdown)
         self.connect(self.admin, SIGNAL("RESTART"), self.restart)
-        self.connect(self.admin, SIGNAL("HALT"), self.halt)
 
         if not self.admin.listen(QHostAddress(self.localhost), settings.netPort('admin')):
             print "PyFarm :: Client.AdminServer :: Could not start the server: %s" % self.admin.errorString()
@@ -90,10 +89,6 @@ class Main(QObject):
         print "PyFarm :: Client :: Got shutdown signal from Admin Server"
         self.shutdownServers()
         sys.exit("PyFarm :: Client :: Client Shutdown by Admin")
-
-    def halt(self):
-        '''Close all connections and halt the client'''
-        print "SYSTEM HALTED -- NEEDS IMPLIMENTATION"
 
 app = QCoreApplication(sys.argv)
 main = Main()

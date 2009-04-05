@@ -26,7 +26,7 @@ from os import listdir, system
 from os.path import isfile, islink, isdir, normpath
 
 # From PyQt
-from PyQt4.QtCore import *
+from PyQt4.QtCore import QThread, QObject, QRegExp, SIGNAL, SLOT
 
 # From PyFarm
 import Info

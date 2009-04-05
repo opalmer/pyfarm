@@ -20,7 +20,6 @@ PURPOSE: Used to read in settings of PyFarm
     along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 '''
 # From Python
-from sys import exit
 from os.path import isdir, isfile
 from os import listdir
 import xml.dom.minidom
@@ -30,6 +29,7 @@ from PyQt4.QtCore import QRegExp
 
 # From PyFarm
 import Info
+from PyFarmExceptions import ErrorProcessingSetup
 
 class SoftwareSearch(object):
     '''
@@ -72,7 +72,7 @@ class SoftwareSearch(object):
         expression = r"""[m|M]aya(200[89]|8.[05]|8[05]|7(.0|0))"""
         if self.os == 'linux':
             for program in  self._findProgram(expression, path, 'bin/Render', 4, 'Maya'):
-                yield [program[0], program[1], 'maya']
+                yield [program[0], program[1], software]
 
     def _houdini(self, path, software):
         '''
@@ -85,6 +85,9 @@ class SoftwareSearch(object):
         OUTPUT = {}
         expression = r"""hfs9.[15].[0-9]+"""
         win_expression = r"""Houdini 9.[15].[0-9]+"""
+        if self.os == 'linux':
+            for program in  self._findProgram(expression, path, 'bin/hython', 3, 'Houdini'):
+                yield [program[0], program[1], software]
 
     def _shake(self, path, software):
         '''
@@ -95,7 +98,7 @@ class SoftwareSearch(object):
             software (str) -- common name of program to pass
         '''
         if isfile("%s/bin/shake" % path):
-            return ['Shake', str("%s/bin/shake"% path), str(software)]
+            return ['Shake', str("%s/bin/shake"% path), software]
 
     def atLocation(self, path, software):
         '''
@@ -111,11 +114,10 @@ class SoftwareSearch(object):
                 for package in self._maya(path, software):
                     yield package
             elif software == 'houdini':
-                self._houdini(path, software)
+                for package in self._houdini(path, software):
+                    yield package
             elif software == 'shake':
                 yield self._shake(path, software)
-            else:
-                exit('PyFarm :: %s :: ERROR :: %s is not a valid software package' % software)
 
 
 class ParseXmlSettings(object):
@@ -128,14 +130,14 @@ class ParseXmlSettings(object):
         self.doc (str) -- The xml self.document to read from
     '''
     def __init__(self, doc, skipSoftware=False):
-        self.modName = 'ReadSettings.XmlSettings'
         self.os = Info.System().os()[0]
+        self.error = ErrorProcessingSetup('ReadSettings.XmlSettings')
 
         # check for xml formatting errors
         try:
             self.doc = xml.dom.minidom.parse(doc)
         except xml.parsers.expat.ExpatError, error:
-            exit("PyFarm :: %s :: ERROR :: Could not parse xml file: %s" % (self.modName, error))
+            self.error.xmlFormattingError(doc, error)
 
         # setup dictionaries
         self.netPorts = self._netPort()
@@ -276,8 +278,8 @@ class ParseXmlSettings(object):
         '''
         try:
             return self.netPorts[service]
-        except KeyError, key:
-            exit('PyFarm :: %s :: ERROR:: %s is not a valid key in netPorts' % (self.modName, key))
+        except KeyError:
+            raise self.error.xmlKeyError(service)
 
     def netGeneral(self, setting):
         '''
@@ -291,12 +293,15 @@ class ParseXmlSettings(object):
                 return int(self.netGen[setting])
             else:
                 return self.netGen[setting]
-        except KeyError, key:
-            exit('PyFarm :: %s :: ERROR:: %s is not a valid key in netGen' % (self.modName, key))
+        except KeyError:
+            raise self.error.xmlKeyError(setting)
 
     def installedSoftware(self):
         '''Return a list of the currently installed software'''
-        return self.softwareList
+        try:
+            return self.softwareList
+        except AttributeError, attr:
+            raise self.error.xmlSkipSoftwareValue(attr)
 
     def command(self, software):
         '''
@@ -307,8 +312,8 @@ class ParseXmlSettings(object):
         '''
         try:
             return self.softwareCommand[software]
-        except KeyError, key:
-            exit('PyFarm :: %s :: ERROR:: %s is not a valid key in softwareCommand'% (self.modName, key))
+        except KeyError:
+            raise self.error.xmlKeyError(software)
 
     def commandList(self):
         '''Return the full list of render commands'''
@@ -323,8 +328,8 @@ class ParseXmlSettings(object):
         '''
         try:
             return self.softwareCommonName[software]
-        except KeyError, key:
-            exit('PyFarm :: %s :: ERROR:: %s is not a valid key in softwareCommonName'% (self.modName, key))
+        except KeyError:
+            raise self.error.xmlKeyError(software)
 
     def widgetIndex(self, software):
         '''
@@ -335,8 +340,8 @@ class ParseXmlSettings(object):
         '''
         try:
             return int(self.softwareWidgetIndex[self.commonName(software)])
-        except KeyError, key:
-            exit('PyFarm :: %s :: ERROR:: %s is not a valid key in softwareWidgetIndex' % (self.modName, key))
+        except KeyError:
+            raise self.error.xmlKeyError(software)
 
     def fileGrep(self, software):
         '''
@@ -347,22 +352,31 @@ class ParseXmlSettings(object):
         '''
         try:
             return self.softwareFileGrep[self.commonName(software)]
-        except KeyError, key:
-            exit('PyFarm :: %s :: ERROR:: %s is not a valid key in softwareFileGrep' % (self.modName, key))
+        except KeyError:
+            raise self.error.xmlKeyError(software)
 
     def frameStatusKey(self, key):
         '''Return the status string for a given key'''
         try:
             return self.statusKeyDict[key]
-        except KeyError, key:
-            exit('PyFarm :: %s :: ERROR:: %s is not a valid key in statusKeyDict' % (self.modName, str(key)))
+        except KeyError:
+            raise self.error.xmlKeyError(key)
 
     def hostStatusKey(self, key):
         '''Return the status string for a given key'''
         try:
             return self.statusKeyDict[key]
-        except KeyError, key:
-            exit('PyFarm :: %s :: ERROR:: %s is not a valid key in statusKeyDict' % (self.modName, str(key)))
+        except KeyError:
+            raise self.error.xmlKeyError(key)
+
+    def software(self):
+        '''Output all information for use in a TCP connection'''
+        output = ""
+
+        for software in self._installedSoftware():
+            output += "||%s::%s::%s" % (software[0], software[1], software[2])
+
+        return output
 
     def boolColor(self, isTrue):
         '''
@@ -375,3 +389,8 @@ class ParseXmlSettings(object):
            pass
         else:
             pass
+
+if __name__ == '__main__':
+    import os
+    settings = ParseXmlSettings('%s/settings.xml' % os.getcwd(), skipSoftware=False)
+    settings.software()

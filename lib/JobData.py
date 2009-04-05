@@ -35,7 +35,7 @@ from PyFarmExceptions import ErrorProcessingSetup
 
 settings = ParseXmlSettings('%s/settings.xml' % getcwd(), skipSoftware=True)
 statistics = Statistics()
-typeTest = TypeTest('JobData')
+typeCheck = TypeTest('JobData')
 error = ErrorProcessingSetup('JobData')
 
 class JobStatus(QObject):
@@ -50,8 +50,8 @@ class JobStatus(QObject):
     '''
     def __init__(self, job, name, generalData, parent=None):
         super(JobStatus, self).__init__(parent)
-        self.job = typeTest.isString(job)
-        self.name = typeTest.isString(name)
+        self.job = job
+        self.name = name
         self.general = generalData
         self.parent = parent
         self.modName = 'JobStatus'
@@ -74,8 +74,8 @@ class JobStatus(QObject):
         for frame in self.job[id]["frames"].keys():
             statusList.append(self.frame(id, frame))
 
-        # get mode, set subjob status,
-        status = statistics.mode(statusList)
+        # get mode, set subjob status
+        status = statistics.get(statusList, 'mode')
         self.setSubjob(id, status)
         return status
 
@@ -87,8 +87,8 @@ class JobStatus(QObject):
             id (str)  -- subjob id
             status (int) [0-4] --status index of subjob
         '''
-        typeTest.isString(id)
-        typeTest.isInt(status)
+        typeCheck.isString(id)
+        typeCheck.isInt(status)
         if status >= 0 and status <= 4:
             self.job[id]["status"] = status
             self.parent.emitSignal("subjobStatusChanged", [self.name, id, status])
@@ -199,7 +199,12 @@ class JobData(QObject):
 
         INPUT:
             id (str) -- subjob id to create
+            priority (int) -- priority to give job
         '''
+        # first check the types of the input vars
+        typeCheck.isString(id)
+        typeCheck.isInt(priority)
+
         if priority >= 1 and priority <= 10:
             self.job[id] = {"priority" : priority, "status" : 0,
                                     "statistics": {
@@ -225,9 +230,16 @@ class JobData(QObject):
         INPUT:
             subid (str) --  subjob to add the frame to
             frame (int) --  frame number
-            software (str) -- software packagee to render with
+            software (str) -- software package to render with
             command (str) -- command to render with
         '''
+        # first check the types of the input vars
+        #  not all items are check because they been checked
+        #  already.
+        typeCheck.isInt(frame)
+        typeCheck.isString(software)
+        typeCheck.isString(command)
+
         entry = {"status" : 0, "host" : None,
                         "pid" : None, "software" : software,
                         "start" : None, "end" : None, "elapsed" : None,
@@ -318,7 +330,7 @@ class GeneralManager(QObject):
                                             }
                                         }
 
-    def addHost(self, hostname, os, arch, software, simple):
+    def addHost(self, hostname, os, arch, software, simple=True):
         '''
         Add a host to the system information dictionary
 
@@ -334,7 +346,7 @@ class GeneralManager(QObject):
                                                                                     "failed" : 0
                                                                                     }
         else:
-            if type(software) == 'dict':
+            if checkType.isDict(software):
                 self.data["network"]["hosts"][hostname] ={"status": 0,
                                                                                         "os" : os,
                                                                                         "arch" : arch,
@@ -342,69 +354,67 @@ class GeneralManager(QObject):
                                                                                         "rendered" : 0,
                                                                                         "failed" : 0
                                                                                         }
-            else:
-                sys.exit("THIS NEEDS TO BE IMPLIMENTED")
 
-
-if __name__ == '__main__':
-    class Main(QObject):
-        '''random test code'''
-        def __init__(self, parent=None):
-            super(Main, self).__init__(parent)
-
-        def execute(self):
-            general = GeneralManager()
-            jobNames = ["job1", "job2"]
-            subjobs = ["sbj1", "sbj2"]
-            jobs = {}
-
-            # create jobs, connect their signals/slots, create subjobs, add frames
-            for jobName in jobNames:
-                jobs.update({jobName : JobManager(jobName, general)})
-                self.setupSignals(jobs[jobName])
-                for subjob in subjobs:
-                    jobs[jobName].data.createSubjob(subjob)
-
-                for subjob in jobs[jobName].status.listSubjobs():
-                    for frame in range(1, randint(3, 13)):
-                        jobs[jobName].data.addFrame(subjob, frame, "Maya 2009", "render -r mr -v 5 scene.mb")
-
-            # List the subjobs for each job
-            for job in jobs.keys():
-                print "\n%s has %i subjobs and %i frames" % (job, jobs[job].status.subjobCount(), jobs[job].status.frameCount())
-                for subjob in jobs[job].status.listSubjobs():
-                    jobs[job].status.setSubjob(subjob, randint(0, 3))
-                    print "\tsubjob %s:" % subjob
-                    print "\t\tFrames: %i\n\t\tStatus: %s" % (jobs[job].status.frameCount(subjob), settings.frameStatusKey(jobs[job].status.subjob(subjob)))
-
-                jobs[job].status.overall()
-                #print "\t\tStatus: %s" % jobs[job].status.overall()
-
-        def setupSignals(self, jobName):
-            sigSlots = {'newFrame': self.newFrameAdded, 'subjobStatusChanged': self.subjobStatusChanged}
-
-            for sig, slt in sigSlots.items():
-                self.connect(jobName, SIGNAL(sig), slt)
-
-        def newFrameAdded(self, info):
-            job = info[0]
-            id = info[1]
-            frame = info[2]
-            entry = info [3]
-            #print "Subjob %s from %s has added frame %i" % (id, job, frame)
-
-        def subjobStatusChanged(self, info):
-            job = info[0]
-            id = info[1]
-            status = info[2]
-            #print "Subjob %s from %s has changed status to %s" % (id, job, settings.frameStatusKey(status))
-
-    from Info import Numbers
-    from pprint import pprint
-    from sys import argv, exit
-    from random import randint
-
-    app = QCoreApplication(argv)
-    main = Main()
-    exit(main.execute())
-    app.exec_()
+############
+# EXAMPLE CODE
+############
+#if __name__ == '__main__':
+#    class Main(QObject):
+#        '''random test code'''
+#        def __init__(self, parent=None):
+#            super(Main, self).__init__(parent)
+#
+#        def execute(self):
+#            general = GeneralManager()
+#            jobNames = ["job1", "job2"]
+#            subjobs = ["sbj1", "sbj2"]
+#            jobs = {}
+#
+#            # create jobs, connect their signals/slots, create subjobs, add frames
+#            for jobName in jobNames:
+#                jobs.update({jobName : JobManager(jobName, general)})
+#                self.setupSignals(jobs[jobName])
+#                for subjob in subjobs:
+#                    jobs[jobName].data.createSubjob(subjob)
+#
+#                for subjob in jobs[jobName].status.listSubjobs():
+#                    for frame in range(1, randint(3, 13)):
+#                        jobs[jobName].data.addFrame(subjob, frame, "Maya 2009", "render -r mr -v 5 scene.mb")
+#
+#            # List the subjobs for each job
+#            for job in jobs.keys():
+#                print "\n%s has %i subjobs and %i frames" % (job, jobs[job].status.subjobCount(), jobs[job].status.frameCount())
+#                for subjob in jobs[job].status.listSubjobs():
+#                    jobs[job].status.setSubjob(subjob, randint(0, 3))
+#                    print "\tsubjob %s:" % subjob
+#                    print "\t\tFrames: %i\n\t\tStatus: %s" % (jobs[job].status.frameCount(subjob), settings.frameStatusKey(jobs[job].status.subjob(subjob)))
+#
+#                jobs[job].status.overall()
+#                #print "\t\tStatus: %s" % jobs[job].status.overall()
+#
+#        def setupSignals(self, jobName):
+#            sigSlots = {'newFrame': self.newFrameAdded, 'subjobStatusChanged': self.subjobStatusChanged}
+#
+#            for sig, slt in sigSlots.items():
+#                self.connect(jobName, SIGNAL(sig), slt)
+#
+#        def newFrameAdded(self, info):
+#            job = info[0]
+#            id = info[1]
+#            frame = info[2]
+#            entry = info [3]
+#
+#        def subjobStatusChanged(self, info):
+#            job = info[0]
+#            id = info[1]
+#            status = info[2]
+#
+#    from Info import Numbers
+#    from pprint import pprint
+#    from sys import argv, exit
+#    from random import randint
+#
+#    app = QCoreApplication(argv)
+#    main = Main()
+#    exit(main.execute())
+#    app.exec_()

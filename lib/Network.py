@@ -26,14 +26,19 @@ import time
 import socket
 import os.path
 
-# Qt libs
-from PyQt4.QtCore import *
-from PyQt4.QtNetwork import *
+# Qt libs (Explicit imports for speed)
+#  first the main objects
+from PyQt4.QtCore import QThread, QObject, SIGNAL, SLOT
+#  data storage
+from PyQt4.QtCore import QDataStream, QString, QByteArray, QReadWriteLock, QIODevice
+# network related
+from PyQt4.QtNetwork import QTcpServer, QTcpSocket, QAbstractSocket
 
 # PyFarm Libs
 from ReadSettings import ParseXmlSettings
+from Info import System
 
-settings = ParseXmlSettings('%s/settings.xml' % os.getcwd(), skipSoftware=True)
+settings = ParseXmlSettings('%s/settings.xml' % os.getcwd(), skipSoftware=False)
 
 class BroadcastServer(QThread):
     '''
@@ -381,15 +386,14 @@ class AdminServerThread(QThread):
             print "PyFarm :: %s :: Receieved the %s signal" % (self.modName, action)
 
             # if the action is a preset
-            if action in ("SHUTDOWN", "RESTART", "HALT"):
-                stream >> options # unpack the stream
+            if action in ("SHUTDOWN", "RESTART", "SYSINFO"):
+                stream >> options
                 if action == "SHUTDOWN":
-                    #self.quit("SHUTDOWN")
                     self.emit(SIGNAL("SHUTDOWN"))
                 elif action == "RESTART":
                     self.emit(SIGNAL("RESTART"))
-                elif action == "HALT":
-                    self.emit(SIGNAL("HALT"))
+                elif action == "SYSINFO":
+                    self.sendSysInfo(socket)
 
                 # final send a back the original host
                 self.sendReply(socket, action, options)
@@ -420,6 +424,24 @@ class AdminServerThread(QThread):
         stream.writeUInt16(reply.size() - settings.netGeneral('unit16'))
         socket.write(reply)
 
+    def sendSysInfo(self, socket):
+        # gather required info
+        systemInfo = System().os()
+
+        # create the packet
+        reply = QByteArray()
+        stream = QDataStream(reply, QIODevice.WriteOnly)
+        stream.setVersion(QDataStream.Qt_4_2)
+        stream.writeUInt16(0)
+
+        # pack the information
+        output = 'os::%s,arch::%s%s' % (systemInfo[0], systemInfo[1], settings.software())
+        stream << QString("SYSINFO") << QString(output)
+        stream.device().seek(0)
+        stream.writeUInt16(reply.size() - settings.netGeneral('unit16'))
+
+        # send the reply
+        socket.write(reply)
 
 class AdminServer(QTcpServer):
     '''
@@ -437,7 +459,6 @@ class AdminServer(QTcpServer):
         self.connect(self.serverThread, SIGNAL("finished()"), self.serverThread, SLOT("deleteLater()"))
         self.connect(self.serverThread, SIGNAL("SHUTDOWN"), self.emitShutdown)
         self.connect(self.serverThread, SIGNAL("RESTART"), self.emitRestart)
-        self.connect(self.serverThread, SIGNAL("HALT"), self.emitHalt)
         self.serverThread.start()
 
     def shutdown(self):
@@ -460,13 +481,6 @@ class AdminServer(QTcpServer):
         emit RESTART to the parent.
         '''
         self.emit(SIGNAL("RESTART"))
-
-    def emitHalt(self):
-        '''
-        After receiving the restart signal from the thread,
-        emit HALT to the parent.
-        '''
-        self.emit(SIGNAL("HALT"))
 
 
 class AdminClient(QObject):
@@ -493,16 +507,19 @@ class AdminClient(QObject):
         '''Restart the client'''
         self.issueRequest(QString("RESTART"), QString("kill renders"))
 
-    def halt(self):
-        '''Hault the client but do not restart or shutdown'''
-        self.issueRequest(QString("HALT"), QString("kill renders"))
+    def systemInfo(self):
+        '''Return info about the remote sytem'''
+        self.issueRequest(QString("SYSINFO"))
 
-    def issueRequest(self, action, options):
+    def issueRequest(self, action, options=None):
         self.request = QByteArray()
         stream = QDataStream(self.request, QIODevice.WriteOnly)
         stream.setVersion(QDataStream.Qt_4_2)
         stream.writeUInt16(0)
-        stream << action << options
+        if options:
+            stream << action << options
+        else:
+            stream << action
         stream.device().seek(0)
         stream.writeUInt16(self.request.size() - settings.netGeneral('unit16'))
 
@@ -537,13 +554,15 @@ class AdminClient(QObject):
             stream >> action
             self.nextBlockSize = 0
 
-            if action in ("SHUTDOWN", "RESTART", "HALT"):
+            if action in ("SHUTDOWN", "RESTART", "SYSINFO"):
                 if action == "SHUTDOWN":
                     print "PyFarm :: %s :: %s is shutting down" % (self.modName, self.client)
                 elif action == "RESTART":
                     print "PyFarm :: %s :: %s is restarting" % (self.modName, self.client)
-                elif action == "HALT":
-                    print "PyFarm :: %s :: %s is halting" % (self.modName, self.client)
+                elif action == "SYSINFO":
+                    stream >> options
+                    print options
+
 
     def serverHasStopped(self):
         print "PyFarm :: %s :: %s has stopped" % (self.modName, self.client)

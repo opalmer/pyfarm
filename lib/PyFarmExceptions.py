@@ -36,7 +36,7 @@ class UnexpectedType(Exception):
         self.given = given
 
     def __str__(self):
-        return repr('%s was expecting a %s not a %s' % (self.module, self.expected, self.given))
+        return repr('%s was expecting a %s not a %s type' % (self.module, self.expected, self.given))
 
 
 class UnexpectedValue(Exception):
@@ -81,6 +81,56 @@ class UnexpectedString(Exception):
                     % (self.module, self.expected, self.given))
 
 
+class XMLFormattingError(Exception):
+    '''
+    If given a poorly formatted xml file, raise
+    an exception
+
+    INPUT:
+        module (str) -- the module or location of error generation
+        error (str) -- the original exception by xml.parsers
+    '''
+    def __init__(self, module, error):
+        self.module = module
+        self.error = error
+
+    def __str__(self):
+        return repr('%s could not parse the xml file, original exception was: %s' % (self.module, self.error))
+
+
+class XMLKeyError(Exception):
+    '''
+    If given a key error from an xml file,
+    raise an exception.
+
+    INPUT:
+        key(str) -- the original key that was searched
+        doc (str) -- the xml document
+    '''
+    def __init__(self, key, doc):
+        self.key = key
+        self.doc = doc
+
+    def __str__(self):
+        return repr('%s is not a valid key in %s' % (self.key, self.doc))
+
+
+class XMLSoftwareList(Exception):
+    '''
+    If skipSoftware=True and the key is request, throw
+    this exception
+
+    INPUT:
+        doc (str) -- the xml document
+    '''
+    def __init__(self, doc):
+        self.doc = doc
+
+    def __str__(self):
+        return repr('%s does not contain the attribute "softwareList", please check the \
+        skipSoftware input value' % (self.doc))
+
+
 class ErrorProcessingSetup(object):
     '''
     Main class meant to setup error processing
@@ -101,3 +151,15 @@ class ErrorProcessingSetup(object):
     def valueError(self, sRange, eRange, given):
         '''Return a value error'''
         return UnexpectedValue(self.module, sRange, eRange, given)
+
+    def xmlFormattingError(self, doc, error):
+        '''Return an xml formatting error'''
+        return XMLFormattingError(doc, error)
+
+    def xmlKeyError(self, key, doc):
+        '''Return an xml key error'''
+        return XMLKeyError(key, doc)
+
+    def xmlSkipSoftwareValue(self, doc):
+        '''Return an xml software value key error'''
+        return XMLSoftwareList(doc)

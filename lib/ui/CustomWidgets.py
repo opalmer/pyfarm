@@ -20,8 +20,11 @@ PURPOSE: Module full of 'general widgets', widgets used inside of other widgets.
     along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.s
 '''
 # From PyQt
-from PyQt4.QtGui import *
-from PyQt4.QtCore import *
+#  main widgets, sub widgets, and utilities
+from PyQt4.QtGui import QWidget, QComboBox, QDialog, QDialogButtonBox, QApplication
+from PyQt4.QtGui import QMenu, QLabel
+from PyQt4.QtGui import QFont, QVBoxLayout
+from PyQt4.QtCore import SIGNAL, SLOT, QString
 
 # From PyFarm
 from RC3 import *

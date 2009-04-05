@@ -159,6 +159,47 @@ class Stopwatch(QThread):
         if formatted:
             return Int2Time(time.time()-self.start)
 
+class Numbers(object):
+    '''
+    Provides several functions for creating, converting,
+    and evaling numbers
+    '''
+    def __init__(self):
+        pass
+
+    def int2hex(self, intIn):
+        '''Convert an integer to hexadecimal'''
+        return "%x" % intIn
+
+    def hex2int(self, inHex):
+        '''Convert an hexadecimal to integer'''
+        return int(inHex, 16)
+
+    def randhex(self, s, e):
+        '''Produces hex value based on time'''
+        return "%x" % randint(s, e)
+
+    def randint(self, s, e):
+        '''Produces rand int based on time'''
+        return randint(s, e)
+
+    def hexid(self):
+        '''Return a hex id based on time.time()'''
+        return self.int2hex(time.time())
+
+
+class File(object):
+    '''
+    Large file class meant to handle multiple tasks
+    including readline, file size, get extension, etc.
+    '''
+    def __init__(self, file):
+        self.file = file
+
+    def ext(self):
+        '''Return the extension of the file'''
+        return self.file.split('.')[len(self.file.split('.'))-1]
+
 
 class Statistics(object):
     '''
@@ -182,6 +223,7 @@ class Statistics(object):
         '''
         self.data = data
         allowedCalls = ["mean", "median", "mode", "min", "max"]
+        output = []
 
         # if given a single command
         if type(callIn) == 'str':
@@ -191,7 +233,6 @@ class Statistics(object):
                 self.error.stringError('mean, median, mode, min, or max', callIn)
 
         elif type(callIn) == 'list':
-            output = []
             for call in callIn:
                 if call in allowedCalls:
                     output.append(self._findData(call))
@@ -273,48 +314,6 @@ class Statistics(object):
         return max(self.data)
 
 
-class Numbers(object):
-    '''
-    Provides several functions for creating, converting,
-    and evaling numbers
-    '''
-    def __init__(self):
-        pass
-
-    def int2hex(self, intIn):
-        '''Convert an integer to hexadecimal'''
-        return "%x" % intIn
-
-    def hex2int(self, inHex):
-        '''Convert an hexadecimal to integer'''
-        return int(inHex, 16)
-
-    def randhex(self, s, e):
-        '''Produces hex value based on time'''
-        return "%x" % randint(s, e)
-
-    def randint(self, s, e):
-        '''Produces rand int based on time'''
-        return randint(s, e)
-
-    def hexid(self):
-        '''Return a hex id based on time.time()'''
-        return self.int2hex(time.time())
-
-
-class File(object):
-    '''
-    Large file class meant to handle multiple tasks
-    including readline, file size, get extension, etc.
-    '''
-    def __init__(self, file):
-        self.file = file
-
-    def ext(self):
-        '''Return the extension of the file'''
-        return self.file.split('.')[len(self.file.split('.'))-1]
-
-
 class TypeTest(object):
     '''
     Test an object and determine if it matches the type
@@ -338,52 +337,62 @@ class TypeTest(object):
     def getType(self, item):
         '''Return the type of the item'''
         typeInstance = type(item)
-        if typeInstance == 'str':
+        if typeInstance== str:
             return 'string'
-        elif typeInstance == 'list':
+        elif typeInstance== list:
             return 'list'
-        elif typeInstance == 'dict':
+        elif typeInstance == dict:
             return 'dictionary'
-        elif typeInstance == 'int':
+        elif typeInstance == int:
             return 'integer'
-        elif typeInstance == 'float':
+        elif typeInstance == float:
             return 'float'
+        elif typeInstance == long:
+            return "long"
+        else:
+            return typeInstance
 
     def isString(self, item):
         '''Check and see if the given item is a string'''
-        if self._typeMatch(item, 'str'):
+        if self._typeMatch(item, str):
             return item
         else:
             raise self.error.typeError('string', self.getType(item))
 
     def isList(self, item):
         '''Check and see if the given item is a list'''
-        if self._typeMatch(item, 'list'):
+        if self._typeMatch(item, list):
             return item
         else:
             raise self.error.typeError('list', self.getType(item))
 
     def isDict(self, item):
         '''Check and see if the given item is a dictionary'''
-        if self._typeMatch(item, 'dict'):
+        if self._typeMatch(item, dict):
             return item
         else:
             raise self.error.typeError('dictionary', self.getType(item))
 
     def isInt(self, item):
         '''Check and see if the given item is a integer'''
-        if self._typeMatch(item, 'int'):
+        if self._typeMatch(item, int):
             return item
         else:
             raise self.error.typeError('integer', self.getType(item))
 
     def isFloat(self, item):
         '''Check and see if the given item is a float'''
-        if self._typeMatch(item, 'float'):
+        if self._typeMatch(item, float):
             return item
         else:
             raise self.error.typeError('float', self.getType(item))
 
+    def isLong(selfself, item):
+        '''Check and see if the given item is a long int'''
+        if self._typeMatch(item, long):
+            return item
+        else:
+            raise self.error.typeError('long', self.getType(item))
 
 if __name__ == '__main__':
     from random import randint
