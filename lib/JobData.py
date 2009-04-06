@@ -288,12 +288,146 @@ class JobManager(QObject):
         return self.job
 
 
+class GeneralHostManager(QObject):
+    '''
+    Contains function for host related information
+
+    COMMON INPUT:
+        ip (str) -- ip address of the host we want to examine
+
+    INPUT:
+        data (dict) -- dictionary containing the host data
+    '''
+    def __init__(self, data, parent=None):
+        super(GeneralHostManager, self).__init__(parent)
+        self.parent = parent
+        self.data = data["hosts"]
+
+    def status(self, ip, text=False):
+        '''
+        Return the status of a host
+
+        INPUT:
+            text (True/False) -- if true return the text representation
+            of the given value
+        '''
+        if text:
+            return settings.hostStatusKey(self.data[ip]["status"])
+        else:
+            return self.data[ip]["status"]
+
+    def hostname(self, ip):
+        '''Return the hostname of the requested machine'''
+        return self.data[ip]["hostname"]
+
+    def os(self, ip):
+        '''Return the operating system of the host'''
+        return self.data[ip]["os"]
+
+    def architecture(self, ip):
+        '''Return the architecture of the host'''
+        return self.data[ip]["arch"]
+
+    def rendered(self, ip, string=False):
+        '''Return the number of rendered frames'''
+        frames = self.data[ip]["rendered"]
+        if not string:
+            return frames
+        else:
+            return str(frames)
+
+    def failed(self, ip, string=False):
+        '''Return the number of failed frames'''
+        frames = self.data[ip]["failed"]
+        if not string:
+            return frames
+        else:
+            return str(frames)
+
+    def failureRate(self, ip, string=False):
+        '''Return a failure ratio as a decimal'''
+        try:
+            ratio = float(self.data[ip]["failed"])/float(self.data[ip]["rendered"])
+        except ZeroDivisionError:
+            ratio = 0.0
+
+        if not string:
+            return ratio
+        else:
+            return str(ratio)
+
+    def softwareDict(self, ip):
+        '''Return the entire software dict for the given host'''
+        return self.data[ip]["software"]
+
+    def installedVersions(self, ip, software):
+        '''Given a generic software return the versions found'''
+        for version in self.data[ip]["software"][software]:
+            yield version
+
+class GeneralNetworkManager(QObject):
+    '''
+    Contains functions for network related information
+
+    INPUT:
+        data (dict) -- dictionary containing the network data
+    '''
+    def __init__(self, data, parent=None):
+        super(GeneralNetworkManager, self).__init__(parent)
+        self.parent = parent
+        self.data = data["network"]
+        self.host = GeneralHostManager(self.data, self)
+
+    def hostList(self):
+        '''List all of the current in self.data'''
+        return self.data["hosts"].keys()
+
+    def hostCount(self):
+        '''Return the current number of hosts'''
+        return len(self.data["hosts"].keys())
+
+    def statusHostCount(self, statusValue):
+        '''
+        Return the current number of hosts matching
+        a given status
+
+        INPUT:
+            status (int) -- status value to match
+        '''
+        count = 0
+        for ip in self.hostList():
+            if self.host.status(ip) == statusValue:
+                count += 1
+        return count
+
+    def enabledHostCount(self):
+        '''Return the current number of enabled hosts'''
+        return self.statusHostCount(0)
+
+    def activeHostCount(self):
+        '''Return the current number of active (rendering) hosts'''
+        return self.statusHostCount(1)
+
+    def disabledHostCount(self):
+        '''Return the current number of disabled hosts'''
+        return self.statusHostCount(2)
+
+    def failedHostCount(self):
+        '''Return the current number of disabled hosts'''
+        return self.statusHostCount(3)
+
+    def emitSignal(self, sig, data):
+        '''Emit a signal from the main class'''
+        self.parent.emit(SIGNAL(sig), data)
+
+
 class GeneralManager(QObject):
     '''
     General data management, meant for
     program wide information
     '''
     def __init__(self, parent=None):
+        super(GeneralManager, self).__init__(parent)
         self.data = {"queue" :{
                                 "system" : {
                                     "status" : 0,
@@ -315,22 +449,13 @@ class GeneralManager(QObject):
                                     "paused" : 0},
                                 },
                             "network" : {
-                                "info" :{
-                                    "hostCount" : 0,
-                                    "activeHosts" : 0,
-                                    "pausedHosts" : 0},
                                 "hosts" : {
-#                                    "host01": {
-#                                    "os" : "Linux",
-#                                    "arch" : "x64",
-#                                    "software" : {"maya2009" : "/path/to/maya", "shake" : "/path/to/shake"},
-#                                    "rendered" : 12,
-#                                    "failed" : 2}
                                                 }
                                             }
                                         }
+        self.network = GeneralNetworkManager(self.data, self)
 
-    def addHost(self, ip, hostname, os, arch, software, simple=False):
+    def addHost(self, ip, hostname, os='', arch='', software={}, basic=False):
         '''
         Add a host to the system information dictionary
 
@@ -339,15 +464,16 @@ class GeneralManager(QObject):
         os (str) -- operating system type of host
         arch (str) -- architecture of system
         software (dict) -- dictionary of installed software
-        simple (True/False) -- if true ,only add the hostname,ip address, and status
+        basic (True/False) -- if true ,only add the hostname,ip address, and status
         '''
-        if simple:
-            self.data["network"]["hosts"][hostname] ={"status": 0,
-                                                                                    "rendered" : 0,
-                                                                                    "failed" : 0
-                                                                                    }
+        if basic:
+            self.data["network"]["hosts"][ip] ={"hostname" : hostname,
+                                                                        "status": 0,
+                                                                        "rendered" : 0,
+                                                                        "failed" : 0
+                                                                        }
         else:
-            if checkType.isDict(software):
+            if typeCheck.isDict(software):
                 self.data["network"]["hosts"][ip] ={"hostname" : hostname,
                                                                             "status": 0,
                                                                             "os" : os,
@@ -357,66 +483,10 @@ class GeneralManager(QObject):
                                                                             "failed" : 0
                                                                             }
 
-############
-# EXAMPLE CODE
-############
-#if __name__ == '__main__':
-#    class Main(QObject):
-#        '''random test code'''
-#        def __init__(self, parent=None):
-#            super(Main, self).__init__(parent)
-#
-#        def execute(self):
-#            general = GeneralManager()
-#            jobNames = ["job1", "job2"]
-#            subjobs = ["sbj1", "sbj2"]
-#            jobs = {}
-#
-#            # create jobs, connect their signals/slots, create subjobs, add frames
-#            for jobName in jobNames:
-#                jobs.update({jobName : JobManager(jobName, general)})
-#                self.setupSignals(jobs[jobName])
-#                for subjob in subjobs:
-#                    jobs[jobName].data.createSubjob(subjob)
-#
-#                for subjob in jobs[jobName].status.listSubjobs():
-#                    for frame in range(1, randint(3, 13)):
-#                        jobs[jobName].data.addFrame(subjob, frame, "Maya 2009", "render -r mr -v 5 scene.mb")
-#
-#            # List the subjobs for each job
-#            for job in jobs.keys():
-#                print "\n%s has %i subjobs and %i frames" % (job, jobs[job].status.subjobCount(), jobs[job].status.frameCount())
-#                for subjob in jobs[job].status.listSubjobs():
-#                    jobs[job].status.setSubjob(subjob, randint(0, 3))
-#                    print "\tsubjob %s:" % subjob
-#                    print "\t\tFrames: %i\n\t\tStatus: %s" % (jobs[job].status.frameCount(subjob), settings.frameStatusKey(jobs[job].status.subjob(subjob)))
-#
-#                jobs[job].status.overall()
-#                #print "\t\tStatus: %s" % jobs[job].status.overall()
-#
-#        def setupSignals(self, jobName):
-#            sigSlots = {'newFrame': self.newFrameAdded, 'subjobStatusChanged': self.subjobStatusChanged}
-#
-#            for sig, slt in sigSlots.items():
-#                self.connect(jobName, SIGNAL(sig), slt)
-#
-#        def newFrameAdded(self, info):
-#            job = info[0]
-#            id = info[1]
-#            frame = info[2]
-#            entry = info [3]
-#
-#        def subjobStatusChanged(self, info):
-#            job = info[0]
-#            id = info[1]
-#            status = info[2]
-#
-#    from Info import Numbers
-#    from pprint import pprint
-#    from sys import argv, exit
-#    from random import randint
-#
-#    app = QCoreApplication(argv)
-#    main = Main()
-#    exit(main.execute())
-#    app.exec_()
+    def emitSignal(self, sig, data):
+        '''Emit a signal from the main class'''
+        self.emit(SIGNAL(sig), data)
+
+    def dataGeneral(self):
+        '''Return the general data dictionary for use outside of the class'''
+        return self.data

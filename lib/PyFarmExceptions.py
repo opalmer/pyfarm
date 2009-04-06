@@ -105,14 +105,12 @@ class XMLKeyError(Exception):
 
     INPUT:
         key(str) -- the original key that was searched
-        doc (str) -- the xml document
     '''
-    def __init__(self, key, doc):
+    def __init__(self, key):
         self.key = key
-        self.doc = doc
 
     def __str__(self):
-        return repr('%s is not a valid key in %s' % (self.key, self.doc))
+        return repr('%s is not a valid key in settings.xml' % self.key)
 
 
 class XMLSoftwareList(Exception):
@@ -156,9 +154,9 @@ class ErrorProcessingSetup(object):
         '''Return an xml formatting error'''
         return XMLFormattingError(doc, error)
 
-    def xmlKeyError(self, key, doc):
+    def xmlKeyError(self, key):
         '''Return an xml key error'''
-        return XMLKeyError(key, doc)
+        return XMLKeyError(key)
 
     def xmlSkipSoftwareValue(self, doc):
         '''Return an xml software value key error'''

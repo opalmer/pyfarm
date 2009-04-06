@@ -145,7 +145,7 @@ class ParseXmlSettings(object):
         self.statusKeyDict = self._setJobStatusDict()
 
         self.jobStatusDict = None
-        self.hostStatusDict = None
+        self.hostStatusDict = self._setHostStatusDict()
 
         self.boolColorDict = self._setBoolColor()
 
@@ -249,7 +249,7 @@ class ParseXmlSettings(object):
         statusDict = {}
         for child in self._statusKeyGenerator():
             for node in self._getElement(child, 'hosts'):
-                for status in child.childNodes:
+                for status in node.childNodes:
                     if status.nodeType== 1:
                         statusDict[int(status.getAttribute('index'))] = str(status.getAttribute('text'))
 
@@ -365,7 +365,7 @@ class ParseXmlSettings(object):
     def hostStatusKey(self, key):
         '''Return the status string for a given key'''
         try:
-            return self.statusKeyDict[key]
+            return self.hostStatusDict[key]
         except KeyError:
             raise self.error.xmlKeyError(key)
 

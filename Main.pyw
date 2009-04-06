@@ -26,12 +26,13 @@ import sys
 import os.path
 from time import time, sleep
 from random import randrange, random
+from pprint import pprint
 
 # From PyQt
 # widget, subsidgets, and utility imports
 from PyQt4.QtGui import QMainWindow, QMessageBox
-from PyQt4.QtGui import QTableWidgetItem
-from PyQt4.QtGui import QColor, QProgressBar
+from PyQt4.QtGui import QTableWidgetItem, QTreeWidgetItem
+from PyQt4.QtGui import QColor, QProgressBar, QPushButton
 
 # From PyFarm
 import lib.Info as Info
@@ -138,7 +139,7 @@ class Main(QMainWindow):
 
         # setup data management
         self.netTableLib = NetworkTable()
-        self.dataGeneral = GeneralManager(self)
+        self.dataGeneral = GeneralManager()
         self.dataJob = {}
 
         # setup some basic colors
@@ -188,6 +189,7 @@ class Main(QMainWindow):
         self.connect(self.ui.loadQue, SIGNAL("triggered()"), self._loadQue)
         self.connect(self.ui.saveQue, SIGNAL("triggered()"), self._saveQue)
         self.connect(self.ui.currentJobs, SIGNAL("customContextMenuRequested(const QPoint &)"), self.currentJobsContextMenu)
+        self.connect(self.ui.getHostInfo, SIGNAL("pressed()"), self.showHostInfo)
 
         # connect ui widgets related to global job info
         self.connect(self.ui.inputJobName, SIGNAL("editingFinished()"), self.setJobName)
@@ -715,44 +717,41 @@ class Main(QMainWindow):
             self.currentHost.append(ResolveHost(host)[0])
             self.currentHost.append(ResolveHost(host)[1])
             self.currentHost.append('Online')
-            self.dataGeneral.addHost(self.currentHost[1], self.currentHost[1], )
+            hostname = self.currentHost[0]
+            ip = self.currentHost[1]
 
             # if the current host has not been added
-            if self.currentHost not in self.hosts:
-                self.hosts.append(self.currentHost)
-                self.addHostToTable(self.currentHost)
-                self.foundHosts += 1
-                print "PyFarm :: %s :: Found host %s" % (modName, self.currentHost)
-                print "PyFam :: %s :: Requesting system information for %s" % (modName, self.currentHost[1])
-                self.queryHost(self.currentHost[1])
-            else:
-                if warnHostExists:
-                    msg = QMessageBox()
-                    msg.information(None, "Host Already Added", unicode("%s has already been added to the list." % host))
-                else:
-                    pass
+            if ip not in self.dataGeneral.hostList():
+                self.getSystemInfo(ip)
+                print "now here"
 
-    def addHostFromBroadcast(self, host):
-        '''Add a host generated from the broadcast packet'''
-        self.addHost(host, False)
+    def addHostToTable(self, ip):
+        '''
+        Look info the data dictionary and update the host list
 
-    def addHostToTable(self, resolvedHost):
-        '''Add the given host to the table'''
-        y = 0
-        x = self.ui.networkTable.rowCount()
-        self.ui.networkTable.insertRow(self.ui.networkTable.rowCount())
+        INPUT:
+            ip (str) -- ip of host to add
+        '''
+        # gather host information, create widget items for each
+        ipwidget = QTableWidgetItem(ip)
+        hostname = QTableWidgetItem(self.dataGeneral.network.host.hostname(ip))
+        status = QTableWidgetItem(self.dataGeneral.network.host.status(ip, text=True))
 
-        for attribute in resolvedHost:
-            item = QTableWidgetItem(attribute)
-            self.ui.networkTable.setItem(x, y, item)
-            y += 1
+        # insert a row
+        rowcount = self.ui.networkTable.rowCount()
+        self.ui.networkTable.insertRow(rowcount)
+
+        # add thems to the table
+        self.ui.networkTable.setItem(rowcount, 0, ipwidget)
+        self.ui.networkTable.setItem(rowcount, 1, hostname)
+        self.ui.networkTable.setItem(rowcount, 2, status)
 
     def _disableHosts(self):
         row = self._getHostSelection()[0]
         item = QTableWidgetItem('Offline')
         self.netTable.setItem(2, row, item)
 
-    def systemInfo(self, host):
+    def getSystemInfo(self, host):
         '''
         Retrieve system info on the given host
 
@@ -760,12 +759,88 @@ class Main(QMainWindow):
             host (str) -- ip address of host
         '''
         client = AdminClient(host, settings.netPort('admin'))
-        self.connect(client, SIGNAL("newInfo"), self.newSysInfo)
+        self.connect(client, SIGNAL("newSysInfo"), self.updateSystemDataDict)
         client.systemInfo()
 
-    def newSysInfo(self, info):
+    def updateSystemDataDict(self, info):
+        '''Given the captured information, add it to self.generalData'''
         print info
+        infosplit = info.split('||')
+        sysinfo = infosplit[0].split(',')
+        softwareList = infosplit[1:]
 
+        # first process the system info
+        for entry in sysinfo:
+            try:
+                key, value = entry.split('::')
+                if str(key) == 'ip':
+                    ip = str(value)
+                elif str(key) == 'hostname':
+                    hostname = str(value)
+                elif str(key) == 'os':
+                    os = str(value)
+                elif str(key) == 'arch':
+                    arch = str(value)
+            except ValueError:
+                pass
+
+        softwareDict = {}
+        for software in softwareList:
+            version, location, generic = software.split('::')
+            if str(generic) not in softwareDict:
+                softwareDict[str(generic)] = {}
+                softwareDict[str(generic)][str(version)] = str(location)
+            else:
+                softwareDict[str(generic)][str(version)]  = str(location)
+
+        try:
+            self.dataGeneral.addHost(ip, hostname, os, arch, softwareDict)
+            self.addHostToTable(ip)
+        except UnboundLocalError:
+            pass
+
+    def showHostInfo(self):
+        '''Show some info about the host'''
+        widget = HostInfo()
+        self.printData()
+
+        # gather information
+        row = self.ui.networkTable.currentRow()
+        host = self.dataGeneral.network.host
+
+        try:
+            ip = str(self.ui.networkTable.item(row, 0).text())
+        except AttributeError:
+            self.infoMessage("Please select a host first.", "Before viewing information about a host you must first select one from the network table list.")
+
+        # apply it to the widgets
+        widget.ui.ipAddress.setText(ip)
+        widget.ui.hostname.setText(host.hostname(ip))
+        widget.ui.status.setText(host.status(ip, text=True))
+        widget.ui.os.setText(host.os(ip))
+        widget.ui.architecture.setText(host.architecture(ip))
+        widget.ui.rendered.setText(host.rendered(ip, string=True))
+        widget.ui.failed.setText(host.failed(ip, string=True))
+        widget.ui.failureRate.setText(host.failureRate(ip, string=True))
+
+        # add the software the the tree widget
+        software = host.softwareDict(ip)
+        softwareTree = widget.ui.softwareTree
+        for key in software.keys():
+            item = QTreeWidgetItem()
+            item.setText(0, QString(key))
+            for entry in host.installedVersions(ip, key):
+                entryItem = QTreeWidgetItem()
+                try:
+                    entryItem.setText(0, QString(entry.split(' ')[1]))
+                # unless we can't split the name
+                except IndexError:
+                    entryItem.setText(0, QString(entry))
+                item.addChild(entryItem)
+            softwareTree.addTopLevelItem(item)
+
+        # open the widget
+        widget.exec_()
 
 ################################
 ## END Host Management
@@ -878,7 +953,7 @@ class Main(QMainWindow):
         '''Get hosts via broadcast packet, add them to self.hosts'''
         self.updateStatus('NETWORK', 'Searching for hosts...', 'green')
         findHosts = BroadcastServer(self)
-        self.connect(findHosts, SIGNAL("gotNode"), self.addHostFromBroadcast)
+        self.connect(findHosts, SIGNAL("gotNode"), self.getSystemInfo)
         self.connect(findHosts,  SIGNAL("DONE"),  self._doneFindingHosts)
         findHosts.start()
 
@@ -1185,19 +1260,21 @@ class Main(QMainWindow):
 ################################
 ## BEGIN General Utilities
 ################################
+    def printData(self):
+        '''print out the data dictionary'''
+        pprint(self.dataGeneral.dataGeneral())
+
     def shutdownHosts(self):
         '''Shutdown all remote hosts'''
-        for host in self.hosts:
-            client = AdminClient(host[1], settings.netPort('admin'))
+        for host in self.dataGeneral.network.hostList():
+            client = AdminClient(host, settings.netPort('admin'))
             client.shutdown()
 
     def restartHosts(self):
         '''Restart all remote hosts'''
-        for host in self.hosts:
-            client = AdminClient(host[1], settings.netPort('admin'))
+        for host in self.dataGeneral.network.hostList():
+            client = AdminClient(host, settings.netPort('admin'))
             client.restart()
-
-
 
     def hostStateHelp(self):
         '''
@@ -1225,7 +1302,7 @@ class Main(QMainWindow):
     def closeEvent(self, event):
         '''Run when closing the main gui, used to "cleanup" the program state'''
         # if we have connected hosts
-        if len(self.hosts):
+        if len(self.dataGeneral.network.hostList()):
             exit_dialog = self.hostExitDialog()
             if exit_dialog == QMessageBox.Yes:
                 print "PyFarm :: Main.closeEvent :: Shutting Down Clients..."

@@ -30,6 +30,7 @@ from PyQt4.QtCore import SIGNAL, SLOT, QString
 from RC3 import *
 from JobDetails import *
 from LogViewer import *
+from HostInfo import *
 
 
 class HostStatus(QComboBox):
@@ -104,10 +105,6 @@ class NetworkTable(object):
         twoAction = menu.addAction("&Two")
         self.connect(oneAction, SIGNAL("triggered()"), self.one)
         self.connect(twoAction, SIGNAL("triggered()"), self.two)
-        #        if not self.message:
-        #            menu.addSeparator()
-        #            threeAction = menu.addAction("Thre&e")
-        #            self.connect(threeAction, SIGNAL("triggered()"),self.three)
         menu.exec_(event.globalPos())
 
     def one(self):
@@ -167,7 +164,6 @@ class DialogBox(QDialog):
     def __init__(self, parent=None):
         super(DialogBox, self).__init__(parent)
 
-
     def setupUi(self, parent=None):
         super(Ui_DialogBox).__init__(QWidget)
         parent.setObjectName("parent")
@@ -193,7 +189,6 @@ class DialogBox(QDialog):
         self.buttonBox.setStandardButtons(QDialogButtonBox.Cancel|QDialogButtonBox.Ok)
         self.buttonBox.setObjectName("buttonBox")
         self.verticalLayout.addWidget(self.buttonBox)
-
         self.retranslateUi(parent)
         QObject.connect(self.buttonBox, SIGNAL("rejected()"), parent.close)
         QMetaObject.connectSlotsByName(parent)
@@ -207,21 +202,17 @@ class DialogBox(QDialog):
 class CustomObjectDialog(QDialog):
     def __init__(self, parent=None):
         super(CustomObjectDialog, self).__init__(parent)
-
         lineEditLabel = QLabel("Object Name:")
         self.objectEditName = QLineEdit()
         buttonBox = QDialogButtonBox(QDialogButtonBox.Ok|QDialogButtonBox.Cancel)
-
         grid = QGridLayout()
         grid.addWidget(lineEditLabel, 0, 0)
         grid.addWidget(self.objectEditName, 1, 0)
         grid.addWidget(buttonBox, 4, 0, 1, 2)
         self.setLayout(grid)
-
         self.connect(buttonBox, SIGNAL("accepted()"), self, SLOT("accept()"))
         self.connect(buttonBox, SIGNAL("rejected()"), self, SLOT("reject()"))
         self.setWindowTitle("Add Custom Object")
-
 
     def accept(self):
         self.emit(SIGNAL("objectName"), self.objectEditName.text())
@@ -234,8 +225,15 @@ class JobDetails(QDialog):
         self.ui = Ui_JobDetails()
         self.ui.setupUi(self)
 
+
 class LogViewer(QDialog):
     def __init__(self, parent=None):
         super(LogViewer, self).__init__(parent)
         self.ui = Ui_LogViewer()
+        self.ui.setupUi(self)
+
+class HostInfo(QDialog):
+    def __init__(self, parent=None):
+        super(HostInfo, self).__init__(parent)
+        self.ui = Ui_HostInfo()
         self.ui.setupUi(self)

@@ -32,7 +32,7 @@ from PyQt4.QtCore import QThread, QObject, SIGNAL, SLOT
 #  data storage
 from PyQt4.QtCore import QDataStream, QString, QByteArray, QReadWriteLock, QIODevice
 # network related
-from PyQt4.QtNetwork import QTcpServer, QTcpSocket, QAbstractSocket
+from PyQt4.QtNetwork import QTcpServer, QTcpSocket, QAbstractSocket, QHostInfo
 
 # PyFarm Libs
 from ReadSettings import ParseXmlSettings
@@ -136,7 +136,6 @@ class TCPServerStdOutThread(QThread):
 
     def run(self):
         '''Start the server'''
-        #print "TCPServerStdOutThread() - DEBUG - Started Thread"
         socket = QTcpSocket()
         print "PyFarm :: Network.TCPServerStdOutThread :: Starting Thread"
 
@@ -343,6 +342,7 @@ class AdminServerThread(QThread):
     def __init__(self, socketId, parent):
         super(AdminServerThread, self).__init__(parent)
         self.socketId = socketId
+        self.parent = parent
         self.modName = 'Network.AdminServerThread'
 
     def run(self):
@@ -427,6 +427,8 @@ class AdminServerThread(QThread):
     def sendSysInfo(self, socket):
         # gather required info
         systemInfo = System().os()
+        os = systemInfo[0]
+        arch = systemInfo[1]
 
         # create the packet
         reply = QByteArray()
@@ -435,7 +437,8 @@ class AdminServerThread(QThread):
         stream.writeUInt16(0)
 
         # pack the information
-        output = 'os::%s,arch::%s%s' % (systemInfo[0], systemInfo[1], settings.software())
+        output = 'ip::%s,hostname::%s,os::%s,arch::%s%s' \
+        % (self.parent.serverAddress().toString(), QHostInfo.localHostName(), os, arch, settings.software())
         stream << QString("SYSINFO") << QString(output)
         stream.device().seek(0)
         stream.writeUInt16(reply.size() - settings.netGeneral('unit16'))
@@ -561,8 +564,8 @@ class AdminClient(QObject):
                     print "PyFarm :: %s :: %s is restarting" % (self.modName, self.client)
                 elif action == "SYSINFO":
                     stream >> options
-                    return options
-
+                    self.socket.close()
+                    self.emit(SIGNAL("newSysInfo"), options)
 
     def serverHasStopped(self):
         print "PyFarm :: %s :: %s has stopped" % (self.modName, self.client)
