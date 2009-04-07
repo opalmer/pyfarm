@@ -44,8 +44,9 @@ from lib.RenderConfig import *
 from lib.ReadSettings import ParseXmlSettings
 from lib.JobData import JobManager, GeneralManager
 
-# PyFarm external lib test
+# From PyFarm gui classes
 from lib.ui.main.CloseEvent import CloseEventManager
+from lib.ui.main.NetworkTableManager import NetworkTableManager
 
 settings = ParseXmlSettings('%s/settings.xml' % os.getcwd())
 
@@ -141,8 +142,8 @@ class Main(QMainWindow):
         self.ui.setupUi(self)
 
         # setup data management
-        self.netTableLib = NetworkTable()
         self.dataGeneral = GeneralManager()
+        self.netTableManager = NetworkTableManager(self.dataGeneral, self.ui.networkTable)
         self.connect(self.dataGeneral, SIGNAL("status_update"), self.updateStatusTab)
         self.dataJob = {}
 
@@ -219,13 +220,16 @@ class Main(QMainWindow):
         ## network section signals
         self.connect(self.ui.disableHost, SIGNAL("pressed()"), self._disableHosts)
         self.connect(self.ui.addHost, SIGNAL("pressed()"), self._customHostDialog)
-        self.connect(self.ui.removeHost, SIGNAL("pressed()"), self._removeSelectedHost)
+        self.connect(self.ui.removeHost, SIGNAL("pressed()"), self.netTableManager.removeSelectedHost)
 
         # GENERATE SOME FAKE DATA
         self.connect(self.ui.currentJobs, SIGNAL("cellActivated(int,int)"), self.fakePrintTableSelection)
         self.fakeSetup()
         self.InitialStatus()
-        #self.findHosts()
+
+    def tmpRemoveSelected(self):
+        netTable = NetworkTableManager(self.dataGeneral, self.ui)
+        netTable.removeSelectedHost()
 
 ################################
 ## BEGIN Context Menus
@@ -665,12 +669,6 @@ class Main(QMainWindow):
 ################################
 ## BEGIN Host Management
 ################################
-    def _removeSelectedHost(self):
-        '''Remove the currently selected host'''
-        lineHost = self._getHostSelection()
-        self.hosts.remove(lineHost[1])
-        self.netTable.removeRow(lineHost[0])
-
     def _getHostSelection(self):
         '''
         Get the current host selection

@@ -1,9 +1,8 @@
-#!/usr/bin/python
 '''
 AUTHOR: Oliver Palmer
 HOMEPAGE: www.pyfarm.net
-INITIAL: Jan 12 2009
-PURPOSE: Main program to run and manage PyFarm
+INITIAL: April 6 2009
+PURPOSE: Close event classes, run when PyFarm is being closed by the user
 
     This file is part of PyFarm.
 

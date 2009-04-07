@@ -208,7 +208,7 @@ class TCPStdOutClient(QTcpSocket):
         self.connect(self.socket, SIGNAL("disconnected()"), self.serverHasStopped)
         self.connect(self.socket, SIGNAL("error(QAbstractSocket::SocketError)"), self.serverHasError)
 
-    def  shutdown():
+    def  shutdown(self):
         self.pack('hello', '1', 'this is the mnessage')
 
     def pack(self, job, frame, stdout, host=socket.gethostname()):
