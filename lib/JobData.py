@@ -429,9 +429,16 @@ class GeneralNetworkManager(QObject):
         '''Emit a signal from the main class'''
         self.parent.emit(SIGNAL(sig), data)
 
-    def removeHost(self, ipin):
+    def removeHostData(self, ip):
         '''Remove the given host from the dictionary'''
-        ip = str(ipin)
+        # remove the entry from the network stats
+        #  followed by the dictionary entry
+        self.data["stats"][self.host.status(ip)] -= 1
+        del self.data["hosts"][ip]
+        self.echoNetworkStats()
+
+    def removeHost(self, ip):
+        '''Remove the given host from the dictionary'''
         status = self.data["hosts"][ip]["status"]
         closeEventManager = CloseEventManager()
         exit_dialog = closeEventManager.singleHostExitDialog(ip)
@@ -439,20 +446,17 @@ class GeneralNetworkManager(QObject):
         if exit_dialog == QMessageBox.Yes:
             print "PyFarm :: Main.removeHost :: Shutting Down %s..." % ip
             closeEventManager.shutdownHost(ip)
+            self.removeHostData(ip)
 
         elif exit_dialog == QMessageBox.No:
             print "PyFarm :: Main.removeHost :: Restarting %s..." % ip
             closeEventManager.restartHost(ip)
+            self.removeHostData(ip)
 
         elif exit_dialog == QMessageBox.Help:
             print "PyFarm :: Main.removeHost :: Presenting host help"
             closeEventManager.singleExitHelp(ip)
-
-        # remove the entry from the network stats
-        #  followed by the dictionary entry
-        self.data["stats"][status] -= 1
-        del self.data["hosts"][str(ip)]
-        self.echoNetworkStats()
+            self.removeHost(ip)
 
 
 class GeneralManager(QObject):

@@ -52,7 +52,7 @@ class BroadcastServer(QThread):
 
       NOTE: Get hostname with socket.hostname() <- might be required by QTcpServer
     '''
-    def __init__(self,  parent, host='', timeout=5):
+    def __init__(self,  parent, host='', timeout=7):
         super(BroadcastServer,  self).__init__(parent)
         print "PyFarm :: Network.BroadcastServer :: Sending Broadcast"
         self.port = settings.netPort('broadcast')

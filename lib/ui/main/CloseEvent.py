@@ -6,6 +6,7 @@ PURPOSE: Close event classes, run when PyFarm is being closed by the user
 
     This file is part of PyFarm.
 
+
     PyFarm is free software: you can redistribute it and/or modify
 
     it under the terms of the GNU General Public License as published by
@@ -56,7 +57,6 @@ class RestartHostThread(QThread):
     '''
     Threaded instance of restart process.
     Created to speed up the restart process for multiple
-    hosts.
 
     INPUT:
         host (str) -- ip address of host
@@ -100,13 +100,11 @@ class CloseEventManager(object):
 
     def shutdownHost(self, ip):
         '''Shutdown a single host'''
-        client = ShutdownHostThread(ip)
-        client.run()
+        ShutdownHostThread(ip).run()
 
     def restartHost(self, ip):
         '''Restart a single host'''
-        client = RestartHostThread(ip)
-        client.run()
+        RestartHostThread(ip).run()
 
     def exitHelp(self):
         '''

@@ -95,9 +95,11 @@ class NetworkTableManager(object):
         Remove the selected hosts from the table and
         data dictionary
         '''
+        # get the ip and row
         row = self.ui.currentRow()
-        ip = self.ui.item(row, 0).text()
+        ip = str(self.ui.item(row, 0).text())
+
+        # ask the user what to do, and from there remove the data if requested
+        # finally, remove the row
         self.data.network.removeHost(ip)
         self.ui.removeRow(row)
-        client = CloseEventManager
-        client.shutdownHost(str(ip))
