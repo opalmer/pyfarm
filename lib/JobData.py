@@ -483,9 +483,14 @@ class GeneralManager(QObject):
                                                                             "failed" : 0
                                                                             }
 
-    def emitSignal(self, sig, data):
+        self.emitSignal('status_update')
+
+    def emitSignal(self, sig, data=None):
         '''Emit a signal from the main class'''
-        self.emit(SIGNAL(sig), data)
+        if data:
+            self.emit(SIGNAL(sig), data)
+        else:
+            self.emit(SIGNAL(sig))
 
     def dataGeneral(self):
         '''Return the general data dictionary for use outside of the class'''

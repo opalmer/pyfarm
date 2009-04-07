@@ -109,7 +109,6 @@ class SoftwareSearch(object):
             software (str) -- software to search for
         '''
         if isdir(path):
-            print 'PyFarm :: %s :: Running search @ %s for %s' % (self.modName, path, software)
             if software == 'maya':
                 for package in self._maya(path, software):
                     yield package
@@ -240,7 +239,6 @@ class ParseXmlSettings(object):
                 for status in child.childNodes:
                     if status.nodeType== 1:
                         pass
-                        #statusDict[int(status.getAttribute('index'))] = str(status.getAttribute('text'))
 
         return statusDict
 
@@ -389,8 +387,3 @@ class ParseXmlSettings(object):
            pass
         else:
             pass
-
-if __name__ == '__main__':
-    import os
-    settings = ParseXmlSettings('%s/settings.xml' % os.getcwd(), skipSoftware=False)
-    settings.software()

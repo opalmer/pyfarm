@@ -44,6 +44,9 @@ from lib.RenderConfig import *
 from lib.ReadSettings import ParseXmlSettings
 from lib.JobData import JobManager, GeneralManager
 
+# PyFarm external lib test
+from lib.ui.main.CloseEvent import CloseEventManager
+
 settings = ParseXmlSettings('%s/settings.xml' % os.getcwd())
 
 __AUTHOR__ = 'Oliver Palmer'
@@ -140,6 +143,7 @@ class Main(QMainWindow):
         # setup data management
         self.netTableLib = NetworkTable()
         self.dataGeneral = GeneralManager()
+        self.connect(self.dataGeneral, SIGNAL("status_update"), self.updateStatusTab)
         self.dataJob = {}
 
         # setup some basic colors
@@ -1260,61 +1264,37 @@ class Main(QMainWindow):
 ################################
 ## BEGIN General Utilities
 ################################
+
+    def updateStatusTab(self):
+        '''
+        Collect information about general status and
+        post it the status section
+        '''
+        print
+
     def printData(self):
         '''print out the data dictionary'''
         pprint(self.dataGeneral.dataGeneral())
-
-    def shutdownHosts(self):
-        '''Shutdown all remote hosts'''
-        for host in self.dataGeneral.network.hostList():
-            client = AdminClient(host, settings.netPort('admin'))
-            client.shutdown()
-
-    def restartHosts(self):
-        '''Restart all remote hosts'''
-        for host in self.dataGeneral.network.hostList():
-            client = AdminClient(host, settings.netPort('admin'))
-            client.restart()
-
-    def hostStateHelp(self):
-        '''
-        Inform the user of what/why hosts are restarted or
-        shutdown
-        '''
-        title = QString("Client Action Help")
-        help = QString("\
-        <p>When closing PyFarm you have two options to deal with\
-        remote clients:</p>\
-        <p>\
-        Select <b><i>yes<i></b> shutdown the remote clients<br>\
-        Select <b><i>no<i></b> to restart the remote clients for future use\
-        </p>")
-        QMessageBox.information(self, title, help)
-        self.closeEvent(self)
-
-    def hostExitDialog(self):
-        '''Present a host shutdown dialog to the user'''
-        return QMessageBox.question(self,
-                    QString("Select Client Action"),
-                    QString("Would you like to shutdown all remote client nodes?"),
-                    QMessageBox.Yes|QMessageBox.No|QMessageBox.Help)
 
     def closeEvent(self, event):
         '''Run when closing the main gui, used to "cleanup" the program state'''
         # if we have connected hosts
         if len(self.dataGeneral.network.hostList()):
-            exit_dialog = self.hostExitDialog()
+            closeEventManager = CloseEventManager(self.dataGeneral, self)
+            exit_dialog = closeEventManager.hostExitDialog()
+
             if exit_dialog == QMessageBox.Yes:
                 print "PyFarm :: Main.closeEvent :: Shutting Down Clients..."
-                self.shutdownHosts()
+                closeEventManager.shutdownHosts()
 
             elif exit_dialog == QMessageBox.No:
                 print "PyFarm :: Main.closeEvent :: Restarting clients..."
-                self.restartHosts()
+                closeEventManager.restartHosts()
 
             elif exit_dialog == QMessageBox.Help:
                 print "PyFarm :: Main.closeEvent :: Presenting host help"
-                self.hostStateHelp()
+                closeEventManager.exitHelp()
+                self.closeEvent(self)
         else:
             print "PyFarm :: Main.closeEvent :: No hosts to shutdown"
 
