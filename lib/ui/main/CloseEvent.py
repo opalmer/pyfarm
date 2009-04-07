@@ -76,10 +76,12 @@ class CloseEventManager(object):
     the close event.  This class is launched when the users
     start the process for exiting PyFarm.
 
+    Module also used for individual host management.
+
     INPUT:
         data -- instance of data manager of main gui
     '''
-    def __init__(self, data, parent=None):
+    def __init__(self, data=None, parent=None):
         super(CloseEventManager, self).__init__(parent)
         self.parent = parent
         self.data = data
@@ -95,6 +97,16 @@ class CloseEventManager(object):
         for host in self.data.network.hostList():
             client = RestartHostThread(host)
             client.run()
+
+    def shutdownHost(self, ip):
+        '''Shutdown a single host'''
+        client = ShutdownHostThread(ip)
+        client.run()
+
+    def restartHost(self, ip):
+        '''Restart a single host'''
+        client = RestartHostThread(ip)
+        client.run()
 
     def exitHelp(self):
         '''
@@ -117,3 +129,22 @@ class CloseEventManager(object):
                     QString("Select Client Action"),
                     QString("Would you like to shutdown all remote client nodes?"),
                     QMessageBox.Yes|QMessageBox.No|QMessageBox.Help)
+
+    def singleHostExitDialog(self, ip):
+        '''Present a host shutdown dialog to the user'''
+        return QMessageBox.question(self.parent,
+                    QString("Select Client Action"),
+                    QString("Would you like to shutdown %s?" % ip),
+                    QMessageBox.Yes|QMessageBox.No|QMessageBox.Help)
+
+    def singleExitHelp(self, ip):
+        '''
+        Inform the user of what/why hosts are restarted or
+        shutdown (for a single machine)
+        '''
+        title = QString("Client Action Help")
+        help = QString("\
+        <p>When removing a %s you have two options</p>\
+        <p>Select <b><i>yes<i></b> shutdown %s<br>\
+        Select <b><i>no<i></b> to restart %s for future use</p>" % (ip, ip, ip))
+        QMessageBox.information(self.parent, title, help)

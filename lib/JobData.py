@@ -26,12 +26,14 @@ from sys import exit
 from os import getcwd
 
 # From PyQt
-from PyQt4.QtCore import *
+from PyQt4.QtGui import QMessageBox
+from PyQt4.QtCore import QObject, QString, SIGNAL
 
 # From PyFarm
 from ReadSettings import ParseXmlSettings
 from Info import Statistics, TypeTest
 from PyFarmExceptions import ErrorProcessingSetup
+from lib.ui.main.CloseEvent import CloseEventManager
 
 settings = ParseXmlSettings('%s/settings.xml' % getcwd(), skipSoftware=True)
 statistics = Statistics()
@@ -400,6 +402,13 @@ class GeneralNetworkManager(QObject):
                 count += 1
         return count
 
+    def echoNetworkStats(self):
+        '''Echo some general network stats'''
+        print "Host Stats: \n\tEnabled: %i\n\tActive: %i\n\tDisabled: %i\n\tFailed: %i\n\tTotal Count: %i\n\tHost List:\n\t%s" %\
+        (self.enabledHostCount(), self.activeHostCount(), \
+        self.disabledHostCount(), self.failedHostCount(), \
+        self.hostCount(), self.hostList())
+
     def enabledHostCount(self):
         '''Return the current number of enabled hosts'''
         return self.statusHostCount(0)
@@ -419,6 +428,31 @@ class GeneralNetworkManager(QObject):
     def emitSignal(self, sig, data):
         '''Emit a signal from the main class'''
         self.parent.emit(SIGNAL(sig), data)
+
+    def removeHost(self, ipin):
+        '''Remove the given host from the dictionary'''
+        ip = str(ipin)
+        status = self.data["hosts"][ip]["status"]
+        closeEventManager = CloseEventManager()
+        exit_dialog = closeEventManager.singleHostExitDialog(ip)
+
+        if exit_dialog == QMessageBox.Yes:
+            print "PyFarm :: Main.removeHost :: Shutting Down %s..." % ip
+            closeEventManager.shutdownHost(ip)
+
+        elif exit_dialog == QMessageBox.No:
+            print "PyFarm :: Main.removeHost :: Restarting %s..." % ip
+            closeEventManager.restartHost(ip)
+
+        elif exit_dialog == QMessageBox.Help:
+            print "PyFarm :: Main.removeHost :: Presenting host help"
+            closeEventManager.singleExitHelp(ip)
+
+        # remove the entry from the network stats
+        #  followed by the dictionary entry
+        self.data["stats"][status] -= 1
+        del self.data["hosts"][str(ip)]
+        self.echoNetworkStats()
 
 
 class GeneralManager(QObject):
@@ -449,6 +483,12 @@ class GeneralManager(QObject):
                                     "paused" : 0},
                                 },
                             "network" : {
+                                "stats" :{
+                                    0: 0,
+                                    1: 0,
+                                    2: 0,
+                                    3: 0
+                                    },
                                 "hosts" : {
                                                 }
                                             }
@@ -482,7 +522,7 @@ class GeneralManager(QObject):
                                                                             "rendered" : 0,
                                                                             "failed" : 0
                                                                             }
-
+        self.data["network"]["stats"][0] += 1
         self.emitSignal('status_update')
 
     def emitSignal(self, sig, data=None):

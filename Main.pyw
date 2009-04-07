@@ -143,7 +143,7 @@ class Main(QMainWindow):
 
         # setup data management
         self.dataGeneral = GeneralManager()
-        self.netTableManager = NetworkTableManager(self.dataGeneral, self.ui.networkTable)
+        self.netTable = NetworkTableManager(self.dataGeneral, self.ui.networkTable)
         self.connect(self.dataGeneral, SIGNAL("status_update"), self.updateStatusTab)
         self.dataJob = {}
 
@@ -174,9 +174,6 @@ class Main(QMainWindow):
         # setup ui vars
         self.hosts = []
         self.foundHosts = 0
-        self.ui.networkTable.setAlternatingRowColors(True)
-        self.netTable = self.ui.networkTable
-        self.netTable.horizontalHeader().setStretchLastSection(True)
         self.ui.currentJobs.horizontalHeader().setStretchLastSection(True)
         self.message = QString()
         self.que = QUE
@@ -220,16 +217,12 @@ class Main(QMainWindow):
         ## network section signals
         self.connect(self.ui.disableHost, SIGNAL("pressed()"), self._disableHosts)
         self.connect(self.ui.addHost, SIGNAL("pressed()"), self._customHostDialog)
-        self.connect(self.ui.removeHost, SIGNAL("pressed()"), self.netTableManager.removeSelectedHost)
+        self.connect(self.ui.removeHost, SIGNAL("pressed()"), self.netTable.removeSelectedHost)
 
         # GENERATE SOME FAKE DATA
         self.connect(self.ui.currentJobs, SIGNAL("cellActivated(int,int)"), self.fakePrintTableSelection)
         self.fakeSetup()
         self.InitialStatus()
-
-    def tmpRemoveSelected(self):
-        netTable = NetworkTableManager(self.dataGeneral, self.ui)
-        netTable.removeSelectedHost()
 
 ################################
 ## BEGIN Context Menus
@@ -678,8 +671,8 @@ class Main(QMainWindow):
         '''
         output = []
         tmp = []
-        output.append(list(self.netTable.selectedIndexes())[0].row())
-        for i in list(self.netTable.selectedItems()):
+        output.append(list(self.ui.networkTable.selectedIndexes())[0].row())
+        for i in list(self.ui.networkTable.selectedItems()):
             tmp.append(str(i.text()))
 
         output.append(tmp)
@@ -725,7 +718,6 @@ class Main(QMainWindow):
             # if the current host has not been added
             if ip not in self.dataGeneral.hostList():
                 self.getSystemInfo(ip)
-                print "now here"
 
     def addHostToTable(self, ip):
         '''
@@ -751,7 +743,7 @@ class Main(QMainWindow):
     def _disableHosts(self):
         row = self._getHostSelection()[0]
         item = QTableWidgetItem('Offline')
-        self.netTable.setItem(2, row, item)
+        self.ui.networkTable.setItem(2, row, item)
 
     def getSystemInfo(self, host):
         '''
@@ -766,7 +758,6 @@ class Main(QMainWindow):
 
     def updateSystemDataDict(self, info):
         '''Given the captured information, add it to self.generalData'''
-        print info
         infosplit = info.split('||')
         sysinfo = infosplit[0].split(',')
         softwareList = infosplit[1:]
@@ -1295,6 +1286,8 @@ class Main(QMainWindow):
                 self.closeEvent(self)
         else:
             print "PyFarm :: Main.closeEvent :: No hosts to shutdown"
+
+        self.dataGeneral.network.echoNetworkStats()
 
 ################################
 ## END General Utilities
