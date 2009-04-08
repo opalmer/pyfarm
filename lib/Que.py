@@ -1,15 +1,15 @@
 '''
-AUTHOR: Oliver Palmer
 HOMEPAGE: www.pyfarm.net
 INITIAL: Jan 20 2008
 PURPOSE: Module used to manage ques inside of the program.
 Module also includes required network functions
 
     This file is part of PyFarm.
+    Copyright (C) 2008-2009 Oliver Palmer
 
     PyFarm is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
-    the Free software Foundation, either version 3 of the License, or
+    the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
 
     PyFarm is distributed in the hope that it will be useful,

@@ -1,14 +1,13 @@
 #!/usr/bin/python
 '''
-AUTHOR: Oliver Palmer
 HOMEPAGE: www.pyfarm.net
 INITIAL: Jan 12 2009
 PURPOSE: Main program to run and manage PyFarm
 
     This file is part of PyFarm.
+    Copyright (C) 2008-2009 Oliver Palmer
 
     PyFarm is free software: you can redistribute it and/or modify
-
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
@@ -52,6 +51,7 @@ settings = ParseXmlSettings('%s/settings.xml' % os.getcwd())
 
 __AUTHOR__ = 'Oliver Palmer'
 __VERSION__ = 'RC3'
+__HOMEPAGE__ = 'http://www.pyfarm.net'
 
 class FakeProgressBar(QThread):
     '''Run a fake progress bar'''

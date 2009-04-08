@@ -1,10 +1,10 @@
 '''
-AUTHOR: Oliver Palmer
 HOMEPAGE: www.pyfarm.net
 INITIAL: Dec 16 2008
 PURPOSE: Network modules used to help facilitate network communication
 
     This file is part of PyFarm.
+    Copyright (C) 2008-2009 Oliver Palmer
 
     PyFarm is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by

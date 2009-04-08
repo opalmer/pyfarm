@@ -1,10 +1,10 @@
 '''
-AUTHOR: Oliver Palmer
 HOMEPAGE: www.pyfarm.net
 INITIAL: Jan 1 2009
 PURPOSE: Used to read in settings of PyFarm
 
-    This self.file is part of PyFarm.
+    This file is part of PyFarm.
+    Copyright (C) 2008-2009 Oliver Palmer
 
     PyFarm is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by

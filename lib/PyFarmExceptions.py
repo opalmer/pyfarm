@@ -1,10 +1,10 @@
 '''
-AUTHOR: Oliver Palmer
 HOMEPAGE: www.pyfarm.net
 INITIAL: April 4, 2009
 PURPOSE: Module used to handle error processing for PyFarm
 
     This file is part of PyFarm.
+    Copyright (C) 2008-2009 Oliver Palmer
 
     PyFarm is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -18,7 +18,6 @@ PURPOSE: Module used to handle error processing for PyFarm
 
     You should have received a copy of the GNU General Public License
     along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
-
 '''
 class UnexpectedType(Exception):
     '''

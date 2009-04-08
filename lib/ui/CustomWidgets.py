@@ -1,10 +1,10 @@
 '''
-AUTHOR: Oliver Palmer
 HOMEPAGE: www.pyfarm.net
 INITIAL: Jan 24 2009
 PURPOSE: Module full of 'general widgets', widgets used inside of other widgets.
 
     This file is part of PyFarm.
+    Copyright (C) 2008-2009 Oliver Palmer
 
     PyFarm is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -17,7 +17,7 @@ PURPOSE: Module full of 'general widgets', widgets used inside of other widgets.
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.s
+    along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 '''
 # From PyQt
 #  main widgets, sub widgets, and utilities

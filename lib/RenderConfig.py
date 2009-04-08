@@ -1,5 +1,4 @@
 '''
-AUTHOR: Oliver Palmer
 HOMEPAGE: www.pyfarm.net
 INITIAL: Feb 6 2009
 PURPOSE: Module used to configure a command line render based on operating system
@@ -7,6 +6,7 @@ and architecture.   This module first looks at the operating system, then the ar
 After discovering this information it will then try and discover the currently installed software.
 
     This file is part of PyFarm.
+    Copyright (C) 2008-2009 Oliver Palmer
 
     PyFarm is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by

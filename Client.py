@@ -1,11 +1,11 @@
 #!/usr/bin/python
 '''
-AUTHOR: Oliver Palmer
 HOMEPAGE: www.pyfarm.net
 INITIAL: Jan 31 2009
 PURPOSE: To handle and run all client connections on a remote machine
 
     This file is part of PyFarm.
+    Copyright (C) 2008-2009 Oliver Palmer
 
     PyFarm is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
