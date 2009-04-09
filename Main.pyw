@@ -34,18 +34,22 @@ from PyQt4.QtGui import QTableWidgetItem, QTreeWidgetItem
 from PyQt4.QtGui import QColor, QProgressBar, QPushButton
 
 # From PyFarm
-import lib.Info as Info
+## gui
 from lib.ui.RC3 import Ui_RC3
 from lib.ui.CustomWidgets import *
-from lib.Que import *
-from lib.Network import *
-from lib.RenderConfig import *
-from lib.ReadSettings import ParseXmlSettings
-from lib.JobData import JobManager, GeneralManager
-
-# From PyFarm gui classes
 from lib.ui.main.CloseEvent import CloseEventManager
 from lib.ui.main.NetworkTableManager import NetworkTableManager
+## data
+from lib.Que import *
+import lib.Info as Info
+from lib.JobData import JobManager, GeneralManager
+## settings
+from lib.RenderConfig import *
+from lib.ReadSettings import ParseXmlSettings
+## network
+from lib.Network import *
+from lib.network.Management import BroadcastSender
+
 
 settings = ParseXmlSettings('%s/settings.xml' % os.getcwd())
 
@@ -57,6 +61,7 @@ class FakeProgressBar(QThread):
     '''Run a fake progress bar'''
     def __init__(self, progress, jobName, jobRow, parent=None):
         super(FakeProgressBar, self).__init__(parent)
+        from random import random
         self.progress = progress
         self.jobRow = jobRow
         self.jobName = jobName
@@ -185,6 +190,7 @@ class Main(QMainWindow):
         ## ui signals
         self.connect(self.ui.render, SIGNAL("pressed()"), self.initJob)
         self.connect(self.ui.findHosts, SIGNAL("pressed()"), self.findHosts)
+        self.findHosts()
         self.connect(self.ui.queryQue, SIGNAL("pressed()"), self.queryQue)
         self.connect(self.ui.emptyQue, SIGNAL("pressed()"), self.emptyQue)
         self.connect(self.ui.enque, SIGNAL("pressed()"), self.SubmitToQue)
@@ -945,10 +951,12 @@ class Main(QMainWindow):
     def findHosts(self):
         '''Get hosts via broadcast packet, add them to self.hosts'''
         self.updateStatus('NETWORK', 'Searching for hosts...', 'green')
-        findHosts = BroadcastServer(self)
-        self.connect(findHosts, SIGNAL("gotNode"), self.getSystemInfo)
-        self.connect(findHosts,  SIGNAL("DONE"),  self._doneFindingHosts)
-        findHosts.start()
+        findHosts = BroadcastSender(self)
+        findHosts.run()
+#        findHosts = BroadcastServer(self)
+#        self.connect(findHosts, SIGNAL("gotNode"), self.getSystemInfo)
+#        self.connect(findHosts,  SIGNAL("DONE"),  self._doneFindingHosts)
+#        findHosts.start()
 
     def _doneFindingHosts(self):
         '''Functions to run when done finding hosts'''

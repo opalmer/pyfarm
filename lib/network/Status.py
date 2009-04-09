@@ -1,11 +1,11 @@
 '''
-AUTHOR: Oliver Palmer
 HOMEPAGE: www.pyfarm.net
 INITIAL: April 7 2008
 PURPOSE: Group of classes dedicated to the collection and monitoring
 of status information.
 
     This file is part of PyFarm.
+    Copyright (C) 2008-2009 Oliver Palmer
 
     PyFarm is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -20,6 +20,13 @@ of status information.
     You should have received a copy of the GNU General Public License
     along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 '''
+# From PyQt
+from PyQt4.QtCore import QThread, QObject, SIGNAL
+from PyQt4.QtNetwork import QTcpServer, QTcpSocket
+
+# From PyFarm
+from lib.ReadSetting import ParseXmlSettings
+
 class StatusServerThread(QThread):
     '''
     Status server thread spawned upon every incoming connection to
@@ -43,4 +50,5 @@ class StatusClient(QObject):
     Status client used to connect to a status server and
     exchange information.
     '''
-    pass
+    def __init__(self, parent=None):
+        super(StatusClient, self).__init__(parent)

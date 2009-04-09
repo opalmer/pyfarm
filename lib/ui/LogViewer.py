@@ -19,8 +19,8 @@
 
 # Form implementation generated from reading ui file 'QtDesigner/LogViewer.ui'
 #
-# Created: Wed Apr  8 13:14:31 2009
-#      by: PyQt4 UI code generator 4.4.2
+# Created: Thu Apr  9 13:29:58 2009
+#      by: PyQt4 UI code generator 4.3.3
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -29,19 +29,24 @@ from PyQt4 import QtCore, QtGui
 class Ui_LogViewer(object):
     def setupUi(self, LogViewer):
         LogViewer.setObjectName("LogViewer")
-        LogViewer.resize(602,709)
+        LogViewer.resize(QtCore.QSize(QtCore.QRect(0,0,602,709).size()).expandedTo(LogViewer.minimumSizeHint()))
+
         self.groupBox = QtGui.QGroupBox(LogViewer)
         self.groupBox.setGeometry(QtCore.QRect(20,10,561,651))
+
         font = QtGui.QFont()
         font.setPointSize(12)
         self.groupBox.setFont(font)
         self.groupBox.setObjectName("groupBox")
+
         self.log = QtGui.QTextBrowser(self.groupBox)
         self.log.setGeometry(QtCore.QRect(10,30,541,611))
+
         font = QtGui.QFont()
         font.setPointSize(10)
         self.log.setFont(font)
         self.log.setObjectName("log")
+
         self.closeLogViewer = QtGui.QPushButton(LogViewer)
         self.closeLogViewer.setGeometry(QtCore.QRect(500,670,80,28))
         self.closeLogViewer.setObjectName("closeLogViewer")

@@ -26,34 +26,59 @@ import os.path
 
 # From PyQt
 from PyQt4.QtCore import QObject, QCoreApplication, SIGNAL, SLOT
+from PyQt4.QtNetwork import QHostInfo, QHostAddress
 
 # From PyFarm
-from lib.Network import *
 from lib.Que import *
+from lib.Network import *
+from lib.network.Management import BroadcastReceiever
+from lib.network.Status import StatusClient
 from lib.ReadSettings import ParseXmlSettings
 
-settings = ParseXmlSettings('%s/settings.xml' % os.getcwd(), skipSoftware=True)
+settings = ParseXmlSettings('%s/settings.xml' % os.getcwd())
 
 class Main(QObject):
     def __init__(self, parent=None):
         super(Main, self).__init__(parent)
-        # check and see if the user has requested
-        #  a local only client
-        try:
-            if sys.argv[1] == 'local':
-                self.LOCAL = True
-        except IndexError:
-            self.LOCAL = False
+        self.master = ''
+        self.ip = ''
+        self.hostname = ''
 
-    def startBroadcast(self):
-        if not self.LOCAL:
-            broadcast = BroadcastClient()
-            self.master = broadcast.run()
-            self.localhost = GetLocalIP(self.master)
-            self.initSlave()
+        self.rendered = 0
+        self.failed = 0
+        self.software = {}
+
+    def listenForBroadcast(self):
+        '''Listen for an incoming broadcast from the master'''
+        listen = BroadcastReceiever(self)
+        self.connect(listen, SIGNAL("masterAddress"), self.setMasterAddress)
+        listen.run()
+
+    def setMasterAddress(self, masterip):
+        '''Set self.master to the incoming ip'''
+        if masterip != self.master:
+            print "PyFarm :: network.management.BroadcastReceiever :: Incoming broadcast"
+            print "PyFarm :: network.management.BroadcastReceiever :: Receieved master address: %s" % masterip
+            self.master = masterip
+            self.hostname = str(QHostInfo.localHostName())
+            self.ip = str(QHostInfo.fromName(self.hostname).addresses()[0].toString())
+            self.setInitialStatus()
+            self.sendStatus()
         else:
-            self.localhost = '127.0.0.1'
-            self.initSlave()
+            pass
+
+    def setInitialStatus(self):
+        '''Set the software dictionary and string'''
+        systemInfo = System().os()
+        os = systemInfo[0]
+        arch = systemInfo[1]
+        self.software = settings.installedSoftware()
+        self.statusString = 'ip::%s,hostname::%s,os::%s,arch::%s%s' \
+        % (self.ip, self.hostname, os, arch, settings.installedSoftware(stringOut=True))
+
+    def sendStatus(self):
+        '''Send new status information to the master'''
+        client = StatusClient(self)
 
     def initSlave(self):
         '''Startup all servers and beging listening for connections'''
@@ -92,5 +117,5 @@ class Main(QObject):
 
 app = QCoreApplication(sys.argv)
 main = Main()
-main.startBroadcast()
+main.listenForBroadcast()
 app.exec_()

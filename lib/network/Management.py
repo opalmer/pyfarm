@@ -1,11 +1,11 @@
 '''
-AUTHOR: Oliver Palmer
 HOMEPAGE: www.pyfarm.net
 INITIAL: April 7 2008
 PURPOSE: Group of classes dedicated to the discovery and management
 of remote hosts
 
     This file is part of PyFarm.
+    Copyright (C) 2008-2009 Oliver Palmer
 
     PyFarm is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -24,10 +24,11 @@ of remote hosts
 from os import getcwd
 
 # From PyQt
-from PyQT4.QtNetwork import QUdpSocket, QHostAddress
+from PyQt4.QtNetwork import QUdpSocket, QHostAddress
 from PyQt4.QtCore import QThread, QByteArray, QTimer, QString, SIGNAL
 
 # From PyFarm
+from lib.ReadSettings import ParseXmlSettings
 settings = ParseXmlSettings('%s/settings.xml' % getcwd())
 
 class BroadcastSender(QThread):
@@ -37,10 +38,11 @@ class BroadcastSender(QThread):
         # setup some standard vars, so we dont broadcast forever
         self.count = 0
         self.interval = 15
-        self.maxCount = 1000
+        self.maxCount = 10
 
     def run(self):
         '''Start the broadcast thread and setup the outgoing connection'''
+        print "PyFarm :: network.management.BroadcastSender :: Running Broadcast Process"
         self.socket = QUdpSocket()
         self.datagram = QByteArray()
         self.timer = QTimer()
@@ -52,9 +54,10 @@ class BroadcastSender(QThread):
         Send the broadcast packet so long as we have not exceeded
         the above specs.
         '''
-        if self.count == self.maxCount:
+        if self.count > self.maxCount:
             self.quit()
         else:
+            print "PyFarm :: network.management.BroadcastSender :: Sending broadcast (%i/%i)" % (self.count, self.maxCount)
             self.datagram.clear() # if we do not clear first the datagram will be appended to
             self.datagram.insert(0, QString("discovery_broadcast"))
             self.socket.writeDatagram(self.datagram.data(), QHostAddress("255.255.255.255"), settings.netPort('broadcast'))
@@ -62,6 +65,7 @@ class BroadcastSender(QThread):
 
     def quit(self):
         '''End the process and kill the thread'''
+        print "PyFarm :: network.management.BroadcastSender :: Stopping Broadcast"
         self.timer.stop()
         self.exit(0)
 
@@ -70,6 +74,7 @@ class BroadcastReceiever(QThread):
     '''Class to receieve broadcast signal from master'''
     def __init__(self, parent=None):
         super(BroadcastReceiever, self).__init__(parent)
+        print "PyFarm :: network.management.BroadcastReceiever :: Listening for broadcast"
 
     def readIncomingBroadcast(self):
         '''Read the incoming host ip and emit it to the client'''
@@ -80,7 +85,7 @@ class BroadcastReceiever(QThread):
             data = self.socket.readDatagram(datagram.size())
             ip = str(data[1].toString())
             msg = str(data[0])
-        self.emit(SIGNAL("newHost"), ip)
+        self.emit(SIGNAL("masterAddress"), ip)
 
     def run(self):
         '''Run the main thread and listen for connections'''

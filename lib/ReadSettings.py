@@ -294,12 +294,20 @@ class ParseXmlSettings(object):
         except KeyError:
             raise self.error.xmlKeyError(setting)
 
-    def installedSoftware(self):
+    def installedSoftware(self, stringOut=False):
         '''Return a list of the currently installed software'''
-        try:
-            return self.softwareList
-        except AttributeError, attr:
-            raise self.error.xmlSkipSoftwareValue(attr)
+        if stringOut:
+            output = ""
+
+            for software in self._installedSoftware():
+                output += "||%s::%s::%s" % (software[0], software[1], software[2])
+
+            return output
+        else:
+            try:
+                return self.softwareList
+            except AttributeError, attr:
+                raise self.error.xmlSkipSoftwareValue(attr)
 
     def command(self, software):
         '''
@@ -366,15 +374,6 @@ class ParseXmlSettings(object):
             return self.hostStatusDict[key]
         except KeyError:
             raise self.error.xmlKeyError(key)
-
-    def software(self):
-        '''Output all information for use in a TCP connection'''
-        output = ""
-
-        for software in self._installedSoftware():
-            output += "||%s::%s::%s" % (software[0], software[1], software[2])
-
-        return output
 
     def boolColor(self, isTrue):
         '''
