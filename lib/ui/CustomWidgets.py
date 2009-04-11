@@ -19,12 +19,15 @@ PURPOSE: Module full of 'general widgets', widgets used inside of other widgets.
     You should have received a copy of the GNU General Public License
     along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 '''
+# From Python
+from sys import argv
+
 # From PyQt
 #  main widgets, sub widgets, and utilities
-from PyQt4.QtGui import QWidget, QComboBox, QDialog, QDialogButtonBox, QApplication
-from PyQt4.QtGui import QMenu, QLabel
+from PyQt4.QtGui import QWidget, QComboBox, QDialog, QDialogButtonBox, QApplication, QProgressDialog
+from PyQt4.QtGui import QMenu, QLabel, QMessageBox
 from PyQt4.QtGui import QFont, QVBoxLayout
-from PyQt4.QtCore import SIGNAL, SLOT, QString
+from PyQt4.QtCore import SIGNAL, SLOT, QString, QObject
 
 # From PyFarm
 from RC3 import *
@@ -237,3 +240,50 @@ class HostInfo(QDialog):
         super(HostInfo, self).__init__(parent)
         self.ui = Ui_HostInfo()
         self.ui.setupUi(self)
+
+class XMLFileNotFound(QObject):
+    '''
+    Given an xml file string, tell the user that the
+    file could not be found
+    '''
+    def __init__(self, doc, type, parent=None):
+        super(XMLFileNotFound, self).__init__(parent)
+        self.doc = doc
+        if type == 'gui':
+            app = QApplication(argv)
+            exit(self.showGuiMsg())
+            app.exec_()
+        else:
+            self.showCommandLineMsg()
+
+    def showCommandLineMsg(self):
+        '''If given a command line interface, show this message'''
+        exit("\n[ FATAL ERROR ]\n\tThe XML file %s could not be found."\
+        "\n\tPlease be sure that the file exists and is readable.\n[ FATAL ERROR ]\n" % self.doc)
+
+    def showGuiMsg(self):
+        '''If given a gui interface, show a message box'''
+        parent = QWidget()
+        msg = QMessageBox()
+        title = QString("XML File Error -- Could not load XML")
+        message = QString("The XML file %s could not be found."\
+        "\tPlease be sure that the file exists and is readable." % self.doc)
+        msg.critical(parent, title, message)
+
+
+class ProgressDialog(QProgressDialog):
+    '''
+    Used to give the user information about the
+    current progress of a network broadcast.
+    '''
+    def __init__(self, labelText, cancelButtonText, minimum, maximum, parent=None):
+        super(ProgressDialog, self).__init__(parent)
+        self.setMinimumSize(350, 100)
+        self.setLabelText(labelText)
+        self.setCancelButtonText(cancelButtonText)
+        self.setRange(minimum, maximum)
+
+    def next(self):
+        '''Incriment the progress'''
+        value = self.value()+1
+        self.setValue(value)

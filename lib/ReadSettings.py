@@ -30,6 +30,7 @@ from PyQt4.QtCore import QRegExp
 # From PyFarm
 import Info
 from PyFarmExceptions import ErrorProcessingSetup
+from lib.ui.CustomWidgets import XMLFileNotFound
 
 class SoftwareSearch(object):
     '''
@@ -128,13 +129,19 @@ class ParseXmlSettings(object):
     INPUT:
         self.doc (str) -- The xml self.document to read from
     '''
-    def __init__(self, doc, skipSoftware=False):
+    def __init__(self, doc, type='cmd', skipSoftware=False):
         self.os = Info.System().os()[0]
         self.error = ErrorProcessingSetup('ReadSettings.XmlSettings')
 
         # check for xml formatting errors
         try:
-            self.doc = xml.dom.minidom.parse(doc)
+            try:
+                self.doc = xml.dom.minidom.parse(doc)
+            except IOError:
+                XMLFileNotFound(doc, type)
+#                if type == 'cmd':
+#                    exit("\nFATAL ERROR :: The XML file %s could not be found or is not readable, please fix this before continuing.\n" % doc)
+
         except xml.parsers.expat.ExpatError, error:
             self.error.xmlFormattingError(doc, error)
 

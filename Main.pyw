@@ -35,26 +35,26 @@ from PyQt4.QtGui import QColor, QProgressBar, QPushButton
 from PyQt4.QtNetwork import QHostInfo
 
 # From PyFarm
+## settings (run before other sections have a chance to call the xml file so we have
+## the best chance of throw a message box)
+from lib.RenderConfig import *
+from lib.ReadSettings import ParseXmlSettings
+settings = ParseXmlSettings('%s/settings.xml' % os.getcwd(), 'gui')
 ## gui
 from lib.ui.RC3 import Ui_RC3
 from lib.ui.CustomWidgets import *
-from lib.ui.main.StatusBar import *
 from lib.ui.main.CloseEvent import CloseEventManager
 from lib.ui.main.NetworkTableManager import NetworkTableManager
 ## data
 from lib.Que import *
 import lib.Info as Info
 from lib.JobData import JobManager, GeneralManager
-## settings
-from lib.RenderConfig import *
-from lib.ReadSettings import ParseXmlSettings
 ## network
 from lib.Network import *
-from lib.network.Management import BroadcastSender
+from lib.network.Admin import AdminClient
+from lib.network.Broadcast import BroadcastSender
 from lib.network.Status import StatusServer
 
-
-settings = ParseXmlSettings('%s/settings.xml' % os.getcwd())
 
 __AUTHOR__ = 'Oliver Palmer'
 __VERSION__ = 'RC3'
@@ -966,9 +966,13 @@ class Main(QMainWindow):
         '''Get hosts via broadcast packet, add them to self.hosts'''
         self.updateStatus('NETWORK', 'Searching for hosts...', 'green')
         findHosts = BroadcastSender(self)
-        self.broadcastProgress = BroadcastProgress(self.ui.statusbar, settings.broadcastValue('maxCount'))
-        self.connect(findHosts, SIGNAL("next"), self.broadcastProgress.next)
-        self.connect(findHosts, SIGNAL("done"), self.broadcastProgress.done)
+        progress = ProgressDialog(QString("Network Broadcast Progress"), \
+                                                            QString("Cancel Broadcast"), \
+                                                            0, settings.broadcastValue('maxCount'), self)
+
+        self.connect(progress, SIGNAL("canceled()"), findHosts.quit)
+        self.connect(findHosts, SIGNAL("next"), progress.next)
+        progress.show()
         findHosts.run()
 
     def _doneFindingHosts(self):
@@ -1125,7 +1129,6 @@ class Main(QMainWindow):
 
             # change the color of the and progress area, based on status
             if jobs.item(row, 1).text() == 'Failed':
-                #self.addProgressBar()
                 status = QTableWidgetItem(QString("Rendering"))
                 status.setTextColor(self.black)
                 status.setBackgroundColor(self.orange)
@@ -1289,7 +1292,8 @@ class Main(QMainWindow):
     def closeEvent(self, event):
         '''Run when closing the main gui, used to "cleanup" the program state'''
         # if we have connected hosts
-        if len(self.dataGeneral.network.hostList()):
+        hostCount = len(self.dataGeneral.network.hostList())
+        if hostCount:
             closeEventManager = CloseEventManager(self.dataGeneral, self)
             exit_dialog = closeEventManager.hostExitDialog()
 
@@ -1307,9 +1311,6 @@ class Main(QMainWindow):
                 self.closeEvent(self)
         else:
             print "PyFarm :: Main.closeEvent :: No hosts to shutdown"
-
-        self.dataGeneral.network.echoNetworkStats()
-
 ################################
 ## END General Utilities
 ################################

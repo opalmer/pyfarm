@@ -19,7 +19,7 @@
 
 # Form implementation generated from reading ui file 'QtDesigner/HostInfo.ui'
 #
-# Created: Fri Apr 10 21:22:15 2009
+# Created: Sat Apr 11 18:49:26 2009
 #      by: PyQt4 UI code generator 4.4.2
 #
 # WARNING! All changes made in this file will be lost!

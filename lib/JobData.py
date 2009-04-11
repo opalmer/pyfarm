@@ -366,6 +366,7 @@ class GeneralHostManager(QObject):
         for version in self.data[ip]["software"][software]:
             yield version
 
+
 class GeneralNetworkManager(QObject):
     '''
     Contains functions for network related information
@@ -494,8 +495,9 @@ class GeneralManager(QObject):
                                     },
                                 "hosts" : {
                                                 }
-                                            }
-                                        }
+                                }
+                    }
+
         self.network = GeneralNetworkManager(self.data, self)
 
     def addHost(self, ip, hostname, os='', arch='', software={}, basic=False):

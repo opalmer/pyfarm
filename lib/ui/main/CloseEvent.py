@@ -26,51 +26,16 @@ from os import getcwd
 
 # From PyQt4
 from PyQt4.QtGui import QMessageBox
-from PyQt4.QtCore import QThread, QString
+from PyQt4.QtCore import QThread, QString, QObject, SIGNAL
 
 # From PyFarm
-from lib.Network import AdminClient
+from lib.network.Admin import AdminClient
 from lib.ReadSettings import ParseXmlSettings
 from lib.PyFarmExceptions import ErrorProcessingSetup
 
 settings = ParseXmlSettings('%s/settings.xml' % getcwd(), skipSoftware=True)
 
-class ShutdownHostThread(QThread):
-    '''
-    Threaded instance of shutdown process.
-    Created to speed up the shutdown process for multiple
-    hosts.
-
-    INPUT:
-        host (str) -- ip address of host
-    '''
-    def __init__(self, host, parent=None):
-        super(ShutdownHostThread, self).__init__(parent)
-        self.host = host
-
-    def run(self):
-        client = AdminClient(self.host, settings.netPort('admin'))
-        client.shutdown()
-
-
-class RestartHostThread(QThread):
-    '''
-    Threaded instance of restart process.
-    Created to speed up the restart process for multiple
-
-    INPUT:
-        host (str) -- ip address of host
-    '''
-    def __init__(self, host, parent=None):
-        super(RestartHostThread, self).__init__(parent)
-        self.host = host
-
-    def run(self):
-        client = AdminClient(self.host, settings.netPort('admin'))
-        client.restart()
-
-
-class CloseEventManager(object):
+class CloseEventManager(QObject):
     '''
     Manager of main gui's processes during
     the close event.  This class is launched when the users
@@ -89,22 +54,24 @@ class CloseEventManager(object):
     def shutdownHosts(self):
         '''Shutdown all remote hosts'''
         for host in self.data.network.hostList():
-            client = ShutdownHostThread(host)
-            client.run()
+            client = AdminClient(host, settings.netPort('admin'))
+            client.shutdown()
 
     def restartHosts(self):
         '''Restart all remote hosts'''
         for host in self.data.network.hostList():
-            client = RestartHostThread(host)
-            client.run()
+            client = AdminClient(host, settings.netPort('admin'))
+            client.restart()
 
     def shutdownHost(self, ip):
         '''Shutdown a single host'''
-        ShutdownHostThread(ip).run()
+        client = AdminClient(ip, settings.netPort('admin'))
+        client.shutdown()
 
     def restartHost(self, ip):
         '''Restart a single host'''
-        RestartHostThread(ip).run()
+        client = AdminClient(ip, settings.netPort('admin'))
+        client.restart()
 
     def exitHelp(self):
         '''

@@ -32,8 +32,9 @@ from PyQt4.QtNetwork import QHostInfo, QHostAddress
 # From PyFarm
 from lib.Que import *
 from lib.Network import *
-from lib.network.Management import BroadcastReceiever
+from lib.network.Broadcast import BroadcastReceiever
 from lib.network.Status import StatusClient
+from lib.network.Admin import AdminServer
 from lib.ReadSettings import ParseXmlSettings
 
 settings = ParseXmlSettings('%s/settings.xml' % getcwd())
@@ -48,6 +49,14 @@ class Main(QObject):
 
         self.rendered = 0
         self.failed = 0
+        self.software = {}
+
+    def setVarDefaults(self):
+        '''Return the input vars to their initial states'''
+        self.master = ''
+        self.hostname = ''
+        self.ip = ''
+        self.sysInfo = ''
         self.software = {}
 
     def listenForBroadcast(self):
@@ -123,7 +132,8 @@ class Main(QObject):
     def restart(self):
         '''Close all connections and restart the client'''
         self.shutdownServers()
-        self.startBroadcast()
+        self.setVarDefaults()
+        print "PyFarm :: BroadcastReceiever :: Listening for broadcast"
 
     def shutdown(self):
         '''Close all connections and shutdown the client'''
