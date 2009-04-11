@@ -23,6 +23,7 @@ PURPOSE: To handle and run all client connections on a remote machine
 # From Python
 import sys
 import os.path
+from os import getcwd
 
 # From PyQt
 from PyQt4.QtCore import QObject, QCoreApplication, SIGNAL, SLOT
@@ -35,50 +36,65 @@ from lib.network.Management import BroadcastReceiever
 from lib.network.Status import StatusClient
 from lib.ReadSettings import ParseXmlSettings
 
-settings = ParseXmlSettings('%s/settings.xml' % os.getcwd())
+settings = ParseXmlSettings('%s/settings.xml' % getcwd())
 
 class Main(QObject):
     def __init__(self, parent=None):
         super(Main, self).__init__(parent)
         self.master = ''
-        self.ip = ''
         self.hostname = ''
+        self.ip = ''
+        self.sysInfo = ''
 
         self.rendered = 0
         self.failed = 0
         self.software = {}
 
     def listenForBroadcast(self):
-        '''Listen for an incoming broadcast from the master'''
+        '''
+        Step 1:
+        Listen for an incoming broadcast from the master
+        '''
         listen = BroadcastReceiever(self)
         self.connect(listen, SIGNAL("masterAddress"), self.setMasterAddress)
         listen.run()
 
     def setMasterAddress(self, masterip):
-        '''Set self.master to the incoming ip'''
+        '''
+        Step 2:
+        Set self.master to the incoming ip
+        '''
         if masterip != self.master:
-            print "PyFarm :: network.management.BroadcastReceiever :: Incoming broadcast"
-            print "PyFarm :: network.management.BroadcastReceiever :: Receieved master address: %s" % masterip
+            print "PyFarm :: BroadcastReceiever :: Incoming broadcast"
+            print "PyFarm :: BroadcastReceiever :: Receieved master address: %s" % masterip
             self.master = masterip
             self.hostname = str(QHostInfo.localHostName())
-            self.ip = str(QHostInfo.fromName(self.hostname).addresses()[0].toString())
+            self.ip = GetLocalIP(self.master)
             self.setInitialStatus()
             self.sendStatus()
         else:
             pass
 
     def setInitialStatus(self):
-        '''Set the software dictionary and string'''
+        '''
+        Step 3:
+        Set the software dictionary and string
+        '''
         systemInfo = System().os()
         os = systemInfo[0]
         arch = systemInfo[1]
         self.software = settings.installedSoftware()
-        self.statusString = 'ip::%s,hostname::%s,os::%s,arch::%s%s' \
+        self.sysInfo = 'ip::%s,hostname::%s,os::%s,arch::%s%s' \
         % (self.ip, self.hostname, os, arch, settings.installedSoftware(stringOut=True))
 
     def sendStatus(self):
-        '''Send new status information to the master'''
-        client = StatusClient(self)
+        '''
+        Step 4:
+        Send new status information to the master
+        '''
+        client = StatusClient(self.master, settings.netPort('status'), self)
+        self.connect(client, SIGNAL('MASTER_CONNECTED'), self.initSlave)
+        client.updateMaster('INIT', self.sysInfo)
 
     def initSlave(self):
         '''Startup all servers and beging listening for connections'''
@@ -87,14 +103,14 @@ class Main(QObject):
         self.connect(self.admin, SIGNAL("SHUTDOWN"), self.shutdown)
         self.connect(self.admin, SIGNAL("RESTART"), self.restart)
 
-        if not self.admin.listen(QHostAddress(self.localhost), settings.netPort('admin')):
+        if not self.admin.listen(QHostAddress('0.0.0.0'), settings.netPort('admin')):
             print "PyFarm :: Client.AdminServer :: Could not start the server: %s" % self.admin.errorString()
             return
         print "PyFarm :: Client.AdminServer :: Waiting for signals..."
 
         # start the que server
         self.que = QueSlaveServer(self)
-        if not self.que.listen(QHostAddress(self.localhost), settings.netPort('que')):
+        if not self.que.listen(QHostAddress('0.0.0.0'), settings.netPort('que')):
             print "PyFarm :: Client.QueSlave :: Could not start the server: %s" % self.que.errorString()
             return
         print "PyFarm :: Client.QueSlave :: Waiting for jobs..."

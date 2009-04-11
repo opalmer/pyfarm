@@ -32,11 +32,13 @@ from pprint import pprint
 from PyQt4.QtGui import QMainWindow, QMessageBox
 from PyQt4.QtGui import QTableWidgetItem, QTreeWidgetItem
 from PyQt4.QtGui import QColor, QProgressBar, QPushButton
+from PyQt4.QtNetwork import QHostInfo
 
 # From PyFarm
 ## gui
 from lib.ui.RC3 import Ui_RC3
 from lib.ui.CustomWidgets import *
+from lib.ui.main.StatusBar import *
 from lib.ui.main.CloseEvent import CloseEventManager
 from lib.ui.main.NetworkTableManager import NetworkTableManager
 ## data
@@ -49,6 +51,7 @@ from lib.ReadSettings import ParseXmlSettings
 ## network
 from lib.Network import *
 from lib.network.Management import BroadcastSender
+from lib.network.Status import StatusServer
 
 
 settings = ParseXmlSettings('%s/settings.xml' % os.getcwd())
@@ -56,6 +59,7 @@ settings = ParseXmlSettings('%s/settings.xml' % os.getcwd())
 __AUTHOR__ = 'Oliver Palmer'
 __VERSION__ = 'RC3'
 __HOMEPAGE__ = 'http://www.pyfarm.net'
+__DOCS__ = '%s/wiki' % __HOMEPAGE__
 
 class FakeProgressBar(QThread):
     '''Run a fake progress bar'''
@@ -151,6 +155,17 @@ class Main(QMainWindow):
         self.netTable = NetworkTableManager(self.dataGeneral, self.ui.networkTable)
         self.connect(self.dataGeneral, SIGNAL("status_update"), self.updateStatusTab)
         self.dataJob = {}
+        self.hostname = str(QHostInfo.localHostName())
+        self.ip = str(QHostInfo.fromName(self.hostname).addresses()[0].toString())
+
+        # setup status server
+        self.statusServer = StatusServer(self)
+        self.connect(self.statusServer, SIGNAL('INIT'), self.updateSystemDataDict)
+
+        if not self.statusServer.listen(QHostAddress('0.0.0.0'), settings.netPort('status')):
+            print "PyFarm :: StatusServer :: Could not start the server: %s" % self.statusServer.errorString()
+            return
+        print "PyFarm :: StatusServer :: Waiting for signals..."
 
         # setup some basic colors
         self.red = QColor(255, 0, 0)
@@ -190,7 +205,7 @@ class Main(QMainWindow):
         ## ui signals
         self.connect(self.ui.render, SIGNAL("pressed()"), self.initJob)
         self.connect(self.ui.findHosts, SIGNAL("pressed()"), self.findHosts)
-        self.findHosts()
+        #self.findHosts()
         self.connect(self.ui.queryQue, SIGNAL("pressed()"), self.queryQue)
         self.connect(self.ui.emptyQue, SIGNAL("pressed()"), self.emptyQue)
         self.connect(self.ui.enque, SIGNAL("pressed()"), self.SubmitToQue)
@@ -801,7 +816,6 @@ class Main(QMainWindow):
     def showHostInfo(self):
         '''Show some info about the host'''
         widget = HostInfo()
-        self.printData()
 
         # gather information
         row = self.ui.networkTable.currentRow()
@@ -952,11 +966,10 @@ class Main(QMainWindow):
         '''Get hosts via broadcast packet, add them to self.hosts'''
         self.updateStatus('NETWORK', 'Searching for hosts...', 'green')
         findHosts = BroadcastSender(self)
+        self.broadcastProgress = BroadcastProgress(self.ui.statusbar, settings.broadcastValue('maxCount'))
+        self.connect(findHosts, SIGNAL("next"), self.broadcastProgress.next)
+        self.connect(findHosts, SIGNAL("done"), self.broadcastProgress.done)
         findHosts.run()
-#        findHosts = BroadcastServer(self)
-#        self.connect(findHosts, SIGNAL("gotNode"), self.getSystemInfo)
-#        self.connect(findHosts,  SIGNAL("DONE"),  self._doneFindingHosts)
-#        findHosts.start()
 
     def _doneFindingHosts(self):
         '''Functions to run when done finding hosts'''

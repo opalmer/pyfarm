@@ -29,6 +29,7 @@ from PyQt4.QtCore import QThread, QByteArray, QTimer, QString, SIGNAL
 
 # From PyFarm
 from lib.ReadSettings import ParseXmlSettings
+
 settings = ParseXmlSettings('%s/settings.xml' % getcwd())
 
 class BroadcastSender(QThread):
@@ -37,12 +38,13 @@ class BroadcastSender(QThread):
         super(BroadcastSender, self).__init__(parent)
         # setup some standard vars, so we dont broadcast forever
         self.count = 0
-        self.interval = 15
-        self.maxCount = 10
+        self.interval = settings.broadcastValue('interval')
+        self.maxCount = settings.broadcastValue('maxCount')
+        self.modName = 'BroadcastSender'
 
     def run(self):
         '''Start the broadcast thread and setup the outgoing connection'''
-        print "PyFarm :: network.management.BroadcastSender :: Running Broadcast Process"
+        print "PyFarm :: %s:: Running Broadcast Process" % self.modName
         self.socket = QUdpSocket()
         self.datagram = QByteArray()
         self.timer = QTimer()
@@ -57,15 +59,17 @@ class BroadcastSender(QThread):
         if self.count > self.maxCount:
             self.quit()
         else:
-            print "PyFarm :: network.management.BroadcastSender :: Sending broadcast (%i/%i)" % (self.count, self.maxCount)
+            #print "PyFarm :: %s :: Sending broadcast (%i/%i)" % (self.modName, self.count, self.maxCount)
             self.datagram.clear() # if we do not clear first the datagram will be appended to
             self.datagram.insert(0, QString("discovery_broadcast"))
             self.socket.writeDatagram(self.datagram.data(), QHostAddress("255.255.255.255"), settings.netPort('broadcast'))
             self.count += 1
+            self.emit(SIGNAL("next"))
 
     def quit(self):
         '''End the process and kill the thread'''
-        print "PyFarm :: network.management.BroadcastSender :: Stopping Broadcast"
+        print "PyFarm :: %s:: Stopping Broadcast" % self.modName
+        self.emit(SIGNAL("done"))
         self.timer.stop()
         self.exit(0)
 
@@ -74,7 +78,8 @@ class BroadcastReceiever(QThread):
     '''Class to receieve broadcast signal from master'''
     def __init__(self, parent=None):
         super(BroadcastReceiever, self).__init__(parent)
-        print "PyFarm :: network.management.BroadcastReceiever :: Listening for broadcast"
+        self.modName = 'BroadcastReceiever'
+        print "PyFarm :: %s :: Listening for broadcast" % self.modName
 
     def readIncomingBroadcast(self):
         '''Read the incoming host ip and emit it to the client'''

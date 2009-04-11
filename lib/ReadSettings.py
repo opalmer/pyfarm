@@ -145,8 +145,8 @@ class ParseXmlSettings(object):
 
         self.jobStatusDict = None
         self.hostStatusDict = self._setHostStatusDict()
-
         self.boolColorDict = self._setBoolColor()
+        self.broadcastDict = self._setBroadcastDict()
 
         if not skipSoftware:
             # setup general software setting
@@ -386,3 +386,24 @@ class ParseXmlSettings(object):
            pass
         else:
             pass
+
+    def _setBroadcastDict(self):
+        '''Given the xml values setup the dictionary'''
+        output = {}
+        for parent in self._getElement(self.doc, 'settings'):
+            for node in self._getElement(parent, 'network'):
+                for type in self._getElement(node, 'server'):
+                    if type.getAttribute('type') == 'broadcast':
+                        output['interval'] =  int(type.getAttribute('interval'))
+                        output['maxCount'] = int(type.getAttribute('maxCount'))
+                    else:
+                        pass
+
+        return output
+
+    def broadcastValue(self, key):
+        '''Get a setting from the broadcast server section'''
+        try:
+            return self.broadcastDict[key]
+        except KeyError:
+            raise self.error.xmlKeyError(key)

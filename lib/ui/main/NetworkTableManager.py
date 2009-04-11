@@ -33,7 +33,7 @@ class NetworkTableManager(object):
     '''
     def __init__(self, data, ui, parent=None):
         super(NetworkTableManager, self).__init__(parent)
-        self.data = data # == self.dataGeneral
+        self.data = data # maps to self.dataGeneral
         self.ui = ui
         self.parent = parent
 
