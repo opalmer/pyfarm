@@ -38,3 +38,4 @@ tests/.bzr
 tests/.bzrignore
 dictNotes.txt
 prototyping
+.DS_Store

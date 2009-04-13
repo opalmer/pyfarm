@@ -89,7 +89,6 @@ class ConfigureCommand(object):
         '''
         pass
 
-
     def shake(self, ver, sFrame, eFrame, bFrame):
       '''
       Yield the sequence of frames for shake
@@ -123,6 +122,7 @@ class RenderLayerBreakdown(QObject):
 
         hip.close()
 
+
 class MayaCamAndLayers(QThread):
     '''
     Search the given maya file and return layers and cameras
@@ -148,6 +148,7 @@ class MayaCamAndLayers(QThread):
                 self.emit(SIGNAL("gotMayaCamera"), camera)
 
         self.scene.close()
+
 
 def Program(inString):
     '''Return the program of a dictionary entry'''

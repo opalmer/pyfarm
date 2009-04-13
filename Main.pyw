@@ -35,31 +35,29 @@ from PyQt4.QtGui import QColor, QProgressBar, QPushButton
 from PyQt4.QtNetwork import QHostInfo
 
 # From PyFarm
-## settings (run before other sections have a chance to call the xml file so we have
-## the best chance of throw a message box)
+## settings first
 from lib.RenderConfig import *
 from lib.ReadSettings import ParseXmlSettings
 settings = ParseXmlSettings('%s/settings.xml' % os.getcwd(), 'gui')
-## gui
+
+import lib.Info as Info
 from lib.ui.RC3 import Ui_RC3
-from lib.ui.CustomWidgets import *
+from lib.ui.main.CustomWidgets import *
 from lib.ui.main.CloseEvent import CloseEventManager
 from lib.ui.main.NetworkTableManager import NetworkTableManager
-## data
+from lib.ui.main.job.Submit import SubmitManager
 from lib.Que import *
-import lib.Info as Info
-from lib.JobData import JobManager, GeneralManager
-## network
-from lib.Network import *
+from lib.data.Job import JobManager
+from lib.data.General import GeneralManager
 from lib.network.Admin import AdminClient
 from lib.network.Broadcast import BroadcastSender
 from lib.network.Status import StatusServer
-
 
 __AUTHOR__ = 'Oliver Palmer'
 __VERSION__ = 'RC3'
 __HOMEPAGE__ = 'http://www.pyfarm.net'
 __DOCS__ = '%s/wiki' % __HOMEPAGE__
+
 
 class FakeProgressBar(QThread):
     '''Run a fake progress bar'''
@@ -151,10 +149,9 @@ class Main(QMainWindow):
         self.ui.setupUi(self)
 
         # setup data management
-        self.dataGeneral = GeneralManager()
-        self.netTable = NetworkTableManager(self.dataGeneral, self.ui.networkTable)
-        self.connect(self.dataGeneral, SIGNAL("status_update"), self.updateStatusTab)
         self.dataJob = {}
+        self.dataGeneral = GeneralManager(self.ui, __VERSION__)
+        self.submitJob = SubmitManager(self.ui, self.dataJob, self.dataGeneral)
         self.hostname = str(QHostInfo.localHostName())
         self.ip = str(QHostInfo.fromName(self.hostname).addresses()[0].toString())
 
@@ -205,10 +202,9 @@ class Main(QMainWindow):
         ## ui signals
         self.connect(self.ui.render, SIGNAL("pressed()"), self.initJob)
         self.connect(self.ui.findHosts, SIGNAL("pressed()"), self.findHosts)
-        #self.findHosts()
         self.connect(self.ui.queryQue, SIGNAL("pressed()"), self.queryQue)
         self.connect(self.ui.emptyQue, SIGNAL("pressed()"), self.emptyQue)
-        self.connect(self.ui.enque, SIGNAL("pressed()"), self.SubmitToQue)
+        self.connect(self.ui.enque, SIGNAL("pressed()"), self.submitJob.beginProcessing) # see line ~836
         self.connect(self.ui.loadQue, SIGNAL("triggered()"), self._loadQue)
         self.connect(self.ui.saveQue, SIGNAL("triggered()"), self._saveQue)
         self.connect(self.ui.currentJobs, SIGNAL("customContextMenuRequested(const QPoint &)"), self.currentJobsContextMenu)
@@ -238,12 +234,11 @@ class Main(QMainWindow):
         ## network section signals
         self.connect(self.ui.disableHost, SIGNAL("pressed()"), self._disableHosts)
         self.connect(self.ui.addHost, SIGNAL("pressed()"), self._customHostDialog)
-        self.connect(self.ui.removeHost, SIGNAL("pressed()"), self.netTable.removeSelectedHost)
+        self.connect(self.ui.removeHost, SIGNAL("pressed()"), self.dataGeneral.removeHost)
 
         # GENERATE SOME FAKE DATA
         self.connect(self.ui.currentJobs, SIGNAL("cellActivated(int,int)"), self.fakePrintTableSelection)
         self.fakeSetup()
-        self.InitialStatus()
 
 ################################
 ## BEGIN Context Menus
@@ -740,27 +735,6 @@ class Main(QMainWindow):
             if ip not in self.dataGeneral.hostList():
                 self.getSystemInfo(ip)
 
-    def addHostToTable(self, ip):
-        '''
-        Look info the data dictionary and update the host list
-
-        INPUT:
-            ip (str) -- ip of host to add
-        '''
-        # gather host information, create widget items for each
-        ipwidget = QTableWidgetItem(ip)
-        hostname = QTableWidgetItem(self.dataGeneral.network.host.hostname(ip))
-        status = QTableWidgetItem(self.dataGeneral.network.host.status(ip, text=True))
-
-        # insert a row
-        rowcount = self.ui.networkTable.rowCount()
-        self.ui.networkTable.insertRow(rowcount)
-
-        # add thems to the table
-        self.ui.networkTable.setItem(rowcount, 0, ipwidget)
-        self.ui.networkTable.setItem(rowcount, 1, hostname)
-        self.ui.networkTable.setItem(rowcount, 2, status)
-
     def _disableHosts(self):
         row = self._getHostSelection()[0]
         item = QTableWidgetItem('Offline')
@@ -809,7 +783,6 @@ class Main(QMainWindow):
 
         try:
             self.dataGeneral.addHost(ip, hostname, os, arch, softwareDict)
-            self.addHostToTable(ip)
         except UnboundLocalError:
             pass
 
@@ -972,14 +945,11 @@ class Main(QMainWindow):
 
         self.connect(progress, SIGNAL("canceled()"), findHosts.quit)
         self.connect(findHosts, SIGNAL("next"), progress.next)
+        self.connect(findHosts, SIGNAL("done"), self.dataGeneral.uiStatus.pyfarm.setNetwork)
+        self.dataGeneral.uiStatus.pyfarm.setMaster(1)
+        self.dataGeneral.uiStatus.pyfarm.setNetwork(1)
         progress.show()
         findHosts.run()
-
-    def _doneFindingHosts(self):
-        '''Functions to run when done finding hosts'''
-        # inform the user of the number of hosts found
-        self.updateStatus('NETWORK', 'Found %i new hosts, search complete.' % self.foundHosts, 'green')
-        self.foundHosts = 0
 
 ################################
 ## END Job/Que System
@@ -1055,26 +1025,6 @@ class Main(QMainWindow):
         text = QString('<FONT COLOR="%s">%s</FONT>' % (color, txt))
         obj.setText(text)
 
-    def InitialStatus(self):
-        '''Set the initial status states'''
-        a = 'Active'
-        i = 'Inactive'
-        nf = 'No Frames In Que'
-        status_objects = [{self.ui.status_pyfarm_master : a, self.ui.status_pyfarm_network : a, self.ui.status_pyfarm_que : a},
-                                    {self.ui.status_network_connected : 4, self.ui.status_network_active : 4},
-                                    {self.ui.status_que_system_status : a, self.ui.status_que_system_failure : '5%'},
-                                    {self.ui.status_que_jobs_waiting : 0, self.ui.status_que_jobs_running : 4, self.ui.status_que_jobs_failed : 1, self.ui.status_que_jobs_complete : 0},
-                                    {self.ui.status_que_frames_waiting: 247, self.ui.status_que_frames_running : 4, self.ui.status_que_frames_failed : 15, self.ui.status_que_frames_complete : 27},
-                                    {self.ui.status_general_time_remaining : '10m 43s', self.ui.status_general_cpu_time_used : '45m 19s', self.ui.status_general_time_elapsed : '9m 3s',
-                                    self.ui.status_general_average_time_per_frame : '1m 23s', self.ui.status_general_shortest_time : '12s', self.ui.status_general_longest_time : '4m 23s',
-                                    self.ui.status_general_average_memory_usage : '457 MB', self.ui.status_general_average_frame_size : '4 MB'}]
-
-        for obj in status_objects:
-            for key, value in obj.items():
-                    self.SetStatus(key, value)
-
-        self.SetStatus(self.ui.status_general_version, "RC3", 'black')
-        self.SetStatus(self.ui.status_general_random_wiki, "<a href='http://www.opalmer.com/pyfarm/wiki'>Link</a>", 'black')
 ################################
 ## END Status/Message System
 ################################
@@ -1268,23 +1218,11 @@ class Main(QMainWindow):
         jobs = self.ui.currentJobs
         jobs.removeRow(jobs.currentRow())
 
-    def AddProgressBar(self, widget, start, end, table, row, col):
-        '''Add a progress bar to the following widget'''
-        pass
-
 ################################
 ## END Job System Manager
 ################################
 ## BEGIN General Utilities
 ################################
-
-    def updateStatusTab(self):
-        '''
-        Collect information about general status and
-        post it the status section
-        '''
-        print
-
     def printData(self):
         '''print out the data dictionary'''
         pprint(self.dataGeneral.dataGeneral())

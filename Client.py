@@ -31,11 +31,12 @@ from PyQt4.QtNetwork import QHostInfo, QHostAddress
 
 # From PyFarm
 from lib.Que import *
-from lib.Network import *
+from lib.network.Utils import GetLocalIP
 from lib.network.Broadcast import BroadcastReceiever
 from lib.network.Status import StatusClient
 from lib.network.Admin import AdminServer
 from lib.ReadSettings import ParseXmlSettings
+from lib.Info import System
 
 settings = ParseXmlSettings('%s/settings.xml' % getcwd())
 

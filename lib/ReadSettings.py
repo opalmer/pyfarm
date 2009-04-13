@@ -30,7 +30,7 @@ from PyQt4.QtCore import QRegExp
 # From PyFarm
 import Info
 from PyFarmExceptions import ErrorProcessingSetup
-from lib.ui.CustomWidgets import XMLFileNotFound
+from lib.ui.main.CustomWidgets import XMLFileNotFound
 
 class SoftwareSearch(object):
     '''
@@ -139,8 +139,6 @@ class ParseXmlSettings(object):
                 self.doc = xml.dom.minidom.parse(doc)
             except IOError:
                 XMLFileNotFound(doc, type)
-#                if type == 'cmd':
-#                    exit("\nFATAL ERROR :: The XML file %s could not be found or is not readable, please fix this before continuing.\n" % doc)
 
         except xml.parsers.expat.ExpatError, error:
             self.error.xmlFormattingError(doc, error)
@@ -166,6 +164,10 @@ class ParseXmlSettings(object):
             self.softwareList = []
             self.softwareCommand = {}
             self.softwareCommonName = {}
+#            name = 'Maya 2009'
+#            self.softwareList.append(name)
+#            self.softwareCommand[name] = '/'
+#            self.softwareCommonName[name] = 'maya'
             for package in self._installedSoftware():
                 self.softwareList.append(package[0])
                 self.softwareCommand[package[0]] = package[1]

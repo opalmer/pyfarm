@@ -19,6 +19,7 @@ PURPOSE: Network utilities that do not fit into a specific category reside here
     You should have received a copy of the GNU General Public License
     along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 '''
+import socket
 
 def ResolveHost(host):
     '''

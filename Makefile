@@ -22,3 +22,9 @@ gui:
 	pyuic4 QtDesigner/HostInfo.ui >> lib/ui/HostInfo.py
 	pyuic4 QtDesigner/JobDetails.ui >> lib/ui/JobDetails.py
 	pyuic4 QtDesigner/LogViewer.ui >> lib/ui/LogViewer.py
+	
+build-mac:
+	find . -name *.pyc | xargs rm -v
+	python build/mac/setup.py py2app
+	rsync -vruP --exclude="*.pyc" --exclude=".*" /farm/projects/PyFarm/trunk/RC3/lib /farm/projects/PyFarm/trunk/RC3/build/mac/Main.app/Contents/Resources 
+	cp -Rfv /farm/projects/PyFarm/trunk/RC3/settings.xml /farm/projects/PyFarm/trunk/RC3/build/mac/Main.app/Contents/Resources

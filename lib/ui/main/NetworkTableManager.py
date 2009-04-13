@@ -1,13 +1,12 @@
 '''
-AUTHOR: Oliver Palmer
 HOMEPAGE: www.pyfarm.net
 INITIAL: April 6 2009
 PURPOSE: To manage the network table and display relevant data
 
     This file is part of PyFarm.
+    Copyright (C) 2008-2009 Oliver Palmer
 
     PyFarm is free software: you can redistribute it and/or modify
-
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
@@ -20,9 +19,10 @@ PURPOSE: To manage the network table and display relevant data
     You should have received a copy of the GNU General Public License
     along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 '''
-from PyQt4.QtGui import *
-from lib.Network import ResolveHost
+from PyQt4.QtGui import QTableWidgetItem
+from lib.network.Utils import ResolveHost
 from lib.ui.main.CloseEvent import CloseEventManager
+from lib.ui.main.CustomWidgets import HostStatus
 
 class NetworkTableManager(object):
     '''
@@ -58,16 +58,13 @@ class NetworkTableManager(object):
         else:
             # prepare the information
             self.currentHost = []
-            self.hostStatusMenu = HostStatus(self)
+            self.hostStatusMenu = HostStatus()
             hostname = ResolveHost(host)[0]
             ip = ResolveHost(host)[1]
 
             # if the current host has not been added
-            if ip not in self.data.hostList():
+            if ip not in self.data.network.hostList():
                 self.getSystemInfo(ip)
-                print "now here"
-
-        self.data.network.echoNetworkStats()
 
     def addHostToTable(self, ip):
         '''
