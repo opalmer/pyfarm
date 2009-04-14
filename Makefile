@@ -17,11 +17,12 @@ gui:
 	cat GNU-GPL_Header.txt > lib/ui/HostInfo.py
 	cat GNU-GPL_Header.txt > lib/ui/JobDetails.py
 	cat GNU-GPL_Header.txt > lib/ui/LogViewer.py
+	cat GNU-GPL_Header.txt > lib/ui/WikiDocGen.py
 
 	pyuic4 QtDesigner/RC3.ui >> lib/ui/RC3.py
 	pyuic4 QtDesigner/HostInfo.ui >> lib/ui/HostInfo.py
 	pyuic4 QtDesigner/JobDetails.ui >> lib/ui/JobDetails.py
-	pyuic4 QtDesigner/LogViewer.ui >> lib/ui/LogViewer.py
+	pyuic4 QtDesigner/WikiDocGen.ui >> lib/ui/WikiDocGen.py
 	
 build-mac:
 	find . -name *.pyc | xargs rm -v
