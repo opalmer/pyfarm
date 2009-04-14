@@ -217,6 +217,7 @@ class QueSlaveServerThread(QThread):
         '''Shutdown the current thread and all processes'''
         self.process.close()
 
+
 class QueSlaveServer(QTcpServer):
     '''Main server thread, used to receieve and start new server threads'''
     def __init__(self, parent=None):
@@ -242,7 +243,7 @@ class QueSlaveServer(QTcpServer):
             self.close()
 
 
-class SendCommand(QTcpSocket):
+class QueClient(QTcpSocket):
     '''
     Que client used to connect to main server
 

@@ -32,7 +32,7 @@ from pprint import pprint
 from PyQt4.QtGui import QMainWindow, QMessageBox
 from PyQt4.QtGui import QTableWidgetItem, QTreeWidgetItem
 from PyQt4.QtGui import QColor, QProgressBar, QPushButton
-from PyQt4.QtNetwork import QHostInfo
+from PyQt4.QtNetwork import QHostInfo, QHostAddress
 
 # From PyFarm
 ## settings first
@@ -46,7 +46,6 @@ from lib.ui.main.CustomWidgets import *
 from lib.ui.main.CloseEvent import CloseEventManager
 from lib.ui.main.NetworkTableManager import NetworkTableManager
 from lib.ui.main.job.Submit import SubmitManager
-from lib.Que import *
 from lib.data.Job import JobManager
 from lib.data.General import GeneralManager
 from lib.network.Admin import AdminClient
@@ -193,7 +192,6 @@ class Main(QMainWindow):
         self.foundHosts = 0
         self.ui.currentJobs.horizontalHeader().setStretchLastSection(True)
         self.message = QString()
-        self.que = QUE
 
         # Display information about pyfarm and support
         #self.infoMessage('Welcome to PyFarm -- Release Candidate 1', 'Thank you for testing PyFarm!  Please direct all inquiries about this softare to the homepage @ http://www.opalmer.com/pyfarm')
@@ -840,7 +838,6 @@ class Main(QMainWindow):
         jobID = self.runChecks()
 
         if jobID:
-            startSize = self.que.size()
             sFrame = self.ui.inputStartFrame.value()
             eFrame = self.ui.inputEndFrame.value()
             bFrame = self.ui.inputByFrame.value()
@@ -860,18 +857,11 @@ class Main(QMainWindow):
                     for layer in layers:
                         for command in config.maya(str(self.software), sFrame, eFrame, bFrame,\
                             renderer, scene, str(layer.text()), camera, outDir, project):
-                                self.que.put([jobName, command[0], command[1], str(command[2])], priority)
+                                print "[ DEBUG ] Put into que"
                 else:
                     for command in config.maya(str(self.software), sFrame, eFrame, bFrame,\
                         renderer, scene, '', camera, outDir, project):
-                            frame = QString(command[0])
-                            cmd = QString(str(command[2]))
-                            self.que.put([jobName, frame, cmd], priority)
-
-                newFrames = self.que.size()-startSize
-
-                self.updateStatus('QUE', 'Added %s frames to job %s(ID: %s) with priority %s' % \
-                                  (newFrames, jobName, jobID, priority), 'black')
+                            print "[ DEBUG ] Put into que"
 
             elif self.software_generic == 'houdini':
                 pass
