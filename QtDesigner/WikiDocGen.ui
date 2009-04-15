@@ -5,20 +5,20 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>592</width>
-    <height>412</height>
+    <width>760</width>
+    <height>555</height>
    </rect>
   </property>
   <property name="windowTitle" >
-   <string>PyFarm Wiki  Doc Generator</string>
+   <string>PyFarm Wiki Doc Generator</string>
   </property>
-  <widget class="QWidget" name="" >
+  <widget class="QWidget" name="layoutWidget" >
    <property name="geometry" >
     <rect>
      <x>10</x>
      <y>10</y>
-     <width>571</width>
-     <height>391</height>
+     <width>741</width>
+     <height>541</height>
     </rect>
    </property>
    <layout class="QGridLayout" >
@@ -105,7 +105,7 @@
         <property name="orientation" >
          <enum>Qt::Horizontal</enum>
         </property>
-        <property name="sizeHint" >
+        <property name="sizeHint" stdset="0" >
          <size>
           <width>40</width>
           <height>20</height>
@@ -127,13 +127,6 @@
         </property>
        </widget>
       </item>
-      <item>
-       <widget class="QPushButton" name="findAndMake" >
-        <property name="text" >
-         <string>Find &amp;&amp; Make</string>
-        </property>
-       </widget>
-      </item>
      </layout>
     </item>
    </layout>
@@ -147,7 +140,6 @@
   <tabstop>selectedFiles</tabstop>
   <tabstop>findFiles</tabstop>
   <tabstop>makeDocs</tabstop>
-  <tabstop>findAndMake</tabstop>
   <tabstop>quit</tabstop>
  </tabstops>
  <resources/>

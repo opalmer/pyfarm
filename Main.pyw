@@ -242,9 +242,7 @@ class Main(QMainWindow):
 ## BEGIN Context Menus
 ################################
     def globalPoint(self, widget, point):
-        '''
-        Return the global position for a given point
-        '''
+        '''Return the global position for a given point'''
         return widget.mapToGlobal(point)
 
     def CreateContextMenus(self):

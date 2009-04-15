@@ -23,11 +23,11 @@ PURPOSE: Wiki documentation generator for PyFarm
 # From Python
 import os, fnmatch
 from sys import argv, exit
-from os.path import isdir
+from os.path import isdir, basename
 
 # From PyQt
 from PyQt4.QtGui import QApplication, QDialog, QFileDialog, QMessageBox
-from PyQt4.QtCore import SIGNAL, QString
+from PyQt4.QtCore import SIGNAL, QString, QRegExp
 
 # From PyFarm
 from lib.ui.WikiDocGen import Ui_WikiDocGen
@@ -50,7 +50,7 @@ class WikiDocGenUI(QDialog):
         self.connect(self.ui.browseOutPath, SIGNAL("pressed()"), self.browseForOutPath)
         self.connect(self.ui.findFiles, SIGNAL("pressed()"), self.findFiles)
         self.connect(self.ui.makeDocs, SIGNAL("pressed()"), self.makeDocs)
-        self.connect(self.ui.findAndMake, SIGNAL("pressed()"), self.findAndMake)
+        #self.connect(self.ui.findAndMake, SIGNAL("pressed()"), self.findAndMake)
 
     def browseForStartPath(self):
         '''Browse for starting path'''
@@ -60,6 +60,8 @@ class WikiDocGenUI(QDialog):
             QString(),
             QFileDialog.Options(QFileDialog.ShowDirsOnly)))
 
+        #self.findFiles()
+
     def browseForOutPath(self):
         '''Browse for the output path'''
         self.ui.outPath.setText(QFileDialog.getExistingDirectory(\
@@ -67,6 +69,8 @@ class WikiDocGenUI(QDialog):
             self.trUtf8("Select Output Directory Path"),
             QString(),
             QFileDialog.Options(QFileDialog.ShowDirsOnly)))
+
+        self.findFiles()
 
     def isValid(self):
         '''Return true of required paths are valid'''
@@ -78,10 +82,14 @@ class WikiDocGenUI(QDialog):
     def findFiles(self):
         '''Find files in given paths'''
         if self.isValid():
-            for item in self.locate('*.py', str(self.ui.startPath.text())):
-                if item not in self.items:
-                    self.items.append(item)
-                    self.ui.selectedFiles.addItem(QString(item))
+#            for itemA in self.locate('*.py', str(self.ui.startPath.text())):
+#                if itemA not in self.items:
+#                    self.items.append(itemA)
+#                    self.ui.selectedFiles.addItem(QString(itemA))
+            for itemB in self.locate('Main.pyw', str(self.ui.startPath.text())):
+                if itemB not in self.items:
+                    self.items.append(itemB)
+                    self.ui.selectedFiles.addItem(QString(itemB))
         else:
             self.warningMessage('You need to specify input/output dirs', \
                                 'Please make sure you have entered an input and ouput' \
@@ -101,19 +109,83 @@ class WikiDocGenUI(QDialog):
         '''Make the documentation'''
         #print line[:len(line)-1]
         if self.isValid():
-            classSearch = QRegExp(r"""class (\w*)[(](\w*)[)][:]""")
-            defSearch = QRegExp(r"""def (\w*)[(](\w*)[,]""")
-
+            count = 0
+            classCount = 0
+            functionCount = 0
             self.ui.progress.setRange(0, self.lineCount())
+
+            # declare search values and vars
+            classSearch = QRegExp(r"""class (\w*)[(](\w*)[)][:]""")
+            defSearch = QRegExp(r"""def (\w*)[(](.*)[)]""")
+            singleLineDocStr = QRegExp(r"""(?:''')(.*)(?:''')|(?:\"\"\")(.*)(?:\"\"\")""")
+            multiLine = QRegExp(r"""(?:''')""")
+            singleLine = QRegExp(r"""(?:'''.*''')""")
+            tripleQuote = QRegExp(r"""^.*'''""")
+
+
+
+            #  loop over each file
+            for item in self.ui.selectedFiles.selectedItems():
+                inMultiLineComment = 0
+                hitClass = 0
+                text = open(str(item.text()), 'r')
+                outfile = open(str(self.ui.outPath.text())+basename(str(item.text()).split('.')[0]+'.txt'), 'w')
+                outfile.write('\n====== General Description ======')
+                outfile.write('\nGeneral info goes here!')
+                outfile.write('\n')
+                outfile.write('====== Classes ======')
+
+                # loop over each line in file
+                for line in text:
+                    qLine = QString(line)
+                    quoteOnce = 0
+
+                    # classes
+                    if classSearch.indexIn(qLine)+1:
+                        classCount += 1
+                        caps = classSearch.capturedTexts()
+                        outfile.write('\n===== %s =====' % str(caps[1]))
+                        outfile.write('\n**Parent**\\\\')
+                        outfile.write('\n  * [[http://www.riverbankcomputing.co.uk/static/Docs/PyQt4/html/%s.html|%s]]' % (str(caps[2]).lower(), str(caps[2])))
+
+                    # function documentation
+                    if defSearch.indexIn(qLine)+1:
+                        cap = defSearch.capturedTexts()
+
+                        # record the function name
+                        outfile.write('\n==== %s ====' % cap[1])
+
+                        # gather the input vars
+                        outfile.write('\n**Input**\\\\')
+                        vars = cap[2]
+                        if vars != 'self' and len(vars.split(', ')):
+                            for var in vars.split(', '):
+                                if var != 'self':
+                                    outfile.write('\n  * %s -- ' % var)
+                        else:
+                            outfile.write('\n  * %s -- ' % var)
+
+                    # doc string comments
+                    if tripleQuote.indexIn(qLine)+1 and not singleLine.indexIn(qLine)+1:
+                        if inMultiLineComment:
+                            inMultiLineComment = 0
+                        else:
+                            outfile.write('\n\\\\\n**Description**\\\\')
+                            inMultiLineComment = 1
+                    elif singleLine.indexIn(qLine)+1:
+                        outfile.write('\n\\\\\n**Description**\\\\')
+                        outfile.write('\n%s' % singleLine.cap()[3:len(singleLine.cap())-3])
+                    elif inMultiLineComment:
+                        outfile.write('\n%s' % line)
+
+                    count += 1
+                    self.ui.progress.setValue(count)
+                outfile.close()
+                text.close()
         else:
             self.warningMessage('You need to specify input/output dirs', \
                                 'Please make sure you have entered an input and ouput' \
                                 'directory before generating documentation!')
-
-    def findAndMake(self):
-        '''Find and make the documentation'''
-        self.findFiles()
-        self.makeDocs()
 
     def locate(self, pattern, root=os.curdir):
         '''Locate all files matching supplied filename pattern in and below

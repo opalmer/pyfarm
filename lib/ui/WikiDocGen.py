@@ -19,8 +19,8 @@
 
 # Form implementation generated from reading ui file 'QtDesigner/WikiDocGen.ui'
 #
-# Created: Tue Apr 14 12:04:47 2009
-#      by: PyQt4 UI code generator 4.3.3
+# Created: Tue Apr 14 16:56:02 2009
+#      by: PyQt4 UI code generator 4.4.2
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -29,84 +29,62 @@ from PyQt4 import QtCore, QtGui
 class Ui_WikiDocGen(object):
     def setupUi(self, WikiDocGen):
         WikiDocGen.setObjectName("WikiDocGen")
-        WikiDocGen.resize(QtCore.QSize(QtCore.QRect(0,0,592,412).size()).expandedTo(WikiDocGen.minimumSizeHint()))
-
-        self.widget = QtGui.QWidget(WikiDocGen)
-        self.widget.setGeometry(QtCore.QRect(10,10,571,391))
-        self.widget.setObjectName("widget")
-
-        self.gridlayout = QtGui.QGridLayout(self.widget)
+        WikiDocGen.resize(760,555)
+        self.layoutWidget = QtGui.QWidget(WikiDocGen)
+        self.layoutWidget.setGeometry(QtCore.QRect(10,10,741,541))
+        self.layoutWidget.setObjectName("layoutWidget")
+        self.gridlayout = QtGui.QGridLayout(self.layoutWidget)
         self.gridlayout.setObjectName("gridlayout")
-
         self.gridlayout1 = QtGui.QGridLayout()
         self.gridlayout1.setObjectName("gridlayout1")
-
-        self.label = QtGui.QLabel(self.widget)
+        self.label = QtGui.QLabel(self.layoutWidget)
         self.label.setObjectName("label")
         self.gridlayout1.addWidget(self.label,0,0,1,1)
-
-        self.startPath = QtGui.QLineEdit(self.widget)
+        self.startPath = QtGui.QLineEdit(self.layoutWidget)
         self.startPath.setObjectName("startPath")
         self.gridlayout1.addWidget(self.startPath,0,1,1,1)
-
-        self.browseStartPath = QtGui.QPushButton(self.widget)
+        self.browseStartPath = QtGui.QPushButton(self.layoutWidget)
         self.browseStartPath.setCursor(QtCore.Qt.PointingHandCursor)
         self.browseStartPath.setObjectName("browseStartPath")
         self.gridlayout1.addWidget(self.browseStartPath,0,2,1,1)
         self.gridlayout.addLayout(self.gridlayout1,0,0,1,1)
-
         self.gridlayout2 = QtGui.QGridLayout()
         self.gridlayout2.setObjectName("gridlayout2")
-
-        self.label_2 = QtGui.QLabel(self.widget)
+        self.label_2 = QtGui.QLabel(self.layoutWidget)
         self.label_2.setObjectName("label_2")
         self.gridlayout2.addWidget(self.label_2,0,0,1,1)
-
-        self.outPath = QtGui.QLineEdit(self.widget)
+        self.outPath = QtGui.QLineEdit(self.layoutWidget)
         self.outPath.setObjectName("outPath")
         self.gridlayout2.addWidget(self.outPath,0,1,1,1)
-
-        self.browseOutPath = QtGui.QPushButton(self.widget)
+        self.browseOutPath = QtGui.QPushButton(self.layoutWidget)
         self.browseOutPath.setCursor(QtCore.Qt.PointingHandCursor)
         self.browseOutPath.setObjectName("browseOutPath")
         self.gridlayout2.addWidget(self.browseOutPath,0,2,1,1)
         self.gridlayout.addLayout(self.gridlayout2,1,0,1,1)
-
-        self.label_3 = QtGui.QLabel(self.widget)
+        self.label_3 = QtGui.QLabel(self.layoutWidget)
         self.label_3.setObjectName("label_3")
         self.gridlayout.addWidget(self.label_3,2,0,1,1)
-
-        self.selectedFiles = QtGui.QListWidget(self.widget)
+        self.selectedFiles = QtGui.QListWidget(self.layoutWidget)
         self.selectedFiles.setSelectionMode(QtGui.QAbstractItemView.ExtendedSelection)
         self.selectedFiles.setObjectName("selectedFiles")
         self.gridlayout.addWidget(self.selectedFiles,3,0,1,1)
-
-        self.progress = QtGui.QProgressBar(self.widget)
+        self.progress = QtGui.QProgressBar(self.layoutWidget)
         self.progress.setProperty("value",QtCore.QVariant(0))
         self.progress.setObjectName("progress")
         self.gridlayout.addWidget(self.progress,4,0,1,1)
-
         self.hboxlayout = QtGui.QHBoxLayout()
         self.hboxlayout.setObjectName("hboxlayout")
-
-        self.quit = QtGui.QPushButton(self.widget)
+        self.quit = QtGui.QPushButton(self.layoutWidget)
         self.quit.setObjectName("quit")
         self.hboxlayout.addWidget(self.quit)
-
         spacerItem = QtGui.QSpacerItem(40,20,QtGui.QSizePolicy.Expanding,QtGui.QSizePolicy.Minimum)
         self.hboxlayout.addItem(spacerItem)
-
-        self.findFiles = QtGui.QPushButton(self.widget)
+        self.findFiles = QtGui.QPushButton(self.layoutWidget)
         self.findFiles.setObjectName("findFiles")
         self.hboxlayout.addWidget(self.findFiles)
-
-        self.makeDocs = QtGui.QPushButton(self.widget)
+        self.makeDocs = QtGui.QPushButton(self.layoutWidget)
         self.makeDocs.setObjectName("makeDocs")
         self.hboxlayout.addWidget(self.makeDocs)
-
-        self.findAndMake = QtGui.QPushButton(self.widget)
-        self.findAndMake.setObjectName("findAndMake")
-        self.hboxlayout.addWidget(self.findAndMake)
         self.gridlayout.addLayout(self.hboxlayout,5,0,1,1)
 
         self.retranslateUi(WikiDocGen)
@@ -118,11 +96,10 @@ class Ui_WikiDocGen(object):
         WikiDocGen.setTabOrder(self.browseOutPath,self.selectedFiles)
         WikiDocGen.setTabOrder(self.selectedFiles,self.findFiles)
         WikiDocGen.setTabOrder(self.findFiles,self.makeDocs)
-        WikiDocGen.setTabOrder(self.makeDocs,self.findAndMake)
-        WikiDocGen.setTabOrder(self.findAndMake,self.quit)
+        WikiDocGen.setTabOrder(self.makeDocs,self.quit)
 
     def retranslateUi(self, WikiDocGen):
-        WikiDocGen.setWindowTitle(QtGui.QApplication.translate("WikiDocGen", "PyFarm Wiki  Doc Generator", None, QtGui.QApplication.UnicodeUTF8))
+        WikiDocGen.setWindowTitle(QtGui.QApplication.translate("WikiDocGen", "PyFarm Wiki Doc Generator", None, QtGui.QApplication.UnicodeUTF8))
         self.label.setText(QtGui.QApplication.translate("WikiDocGen", "Start Path:", None, QtGui.QApplication.UnicodeUTF8))
         self.browseStartPath.setText(QtGui.QApplication.translate("WikiDocGen", "Browse", None, QtGui.QApplication.UnicodeUTF8))
         self.label_2.setText(QtGui.QApplication.translate("WikiDocGen", "Out Path:", None, QtGui.QApplication.UnicodeUTF8))
@@ -131,5 +108,4 @@ class Ui_WikiDocGen(object):
         self.quit.setText(QtGui.QApplication.translate("WikiDocGen", "Quit", None, QtGui.QApplication.UnicodeUTF8))
         self.findFiles.setText(QtGui.QApplication.translate("WikiDocGen", "Find Files", None, QtGui.QApplication.UnicodeUTF8))
         self.makeDocs.setText(QtGui.QApplication.translate("WikiDocGen", "Make Docs", None, QtGui.QApplication.UnicodeUTF8))
-        self.findAndMake.setText(QtGui.QApplication.translate("WikiDocGen", "Find && Make", None, QtGui.QApplication.UnicodeUTF8))
 
