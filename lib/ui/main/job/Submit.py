@@ -39,6 +39,7 @@ class SubmitManager(object):
         self.ui = parentClass.ui
         self.dataJob = parentClass.dataJob
         self.dataGeneral = parentClass.dataGeneral
+        self.softwareManager = parentClass.softwareManager
         self.msg = MessageBox(parentClass)
 
     def beginProcessing(self):
@@ -94,13 +95,12 @@ class SubmitManager(object):
             pass
 
     def runChecks(self):
-        '''
-        Check to be sure the user has entered the minium values
-        '''
-        if self.scene.text() == '':
+        '''Check to be sure the user has entered the minium values'''
+        scene = self.softwareManager.scene.text()
+        if scene == '':
             self.msg.warning('Missing File', 'You must provide a file to render')
             return 0
-        elif not isfile(self.scene.text()):
+        elif not isfile(scene):
             self.msg.warning('Please Select a File', 'You must provide a file to render, links or directories will not suffice.')
             return 0
         else:

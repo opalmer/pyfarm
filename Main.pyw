@@ -53,7 +53,7 @@ from lib.network.Admin import AdminClient
 from lib.network.Broadcast import BroadcastSender
 from lib.network.Status import StatusServer
 
-__AUTHOR__ = 'Oliver Palmer'
+__DEVELOPER__ = 'Oliver Palmer'
 __VERSION__ = 'RC3'
 __HOMEPAGE__ = 'http://www.pyfarm.net'
 __DOCS__ = '%s/wiki' % __HOMEPAGE__
@@ -151,9 +151,9 @@ class Main(QMainWindow):
         # setup data management
         self.dataJob = {}
         self.dataGeneral = GeneralManager(self.ui, __VERSION__)
-        self.submitJob = SubmitManager(self)
         self.hostname = str(QHostInfo.localHostName())
         self.softwareManager = SoftwareContextManager(self)
+        self.submitJob = SubmitManager(self)
         self.ip = str(QHostInfo.fromName(self.hostname).addresses()[0].toString())
         self.msg = MessageBox(self)
 
@@ -163,7 +163,6 @@ class Main(QMainWindow):
 
         if not self.statusServer.listen(QHostAddress('0.0.0.0'), settings.netPort('status')):
             print "PyFarm :: StatusServer :: Could not start the server: %s" % self.statusServer.errorString()
-            returnSubmitManager
         print "PyFarm :: StatusServer :: Waiting for signals..."
 
         # setup some basic colors
