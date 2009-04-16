@@ -19,7 +19,12 @@ PURPOSE: Contains classes related to initial job submission
     You should have received a copy of the GNU General Public License
     along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 '''
+# From Python
+from os.path import isfile
+
+# From PyFarm
 from lib.RenderConfig import ConfigureCommand
+from lib.ui.main.CustomWidgets import MessageBox
 
 class SubmitManager(object):
     '''
@@ -30,10 +35,11 @@ class SubmitManager(object):
         dataJob -- job data dictionary
         dataGeneral -- general data manager class instance
     '''
-    def __init__(self, ui, dataJob, dataGeneral):
-        self.ui = ui
-        self.dataJob = dataJob
-        self.dataGeneral = dataGeneral
+    def __init__(self, parentClass):
+        self.ui = parentClass.ui
+        self.dataJob = parentClass.dataJob
+        self.dataGeneral = parentClass.dataGeneral
+        self.msg = MessageBox(parentClass)
 
     def beginProcessing(self):
         '''
@@ -53,9 +59,11 @@ class SubmitManager(object):
             outDir = str(self.ui.mayaOutputDir.text())
             project = str(self.ui.mayaProjectFile.text())
             scene = str(self.scene.text())
+            self.software_generic = self.ui.softwareSelection.currentText()
             commands = []
 
             if self.software_generic == 'maya':
+                print "hello"
                 renderer = str(self.ui.mayaRenderer.currentText())
                 layers = self.ui.mayaRenderLayers.selectedItems()
                 camera = str(self.ui.mayaCamera.currentText())
@@ -64,13 +72,14 @@ class SubmitManager(object):
                     for layer in layers:
                         for command in config.maya(str(self.software), sFrame, eFrame, bFrame,\
                             renderer, scene, str(layer.text()), camera, outDir, project):
-                                self.que.put([jobName, command[0], command[1], str(command[2])], priority)
+                                print command
+
                 else:
                     for command in config.maya(str(self.software), sFrame, eFrame, bFrame,\
                         renderer, scene, '', camera, outDir, project):
                             frame = QString(command[0])
                             cmd = QString(str(command[2]))
-                            self.que.put([jobName, frame, cmd], priority)
+                            print command
 
                 newFrames = self.que.size()-startSize
 
@@ -83,3 +92,25 @@ class SubmitManager(object):
                 pass
         else:
             pass
+
+    def runChecks(self):
+        '''
+        Check to be sure the user has entered the minium values
+        '''
+        if self.scene.text() == '':
+            self.msg.warning('Missing File', 'You must provide a file to render')
+            return 0
+        elif not isfile(self.scene.text()):
+            self.msg.warning('Please Select a File', 'You must provide a file to render, links or directories will not suffice.')
+            return 0
+        else:
+            try:
+                if self.jobName == '':
+                    self.msg.warning('Missing Job Name', 'You name your job before you rendering')
+                    return 0
+            except AttributeError:
+                self.msg.warning('Missing Job Name', 'You name your job before you rendering')
+                return 0
+            finally:
+                # get a random number and return the hexadecimal value
+                return Info.Numbers().randhex()

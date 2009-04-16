@@ -43,9 +43,10 @@ settings = ParseXmlSettings('%s/settings.xml' % os.getcwd(), 'gui')
 import lib.Info as Info
 from lib.ui.RC3 import Ui_RC3
 from lib.ui.main.CustomWidgets import *
-from lib.ui.main.CloseEvent import CloseEventManager
-from lib.ui.main.NetworkTableManager import NetworkTableManager
 from lib.ui.main.job.Submit import SubmitManager
+from lib.ui.main.CloseEvent import CloseEventManager
+from lib.ui.main.Software import SoftwareContextManager
+from lib.ui.main.NetworkTableManager import NetworkTableManager
 from lib.data.Job import JobManager
 from lib.data.General import GeneralManager
 from lib.network.Admin import AdminClient
@@ -150,9 +151,11 @@ class Main(QMainWindow):
         # setup data management
         self.dataJob = {}
         self.dataGeneral = GeneralManager(self.ui, __VERSION__)
-        self.submitJob = SubmitManager(self.ui, self.dataJob, self.dataGeneral)
+        self.submitJob = SubmitManager(self)
         self.hostname = str(QHostInfo.localHostName())
+        self.softwareManager = SoftwareContextManager(self)
         self.ip = str(QHostInfo.fromName(self.hostname).addresses()[0].toString())
+        self.msg = MessageBox(self)
 
         # setup status server
         self.statusServer = StatusServer(self)
@@ -160,7 +163,7 @@ class Main(QMainWindow):
 
         if not self.statusServer.listen(QHostAddress('0.0.0.0'), settings.netPort('status')):
             print "PyFarm :: StatusServer :: Could not start the server: %s" % self.statusServer.errorString()
-            return
+            returnSubmitManager
         print "PyFarm :: StatusServer :: Waiting for signals..."
 
         # setup some basic colors
@@ -186,15 +189,13 @@ class Main(QMainWindow):
 
         # populate the avaliable list of renderers
         self.UpdateSoftwareList()
+        self.softwareManager.setSoftware(self.ui.softwareSelection.currentText())
 
         # setup ui vars
-        self.hosts = []
-        self.foundHosts = 0
         self.ui.currentJobs.horizontalHeader().setStretchLastSection(True)
-        self.message = QString()
 
         # Display information about pyfarm and support
-        #self.infoMessage('Welcome to PyFarm -- Release Candidate 1', 'Thank you for testing PyFarm!  Please direct all inquiries about this softare to the homepage @ http://www.opalmer.com/pyfarm')
+        #self.msg.info('Welcome to PyFarm -- Release Candidate 1', 'Thank you for testing PyFarm!  Please direct all inquiries about this softare to the homepage @ http://www.opalmer.com/pyfarm')
 
         # make signal connections
         ## ui signals
@@ -202,7 +203,7 @@ class Main(QMainWindow):
         self.connect(self.ui.findHosts, SIGNAL("pressed()"), self.findHosts)
         self.connect(self.ui.queryQue, SIGNAL("pressed()"), self.queryQue)
         self.connect(self.ui.emptyQue, SIGNAL("pressed()"), self.emptyQue)
-        self.connect(self.ui.enque, SIGNAL("pressed()"), self.submitJob.beginProcessing) # see line ~836
+        self.connect(self.ui.enque, SIGNAL("pressed()"), self.submitJob.beginProcessing)
         self.connect(self.ui.loadQue, SIGNAL("triggered()"), self._loadQue)
         self.connect(self.ui.saveQue, SIGNAL("triggered()"), self._saveQue)
         self.connect(self.ui.currentJobs, SIGNAL("customContextMenuRequested(const QPoint &)"), self.currentJobsContextMenu)
@@ -210,11 +211,11 @@ class Main(QMainWindow):
 
         # connect ui widgets related to global job info
         self.connect(self.ui.inputJobName, SIGNAL("editingFinished()"), self.setJobName)
-        self.connect(self.ui.softwareSelection, SIGNAL("currentIndexChanged(const QString&)"), self.SetSoftware)
+        self.connect(self.ui.softwareSelection, SIGNAL("currentIndexChanged(const QString&)"), self.softwareManager.setSoftware)
 
         # connect specific render option vars
         ## maya
-        self.connect(self.ui.mayaBrowseForScene, SIGNAL("pressed()"), self.BrowseForInput)
+        self.connect(self.ui.mayaBrowseForScene, SIGNAL("pressed()"),  self.softwareManager.browseForScene)
         self.connect(self.ui.mayaBrowseForOutputDir, SIGNAL("pressed()"), self.setMayaImageOutDir)
         self.connect(self.ui.mayaBrowseForProject, SIGNAL("pressed()"), self.setMayaProjectFile)
         self.connect(self.ui.mayaRenderLayers, SIGNAL("customContextMenuRequested(const QPoint &)"), self.mayaRenderLayersListMenu)
@@ -225,7 +226,7 @@ class Main(QMainWindow):
         self.connect(self.ui.houdiniOutputKeepAspect, SIGNAL("stateChanged(int)"), self.setHoudiniKeepAspectRatio)
         self.connect(self.ui.houdiniOutputWidth, SIGNAL("valueChanged(int)"), self.setHoudiniWidth)
         self.connect(self.ui.houdiniOutputPixelAspect, SIGNAL("valueChanged(double)"), self.setHoudiniAspectRatio)
-        self.connect(self.ui.houdiniBrowseForScene, SIGNAL("pressed()"), self.setHoudiniScene)
+        self.connect(self.ui.houdiniBrowseForScene, SIGNAL("pressed()"), self.softwareManager.browseForScene)
         self.connect(self.ui.houdiniNodeList, SIGNAL("customContextMenuRequested(const QPoint &)"), self.houdiniNodeListMenu)
 
         # connect ui vars for
@@ -416,7 +417,7 @@ class Main(QMainWindow):
             cameraRegEx = QRegExp(r"""createNode camera -n .+""")
 
             if ext != 'ma':
-                self.infoMessage('Cannot Auto Detect Cameras and Layers', 'Sorry we could not detect your camers and layers automatically.  Please use a Maya ASCII file if you wish to use auto detection.')
+                self.msg.info('Cannot Auto Detect Cameras and Layers', 'Sorry we could not detect your camers and layers automatically.  Please use a Maya ASCII file if you wish to use auto detection.')
             else:
                 multiPass = MayaCamAndLayers(self.scene.text())
                 self.connect(multiPass, SIGNAL("gotMayaLayer"), self.ui.mayaRenderLayers.addItem)
@@ -558,7 +559,7 @@ class Main(QMainWindow):
 
         else:
             for widget in widgets:
-                widget.setEnabled(1)
+                widget.setEnabbeginProcessingled(1)
 
             if self.houdiniKeepAspectRatio():
                 self.ui.houdiniOutputHeight.setEnabled(0)
@@ -715,7 +716,7 @@ class Main(QMainWindow):
         modName = 'Main.addHost'
         # check to make sure the host is valid
         if ResolveHost(host) == 'BAD_HOST':
-            self.warningMessage("Bad host or IP", "Sorry %s could not be resolved, please check your entry and try again." % host)
+            self.msg.warning("Bad host or IP", "Sorry %s could not be resolved, please check your entry and try again." % host)
             print "PyFarm :: %s :: Bad host or IP, could not add %s " % (modName, host)
         else:
             # prepare the information
@@ -793,7 +794,7 @@ class Main(QMainWindow):
         try:
             ip = str(self.ui.networkTable.item(row, 0).text())
         except AttributeError:
-            self.infoMessage("Please select a host first.", "Before viewing information about a host you must first select one from the network table list.")
+            self.msg.info("Please select a host first.", "Before viewing information about a host you must first select one from the network table list.")
 
         # apply it to the widgets
         widget.ui.ipAddress.setText(ip)
@@ -873,18 +874,18 @@ class Main(QMainWindow):
         Check to be sure the user has entered the minium values
         '''
         if self.scene.text() == '':
-            self.warningMessage('Missing File', 'You must provide a file to render')
+            self.msg.warning('Missing File', 'You must provide a file to render')
             return 0
         elif not os.path.isfile(self.scene.text()):
-            self.warningMessage('Please Select a File', 'You must provide a file to render, links or directories will not suffice.')
+            self.msg.warning('Please Select a File', 'You must provide a file to render, links or directories will not suffice.')
             return 0
         else:
             try:
                 if self.jobName == '':
-                    self.warningMessage('Missing Job Name', 'You name your job before you rendering')
+                    self.msg.warning('Missing Job Name', 'You name your job before you rendering')
                     return 0
             except AttributeError:
-                self.warningMessage('Missing Job Name', 'You name your job before you rendering')
+                self.msg.warning('Missing Job Name', 'You name your job before you rendering')
                 return 0
             finally:
                 # get a random number and return the hexadecimal value
@@ -942,43 +943,6 @@ class Main(QMainWindow):
 ################################
 ## END Job/Que System
 ################################
-## BEGIN Status/Message System
-################################
-
-    def criticalMessage(self, title, message, code):
-        '''
-        Pop up critical message window
-
-        VARS:
-            title (str) -- Title of window
-            message (str) -- message to display
-            code (int) -- exit code to give to sys.exit
-        '''
-        QMessageBox().critical(self, title, unicode(message))
-        sys.exit(code)
-
-    def warningMessage(self, title, message):
-        '''
-        Pop up critical message window
-
-        VARS:
-            title -- Title of window
-            message -- message to display
-        '''
-        msg = QMessageBox()
-        msg.warning(self, title, unicode(message))
-
-    def infoMessage(self, title, message):
-        '''
-        Pop up critical message window
-
-        VARS:
-            title -- Title of window
-            message -- message to display
-        '''
-        msg = QMessageBox()
-        msg.information(self, title, unicode(message))
-
     def updateStatus(self, section, msg, color='black'):
         '''
         Update the ui's status window

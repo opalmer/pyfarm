@@ -30,7 +30,6 @@ from PyQt4.QtCore import QObject, QCoreApplication, SIGNAL, SLOT
 from PyQt4.QtNetwork import QHostInfo, QHostAddress
 
 # From PyFarm
-from lib.Que import *
 from lib.network.Utils import GetLocalIP
 from lib.network.Broadcast import BroadcastReceiever
 from lib.network.Status import StatusClient

@@ -164,10 +164,6 @@ class ParseXmlSettings(object):
             self.softwareList = []
             self.softwareCommand = {}
             self.softwareCommonName = {}
-#            name = 'Maya 2009'
-#            self.softwareList.append(name)
-#            self.softwareCommand[name] = '/'
-#            self.softwareCommonName[name] = 'maya'
             for package in self._installedSoftware():
                 self.softwareList.append(package[0])
                 self.softwareCommand[package[0]] = package[1]
