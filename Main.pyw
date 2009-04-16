@@ -58,76 +58,6 @@ __VERSION__ = 'RC3'
 __HOMEPAGE__ = 'http://www.pyfarm.net'
 __DOCS__ = '%s/wiki' % __HOMEPAGE__
 
-
-class FakeProgressBar(QThread):
-    '''Run a fake progress bar'''
-    def __init__(self, progress, jobName, jobRow, parent=None):
-        super(FakeProgressBar, self).__init__(parent)
-        from random import random
-        self.progress = progress
-        self.jobRow = jobRow
-        self.jobName = jobName
-        self.min = progress.minimum()
-        self.max = progress.maximum()
-
-    def run(self):
-        '''Run the thread'''
-        value = self.progress.value()
-        while value <= self.max:
-            sleep(random())
-            self.emit(SIGNAL("increment"), value)
-            value += 1
-
-        self.emit(SIGNAL("complete"), [self.jobName, self.jobRow])
-
-class FakeProgressBarFailure(QThread):
-    '''Run a fake progress bar, and make it fail'''
-    def __init__(self, progress, parent=None):
-        super(FakeProgressBarFailure, self).__init__(parent)
-        self.progress = progress
-        self.min = progress.minimum()
-        self.max = progress.maximum()
-
-    def run(self):
-        '''Run the thread'''
-        value = self.progress.value()
-        while value <= 10:
-            sleep(random())
-            self.emit(SIGNAL("increment"), value)
-            value += 1
-
-        self.emit(SIGNAL("failed"))
-
-class WorkerThread(QThread):
-    '''Used work out to a worker TCP server'''
-    def __init__(self, host, port, parent=None):
-        super(WorkerThread, self).__init__(parent)
-        self.host = host
-        self.port = port
-        self.client = SendCommand(self.host, self.port)
-        self.connect(self.client, SIGNAL("WORK_COMPLETE"), self.workComplete)
-        self.connect(self.client, SIGNAL("SENDING_WORK"), self.workSent)
-
-    def run(self):
-        '''Start the thread and send the first command'''
-        if QUE.size() == 0:
-            self.terminate()
-        else:
-            self.client.issueRequest(QUE.get())
-
-    def workComplete(self, client):
-        self.emit(SIGNAL("WORK_COMPLETE"), client)
-        if QUE.size() > 0:
-            self.client.issueRequest(QUE.get())
-        else:
-            self.client.issueRequest('TERMINATE_SELF')
-            self.emit(SIGNAL("QUE_EMPTY"), self.host)
-            self.terminate()
-
-    def workSent(self, work):
-        self.emit(SIGNAL("SENDING_WORK"), work)
-
-
 class Main(QMainWindow):
     '''
     This is the controlling class for the main gui
@@ -148,6 +78,10 @@ class Main(QMainWindow):
         self.ui = Ui_RC3()
         self.ui.setupUi(self)
 
+        # update the installed avaliable software list
+        for software in settings.installedSoftware():
+            self.ui.softwareSelection.addItem(str(software))
+
         # setup data management
         self.dataJob = {}
         self.dataGeneral = GeneralManager(self.ui, __VERSION__)
@@ -156,6 +90,7 @@ class Main(QMainWindow):
         self.submitJob = SubmitManager(self)
         self.ip = str(QHostInfo.fromName(self.hostname).addresses()[0].toString())
         self.msg = MessageBox(self)
+        self.softwareManager.setSoftware(self.ui.softwareSelection.currentText())
 
         # setup status server
         self.statusServer = StatusServer(self)
@@ -187,8 +122,8 @@ class Main(QMainWindow):
             self.updateStatus('SETTINGS', '%s: %s' % (program, settings.command(program)), 'purple')
 
         # populate the avaliable list of renderers
-        self.UpdateSoftwareList()
         self.softwareManager.setSoftware(self.ui.softwareSelection.currentText())
+        self.ui.softwareSelection.currentText()
 
         # setup ui vars
         self.ui.currentJobs.horizontalHeader().setStretchLastSection(True)
@@ -198,25 +133,16 @@ class Main(QMainWindow):
 
         # make signal connections
         ## ui signals
-        self.connect(self.ui.render, SIGNAL("pressed()"), self.initJob)
-        self.connect(self.ui.findHosts, SIGNAL("pressed()"), self.findHosts)
-        self.connect(self.ui.queryQue, SIGNAL("pressed()"), self.queryQue)
-        self.connect(self.ui.emptyQue, SIGNAL("pressed()"), self.emptyQue)
-        self.connect(self.ui.enque, SIGNAL("pressed()"), self.submitJob.beginProcessing)
-        self.connect(self.ui.loadQue, SIGNAL("triggered()"), self._loadQue)
-        self.connect(self.ui.saveQue, SIGNAL("triggered()"), self._saveQue)
+        self.connect(self.ui.enque, SIGNAL("pressed()"), self.submitJob.submitJob)
+        self.connect(self.ui.render, SIGNAL("pressed()"), self.submitJob.startRender)
         self.connect(self.ui.currentJobs, SIGNAL("customContextMenuRequested(const QPoint &)"), self.currentJobsContextMenu)
-        self.connect(self.ui.getHostInfo, SIGNAL("pressed()"), self.showHostInfo)
-
-        # connect ui widgets related to global job info
-        self.connect(self.ui.inputJobName, SIGNAL("editingFinished()"), self.setJobName)
         self.connect(self.ui.softwareSelection, SIGNAL("currentIndexChanged(const QString&)"), self.softwareManager.setSoftware)
 
         # connect specific render option vars
         ## maya
         self.connect(self.ui.mayaBrowseForScene, SIGNAL("pressed()"),  self.softwareManager.browseForScene)
-        self.connect(self.ui.mayaBrowseForOutputDir, SIGNAL("pressed()"), self.setMayaImageOutDir)
-        self.connect(self.ui.mayaBrowseForProject, SIGNAL("pressed()"), self.setMayaProjectFile)
+        self.connect(self.ui.mayaBrowseForOutputDir, SIGNAL("pressed()"), self.softwareManager.browseForMayaOutDir)
+        self.connect(self.ui.mayaBrowseForProject, SIGNAL("pressed()"), self.softwareManager.browseForMayaProjectFile)
         self.connect(self.ui.mayaRenderLayers, SIGNAL("customContextMenuRequested(const QPoint &)"), self.mayaRenderLayersListMenu)
         self.connect(self.ui.mayaAddCamera, SIGNAL("clicked()"), self.mayaCameraEditMenu)
 
@@ -230,7 +156,8 @@ class Main(QMainWindow):
 
         # connect ui vars for
         ## network section signals
-        self.connect(self.ui.disableHost, SIGNAL("pressed()"), self._disableHosts)
+        self.connect(self.ui.findHosts, SIGNAL("pressed()"), self.findHosts)
+        self.connect(self.ui.getHostInfo, SIGNAL("pressed()"), self.showHostInfo)
         self.connect(self.ui.addHost, SIGNAL("pressed()"), self._customHostDialog)
         self.connect(self.ui.removeHost, SIGNAL("pressed()"), self.dataGeneral.removeHost)
 
@@ -296,86 +223,7 @@ class Main(QMainWindow):
         menu.exec_(self.globalPoint(self.ui.mayaRenderLayers, pos))
 
 #############################
-## END Context Menus
-################################
-## BEGIN General Job Settings
-################################
-    def setJobName(self):
-        '''Set the job name'''
-        self.jobName = self.ui.inputJobName.text()
-
-################################
-## END General Job Settings
-################################
-## BEGIN Software Discovery
-################################
-    def BrowseForInput(self):
-        '''
-        Given an input program, present a search dialog
-        so the user can search for the scene/script/etc.
-        '''
-        render_file = QFileDialog.getOpenFileName(\
-            None,
-            self.trUtf8("Select File To Render"),
-            QString(),
-            self.trUtf8(self.fileGrep),
-            None,
-            QFileDialog.Options(QFileDialog.DontResolveSymlinks))
-
-        self.scene.setText(render_file)
-
-        if self.software_generic == 'maya':
-            self.mayaGetLayersAndCams()
-
-    def SetSoftware(self, newSoftware):
-        '''
-        If the software selction is changed, setup the
-        relevant info.  This includes the sofware generic name (maya),
-        command, file grep list, scene ui ref, etc.
-
-        OUTPUTS:
-            self.command -- the command used to render
-            self.programName -- the common name of the program
-            self.fileGrep -- file grep used to search for files to render
-            self.scene -- path to ui component used to hold the file to render
-        '''
-        # convert the QSting to a string
-        self.software = str(newSoftware)
-        self.command = settings.command(self.software)
-        self.software_generic = settings.commonName(self.software)
-        self.fileGrep = settings.fileGrep(self.software)
-        self.widgetIndex = settings.widgetIndex(self.software)
-        self.ui.optionStack.setCurrentIndex(self.widgetIndex)
-
-        # if we are using maya
-        if self.software_generic == 'maya':
-            self.ui.optionStack.setCurrentWidget
-            self.scene = self.ui.mayaScene
-            self.browseForScene = self.ui.mayaBrowseForScene
-
-        # if we are using houdini
-        elif self.software_generic == 'houidini':
-            self.scene = self.ui.houdiniFile
-            self.browseForScene = self.ui.houdiniBrowseForScene
-
-        # if we are using shake
-        elif self.software_generic == 'shake':
-            self.scene = self.ui.shakeScript
-            self.browseForScene = self.ui.shakeBrowseForScript
-
-    def UpdateSoftwareList(self):
-        '''
-        Given a software list of installed software, add
-        it the list of avaliable software to render with.
-        '''
-        for software in settings.installedSoftware():
-            self.ui.softwareSelection.addItem(str(software))
-
-        self.SetSoftware(self.ui.softwareSelection.currentText())
-
-################################
-## END Software Discovery
-################################
+## END Context Menu
 ## BEGIN Maya Settings
 ################################
     def mayaRemoveCamera(self):
@@ -443,44 +291,6 @@ class Main(QMainWindow):
         Clear all nodes from the node list
         '''
         self.ui.mayaRenderLayers.clear()
-
-    def setMayaImageOutDir(self):
-        '''
-        Browse for an output Directory, send the selection to
-        the input widget.
-        '''
-        outDir = QFileDialog.getExistingDirectory(\
-            None,
-            self.trUtf8("Select A Directory"),
-            QString(),
-            QFileDialog.Options(QFileDialog.DontResolveSymlinks | QFileDialog.ShowDirsOnly))
-
-        if outDir != '':
-            self.ui.mayaOutputDir.setText(outDir)
-
-    def setMayaProjectFile(self):
-        '''
-        Set the maya project file
-        '''
-        projectFile = QFileDialog.getOpenFileName(\
-            None,
-            self.trUtf8("Select Your Maya Project File"),
-            QString(),
-            self.trUtf8("Maya Project File(*.mel)"),
-            None,
-            QFileDialog.Options(QFileDialog.DontResolveSymlinks))
-
-        if projectFile != '':
-            self.ui.mayaProjectFile.setText(projectFile)
-
-    def setMayaMentalRay(self, val):
-        '''
-        Given a value setup the global var
-        '''
-        if val == 2:
-            self.useMentalRay = 1
-        else:
-            self.useMentalRay = 0
 
 ################################
 ## END Maya Settings
@@ -623,55 +433,6 @@ class Main(QMainWindow):
 
 ################################
 ## END Houdini Settings
-################################
-## BEGIN Que Management
-################################
-    def _loadQue(self):
-        '''Load que information from a file'''
-        queInFile = QFileDialog.getOpenFileName(\
-            None,
-            self.trUtf8("Select Queue To Load"),
-            QString(),
-            self.trUtf8("PyFarm Queue(*.pyq)"),
-            None,
-            QFileDialog.Options(QFileDialog.DontResolveSymlinks))
-
-        QueFile = QFile(queInFile)
-        QueFile.open(QIODevice.ReadOnly)
-
-    def _saveQue(self):
-        '''Save the current que for later use'''
-        queOutFile = QFileDialog.getSaveFileName(\
-            None,
-            self.trUtf8("Save Queue To File"),
-            QString(),
-            self.trUtf8("PyFarm Queue(*.pyq)"),
-            None)
-
-        self.updateStatus('SETTINGS', 'Saving que to file...', 'purple')
-        QueFile = QFile(queOutFile)
-        QueFile.open(QIODevice.WriteOnly)
-
-        for i in range(1, QUE.qsize()+1):
-            que = QUE.get()
-            QueFile.write('%s:::%s:::%s\n' % (str(que[0]), str(que[1]), str(que[2])))
-            QUE.put(que)
-
-        QueFile.close()
-        self.updateStatus('SETTINGS', 'Saving complete.', 'purple')
-
-    def queryQue(self):
-        '''Query the current que'''
-        self.updateStatus('INFO', 'Number of items in que: %i' % QUE.size())
-
-    def emptyQue(self):
-        '''Remote all items from the que'''
-        QUE.emptyQue()
-        self.updateStatus('INFO', 'Que is now empty!')
-
-################################
-## END Que Management
-################################
 ## BEGIN Host Management
 ################################
     def _getHostSelection(self):
@@ -702,50 +463,6 @@ class Main(QMainWindow):
         host = self.customHostDialog.inputHost.text()
         self.addHost(str(host))
         self.customHostDialog.close()
-
-    def addHost(self, host, warnHostExists=True):
-        '''
-        Add the given host to the table
-
-        INPUT:
-            host (string) - host to add
-            warnHostExists (bool) - if false, do not popup info about
-            hosts that have already been added
-        '''
-        modName = 'Main.addHost'
-        # check to make sure the host is valid
-        if ResolveHost(host) == 'BAD_HOST':
-            self.msg.warning("Bad host or IP", "Sorry %s could not be resolved, please check your entry and try again." % host)
-            print "PyFarm :: %s :: Bad host or IP, could not add %s " % (modName, host)
-        else:
-            # prepare the information
-            self.currentHost = []
-            self.hostStatusMenu = HostStatus(self)
-            self.currentHost.append(ResolveHost(host)[0])
-            self.currentHost.append(ResolveHost(host)[1])
-            self.currentHost.append('Online')
-            hostname = self.currentHost[0]
-            ip = self.currentHost[1]
-
-            # if the current host has not been added
-            if ip not in self.dataGeneral.hostList():
-                self.getSystemInfo(ip)
-
-    def _disableHosts(self):
-        row = self._getHostSelection()[0]
-        item = QTableWidgetItem('Offline')
-        self.ui.networkTable.setItem(2, row, item)
-
-    def getSystemInfo(self, host):
-        '''
-        Retrieve system info on the given host
-
-        INPUT:
-            host (str) -- ip address of host
-        '''
-        client = AdminClient(host, settings.netPort('admin'))
-        self.connect(client, SIGNAL("newSysInfo"), self.updateSystemDataDict)
-        client.systemInfo()
 
     def updateSystemDataDict(self, info):
         '''Given the captured information, add it to self.generalData'''
@@ -827,82 +544,6 @@ class Main(QMainWindow):
 ################################
 ## END Host Management
 ################################
-## BEGIN Job/Que System
-################################
-    def SubmitToQue(self):
-        '''Gather information about the current job'''
-        # first make a copy of self.software
-        config = ConfigureCommand()
-        jobID = self.runChecks()
-
-        if jobID:
-            sFrame = self.ui.inputStartFrame.value()
-            eFrame = self.ui.inputEndFrame.value()
-            bFrame = self.ui.inputByFrame.value()
-            priority = self.ui.inputJobPriority.value()
-            jobName = str(self.ui.inputJobName.text())
-            outDir = str(self.ui.mayaOutputDir.text())
-            project = str(self.ui.mayaProjectFile.text())
-            scene = str(self.scene.text())
-            commands = []
-
-            if self.software_generic == 'maya':
-                renderer = str(self.ui.mayaRenderer.currentText())
-                layers = self.ui.mayaRenderLayers.selectedItems()
-                camera = str(self.ui.mayaCamera.currentText())
-
-                if len(layers) >= 1:
-                    for layer in layers:
-                        for command in config.maya(str(self.software), sFrame, eFrame, bFrame,\
-                            renderer, scene, str(layer.text()), camera, outDir, project):
-                                print "[ DEBUG ] Put into que"
-                else:
-                    for command in config.maya(str(self.software), sFrame, eFrame, bFrame,\
-                        renderer, scene, '', camera, outDir, project):
-                            print "[ DEBUG ] Put into que"
-
-            elif self.software_generic == 'houdini':
-                pass
-            elif self.software_generic == 'shake':
-                pass
-        else:
-            pass
-
-    def runChecks(self):
-        '''
-        Check to be sure the user has entered the minium values
-        '''
-        if self.scene.text() == '':
-            self.msg.warning('Missing File', 'You must provide a file to render')
-            return 0
-        elif not os.path.isfile(self.scene.text()):
-            self.msg.warning('Please Select a File', 'You must provide a file to render, links or directories will not suffice.')
-            return 0
-        else:
-            try:
-                if self.jobName == '':
-                    self.msg.warning('Missing Job Name', 'You name your job before you rendering')
-                    return 0
-            except AttributeError:
-                self.msg.warning('Missing Job Name', 'You name your job before you rendering')
-                return 0
-            finally:
-                # get a random number and return the hexadecimal value
-                return Info.Numbers().randhex()
-
-    def initJob(self):
-        '''Get an item from the que and send it to a client'''
-        # tell the clients that the que is running
-        for host in self.hosts:
-            thread = WorkerThread(host[1], settings.netPort('que'), self)
-            self.connect(thread, SIGNAL("WORK_COMPLETE"), self.workComplete)
-            self.connect(thread, SIGNAL("SENDING_WORK"), self.workSent)
-            self.connect(thread, SIGNAL("QUE_EMPTY"), self.queEmpty)
-            thread.run()
-
-    def queEmpty(self, host):
-        '''Inform the user that the que is empty and rendering is complete'''
-        self.updateStatus('JOB', '<b>%s has reported rendering complete!</b>' % host, 'red')
 
     def workSent(self, work):
         '''Inform the user that a job is being sent'''
@@ -952,30 +593,6 @@ class Main(QMainWindow):
             color (string) - The color name or hex value to set the section
         '''
         self.ui.status.append('<font color=%s><b>%s</b></font> - %s' % (color, section, msg))
-
-    def SetStatus(self, obj, txt, color='black'):
-        '''Set the text of a specific status label'''
-        R = '#FF0000'
-        G = 'green'
-        B = '#0000FF'
-        if txt == 'Inactive':
-            color = R
-        elif txt == 'Active':
-            color = G
-        elif txt == 0:
-            color = R
-        elif txt == "No Frames In Que":
-            color = R
-
-        # format the cpu time
-        if self.ui.status_general_cpu_time_used != 0:
-            # get the latest cpu time, add it to the current usage, update the ui
-            #txt = Elapsed(txt, currentTime)
-            pass
-
-        text = QString('<FONT COLOR="%s">%s</FONT>' % (color, txt))
-        obj.setText(text)
-
 ################################
 ## END Status/Message System
 ################################
@@ -987,11 +604,7 @@ class Main(QMainWindow):
 
     def fakeSetup(self):
         '''Setup the fake information for presentation'''
-        self.fakeTableEntries()
-        self.ui.mayaScene.setText('/farm/projects/PyFarm/trunk/RC3/test.ma')
         self.ui.inputJobName.setText('fakeJob')
-        self.setJobName()
-        self.ui.inputEndFrame.setValue(3)
 
     def fakeTableEntries(self):
         '''Add a fake progress bar to the table'''

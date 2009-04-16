@@ -105,20 +105,13 @@
         <property name="orientation" >
          <enum>Qt::Horizontal</enum>
         </property>
-        <property name="sizeHint" stdset="0" >
+        <property name="sizeHint" >
          <size>
           <width>40</width>
           <height>20</height>
          </size>
         </property>
        </spacer>
-      </item>
-      <item>
-       <widget class="QPushButton" name="findFiles" >
-        <property name="text" >
-         <string>Find Files</string>
-        </property>
-       </widget>
       </item>
       <item>
        <widget class="QPushButton" name="makeDocs" >
@@ -138,7 +131,6 @@
   <tabstop>outPath</tabstop>
   <tabstop>browseOutPath</tabstop>
   <tabstop>selectedFiles</tabstop>
-  <tabstop>findFiles</tabstop>
   <tabstop>makeDocs</tabstop>
   <tabstop>quit</tabstop>
  </tabstops>

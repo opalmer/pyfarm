@@ -23,9 +23,10 @@ the related variables
 # From Python
 from os import getcwd
 
+
 # From PyQt
 from PyQt4.QtGui import QFileDialog
-from PyQt4.QtCore import QString
+from PyQt4.QtCore import QString, QFileInfo
 
 # From PyFarm
 from lib.ReadSettings import ParseXmlSettings
@@ -92,12 +93,36 @@ class SoftwareContextManager(object):
 
     def browseForScene(self):
         '''Allow the user to browse for a scene based on the current software'''
-        render_file = QFileDialog.getOpenFileName(\
+        render_file = QFileInfo(QFileDialog.getOpenFileName(\
             None,
             QString("Select File To Render"),
             QString(),
             QString(self.fileGrep),
             None,
-            QFileDialog.Options(QFileDialog.DontResolveSymlinks))
+            QFileDialog.Options(QFileDialog.DontResolveSymlinks))).symLinkTarget()
 
-        self.scene.setText(render_file)
+        if not render_file == '':
+            self.scene.setText(render_file)
+
+    def browseForMayaOutDir(self):
+        '''Browse for the maya output directory'''
+        outdir = QFileDialog.getExistingDirectory(\
+            None,
+            QString("Select Image Output Directory"),
+            QString(),
+            QFileDialog.Options(QFileDialog.ShowDirsOnly))
+
+        if not outdir == '':
+            self.ui.mayaOutputDir.setText(outdir)
+
+    def browseForMayaProjectFile(self):
+        '''Set the maya project file'''
+        projectFile =  QFileDialog.getOpenFileName(\
+            None,
+            QString("Select Your Maya Project File"),
+            QString(),
+            QString("workspace.mel"),
+            None)
+
+        if not projectFile == '':
+            self.ui.mayaProjectFile.setText(projectFile)

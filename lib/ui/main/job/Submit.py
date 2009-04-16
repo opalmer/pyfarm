@@ -20,11 +20,18 @@ PURPOSE: Contains classes related to initial job submission
     along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 '''
 # From Python
+from os import getcwd
 from os.path import isfile
+from pprint import pprint
 
 # From PyFarm
+from lib import Info
+from lib.data.Job import JobManager
+from lib.ReadSettings import ParseXmlSettings
 from lib.RenderConfig import ConfigureCommand
 from lib.ui.main.CustomWidgets import MessageBox
+
+settings = ParseXmlSettings('%s/settings.xml' % getcwd())
 
 class SubmitManager(object):
     '''
@@ -41,58 +48,41 @@ class SubmitManager(object):
         self.dataGeneral = parentClass.dataGeneral
         self.softwareManager = parentClass.softwareManager
         self.msg = MessageBox(parentClass)
+        self.rendering = 0
 
-    def beginProcessing(self):
+    def submitJob(self):
         '''
         Begin processing information from the
         user interface
         '''
-        config = ConfigureCommand()
+        priority = self.ui.inputJobPriority.value()
+        jobName = str(self.ui.inputJobName.text())
         jobID = self.runChecks()
 
+        # if the job has not been defined, define it
+        if jobName not in self.dataJob:
+            self.dataJob[jobName] = JobManager(jobName, self.dataGeneral, self.ui)
+
         if jobID:
-            startSize = self.que.size()
-            sFrame = self.ui.inputStartFrame.value()
-            eFrame = self.ui.inputEndFrame.value()
-            bFrame = self.ui.inputByFrame.value()
-            priority = self.ui.inputJobPriority.value()
-            jobName = str(self.ui.inputJobName.text())
-            outDir = str(self.ui.mayaOutputDir.text())
-            project = str(self.ui.mayaProjectFile.text())
-            scene = str(self.scene.text())
-            self.software_generic = self.ui.softwareSelection.currentText()
-            commands = []
+            self.createJob(jobName, jobID, priority)
 
-            if self.software_generic == 'maya':
-                print "hello"
-                renderer = str(self.ui.mayaRenderer.currentText())
-                layers = self.ui.mayaRenderLayers.selectedItems()
-                camera = str(self.ui.mayaCamera.currentText())
+    def createJob(self, jobName, id, priority):
+        '''
+        Create a job and add it to the dictionary
 
-                if len(layers) >= 1:
-                    for layer in layers:
-                        for command in config.maya(str(self.software), sFrame, eFrame, bFrame,\
-                            renderer, scene, str(layer.text()), camera, outDir, project):
-                                print command
+        INPUT:
+            jobName (str) -- name of job
+            id (hex) -- subjob id
+        '''
+        if self.dataJob[jobName].data.createSubjob(id, priority):
+            for frame in range(self.ui.inputStartFrame.value(), self.ui.inputEndFrame.value()+1, self.ui.inputByFrame.value()):
+                self.dataJob[jobName].data.addFrame(id, frame, str(self.ui.softwareSelection.currentText()))
 
-                else:
-                    for command in config.maya(str(self.software), sFrame, eFrame, bFrame,\
-                        renderer, scene, '', camera, outDir, project):
-                            frame = QString(command[0])
-                            cmd = QString(str(command[2]))
-                            print command
-
-                newFrames = self.que.size()-startSize
-
-                self.updateStatus('QUE', 'Added %s frames to job %s(ID: %s) with priority %s' % \
-                                  (newFrames, jobName, jobID, priority), 'black')
-
-            elif self.software_generic == 'houdini':
-                pass
-            elif self.software_generic == 'shake':
-                pass
+            pprint(self.dataJob[jobName].jobData())
+            pprint(self.dataJob)
         else:
-            pass
+            self.msg.warning("Please Wait Before Submitting Another Job",
+                             "You must wait at least two seconds before submitting another job.")
 
     def runChecks(self):
         '''Check to be sure the user has entered the minium values'''
@@ -101,11 +91,11 @@ class SubmitManager(object):
             self.msg.warning('Missing File', 'You must provide a file to render')
             return 0
         elif not isfile(scene):
-            self.msg.warning('Please Select a File', 'You must provide a file to render, links or directories will not suffice.')
+            self.msg.warning('Please Select a File', 'You must provide a file to render.')
             return 0
         else:
             try:
-                if self.jobName == '':
+                if self.ui.inputJobName.text() == '':
                     self.msg.warning('Missing Job Name', 'You name your job before you rendering')
                     return 0
             except AttributeError:
@@ -113,4 +103,9 @@ class SubmitManager(object):
                 return 0
             finally:
                 # get a random number and return the hexadecimal value
-                return Info.Numbers().randhex()
+                return Info.Numbers().hexid()
+
+    def startRender(self):
+        '''Start the que and begin rendering'''
+        self.rendering = 1
+        print "starting render"

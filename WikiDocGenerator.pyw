@@ -48,9 +48,7 @@ class WikiDocGenUI(QDialog):
         # setup button connections
         self.connect(self.ui.browseStartPath, SIGNAL("pressed()"), self.browseForStartPath)
         self.connect(self.ui.browseOutPath, SIGNAL("pressed()"), self.browseForOutPath)
-        self.connect(self.ui.findFiles, SIGNAL("pressed()"), self.findFiles)
         self.connect(self.ui.makeDocs, SIGNAL("pressed()"), self.makeDocs)
-        #self.connect(self.ui.findAndMake, SIGNAL("pressed()"), self.findAndMake)
 
     def browseForStartPath(self):
         '''Browse for starting path'''
@@ -59,8 +57,6 @@ class WikiDocGenUI(QDialog):
             self.trUtf8("Select Search Start Path"),
             QString(),
             QFileDialog.Options(QFileDialog.ShowDirsOnly)))
-
-        #self.findFiles()
 
     def browseForOutPath(self):
         '''Browse for the output path'''
@@ -79,22 +75,34 @@ class WikiDocGenUI(QDialog):
         else:
             return False
 
+    def notInit(self, path):
+        '''Make sure that we are not trying to document __init__ files'''
+        if basename(path) != '__init__.py':
+            return True
+        else:
+            return False
+
     def findFiles(self):
         '''Find files in given paths'''
         if self.isValid():
-#            for itemA in self.locate('*.py', str(self.ui.startPath.text())):
-#                if itemA not in self.items:
-#                    self.items.append(itemA)
-#                    self.ui.selectedFiles.addItem(QString(itemA))
-            for itemB in self.locate('Main.pyw', str(self.ui.startPath.text())):
-                if itemB not in self.items:
-                    self.items.append(itemB)
-                    self.ui.selectedFiles.addItem(QString(itemB))
+            for itemA in self.locate('*.py', str(self.ui.startPath.text())):
+                if self.notInit(itemA):
+                    if itemA not in self.items:
+                        self.items.append(itemA)
+                        self.ui.selectedFiles.addItem(QString(itemA))
+                else:
+                    pass
+            for itemB in self.locate('*.pyw', str(self.ui.startPath.text())):
+                if self.notInit(itemB):
+                    if itemB not in self.items:
+                        self.items.append(itemB)
+                        self.ui.selectedFiles.addItem(QString(itemB))
+                else:
+                    pass
         else:
             self.warningMessage('You need to specify input/output dirs', \
                                 'Please make sure you have entered an input and ouput' \
                                 'directory before generating documentation!')
-
     def lineCount(self):
         '''Return the line count of the selected files'''
         lineCount = 0
@@ -107,7 +115,6 @@ class WikiDocGenUI(QDialog):
 
     def makeDocs(self):
         '''Make the documentation'''
-        #print line[:len(line)-1]
         if self.isValid():
             count = 0
             classCount = 0
@@ -122,8 +129,6 @@ class WikiDocGenUI(QDialog):
             singleLine = QRegExp(r"""(?:'''.*''')""")
             tripleQuote = QRegExp(r"""^.*'''""")
 
-
-
             #  loop over each file
             for item in self.ui.selectedFiles.selectedItems():
                 inMultiLineComment = 0
@@ -132,8 +137,7 @@ class WikiDocGenUI(QDialog):
                 outfile = open(str(self.ui.outPath.text())+basename(str(item.text()).split('.')[0]+'.txt'), 'w')
                 outfile.write('\n====== General Description ======')
                 outfile.write('\nGeneral info goes here!')
-                outfile.write('\n')
-                outfile.write('====== Classes ======')
+                outfile.write('\n====== Classes ======')
 
                 # loop over each line in file
                 for line in text:
@@ -163,20 +167,20 @@ class WikiDocGenUI(QDialog):
                                 if var != 'self':
                                     outfile.write('\n  * %s -- ' % var)
                         else:
-                            outfile.write('\n  * %s -- ' % var)
+                            pass
 
                     # doc string comments
                     if tripleQuote.indexIn(qLine)+1 and not singleLine.indexIn(qLine)+1:
                         if inMultiLineComment:
                             inMultiLineComment = 0
                         else:
-                            outfile.write('\n\\\\\n**Description**\\\\')
+                            outfile.write('\n**Description**\\\\')
                             inMultiLineComment = 1
                     elif singleLine.indexIn(qLine)+1:
                         outfile.write('\n\\\\\n**Description**\\\\')
-                        outfile.write('\n%s' % singleLine.cap()[3:len(singleLine.cap())-3])
+                        outfile.write('%s' % singleLine.cap()[3:len(singleLine.cap())-3])
                     elif inMultiLineComment:
-                        outfile.write('\n%s' % line)
+                        outfile.write('\n%s' % QString(line).trimmed())
 
                     count += 1
                     self.ui.progress.setValue(count)

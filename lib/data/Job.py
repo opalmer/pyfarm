@@ -23,20 +23,18 @@ PURPOSE: Module used to control, manage, and update the job dictionary.
 from sys import exit
 from os import getcwd
 
-# From PyQt
-from PyQt4.QtCore import QObject, SIGNAL
-
 # From PyFarm
 from lib.ReadSettings import ParseXmlSettings
 from lib.Info import Statistics, TypeTest
 from lib.PyFarmExceptions import ErrorProcessingSetup
+from lib.RenderConfig import ConfigureCommand
 
-settings = ParseXmlSettings('%s/settings.xml' % getcwd(), skipSoftware=True)
+settings = ParseXmlSettings('%s/settings.xml' % getcwd())
 statistics = Statistics()
 typeCheck = TypeTest('JobData')
 error = ErrorProcessingSetup('JobData')
 
-class JobStatus(QObject):
+class JobStatus(object):
     '''
     Return status information about a job
 
@@ -46,8 +44,7 @@ class JobStatus(QObject):
         generalData (mapped class) -- instance of general class that contains
         program wide information
     '''
-    def __init__(self, job, name, generalData, parent=None):
-        super(JobStatus, self).__init__(parent)
+    def __init__(self, job, name, generalData, ui, parent):
         self.job = job
         self.name = name
         self.general = generalData
@@ -66,7 +63,7 @@ class JobStatus(QObject):
             subjobs.append(subjob)
         return statistics.mode(subjob)
 
-    def subjob(self, id, emitSignal=False):
+    def subjob(self, id):
         '''Return the status of a subjob'''
         statusList = []
         for frame in self.job[id]["frames"].keys():
@@ -89,7 +86,6 @@ class JobStatus(QObject):
         typeCheck.isInt(status)
         if status >= 0 and status <= 4:
             self.job[id]["status"] = status
-            self.parent.emitSignal("subjobStatusChanged", [self.name, id, status])
         else:
             raise error.valueError(0, 4, status)
 
@@ -173,7 +169,7 @@ class JobStatus(QObject):
         return len(self.job.keys())
 
 
-class JobData(QObject):
+class JobData(object):
     '''
     Add or modify a job
 
@@ -183,15 +179,16 @@ class JobData(QObject):
         generalData (mapped class) -- instance of general class that contains
         program wide information
     '''
-    def __init__(self, job, name, generalData, parent=None):
-        super(JobData, self).__init__(parent)
+    def __init__(self, job, name, generalData, ui, parent):
         self.job = job
         self.name = name
         self.general = generalData
         self.parent = parent
         self.modname = 'JobData'
+        self.renderConfig = ConfigureCommand(ui)
+        self.ui = ui
 
-    def createSubjob(self, id, priority=5):
+    def createSubjob(self, id, priority):
         '''
         Create a sub job
 
@@ -199,11 +196,7 @@ class JobData(QObject):
             id (str) -- subjob id to create
             priority (int) -- priority to give job
         '''
-        # first check the types of the input vars
-        typeCheck.isString(id)
-        typeCheck.isInt(priority)
-
-        if priority >= 1 and priority <= 10:
+        if id not in self.job:
             self.job[id] = {"priority" : priority, "status" : 0,
                                     "statistics": {
                                         "frames" : {
@@ -218,25 +211,29 @@ class JobData(QObject):
                                             }},
                                     "frames" : {}
                                     }
+            return True
         else:
-            exit('PyFarm :: %s.createSubjob :: ERROR :: Priority must be <= 10 and >= 1') % self.modName
+            return False
 
-    def addFrame(self, id, frame, software, command):
+    def addFrame(self, id, frame, software):
         '''
         add a frame to the job
 
         INPUT:
-            subid (str) --  subjob to add the frame to
+            id (str) --  subjob to add the frame to
             frame (int) --  frame number
             software (str) -- software package to render with
-            command (str) -- command to render with
         '''
-        # first check the types of the input vars
-        #  not all items are check because they been checked
-        #  already.
-        typeCheck.isInt(frame)
-        typeCheck.isString(software)
-        typeCheck.isString(command)
+        if settings.commonName(str(self.ui.softwareSelection.currentText())) == 'maya':
+            if len(self.ui.mayaRenderLayers.selectedIndexes()):
+                for layer in self.ui.mayaRenderLayers.selectedItems():
+                    command = self.renderConfig.maya(frame, layer.text())
+            else:
+                command = self.renderConfig.maya(frame)
+        elif settings.commonName(str(self.ui.softwareSelection.currentText())) == 'houdini':
+            print "houdini"
+        elif settings.commonName(str(self.ui.softwareSelection.currentText())) == 'shake':
+            print "shake"
 
         entry = {"status" : 0, "host" : None,
                         "pid" : None, "software" : software,
@@ -247,39 +244,23 @@ class JobData(QObject):
         # add the frame to the frames dictionary
         self.job[id]["frames"].update({frame : entry})
 
-        # inform the gui of the new frame
-        # self.emit(SIGNAL("newFrame"), [id, frame, entry])
-        self.parent.emitSignal("newFrame", [self.name, id, frame, entry])
-
         # update the subjob statistics
         self.job[id]["statistics"]["frames"]["frameCount"] += 1
         self.job[id]["statistics"]["frames"]["waiting"] += 1
 
 
-class JobManager(QObject):
+class JobManager(object):
     '''
     General job manager used to manage and
     setup a job
     '''
-    def __init__(self, name, generalData, parent=None):
-        super(JobManager, self).__init__(parent)
+    def __init__(self, name, generalData, ui):
+        self.ui = ui
         self.name = name
         self.general = generalData
         self.job = {}
-        self.data = JobData(self.job, self.name, self.general, self)
-        self.status = JobStatus(self.job, self.name, self.general, self)
-
-    def emitSignal(self, sig, emission):
-        '''
-        Pass a signal emission from a child function to the upperjob1 has 2 subjobs and 10 frames
-
-        level
-
-        INPUT:
-            sig (str) -- name of signal to emit
-            emission (str, list, dict) -- information to emit
-        '''
-        self.emit(SIGNAL(sig), emission)
+        self.data = JobData(self.job, self.name, self.general, ui, self)
+        self.status = JobStatus(self.job, self.name, self.general, ui, self)
 
     def jobData(self):
         '''Return the dictionary, for previewing'''

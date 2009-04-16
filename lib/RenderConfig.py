@@ -22,60 +22,67 @@ After discovering this information it will then try and discover the currently i
     along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 '''
 # From PyQt
-from os import listdir, system
+from os import listdir, system, getcwd
 from os.path import isfile, islink, isdir, normpath
 
 # From PyQt
 from PyQt4.QtCore import QThread, QObject, QRegExp, SIGNAL, SLOT
 
 # From PyFarm
-import Info
+from lib import Info
+from lib.ReadSettings import ParseXmlSettings
+
+settings = ParseXmlSettings('%s/settings.xml' % getcwd(), skipSoftware=True)
 
 class ConfigureCommand(object):
-    '''
-    Configure the input options to a viable output
-    '''
-    def __init__(self):
-        pass
+    '''Configure the input options to a viable output'''
+    def __init__(self, ui):
+        self.ui = ui
 
-    def maya(self, ver, sFrame, eFrame, bFrame, renderer, scene, layer='', camera='', outDir='', project=''):
+    def maya(self, frame, layer=None):
         '''
         Yield the sequence of frames for maya
 
         VARS:
-        ver -- Version of maya to pull from self.software
-        sFrame -- Start frame of sequence
-        eFrame -- End Frame of sequence
-        bFrame -- By frame or sequence step
-        rayRender -- If using mental ray, set to true
+            frame (int) -- frame to add to command
+            layer (str) -- layer to render
 
         NOTE: The client will have to break down the command, as it is not cross-platoform.
+        this function ONLY returns the formatted arguments
         '''
-        # software flag setup
-        if renderer == 'Software':
-            renderer = ' -r sw -verb'
-        elif renderer == 'Mental Ray':
-            renderer = ' -r mr -v 5 -rt 6'
-        elif renderer == 'Scene Preset':
-            renderer = ''
+        # setup the renderer
+        if self.ui.mayaRenderer.currentText() == 'Mental Ray':
+            output = ' -r mr -v %i -rt %i' % (self.ui.myaMRLogLevel.currentIndex(), \
+                                                                self.ui.myaMRThreadCount.value())
+        elif self.ui.mayaRenderer.currentText() == 'Scene Preset':
+            output = ''
+        elif self.ui.mayaRenderer.currentText() == 'Software':
+            output = ' -r sw -verb'
 
-        # render layer setup
-        if not layer == '':
-            layer = '-rl %s ' % layer
+        # add the frame flag
+        output += ' -s %i -e %i' % (frame, frame)
 
-        # camera setup
-        if not camera == '':
-            camera = '-cam %s ' % camera
+        # check for layer addition
+        if not layer == None:
+            output += ' -rl %s' % layer
 
-        # render directory config
-        if not outDir == '':
-            outDir = '-rd %s ' % outDir
+        # check for camera selectionf
+        if not self.ui.mayaCamera.currentText() == '':
+            output += ' -cam %s' % self.ui.mayaCamera.currentText()
 
-        if not project == '':
-            project = '-proj %s ' % project
+        # set the render output directory (if one has been set)
+        if not self.ui.mayaOutputDir.text() == '':
+            output += ' -rd %s' % self.ui.mayaOutputDir.text()
 
-        for frame in range(sFrame, eFrame+1, bFrame):
-            yield [str(frame), str(ver), str('%s -s %s -e %s %s%s%s%s%s') % (renderer, frame, frame, layer, camera, outDir, project, scene)]
+        # set the project file if one has been set
+        if not self.ui.mayaProjectFile.text() == '':
+            output += ' -proj %s' % self.ui.mayaProjectFile.text()
+
+
+        # finally, add the scene
+        output += ' %s' % self.ui.mayaScene.text()
+
+        return output
 
     def houdini(self, ver, sFrame, eFrame, bFrame):
         '''
