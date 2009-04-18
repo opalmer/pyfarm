@@ -84,7 +84,7 @@ class SoftwareSearch(object):
             software (str) -- common name of program to pass
         '''
         OUTPUT = {}
-        expression = r"""hfs9.[15].[0-9]+"""
+        expression = r"""hfs([0-9]+[.][0-9][.][0-9]{3}[.]?[0-9]?)"""
         win_expression = r"""Houdini 9.[15].[0-9]+"""
         if self.os == 'linux':
             for program in  self._findProgram(expression, path, 'bin/hython', 3, 'Houdini'):

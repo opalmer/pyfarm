@@ -22,12 +22,14 @@ PURPOSE: Module used to control, manage, and update the job dictionary.
 # From Python
 from sys import exit
 from os import getcwd
+from pprint import pprint
 
 # From PyFarm
 from lib.ReadSettings import ParseXmlSettings
 from lib.Info import Statistics, TypeTest
 from lib.PyFarmExceptions import ErrorProcessingSetup
 from lib.RenderConfig import ConfigureCommand
+from lib.ui.main.Status import StatusManager
 
 settings = ParseXmlSettings('%s/settings.xml' % getcwd())
 statistics = Statistics()
@@ -215,6 +217,33 @@ class JobData(object):
         else:
             return False
 
+    def _addEntry(self, id, frame, software, command):
+        '''
+        Add an entry to a subjob.  This function was created to
+        help keep cleaner code.
+
+        INPUT:
+            id -- subjob id
+            software -- software to render with
+            command -- command to render with
+        '''
+        # create the dictionary entry
+        entry = {"status" : 0, "host" : None,
+            "pid" : None, "software" : software,
+            "start" : None, "end" : None, "elapsed" : None,
+            "command" : str(command)
+            }
+
+        # add the frame to the frames dictionary
+        if frame not in self.job[id]["frames"]:
+            self.job[id]["frames"][frame] = [entry]
+        else:
+            self.job[id]["frames"][frame].append(entry)
+        # update the subjob statistics
+        self.job[id]["statistics"]["frames"]["frameCount"] += 1
+        self.job[id]["statistics"]["frames"]["waiting"] += 1
+        self.parent.uiStatus.queue.frames.addWaiting()
+
     def addFrame(self, id, frame, software):
         '''
         add a frame to the job
@@ -227,27 +256,13 @@ class JobData(object):
         if settings.commonName(str(self.ui.softwareSelection.currentText())) == 'maya':
             if len(self.ui.mayaRenderLayers.selectedIndexes()):
                 for layer in self.ui.mayaRenderLayers.selectedItems():
-                    command = self.renderConfig.maya(frame, layer.text())
+                    self._addEntry(id, frame, software, self.renderConfig.maya(frame, layer.text()))
             else:
-                command = self.renderConfig.maya(frame)
+                self._addEntry(id, frame, software, self.renderConfig.maya(frame))
         elif settings.commonName(str(self.ui.softwareSelection.currentText())) == 'houdini':
             print "houdini"
         elif settings.commonName(str(self.ui.softwareSelection.currentText())) == 'shake':
             print "shake"
-
-        entry = {"status" : 0, "host" : None,
-                        "pid" : None, "software" : software,
-                        "start" : None, "end" : None, "elapsed" : None,
-                        "command" : command
-                        }
-
-        # add the frame to the frames dictionary
-        self.job[id]["frames"].update({frame : entry})
-
-        # update the subjob statistics
-        self.job[id]["statistics"]["frames"]["frameCount"] += 1
-        self.job[id]["statistics"]["frames"]["waiting"] += 1
-
 
 class JobManager(object):
     '''
@@ -261,6 +276,7 @@ class JobManager(object):
         self.job = {}
         self.data = JobData(self.job, self.name, self.general, ui, self)
         self.status = JobStatus(self.job, self.name, self.general, ui, self)
+        self.uiStatus = StatusManager(self.general, self.ui)
 
     def jobData(self):
         '''Return the dictionary, for previewing'''

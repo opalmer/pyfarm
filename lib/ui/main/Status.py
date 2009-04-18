@@ -19,6 +19,8 @@ PURPOSE: To manage the status subsection of PyFarm
     You should have received a copy of the GNU General Public License
     along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 '''
+from PyQt4.QtCore import QString
+
 class PyFarm(object):
     '''Manager for the PyFarm status section'''
     def __init__(self, ui):
@@ -81,6 +83,10 @@ class Frames(object):
     def __init__(self, ui):
         self.ui = ui
 
+    def addWaiting(self):
+        '''Increase the waiting frame count'''
+        self.ui.status_que_frames_waiting.setNum(int(self.ui.status_que_frames_waiting.text())+1)
+
 
 class General(object):
     '''Manager for the general status objects'''
@@ -99,7 +105,7 @@ class QueueManager(object):
 
 class StatusManager(object):
     '''General status manger'''
-    def __init__(self, data, ui, version):
+    def __init__(self, data, ui, version=None):
         self.ui = ui
         self.pyfarm = PyFarm(self.ui)
         self.network = Network(self.ui, data)
@@ -107,4 +113,5 @@ class StatusManager(object):
         self.general = General(self.ui)
 
         # general setup
-        self.ui.status_general_version.setText(version)
+        if version != None:
+            self.ui.status_general_version.setText(version)

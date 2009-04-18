@@ -22,7 +22,7 @@ the related variables
 '''
 # From Python
 from os import getcwd
-
+from os.path import basename
 
 # From PyQt
 from PyQt4.QtGui import QFileDialog
@@ -31,6 +31,7 @@ from PyQt4.QtCore import QString, QFileInfo
 # From PyFarm
 from lib.ReadSettings import ParseXmlSettings
 from lib.ui.main.CustomWidgets import MessageBox
+from lib.ui.main.maya.RenderLayers import MayaCamAndLayers
 settings = ParseXmlSettings('%s/settings.xml' % getcwd())
 
 
@@ -93,13 +94,20 @@ class SoftwareContextManager(object):
 
     def browseForScene(self):
         '''Allow the user to browse for a scene based on the current software'''
-        render_file = QFileInfo(QFileDialog.getOpenFileName(\
+        render_file = QFileDialog.getOpenFileName(\
             None,
             QString("Select File To Render"),
             QString(),
             QString(self.fileGrep),
             None,
-            QFileDialog.Options(QFileDialog.DontResolveSymlinks))).symLinkTarget()
+            QFileDialog.Options(QFileDialog.DontResolveSymlinks))
+
+        splt = basename(str(render_file)).split('.')
+        ext = splt[len(splt)-1]
+
+        if self.scene == self.ui.mayaScene and ext == 'ma':
+            getCamAndLayers = MayaCamAndLayers(self.ui.mayaRenderLayers, self.ui.mayaCamera)
+            getCamAndLayers.run(render_file)
 
         if not render_file == '':
             self.scene.setText(render_file)

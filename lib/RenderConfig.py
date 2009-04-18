@@ -130,33 +130,6 @@ class RenderLayerBreakdown(QObject):
         hip.close()
 
 
-class MayaCamAndLayers(QThread):
-    '''
-    Search the given maya file and return layers and cameras
-    '''
-    def __init__(self, file, parent=None):
-        super(MayaCamAndLayers, self).__init__(parent)
-        self.scene = open(file, 'r')
-
-    def run(self):
-        layerRegEx = QRegExp(r"""createNode renderLayer -n .+""")
-        cameraRegEx = QRegExp(r"""createNode camera -n .+""")
-
-        for line in self.scene.readlines():
-            if not layerRegEx.indexIn(line):
-                cap = str(layerRegEx.cap()).split('"')
-                layer = cap[len(cap)-2]
-                if layer != 'defaultRenderLayer':
-                    self.emit(SIGNAL("gotMayaLayer"), layer)
-
-            if not cameraRegEx.indexIn(line):
-                cap = str(cameraRegEx.cap()).split('"')
-                camera = cap[len(cap)-2]
-                self.emit(SIGNAL("gotMayaCamera"), camera)
-
-        self.scene.close()
-
-
 def Program(inString):
     '''Return the program of a dictionary entry'''
     return inString.split('::')[0]

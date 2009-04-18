@@ -188,26 +188,12 @@ class Numbers(object):
         return self.int2hex(time.time())
 
 
-class File(object):
-    '''
-    Large file class meant to handle multiple tasks
-    including readline, file size, get extension, etc.
-    '''
-    def __init__(self, file):
-        self.file = file
-
-    def ext(self):
-        '''Return the extension of the file'''
-        return self.file.split('.')[len(self.file.split('.'))-1]
-
-
 class Statistics(object):
     '''
     Statistics class used to calculate and return
     information about an input data set.
     '''
     def __init__(self, parent=None):
-        super(Statistics, self).__init__(parent)
         moduleName = 'Info.Statistics'
         self.error = ErrorProcessingSetup(moduleName)
         self.typeTest = TypeTest()

@@ -32,7 +32,6 @@ class NetworkTableManager(object):
         table -- instanced table to operate on
     '''
     def __init__(self, data, ui, parent=None):
-        super(NetworkTableManager, self).__init__(parent)
         self.data = data # maps to self.dataGeneral
         self.ui = ui
         self.parent = parent

@@ -52,6 +52,7 @@ from lib.data.General import GeneralManager
 from lib.network.Admin import AdminClient
 from lib.network.Broadcast import BroadcastSender
 from lib.network.Status import StatusServer
+from lib.ui.main.job.table.JobTableManager import JobTableManager
 
 __DEVELOPER__ = 'Oliver Palmer'
 __VERSION__ = 'RC3'
@@ -86,6 +87,7 @@ class Main(QMainWindow):
         self.dataJob = {}
         self.dataGeneral = GeneralManager(self.ui, __VERSION__)
         self.hostname = str(QHostInfo.localHostName())
+        self.tableManager = JobTableManager(self.ui)
         self.softwareManager = SoftwareContextManager(self)
         self.submitJob = SubmitManager(self)
         self.ip = str(QHostInfo.fromName(self.hostname).addresses()[0].toString())
@@ -201,9 +203,7 @@ class Main(QMainWindow):
         menu.exec_(self.globalPoint(self.ui.houdiniNodeList, pos))
 
     def mayaCameraEditMenu(self):
-        '''
-        Popup small menu to edit the camera list
-        '''
+        '''Popup small menu to edit the camera list'''
         widget = self.ui.mayaAddCamera
         menu = QMenu()
         menu.addAction('Add Camera',self.mayaAddCamera)
@@ -248,28 +248,6 @@ class Main(QMainWindow):
         dialog = CustomObjectDialog(self)
         self.connect(dialog, SIGNAL("objectName"), self.ui.mayaRenderLayers.addItem)
         dialog.exec_()
-
-    def mayaGetLayersAndCams(self):
-        '''
-        Given a file get of of the layers and cameras
-        '''
-        self.mayaEmptyLayersAndCameras()
-
-        if self.scene.text() == '':
-            pass
-        else:
-            ext = Info.File(self.scene.text()).ext()
-            #scene = open(self.scene.text(), 'r')
-            layerRegEx = QRegExp(r"""createNode renderLayer -n .+""")
-            cameraRegEx = QRegExp(r"""createNode camera -n .+""")
-
-            if ext != 'ma':
-                self.msg.info('Cannot Auto Detect Cameras and Layers', 'Sorry we could not detect your camers and layers automatically.  Please use a Maya ASCII file if you wish to use auto detection.')
-            else:
-                multiPass = MayaCamAndLayers(self.scene.text())
-                self.connect(multiPass, SIGNAL("gotMayaLayer"), self.ui.mayaRenderLayers.addItem)
-                self.connect(multiPass, SIGNAL("gotMayaCamera"), self.ui.mayaCamera.addItem)
-                multiPass.run()
 
     def mayaEmptyLayersAndCameras(self):
         '''

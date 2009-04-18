@@ -49,6 +49,7 @@ class SubmitManager(object):
         self.softwareManager = parentClass.softwareManager
         self.msg = MessageBox(parentClass)
         self.rendering = 0
+        self.tableManager = parentClass.tableManager
 
     def submitJob(self):
         '''
@@ -65,6 +66,7 @@ class SubmitManager(object):
 
         if jobID:
             self.createJob(jobName, jobID, priority)
+            self.tableManager.addJob(jobName)
 
     def createJob(self, jobName, id, priority):
         '''
@@ -77,9 +79,6 @@ class SubmitManager(object):
         if self.dataJob[jobName].data.createSubjob(id, priority):
             for frame in range(self.ui.inputStartFrame.value(), self.ui.inputEndFrame.value()+1, self.ui.inputByFrame.value()):
                 self.dataJob[jobName].data.addFrame(id, frame, str(self.ui.softwareSelection.currentText()))
-
-            pprint(self.dataJob[jobName].jobData())
-            pprint(self.dataJob)
         else:
             self.msg.warning("Please Wait Before Submitting Another Job",
                              "You must wait at least two seconds before submitting another job.")
