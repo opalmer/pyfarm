@@ -31,7 +31,7 @@
       <x>10</x>
       <y>30</y>
       <width>111</width>
-      <height>41</height>
+      <height>44</height>
      </rect>
     </property>
     <layout class="QGridLayout" name="gridLayout">
@@ -215,7 +215,7 @@
     </layout>
    </widget>
   </widget>
-  <widget class="QWidget" name="">
+  <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
      <x>160</x>
@@ -295,7 +295,7 @@
        </widget>
       </item>
       <item>
-       <widget class="QSpinBox" name="autoRefreshTime">
+       <widget class="QSpinBox" name="refreshTime">
         <property name="enabled">
          <bool>false</bool>
         </property>
@@ -306,7 +306,7 @@
          <number>1</number>
         </property>
         <property name="maximum">
-         <number>120</number>
+         <number>600</number>
         </property>
         <property name="value">
          <number>5</number>
