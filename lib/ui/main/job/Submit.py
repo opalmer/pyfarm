@@ -62,11 +62,11 @@ class SubmitManager(object):
 
         # if the job has not been defined, define it
         if jobName not in self.dataJob:
-            self.dataJob[jobName] = JobManager(jobName, self.dataGeneral, self.ui)
+            self.dataJob[jobName] = JobManager(jobName, self)
+            self.tableManager.addJob(jobName)
 
         if jobID:
             self.createJob(jobName, jobID, priority)
-            self.tableManager.addJob(jobName)
 
     def createJob(self, jobName, id, priority):
         '''

@@ -87,7 +87,7 @@ class Main(QMainWindow):
         self.dataJob = {}
         self.dataGeneral = GeneralManager(self.ui, __VERSION__)
         self.hostname = str(QHostInfo.localHostName())
-        self.tableManager = JobTableManager(self.ui)
+        self.tableManager = JobTableManager(self)
         self.softwareManager = SoftwareContextManager(self)
         self.submitJob = SubmitManager(self)
         self.ip = str(QHostInfo.fromName(self.hostname).addresses()[0].toString())
@@ -137,7 +137,7 @@ class Main(QMainWindow):
         ## ui signals
         self.connect(self.ui.enque, SIGNAL("pressed()"), self.submitJob.submitJob)
         self.connect(self.ui.render, SIGNAL("pressed()"), self.submitJob.startRender)
-        self.connect(self.ui.currentJobs, SIGNAL("customContextMenuRequested(const QPoint &)"), self.currentJobsContextMenu)
+        #self.connect(self.ui.currentJobs, SIGNAL("customContextMenuRequested(const QPoint &)"), self.currentJobsContextMenu)
         self.connect(self.ui.softwareSelection, SIGNAL("currentIndexChanged(const QString&)"), self.softwareManager.setSoftware)
 
         # connect specific render option vars

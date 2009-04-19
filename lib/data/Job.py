@@ -50,7 +50,7 @@ class JobStatus(object):
         self.job = job
         self.name = name
         self.general = generalData
-        self.parent = parent
+        self.jobManager = parent
         self.modName = 'JobStatus'
 
     def overall(self):
@@ -166,8 +166,40 @@ class JobStatus(object):
 
             return frameTotal
 
+    def waitingFrameCount(self):
+        '''Return the number of waiting frames'''
+        count = 0
+        for id in self.job.keys():
+            if id != None:
+                count += self.job[id]["statistics"]["frames"]["waiting"]
+        return count
+
+    def renderingFrameCount(self):
+        '''Return the number of rendering frames'''
+        count = 0
+        for id in self.job.keys():
+            if id != None:
+                count += self.job[id]["statistics"]["frames"]["rendering"]
+        return count
+
+    def failedFrameCount(self):
+        '''Return the number of failed frames'''
+        count = 0
+        for id in self.job.keys():
+            if id != None:
+                count += self.job[id]["statistics"]["frames"]["failed"]
+        return count
+
+    def completeFrameCount(self):
+        '''Return the number of complete frames'''
+        count = 0
+        for id in self.job.keys():
+            if id != None:
+                count += self.job[id]["statistics"]["frames"]["complete"]
+        return count
+
     def subjobCount(self):
-        '''Return a subjob count'''
+        '''Return the subjob count'''
         return len(self.job.keys())
 
 
@@ -176,19 +208,20 @@ class JobData(object):
     Add or modify a job
 
     INPUT:
-        job (mapped class) -- job dictionary to work with
+        job (dict) -- job dictionary to work with
         name (str) - job name of data
-        generalData (mapped class) -- instance of general class that contains
-        program wide information
+        parentClass (mapped class) -- instance of main program
+        jobManager (mapped class) -- instance of job manager
     '''
-    def __init__(self, job, name, generalData, ui, parent):
+    def __init__(self, job, name, parentClass, jobManager):
         self.job = job
         self.name = name
-        self.general = generalData
-        self.parent = parent
+        self.general = parentClass.dataGeneral
+        self.parent = parentClass
         self.modname = 'JobData'
-        self.renderConfig = ConfigureCommand(ui)
-        self.ui = ui
+        self.renderConfig = ConfigureCommand(parentClass.ui)
+        self.ui =parentClass.ui
+        self.jobManager = jobManager
 
     def createSubjob(self, id, priority):
         '''
@@ -209,7 +242,7 @@ class JobData(object):
                                             "waiting": 0,
                                             "rendering" : 0,
                                             "failed": 0,
-                                            "paused" : 0
+                                            "complete" : 0
                                             }},
                                     "frames" : {}
                                     }
@@ -239,10 +272,12 @@ class JobData(object):
             self.job[id]["frames"][frame] = [entry]
         else:
             self.job[id]["frames"][frame].append(entry)
+
         # update the subjob statistics
         self.job[id]["statistics"]["frames"]["frameCount"] += 1
         self.job[id]["statistics"]["frames"]["waiting"] += 1
-        self.parent.uiStatus.queue.frames.addWaiting()
+        self.jobManager.uiStatus.queue.frames.addWaiting()
+        self.parent.tableManager.addFrame(self.name)
 
     def addFrame(self, id, frame, software):
         '''
@@ -264,19 +299,17 @@ class JobData(object):
         elif settings.commonName(str(self.ui.softwareSelection.currentText())) == 'shake':
             print "shake"
 
+
 class JobManager(object):
     '''
     General job manager used to manage and
     setup a job
     '''
-    def __init__(self, name, generalData, ui):
-        self.ui = ui
-        self.name = name
-        self.general = generalData
+    def __init__(self, name, parentClass):
         self.job = {}
-        self.data = JobData(self.job, self.name, self.general, ui, self)
-        self.status = JobStatus(self.job, self.name, self.general, ui, self)
-        self.uiStatus = StatusManager(self.general, self.ui)
+        self.data = JobData(self.job, name, parentClass, self)
+        self.status = JobStatus(self.job, name, parentClass.dataGeneral, parentClass.ui, self)
+        self.uiStatus = StatusManager(parentClass.dataGeneral, parentClass.ui)
 
     def jobData(self):
         '''Return the dictionary, for previewing'''

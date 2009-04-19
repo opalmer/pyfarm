@@ -282,7 +282,6 @@ class GeneralManager(QObject):
         self.netTable.addHostToTable(ip)
         self.uiStatus.network.refreshConnected()
 
-
     def removeHost(self):
         '''
         Remove the selected hosts from the table and
