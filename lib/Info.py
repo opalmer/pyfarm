@@ -113,6 +113,7 @@ class System(object):
 
     def coreCount(self):
         '''Return the number of cores installed on the system'''
+        pass
         # OS X: sysctl -n hw.logicalcpu
         # Win: getEnv(NUMBER_OF_PROCESSORS)
         # Linux: cat /proc/cpuinfo | grep siblings | awk {'print $3'}

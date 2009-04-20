@@ -47,10 +47,9 @@ along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
             -->
             <job>
                 <waiting text="Waiting" index="0" bgColor="255,255,255" txtColor="0,0,0"/>
-                <paused text="Paused" index="1" bgColor="255,255,0" txtColor="0,0,0"/>
-                <failed text="Failed" index="2" bgColor="255,0,0" txtColor="0,0,0"/>
-                <rendering text="Rendering" index="3" bgColor="255,255,255" txtColor="0,255,0"/>
-                <complete text="Complete" index="4" bgColor="0,255,0" txtColor="0,0,0"/>
+                <rendering text="Rendering" index="1" bgColor="255,255,255" txtColor="0,255,0"/>
+                <complete text="Complete" index="2" bgColor="0,255,0" txtColor="0,0,0"/>
+                <failed text="Failed" index="3" bgColor="255,0,0" txtColor="0,0,0"/>
             </job>
             <hosts>
                 <enabled text="Enabled" index="0" bgColor="255,255,255" txtColor="0,0,0"/>

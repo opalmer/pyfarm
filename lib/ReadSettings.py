@@ -146,9 +146,8 @@ class ParseXmlSettings(object):
         # setup dictionaries
         self.netPorts = self._netPort()
         self.netGen = self._netGeneral()
-        self.statusKeyDict = self._setJobStatusDict()
 
-        self.jobStatusDict = None
+        self.jobStatusDict = self._setStatusKeyDict()
         self.hostStatusDict = self._setHostStatusDict()
         self.boolColorDict = self._setBoolColor()
         self.broadcastDict = self._setBroadcastDict()
@@ -272,6 +271,18 @@ class ParseXmlSettings(object):
                         else:
                             pass
 
+    def _setStatusKeyDict(self):
+        '''Setup the status key dictionary'''
+        statusDict = {}
+        for parent in self._getElement(self.doc, 'settings'):
+            for status in self._getElement(parent, 'status'):
+                for child in status.childNodes:
+                    if child.localName == 'job':
+                        for grandchild in child.childNodes:
+                            if grandchild.nodeType == 1:
+                                statusDict[int(grandchild.getAttribute('index'))] = str(grandchild.getAttribute('text'))
+        return statusDict
+
     def netPort(self, service):
         '''
         Return the port for the given service
@@ -367,9 +378,17 @@ class ParseXmlSettings(object):
             raise self.error.xmlKeyError(software)
 
     def frameStatusKey(self, key):
-        '''Return the status string for a given key'''
+        '''
+        Return the status string for a given key
+        function can also return a number from a string
+        '''
         try:
-            return self.statusKeyDict[key]
+            if type(key) == int:
+                return self.jobStatusDict[key]
+            elif type(key) == str:
+                for k, v in self.jobStatusDict.items():
+                    if v == key:
+                        return k
         except KeyError:
             raise self.error.xmlKeyError(key)
 

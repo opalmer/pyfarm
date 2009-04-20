@@ -130,11 +130,13 @@ class JobStatus(object):
         '''
         if id:
             for frame in self.job[id]["frames"].keys():
-                yield frame
+                for entry in self.job[id]["frames"][frame]:
+                    yield [subjob, frame, entry]
         else:
             for subjob in self.listSubjobs():
                 for frame in self.job[subjob]["frames"].keys():
-                    yield frame
+                    for entry in self.job[subjob]["frames"][frame]:
+                        yield [subjob, frame, entry]
 
     def listWaitingFrames(self, id=False):
         '''
@@ -269,9 +271,9 @@ class JobData(object):
 
         # add the frame to the frames dictionary
         if frame not in self.job[id]["frames"]:
-            self.job[id]["frames"][frame] = [entry]
+            self.job[id]["frames"][frame] = [["%x" % self.job[id]["statistics"]["frames"]["frameCount"], entry]]
         else:
-            self.job[id]["frames"][frame].append(entry)
+            self.job[id]["frames"][frame].append(["%x" % self.job[id]["statistics"]["frames"]["frameCount"], entry])
 
         # update the subjob statistics
         self.job[id]["statistics"]["frames"]["frameCount"] += 1

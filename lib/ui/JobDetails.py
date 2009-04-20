@@ -19,7 +19,7 @@
 
 # Form implementation generated from reading ui file 'QtDesigner/JobDetails.ui'
 #
-# Created: Sat Apr 18 23:08:27 2009
+# Created: Sun Apr 19 19:45:24 2009
 #      by: PyQt4 UI code generator 4.4.4
 #
 # WARNING! All changes made in this file will be lost!
@@ -29,7 +29,7 @@ from PyQt4 import QtCore, QtGui
 class Ui_JobDetails(object):
     def setupUi(self, JobDetails):
         JobDetails.setObjectName("JobDetails")
-        JobDetails.resize(729, 666)
+        JobDetails.resize(837, 666)
         self.jobGroupBox = QtGui.QGroupBox(JobDetails)
         self.jobGroupBox.setGeometry(QtCore.QRect(10, 200, 120, 81))
         self.jobGroupBox.setObjectName("jobGroupBox")
@@ -127,7 +127,7 @@ class Ui_JobDetails(object):
         self.jobs_frames_failed.setObjectName("jobs_frames_failed")
         self.gridLayout_6.addWidget(self.jobs_frames_failed, 3, 1, 1, 1)
         self.layoutWidget1 = QtGui.QWidget(JobDetails)
-        self.layoutWidget1.setGeometry(QtCore.QRect(160, 11, 555, 641))
+        self.layoutWidget1.setGeometry(QtCore.QRect(160, 11, 661, 641))
         self.layoutWidget1.setObjectName("layoutWidget1")
         self.verticalLayout = QtGui.QVBoxLayout(self.layoutWidget1)
         self.verticalLayout.setObjectName("verticalLayout")
@@ -148,7 +148,7 @@ class Ui_JobDetails(object):
         self.frameTable.setEditTriggers(QtGui.QAbstractItemView.NoEditTriggers)
         self.frameTable.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
         self.frameTable.setObjectName("frameTable")
-        self.frameTable.setColumnCount(4)
+        self.frameTable.setColumnCount(6)
         self.frameTable.setRowCount(0)
         item = QtGui.QTableWidgetItem()
         self.frameTable.setHorizontalHeaderItem(0, item)
@@ -158,6 +158,10 @@ class Ui_JobDetails(object):
         self.frameTable.setHorizontalHeaderItem(2, item)
         item = QtGui.QTableWidgetItem()
         self.frameTable.setHorizontalHeaderItem(3, item)
+        item = QtGui.QTableWidgetItem()
+        self.frameTable.setHorizontalHeaderItem(4, item)
+        item = QtGui.QTableWidgetItem()
+        self.frameTable.setHorizontalHeaderItem(5, item)
         self.verticalLayout.addWidget(self.frameTable)
         self.horizontalLayout = QtGui.QHBoxLayout()
         self.horizontalLayout.setObjectName("horizontalLayout")
@@ -176,6 +180,9 @@ class Ui_JobDetails(object):
         self.horizontalLayout.addWidget(self.refreshTime)
         spacerItem = QtGui.QSpacerItem(188, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
         self.horizontalLayout.addItem(spacerItem)
+        self.saveFrameLog = QtGui.QPushButton(self.layoutWidget1)
+        self.saveFrameLog.setObjectName("saveFrameLog")
+        self.horizontalLayout.addWidget(self.saveFrameLog)
         self.closeButton = QtGui.QPushButton(self.layoutWidget1)
         self.closeButton.setObjectName("closeButton")
         self.horizontalLayout.addWidget(self.closeButton)
@@ -201,13 +208,16 @@ class Ui_JobDetails(object):
         self.jobs_frames_complete.setText(QtGui.QApplication.translate("JobDetails", "0", None, QtGui.QApplication.UnicodeUTF8))
         self.label_32.setText(QtGui.QApplication.translate("JobDetails", "Failed:", None, QtGui.QApplication.UnicodeUTF8))
         self.jobs_frames_failed.setText(QtGui.QApplication.translate("JobDetails", "0", None, QtGui.QApplication.UnicodeUTF8))
-        self.label.setText(QtGui.QApplication.translate("JobDetails", "Frame Details", None, QtGui.QApplication.UnicodeUTF8))
+        self.label.setText(QtGui.QApplication.translate("JobDetails", "Frame Log", None, QtGui.QApplication.UnicodeUTF8))
         self.frameTable.horizontalHeaderItem(0).setText(QtGui.QApplication.translate("JobDetails", "Status", None, QtGui.QApplication.UnicodeUTF8))
-        self.frameTable.horizontalHeaderItem(1).setText(QtGui.QApplication.translate("JobDetails", "Frame", None, QtGui.QApplication.UnicodeUTF8))
-        self.frameTable.horizontalHeaderItem(2).setText(QtGui.QApplication.translate("JobDetails", "ID", None, QtGui.QApplication.UnicodeUTF8))
-        self.frameTable.horizontalHeaderItem(3).setText(QtGui.QApplication.translate("JobDetails", "Log", None, QtGui.QApplication.UnicodeUTF8))
+        self.frameTable.horizontalHeaderItem(1).setText(QtGui.QApplication.translate("JobDetails", "Subjob", None, QtGui.QApplication.UnicodeUTF8))
+        self.frameTable.horizontalHeaderItem(2).setText(QtGui.QApplication.translate("JobDetails", "Frame ID", None, QtGui.QApplication.UnicodeUTF8))
+        self.frameTable.horizontalHeaderItem(3).setText(QtGui.QApplication.translate("JobDetails", "Frame Number", None, QtGui.QApplication.UnicodeUTF8))
+        self.frameTable.horizontalHeaderItem(4).setText(QtGui.QApplication.translate("JobDetails", "Host", None, QtGui.QApplication.UnicodeUTF8))
+        self.frameTable.horizontalHeaderItem(5).setText(QtGui.QApplication.translate("JobDetails", "Log", None, QtGui.QApplication.UnicodeUTF8))
         self.refreshNow.setText(QtGui.QApplication.translate("JobDetails", "Refresh", None, QtGui.QApplication.UnicodeUTF8))
         self.autoRefresh.setText(QtGui.QApplication.translate("JobDetails", "Auto Refresh", None, QtGui.QApplication.UnicodeUTF8))
         self.refreshTime.setSuffix(QtGui.QApplication.translate("JobDetails", "s", None, QtGui.QApplication.UnicodeUTF8))
+        self.saveFrameLog.setText(QtGui.QApplication.translate("JobDetails", "Save Log", None, QtGui.QApplication.UnicodeUTF8))
         self.closeButton.setText(QtGui.QApplication.translate("JobDetails", "Close", None, QtGui.QApplication.UnicodeUTF8))
 

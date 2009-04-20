@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>729</width>
+    <width>837</width>
     <height>666</height>
    </rect>
   </property>
@@ -220,7 +220,7 @@
     <rect>
      <x>160</x>
      <y>11</y>
-     <width>555</width>
+     <width>661</width>
      <height>641</height>
     </rect>
    </property>
@@ -236,7 +236,7 @@
        </font>
       </property>
       <property name="text">
-       <string>Frame Details</string>
+       <string>Frame Log</string>
       </property>
       <property name="alignment">
        <set>Qt::AlignCenter</set>
@@ -260,20 +260,48 @@
        <property name="text">
         <string>Status</string>
        </property>
-      </column>
-      <column>
-       <property name="text">
-        <string>Frame</string>
+       <property name="textAlignment">
+        <set>AlignHCenter|AlignVCenter|AlignCenter</set>
        </property>
       </column>
       <column>
        <property name="text">
-        <string>ID</string>
+        <string>Subjob</string>
+       </property>
+       <property name="textAlignment">
+        <set>AlignHCenter|AlignVCenter|AlignCenter</set>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>Frame ID</string>
+       </property>
+       <property name="textAlignment">
+        <set>AlignHCenter|AlignVCenter|AlignCenter</set>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>Frame Number</string>
+       </property>
+       <property name="textAlignment">
+        <set>AlignHCenter|AlignVCenter|AlignCenter</set>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>Host</string>
+       </property>
+       <property name="textAlignment">
+        <set>AlignHCenter|AlignVCenter|AlignCenter</set>
        </property>
       </column>
       <column>
        <property name="text">
         <string>Log</string>
+       </property>
+       <property name="textAlignment">
+        <set>AlignHCenter|AlignVCenter|AlignCenter</set>
        </property>
       </column>
      </widget>
@@ -325,6 +353,13 @@
          </size>
         </property>
        </spacer>
+      </item>
+      <item>
+       <widget class="QPushButton" name="saveFrameLog">
+        <property name="text">
+         <string>Save Log</string>
+        </property>
+       </widget>
       </item>
       <item>
        <widget class="QPushButton" name="closeButton">
