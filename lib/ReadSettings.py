@@ -25,12 +25,13 @@ from os import listdir
 import xml.dom.minidom
 
 # From PyQt
-from PyQt4.QtCore import QRegExp
+from PyQt4.QtGui import QColor
+from PyQt4.QtCore import QRegExp, QVariant
 
 # From PyFarm
 import Info
 from PyFarmExceptions import ErrorProcessingSetup
-from lib.ui.main.CustomWidgets import XMLFileNotFound
+#from lib.ui.main.CustomWidgets import XMLFileNotFound
 
 class SoftwareSearch(object):
     '''
@@ -151,6 +152,9 @@ class ParseXmlSettings(object):
         self.hostStatusDict = self._setHostStatusDict()
         self.boolColorDict = self._setBoolColor()
         self.broadcastDict = self._setBroadcastDict()
+        self.bgColorDict = self._setBgColor()
+        self.fgColorDict  = self._setFgColor()
+        self.frameStatusDict = self._setFrameStatusDict()
 
         if not skipSoftware:
             # setup general software setting
@@ -270,6 +274,41 @@ class ParseXmlSettings(object):
                             boolColor[1] = [child.getAttribute('bgColor'), child.getAttribute('txtColor')]
                         else:
                             pass
+
+    def _setBgColor(self):
+        '''Set the bg color dictionary'''
+        output = {}
+        for parent in self._getElement(self.doc, 'settings'):
+            for node in self._getElement(parent, 'status'):
+                for children in self._getElement(node, 'job'):
+                    for child in children.childNodes:
+                        if child.nodeType == 1:
+                            color = child.getAttribute('bgColor').split(',')
+                            output[str(child.getAttribute('index'))] = QVariant(QColor(int(color[0]), int(color[1]), int(color[2])))
+        return output
+
+    def _setFgColor(self):
+        '''Set the fg color dictionary'''
+        output = {}
+        for parent in self._getElement(self.doc, 'settings'):
+            for node in self._getElement(parent, 'status'):
+                for children in self._getElement(node, 'job'):
+                    for child in children.childNodes:
+                        if child.nodeType == 1:
+                            color = child.getAttribute('txtColor').split(',')
+                            output[str(child.getAttribute('index'))] = QVariant(QColor(int(color[0]), int(color[1]), int(color[2])))
+        return output
+
+    def _setFrameStatusDict(self):
+        '''Set the fg color dictionary'''
+        output = {}
+        for parent in self._getElement(self.doc, 'settings'):
+            for node in self._getElement(parent, 'status'):
+                for children in self._getElement(node, 'job'):
+                    for child in children.childNodes:
+                        if child.nodeType == 1:
+                            output[str(child.getAttribute('index'))] = QVariant(child.getAttribute('text'))
+        return output
 
     def _setStatusKeyDict(self):
         '''Setup the status key dictionary'''
@@ -399,18 +438,6 @@ class ParseXmlSettings(object):
         except KeyError:
             raise self.error.xmlKeyError(key)
 
-    def boolColor(self, isTrue):
-        '''
-        Return a color for a boolean value
-
-        INPUT:
-            isTrue (bool) -- value to check
-        '''
-        if isTrue:
-           pass
-        else:
-            pass
-
     def _setBroadcastDict(self):
         '''Given the xml values setup the dictionary'''
         output = {}
@@ -422,7 +449,6 @@ class ParseXmlSettings(object):
                         output['maxCount'] = int(type.getAttribute('maxCount'))
                     else:
                         pass
-
         return output
 
     def broadcastValue(self, key):
@@ -431,3 +457,18 @@ class ParseXmlSettings(object):
             return self.broadcastDict[key]
         except KeyError:
             raise self.error.xmlKeyError(key)
+
+    def bgColor(self, key):
+        '''Get the background color of the requested status key'''
+        return self.bgColorDict[str(key)]
+
+    def fgColor(self, key):
+        '''Get the foreground color of the requested status key'''
+        return self.fgColorDict[str(key)]
+
+    def frameStatus(self, key='Disabled'):
+        '''Return the frame status string'''
+        if key != 'Disabled':
+            return self.frameStatusDict[str(key)]
+        else:
+            return self.frameStatusDict

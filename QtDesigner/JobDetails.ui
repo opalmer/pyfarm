@@ -31,10 +31,10 @@
       <x>10</x>
       <y>30</y>
       <width>111</width>
-      <height>44</height>
+      <height>48</height>
      </rect>
     </property>
-    <layout class="QGridLayout" name="gridLayout">
+    <layout class="QGridLayout">
      <item row="0" column="0">
       <widget class="QLabel" name="jobDetails_job_status_label">
        <property name="font">
@@ -107,7 +107,7 @@
       <height>101</height>
      </rect>
     </property>
-    <layout class="QGridLayout" name="gridLayout_6">
+    <layout class="QGridLayout">
      <item row="0" column="0">
       <widget class="QLabel" name="label_44">
        <property name="font">
@@ -224,7 +224,7 @@
      <height>641</height>
     </rect>
    </property>
-   <layout class="QVBoxLayout" name="verticalLayout">
+   <layout class="QVBoxLayout">
     <item>
      <widget class="QLabel" name="label">
       <property name="font">
@@ -244,70 +244,17 @@
      </widget>
     </item>
     <item>
-     <widget class="QTableWidget" name="frameTable">
-      <property name="font">
-       <font>
-        <pointsize>10</pointsize>
-       </font>
-      </property>
+     <widget class="QTableView" name="frameTable">
       <property name="editTriggers">
        <set>QAbstractItemView::NoEditTriggers</set>
       </property>
       <property name="selectionBehavior">
        <enum>QAbstractItemView::SelectRows</enum>
       </property>
-      <column>
-       <property name="text">
-        <string>Status</string>
-       </property>
-       <property name="textAlignment">
-        <set>AlignHCenter|AlignVCenter|AlignCenter</set>
-       </property>
-      </column>
-      <column>
-       <property name="text">
-        <string>Subjob</string>
-       </property>
-       <property name="textAlignment">
-        <set>AlignHCenter|AlignVCenter|AlignCenter</set>
-       </property>
-      </column>
-      <column>
-       <property name="text">
-        <string>Frame ID</string>
-       </property>
-       <property name="textAlignment">
-        <set>AlignHCenter|AlignVCenter|AlignCenter</set>
-       </property>
-      </column>
-      <column>
-       <property name="text">
-        <string>Frame Number</string>
-       </property>
-       <property name="textAlignment">
-        <set>AlignHCenter|AlignVCenter|AlignCenter</set>
-       </property>
-      </column>
-      <column>
-       <property name="text">
-        <string>Host</string>
-       </property>
-       <property name="textAlignment">
-        <set>AlignHCenter|AlignVCenter|AlignCenter</set>
-       </property>
-      </column>
-      <column>
-       <property name="text">
-        <string>Log</string>
-       </property>
-       <property name="textAlignment">
-        <set>AlignHCenter|AlignVCenter|AlignCenter</set>
-       </property>
-      </column>
      </widget>
     </item>
     <item>
-     <layout class="QHBoxLayout" name="horizontalLayout">
+     <layout class="QHBoxLayout">
       <item>
        <widget class="QPushButton" name="refreshNow">
         <property name="text">
@@ -342,7 +289,7 @@
        </widget>
       </item>
       <item>
-       <spacer name="horizontalSpacer">
+       <spacer>
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
         </property>

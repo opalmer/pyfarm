@@ -701,49 +701,6 @@ class Main(QMainWindow):
         self.ui.currentJobs.setItem(row, 1, newStatus)
         self.ui.currentJobs.setItem(row, 2, progress)
 
-    def JobDetails(self):
-        '''Bring up some fake job information'''
-        # setup some common vars
-        jobs = self.ui.currentJobs
-        currentRow = jobs.currentRow()
-        jobName = jobs.item(currentRow, 0).text()
-        jobStatus = jobs.item(currentRow, 1).text()
-        groups = ['af9c477', '3c4cb7d']
-
-        if jobStatus == 'Failed':
-            status = QString('<font color="red">Failed</font>')
-        elif jobStatus == 'Rendering':
-            status = QString('<font color="orange">Rendering</font>')
-        elif jobStatus == 'Complete':
-            status = QString('<font color="green">Complete</font>')
-        else:
-            status = QString(jobStatus)
-
-        # setup the widget
-        widget = JobDetails()
-        widget.ui.jobDetails_job_name.setText(jobName)
-        widget.ui.jobDetails_job_status.setText(status)
-
-        for row in range(0, 75):
-
-            progressBar = QProgressBar()
-            progressBar.setValue(randrange(2, 80))
-            stat = QTableWidgetItem(jobStatus)
-            stat.setTextColor(self.red)
-            id = QTableWidgetItem(QString(groups[randrange(0, 2)]))
-            button =QPushButton(QString("Open"), widget.ui.frameTable)
-            self.connect(button, SIGNAL("pressed()"), self.openLog)
-
-            # insert the items into the row
-            widget.ui.frameTable.insertRow(int(row))
-            widget.ui.frameTable.setItem(row , 0, stat)
-            widget.ui.frameTable.setItem(row , 1, id)
-            widget.ui.frameTable.setCellWidget(row , 2, progressBar)
-            widget.ui.frameTable.setCellWidget(row , 3, button)
-            widget.ui.frameTable.setColumnWidth(2, 200)
-
-        widget.exec_()
-
     def openLog(self):
         '''Open up the frame log and show it to the user'''
         log = open("/farm/projects/PyFarm/trunk/RC3/job4_log.001.txt", 'r')
