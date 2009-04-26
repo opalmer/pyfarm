@@ -126,7 +126,6 @@ class Main(QObject):
 
     def shutdownServers(self):
         '''Calls the shutdown function all all servers'''
-        self.que.shutdown()
         self.admin.shutdown()
 
     def restart(self):

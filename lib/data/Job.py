@@ -52,6 +52,7 @@ class JobStatus(object):
         self.general = generalData
         self.jobManager = parent
         self.modName = 'JobStatus'
+        self.subjobs = [subjob for subjob in self.job.keys()]
 
     def overall(self):
         '''
@@ -119,6 +120,11 @@ class JobStatus(object):
     def listSubjobs(self):
         '''List the subjobs contained in self.job'''
         return self.job.keys()
+
+    def subjobs(self):
+        '''Subjob generator'''
+        for subjob in self.job.keys():
+            yield subjob
 
     def listFrames(self, id=False):
         '''
@@ -225,6 +231,8 @@ class JobData(object):
         self.ui =parentClass.ui
         self.jobManager = jobManager
 
+
+
     def createSubjob(self, id, priority):
         '''
         Create a sub job
@@ -265,8 +273,9 @@ class JobData(object):
         # create the dictionary entry
         entry = {"status" : 0, "host" : None,
             "pid" : None, "software" : software,
-            "start" : None, "end" : None, "elapsed" : None,
-            "command" : str(command)
+            "start" : 0, "end" : 0, "elapsed" : 0,
+            "command" : str(command),
+            "stdout" : {}, "stderr" : {}
             }
 
         # add the frame to the frames dictionary
@@ -301,7 +310,6 @@ class JobData(object):
         elif settings.commonName(str(self.ui.softwareSelection.currentText())) == 'shake':
             print "shake"
 
-
 class JobManager(object):
     '''
     General job manager used to manage and
@@ -312,6 +320,27 @@ class JobManager(object):
         self.data = JobData(self.job, name, parentClass, self)
         self.status = JobStatus(self.job, name, parentClass.dataGeneral, parentClass.ui, self)
         self.uiStatus = StatusManager(parentClass.dataGeneral, parentClass.ui)
+        self.frames = self.yieldFrames()
+
+    def yieldFrames(self, getAttr=None):
+        '''Yield each and every frame'''
+        for subjob in self.job.keys():
+            for frame in self.job[subjob]["frames"]:
+                for entry in self.job[subjob]["frames"][frame]:
+                    if not getAttr:
+                        yield subjob, frame, entry
+                    elif getAttr == 'software':
+                        yield entry[1]["software"]
+                    else:
+                        print "%s is not a scripted request" % (str)
+
+    def requiredSoftware(self):
+        '''Get the software required to render the job'''
+        foundSoftware = []
+        for software in self.yieldFrames('software'):
+            if software not in foundSoftware:
+                foundSoftware.append(software)
+                yield software
 
     def jobData(self):
         '''Return the dictionary, for previewing'''

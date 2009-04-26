@@ -137,7 +137,6 @@ class Main(QMainWindow):
         ## ui signals
         self.connect(self.ui.enque, SIGNAL("pressed()"), self.submitJob.submitJob)
         self.connect(self.ui.render, SIGNAL("pressed()"), self.submitJob.startRender)
-        #self.connect(self.ui.currentJobs, SIGNAL("customContextMenuRequested(const QPoint &)"), self.currentJobsContextMenu)
         self.connect(self.ui.softwareSelection, SIGNAL("currentIndexChanged(const QString&)"), self.softwareManager.setSoftware)
 
         # connect specific render option vars
@@ -583,6 +582,7 @@ class Main(QMainWindow):
     def fakeSetup(self):
         '''Setup the fake information for presentation'''
         self.ui.inputJobName.setText('fakeJob')
+        self.ui.mayaScene.setText('/farm/projects/PyFarm/trunk/tests/maya/2009/scenes/01_mr_renderLayers.ma')
 
     def fakeTableEntries(self):
         '''Add a fake progress bar to the table'''

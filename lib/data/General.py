@@ -23,10 +23,6 @@ data dictionary
 # From Python
 from os import getcwd
 
-# From PyQt
-from PyQt4.QtGui import QMessageBox
-from PyQt4.QtCore import QObject, QString, SIGNAL
-
 # From PyFarm
 from lib.Info import TypeTest
 from lib.ui.main.CloseEvent import CloseEventManager
@@ -37,7 +33,7 @@ from lib.ui.main.NetworkTableManager import NetworkTableManager
 typeCheck = TypeTest('JobData')
 settings = ParseXmlSettings('%s/settings.xml' % getcwd())
 
-class GeneralHostManager(QObject):
+class GeneralHostManager(object):
     '''
     Contains function for host related information
 
@@ -48,7 +44,6 @@ class GeneralHostManager(QObject):
         data (dict) -- dictionary containing the host data
     '''
     def __init__(self, data, uiStatus, parent=None):
-        super(GeneralHostManager, self).__init__(parent)
         self.parent = parent
         self.data = data["hosts"]
         self.uiStatus = uiStatus
@@ -100,7 +95,6 @@ class GeneralHostManager(QObject):
             ratio = float(self.data[ip]["failed"])/float(self.data[ip]["rendered"])
         except ZeroDivisionError:
             ratio = 0.0
-
         if not string:
             return ratio
         else:
@@ -110,13 +104,25 @@ class GeneralHostManager(QObject):
         '''Return the entire software dict for the given host'''
         return self.data[ip]["software"]
 
+    def installedSoftware(self, ip):
+        '''
+        Return every software version found
+        '''
+        output = []
+
+        for value in self.data[ip]["software"].values():
+            if len(value.keys()):
+                for software in value.keys():
+                    output.append(software)
+        return output
+
     def installedVersions(self, ip, software):
         '''Given a generic software return the versions found'''
         for version in self.data[ip]["software"][software]:
             yield version
 
 
-class GeneralNetworkManager(QObject):
+class GeneralNetworkManager(object):
     '''
     Contains functions for network related information
 
@@ -124,7 +130,6 @@ class GeneralNetworkManager(QObject):
         data (dict) -- dictionary containing the network data
     '''
     def __init__(self, data, uiStatus, parent=None):
-        super(GeneralNetworkManager, self).__init__(parent)
         self.parent = parent
         self.data = data["network"]
         self.uiStatus = uiStatus
@@ -175,10 +180,6 @@ class GeneralNetworkManager(QObject):
         '''Return the current number of disabled hosts'''
         return self.statusHostCount(3)
 
-    def emitSignal(self, sig, data):
-        '''Emit a signal from the main class'''
-        self.parent.emit(SIGNAL(sig), data)
-
     def removeHostData(self, ip):
         '''Remove the given host from the dictionary'''
         # remove the entry from the network stats
@@ -208,13 +209,12 @@ class GeneralNetworkManager(QObject):
             self.removeHost(ip)
 
 
-class GeneralManager(QObject):
+class GeneralManager(object):
     '''
     General data management, meant for
     program wide information
     '''
-    def __init__(self, ui, version, parent=None):
-        super(GeneralManager, self).__init__(parent)
+    def __init__(self, ui, version):
         self.ui = ui
         self.data = {"queue" :{
                                 "system" : {
@@ -296,13 +296,6 @@ class GeneralManager(QObject):
         self.network.removeHost(ip)
         self.ui.networkTable.removeRow(row)
         self.uiStatus.network.refreshConnected()
-
-    def emitSignal(self, sig, data=None):
-        '''Emit a signal from the main class'''
-        if data:
-            self.emit(SIGNAL(sig), data)
-        else:
-            self.emit(SIGNAL(sig))
 
     def dataGeneral(self):
         '''Return the general data dictionary for use outside of the class'''

@@ -37,9 +37,9 @@ class FrameEntry(object):
         self.status = QString().setNum(status)
         self.uid = QString(uid)
         self.framenum = QString().setNum(framenum)
-        self.start = QString(self._ifNone(start))
-        self.end = QString(self._ifNone(end))
-        self.elapsed = QString(self._ifNone(elapsed))
+        self.start = QString().setNum(start)
+        self.end = QString().setNum(end)
+        self.elapsed = QString().setNum(elapsed)
         self.host = QString(self._ifNone(host))
         self.pid = QString(self._ifNone(pid))
         self.software = QString(software)
@@ -63,6 +63,8 @@ class JobDetailsTableModel(QAbstractTableModel):
         self.parent = parent
         self.table = parent.ui.frameTable
         self.dataDict = dataDict.jobData()
+        self.dataJob = dataDict
+
         self.loadData()
 
     def sortByStatus(self):
@@ -101,22 +103,14 @@ class JobDetailsTableModel(QAbstractTableModel):
 
     def loadData(self):
         '''Load the data'''
-        self.filters = {}
         self.frames = []
-
-        # create status dictionary and assign it the gui
-        filterDict = settings.frameStatus()
-        for index, text in filterDict.items():
-            self.filters[int(index)] = str(text.toString())
 
         # get the frames and other info
         #  then add it to self.frames
-        for subjob in self.dataDict.keys():
-            for frame in self.dataDict[subjob]["frames"]:
-                for entry in self.dataDict[subjob]["frames"][frame]:
-                    info = entry[1]
-                    self.frames.append(FrameEntry(subjob, info["status"], entry[0], frame, info["start"],
-                        info["end"], info["elapsed"], info["host"], info["pid"], info["software"], info["command"]))
+        for entry in self.dataJob.frames:
+            info = entry[2][1]
+            self.frames.append(FrameEntry(entry[0], info["status"], entry[2][0], entry[1], info["start"],
+                info["end"], info["elapsed"], info["host"], info["pid"], info["software"], info["command"]))
 
     def data(self, index, role=Qt.DisplayRole):
         if not index.isValid() or \

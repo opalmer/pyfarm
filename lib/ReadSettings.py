@@ -155,6 +155,7 @@ class ParseXmlSettings(object):
         self.bgColorDict = self._setBgColor()
         self.fgColorDict  = self._setFgColor()
         self.frameStatusDict = self._setFrameStatusDict()
+        self.strFrameStatus, self.intFrameStatus = self._setStandardStatusDict()
 
         if not skipSoftware:
             # setup general software setting
@@ -451,6 +452,19 @@ class ParseXmlSettings(object):
                         pass
         return output
 
+    def _setStandardStatusDict(self):
+        '''Setup the standard status dictionaries'''
+        strDict = {}
+        intDict = {}
+        for parent in self._getElement(self.doc, 'settings'):
+            for node in self._getElement(parent, 'status'):
+                for children in self._getElement(node, 'job'):
+                    for child in children.childNodes:
+                        if child.nodeType == 1:
+                            intDict[int(child.getAttribute('index'))] = str(child.getAttribute('text'))
+                            strDict[str(child.getAttribute('text'))] = int(child.getAttribute('index'))
+        return strDict, intDict
+
     def broadcastValue(self, key):
         '''Get a setting from the broadcast server section'''
         try:
@@ -472,3 +486,11 @@ class ParseXmlSettings(object):
             return self.frameStatusDict[str(key)]
         else:
             return self.frameStatusDict
+
+    def lookupStatus(self, val):
+        '''Return the given text or number for the input value'''
+        if type(val) == int:
+            return self.intFrameStatus[val]
+        elif type(val) == str:
+            return self.strFrameStatus[val]
+

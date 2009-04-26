@@ -30,6 +30,7 @@ from lib.data.Job import JobManager
 from lib.ReadSettings import ParseXmlSettings
 from lib.RenderConfig import ConfigureCommand
 from lib.ui.main.CustomWidgets import MessageBox
+from lib.Distribute import DistributeFrames
 
 settings = ParseXmlSettings('%s/settings.xml' % getcwd())
 
@@ -44,7 +45,7 @@ class SubmitManager(object):
     '''
     def __init__(self, parentClass):
         self.ui = parentClass.ui
-        self.dataJob = parentClass.dataJob
+        self.jobs = parentClass.dataJob
         self.dataGeneral = parentClass.dataGeneral
         self.softwareManager = parentClass.softwareManager
         self.msg = MessageBox(parentClass)
@@ -61,8 +62,8 @@ class SubmitManager(object):
         jobID = self.runChecks()
 
         # if the job has not been defined, define it
-        if jobName not in self.dataJob:
-            self.dataJob[jobName] = JobManager(jobName, self)
+        if jobName not in self.jobs:
+            self.jobs[jobName] = JobManager(jobName, self)
             self.tableManager.addJob(jobName)
 
         if jobID:
@@ -76,9 +77,9 @@ class SubmitManager(object):
             jobName (str) -- name of job
             id (hex) -- subjob id
         '''
-        if self.dataJob[jobName].data.createSubjob(id, priority):
+        if self.jobs[jobName].data.createSubjob(id, priority):
             for frame in range(self.ui.inputStartFrame.value(), self.ui.inputEndFrame.value()+1, self.ui.inputByFrame.value()):
-                self.dataJob[jobName].data.addFrame(id, frame, str(self.ui.softwareSelection.currentText()))
+                self.jobs[jobName].data.addFrame(id, frame, str(self.ui.softwareSelection.currentText()))
         else:
             self.msg.warning("Please Wait Before Submitting Another Job",
                              "You must wait at least two seconds before submitting another job.")
@@ -106,5 +107,8 @@ class SubmitManager(object):
 
     def startRender(self):
         '''Start the que and begin rendering'''
-        self.rendering = 1
-        print "starting render"
+        #print "Checking software"
+        if len(self.jobs):
+            render = DistributeFrames(self)
+        else:
+            self.msg.warning("Please Submit A Job",  "You must submit a job before attempting to render")
