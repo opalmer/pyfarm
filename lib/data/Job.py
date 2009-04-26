@@ -96,15 +96,39 @@ class JobStatus(object):
         '''Return the status of a frame'''
         return self.job[id]["frames"][frame]["status"]
 
-    def setFrame(self, id, frame):
+    def setFrame(self, id, frame, status):
         '''
         Set the status of the given frame
 
         INPUT:
             id (str) -- subjob id
             frame (int) -- frame number to set
+            status(int) -- new status to frame to
         '''
-        pass
+        from pprint import pprint
+        self.job[id]["frames"][frame][0][1]["status"] = 1
+        #pprint(self.jobManager.job[id][])
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     def startFrame(self, id, frame):
         '''
@@ -143,20 +167,6 @@ class JobStatus(object):
                 for frame in self.job[subjob]["frames"].keys():
                     for entry in self.job[subjob]["frames"][frame]:
                         yield [subjob, frame, entry]
-
-    def listWaitingFrames(self, id=False):
-        '''
-        For each subjob, return a list of currently waiting
-        frames (unless we specify an id)
-
-        INPUT:
-            id (str) -- subjob id (optional, if not given all waiting frames will be returned)
-        '''
-        if id:
-            pass
-        else:
-            for subjob in self.listSubjobs():
-                yield
 
     def frameCount(self, id=False):
         '''
@@ -230,8 +240,6 @@ class JobData(object):
         self.renderConfig = ConfigureCommand(parentClass.ui)
         self.ui =parentClass.ui
         self.jobManager = jobManager
-
-
 
     def createSubjob(self, id, priority):
         '''
@@ -310,6 +318,7 @@ class JobData(object):
         elif settings.commonName(str(self.ui.softwareSelection.currentText())) == 'shake':
             print "shake"
 
+
 class JobManager(object):
     '''
     General job manager used to manage and
@@ -322,17 +331,19 @@ class JobManager(object):
         self.uiStatus = StatusManager(parentClass.dataGeneral, parentClass.ui)
         self.frames = self.yieldFrames()
 
-    def yieldFrames(self, getAttr=None):
+    def yieldFrames(self, getAttr=None, priority=0):
         '''Yield each and every frame'''
         for subjob in self.job.keys():
             for frame in self.job[subjob]["frames"]:
                 for entry in self.job[subjob]["frames"][frame]:
                     if not getAttr:
                         yield subjob, frame, entry
-                    elif getAttr == 'software':
+                    elif getAttr.upper() == 'SOFTWARE':
                         yield entry[1]["software"]
-                    else:
-                        print "%s is not a scripted request" % (str)
+                    elif getAttr.upper() == 'STATUS':
+                        yield entry[1]["status"]
+                    elif getAttr.upper() == 'WAITING' and entry[1]["status"] == settings.lookupStatus('Waiting'):
+                            yield subjob, frame, entry[1]
 
     def requiredSoftware(self):
         '''Get the software required to render the job'''
@@ -345,3 +356,14 @@ class JobManager(object):
     def jobData(self):
         '''Return the dictionary, for previewing'''
         return self.job
+
+    def jobStatus(self):
+        '''Return the current status of the job'''
+        data = []
+        for status in self.yieldFrames('status'):
+            data.append(status)
+        mode = statistics.mode(data)
+        if mode:
+            return mode
+        else:
+            return 0

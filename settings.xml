@@ -31,7 +31,7 @@ along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
             <!-- Server Specific Settings -->
             <server type="admin" port="9630" />
-            <server type="broadcast" port="9631" interval="15" maxCount="25"/>
+            <server type="broadcast" port="9631" interval="15" maxCount="5"/>
             <server type="que" port="9632" />
             <server type="stderr" port="9633" />
             <server type="stdout" port="9634" />

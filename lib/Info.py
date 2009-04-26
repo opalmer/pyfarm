@@ -260,13 +260,13 @@ class Statistics(object):
         '''Define the median (center) of the given data set'''
         pass
 
-    def mode(self):
+    def mode(self, data):
         '''Return the mode (most occurring) of the given number set'''
         # create an empty dictionary to hold the data
         frequency = {}
 
         # for each number(x) in the input list(numList)
-        for x in self.data:
+        for x in data:
             # if the number is in the dictionary(frequency)
             # append the count of that number, else start
             # couting

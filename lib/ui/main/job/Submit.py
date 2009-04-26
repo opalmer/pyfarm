@@ -110,5 +110,6 @@ class SubmitManager(object):
         #print "Checking software"
         if len(self.jobs):
             render = DistributeFrames(self)
+            render.sendFrames()
         else:
             self.msg.warning("Please Submit A Job",  "You must submit a job before attempting to render")
