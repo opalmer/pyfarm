@@ -342,8 +342,11 @@ class JobManager(object):
                         yield entry[1]["software"]
                     elif getAttr.upper() == 'STATUS':
                         yield entry[1]["status"]
-                    elif getAttr.upper() == 'WAITING' and entry[1]["status"] == settings.lookupStatus('Waiting'):
+                    elif getAttr.upper() == 'WAITING':
+                        if entry[1]["status"] == 0:
                             yield subjob, frame, entry[1]
+                        else:
+                            yield 0
 
     def requiredSoftware(self):
         '''Get the software required to render the job'''

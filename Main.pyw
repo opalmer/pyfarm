@@ -582,7 +582,7 @@ class Main(QMainWindow):
     def fakeSetup(self):
         '''Setup the fake information for presentation'''
         self.ui.inputJobName.setText('fakeJob')
-        self.ui.mayaScene.setText('/farm/projects/PyFarm/trunk/tests/maya/2009/scenes/01_mr_renderLayers.ma')
+        self.ui.mayaScene.setText('/home/opalme20/03_mr_finalGather.ma')
 
     def fakeTableEntries(self):
         '''Add a fake progress bar to the table'''

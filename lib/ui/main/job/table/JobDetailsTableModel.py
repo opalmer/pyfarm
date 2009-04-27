@@ -64,6 +64,7 @@ class JobDetailsTableModel(QAbstractTableModel):
         self.table = parent.ui.frameTable
         self.dataDict = dataDict.jobData()
         self.dataJob = dataDict
+        self.frames = []
 
         self.loadData()
 
@@ -103,7 +104,6 @@ class JobDetailsTableModel(QAbstractTableModel):
 
     def loadData(self):
         '''Load the data'''
-        self.frames = []
 
         # get the frames and other info
         #  then add it to self.frames

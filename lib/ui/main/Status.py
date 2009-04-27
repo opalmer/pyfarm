@@ -65,6 +65,10 @@ class Network(object):
         txt = '<font color=%s>%s</font>' % (self.getColor(count), count)
         self.ui.status_network_connected.setText(txt)
 
+    def setStatus(self, ip, status):
+        '''Set the status for the given host'''
+        pass
+
 
 class System(object):
     '''Manager for Queue.System status info'''

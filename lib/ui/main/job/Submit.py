@@ -44,6 +44,7 @@ class SubmitManager(object):
         dataGeneral -- general data manager class instance
     '''
     def __init__(self, parentClass):
+        self.modName = 'Job.SubmitManager'
         self.ui = parentClass.ui
         self.jobs = parentClass.dataJob
         self.dataGeneral = parentClass.dataGeneral
@@ -107,7 +108,7 @@ class SubmitManager(object):
 
     def startRender(self):
         '''Start the que and begin rendering'''
-        #print "Checking software"
+        print "PyFarm :: %s :: Starting render" % self.modName
         if len(self.jobs):
             render = DistributeFrames(self)
             render.sendFrames()

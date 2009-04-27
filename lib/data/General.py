@@ -61,6 +61,15 @@ class GeneralHostManager(object):
         else:
             return self.data[ip]["status"]
 
+    def setStatus(self, ip, status):
+        '''
+        Set the given host to the given status
+        Calling this function will also set the network table
+        to the corrent values.
+        '''
+        self.data[ip]["status"] = status
+        self.uiStatus.network.setStatus(ip, status)
+
     def hostname(self, ip):
         '''Return the hostname of the requested machine'''
         return self.data[ip]["hostname"]
@@ -207,6 +216,15 @@ class GeneralNetworkManager(object):
             print "PyFarm :: Main.removeHost :: Presenting host help"
             closeEventManager.singleExitHelp(ip)
             self.removeHost(ip)
+
+    def setHostStatus(self, ip, status):
+        '''
+        Set the given host to the given status
+        Calling this function will also set the network table
+        to the corrent values.
+        '''
+        self.data["hosts"][ip]["status"] = status
+        self.uiStatus.setHostStatus()
 
 
 class GeneralManager(object):
