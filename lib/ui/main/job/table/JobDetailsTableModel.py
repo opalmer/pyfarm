@@ -63,9 +63,6 @@ class JobDetailsTableModel(QAbstractTableModel):
         self.parent = parent
         self.table = parent.ui.frameTable
         self.dataDict = dataDict.jobData()
-        self.dataJob = dataDict
-        self.frames = []
-
         self.loadData()
 
     def sortByStatus(self):
@@ -104,13 +101,16 @@ class JobDetailsTableModel(QAbstractTableModel):
 
     def loadData(self):
         '''Load the data'''
+        self.frames = []
 
         # get the frames and other info
         #  then add it to self.frames
-        for entry in self.dataJob.frames:
-            info = entry[2][1]
-            self.frames.append(FrameEntry(entry[0], info["status"], entry[2][0], entry[1], info["start"],
-                info["end"], info["elapsed"], info["host"], info["pid"], info["software"], info["command"]))
+        for subjob in self.dataDict.keys():
+            for frame in self.dataDict[subjob]["frames"]:
+                for entry in self.dataDict[subjob]["frames"][frame]:
+                    info = entry[1]
+                    self.frames.append(FrameEntry(subjob, info["status"], entry[0], frame, info["start"],
+                        info["end"], info["elapsed"], info["host"], info["pid"], info["software"], info["command"]))
 
     def data(self, index, role=Qt.DisplayRole):
         if not index.isValid() or \

@@ -329,7 +329,6 @@ class JobManager(object):
         self.data = JobData(self.job, name, parentClass, self)
         self.status = JobStatus(self.job, name, parentClass.dataGeneral, parentClass.ui, self)
         self.uiStatus = StatusManager(parentClass.dataGeneral, parentClass.ui)
-        self.frames = self.yieldFrames()
 
     def yieldFrames(self, getAttr=None, priority=0):
         '''Yield each and every frame'''
