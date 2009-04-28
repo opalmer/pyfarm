@@ -97,7 +97,7 @@ class Main(QMainWindow):
         # setup status server
         self.statusServer = StatusServer(self.dataJob, self.dataGeneral, self)
         self.connect(self.statusServer, SIGNAL('INIT'), self.updateSystemDataDict)
-        self.connect(self.statusServer, SIGNAL('RENDER_COMPLETE'), self.submitJob.startRender)
+        self.connect(self.statusServer, SIGNAL('FRAME_COMPLETE'), self.frameComplete)
 
         if not self.statusServer.listen(QHostAddress('0.0.0.0'), settings.netPort('status')):
             print "PyFarm :: StatusServer :: Could not start the server: %s" % self.statusServer.errorString()
@@ -166,6 +166,13 @@ class Main(QMainWindow):
         # GENERATE SOME FAKE DATA
         self.connect(self.ui.currentJobs, SIGNAL("cellActivated(int,int)"), self.fakePrintTableSelection)
         self.fakeSetup()
+
+    def frameComplete(self, job):
+        '''Take action when a frame is finished'''
+        self.tableManager.frameComplete(job)
+        self.submitJob.startRender()
+
+
 
 ################################
 ## BEGIN Context Menus

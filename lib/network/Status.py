@@ -103,13 +103,13 @@ class StatusServerThread(QThread):
                     self.dataJob[str(job)].data.frame.setStatus(str(subjob), int(frame), str(id), 2)
                     self.dataJob[str(job)].data.frame.setEnd(str(subjob), int(frame), str(id))
                     self.dataGeneral.network.host.setStatus(str(host), 0)
-                    self.parent.emit(SIGNAL("RENDER_COMPLETE"))
+                    self.parent.emit(SIGNAL("FRAME_COMPLETE"), str(job))
                 elif action == "renderFailed":
                     stream >> host >> job >> subjob >> frame >> id >> code
                     self.dataJob[str(job)].data.frame.setStatus(str(subjob), int(frame), str(id), 3)
                     self.dataJob[str(job)].data.frame.setEnd(str(subjob), int(frame), str(id))
                     self.dataGeneral.network.host.setStatus(str(host), 0)
-                    self.parent.emit(SIGNAL("RENDER_COMPLETE"))
+                    self.parent.emit(SIGNAL("FRAME_COMPLETE"), str(job))
                     #self.parent.emit(SIGNAL("FAILED_RENDER"), (str(subjob), int(frame), str(id), str(code)))
 
                 # final send a back the original host
