@@ -43,23 +43,46 @@ class DistributeFrames(object):
 
     def sendFrames(self):
         '''Send the first frames out to the remote clients'''
-        for host in self.hosts:
-            for job in self.jobs:
-                self.getFrame(job)
-
-    def getFrame(self, job):
-        '''Get a frame from the job dictionary'''
-        for frame in self.jobs[job].yieldFrames('waiting'):
+        hostCount = len(self.hosts)
+        if hostCount > 0:
             for host in self.hosts:
-                rendering = self.network[host]["status"]
-                if not rendering:
-                    if frame:
-                        print "PyFarm :: %s :: %s is avaliable to render" % (self.modName, host)
-                        sjob = frame[0]
-                        num = frame[1]
-                        status = frame[2]["status"]
-                        self.jobs[job].status.setFrame(sjob, num, 1)
-                        #self.data.network.host.setStatus(host, 1)
+                for job in self.jobs:
+                    frame = self.getFrame(host, job)
+                    if frame: # check to make sure we found a frame
+                        data = {
+                                "job" : job,
+                                "subjob" : frame[0],
+                                "frameNum" : frame[1],
+                                "frameID" : frame[2][0],
+                                "software" : frame[2][1]["software"],
+                                "command" : frame[2][1]["command"]
+                                }
+                        #client = QueClient(host, self)
+                        #client.issueRequest(job, frame[0],)
+                        self.jobs[job].data.frame.setHost(data["subjob"], data["frameNum"], data["frameID"], host)
+                        self.jobs[job].data.frame.setStart(data["subjob"], data["frameNum"], data["frameID"])
+                        self.jobs[job].data.frame.setEnd(data["subjob"], data["frameNum"], data["frameID"])
+        else:
+            self.msg.warning('Hosts Not Connected', 'Before rendering you must have at least one host connected to the network.')
+
+
+    def getFrame(self, host, job):
+        '''Get a frame from the job dictionary'''
+        # if the host is in a waiting state
+        if self.network[host]["status"] == 0:
+            frame = self.jobs[job].getFrame()
+            if frame: # ONLY if we find a frame should we continue
+                # inform the user of the node, then set its status
+                print "PyFarm :: %s :: %s is avaliable to render" % (self.modName, host)
+                #print frame
+                # set the frame and host status
+                self.data.network.host.setStatus(host, 1)
+                self.jobs[job].status.setFrame(frame[0], frame[1], 1)
+
+                return frame
+            else:
+                return 0
+
 
     def hasSoftware(self, host, software):
         '''Check and see if the given host has the software installed'''

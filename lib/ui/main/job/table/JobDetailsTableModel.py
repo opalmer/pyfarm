@@ -23,9 +23,10 @@ from os import getcwd
 
 # From PyQt
 from PyQt4.QtGui import QColor, QPushButton
-from PyQt4.QtCore import Qt, QString, QAbstractTableModel, QModelIndex, QVariant
+from PyQt4.QtCore import Qt, QString, QAbstractTableModel, QModelIndex, QVariant, QTime
 
 # From PyFarm
+from lib.Info import Int2Time
 from lib.ReadSettings import ParseXmlSettings
 
 settings = ParseXmlSettings('%s/settings.xml' % getcwd(), skipSoftware=True)
@@ -37,9 +38,9 @@ class FrameEntry(object):
         self.status = QString().setNum(status)
         self.uid = QString(uid)
         self.framenum = QString().setNum(framenum)
-        self.start = QString().setNum(start)
-        self.end = QString().setNum(end)
-        self.elapsed = QString().setNum(elapsed)
+        self.start = start
+        self.end = end
+        self.elapsed = QString("%sd %sh %sm %ss" % (Int2Time(elapsed)[0], Int2Time(elapsed)[1], Int2Time(elapsed)[2], Int2Time(elapsed)[3]))
         self.host = QString(self._ifNone(host))
         self.pid = QString(self._ifNone(pid))
         self.software = QString(software)

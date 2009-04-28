@@ -476,7 +476,7 @@ class ParseXmlSettings(object):
         '''Get the background color of the requested status key'''
         return self.bgColorDict[str(key)]
 
-    def fgColor(self, key):
+    def fgColor(self, key, type=None):
         '''Get the foreground color of the requested status key'''
         return self.fgColorDict[str(key)]
 
@@ -493,4 +493,3 @@ class ParseXmlSettings(object):
             return self.intFrameStatus[val]
         elif type(val) == str:
             return self.strFrameStatus[val]
-

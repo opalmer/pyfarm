@@ -30,12 +30,13 @@ from PyQt4.QtCore import QObject, QCoreApplication, SIGNAL, SLOT
 from PyQt4.QtNetwork import QHostInfo, QHostAddress
 
 # From PyFarm
+from lib.Info import System
 from lib.network.Utils import GetLocalIP
-from lib.network.Broadcast import BroadcastReceiever
 from lib.network.Status import StatusClient
+from lib.network.Que import QueSlaveServer
 from lib.network.Admin import AdminServer
 from lib.ReadSettings import ParseXmlSettings
-from lib.Info import System
+from lib.network.Broadcast import BroadcastReceiever
 
 settings = ParseXmlSettings('%s/settings.xml' % getcwd())
 

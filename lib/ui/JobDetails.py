@@ -19,7 +19,7 @@
 
 # Form implementation generated from reading ui file 'QtDesigner/JobDetails.ui'
 #
-# Created: Sun Apr 26 13:11:12 2009
+# Created: Mon Apr 27 21:34:04 2009
 #      by: PyQt4 UI code generator 4.4.4
 #
 # WARNING! All changes made in this file will be lost!

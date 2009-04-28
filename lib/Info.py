@@ -43,7 +43,7 @@ def Int2Time(s):
         m,s=divmod(s,60)
         h,m=divmod(m,60)
         d,h=divmod(h,24)
-        return d,h,m,s
+        return str(d),str(h),str(m),str(s)
 
 
 def ModulePath(module, level=0):

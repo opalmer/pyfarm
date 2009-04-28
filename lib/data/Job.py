@@ -21,8 +21,11 @@ PURPOSE: Module used to control, manage, and update the job dictionary.
 '''
 # From Python
 from sys import exit
+from time import time
 from os import getcwd
-from pprint import pprint
+
+# From PyQt4
+from PyQt4.QtCore import QDateTime
 
 # From PyFarm
 from lib.ReadSettings import ParseXmlSettings
@@ -35,6 +38,46 @@ settings = ParseXmlSettings('%s/settings.xml' % getcwd())
 statistics = Statistics()
 typeCheck = TypeTest('JobData')
 error = ErrorProcessingSetup('JobData')
+
+class FrameData(object):
+    '''
+    Designed to set the individual parameters of a frame
+
+    INPUT:
+        job (dict) -- job dictionary to work with
+    '''
+    def __init__(self, job):
+        self.job = job
+
+    def getFrame(self, subjob, frame, frameid):
+        '''
+        Return the data dictionary for the entry matching the
+        given query
+        '''
+        selection = self.job[subjob]["frames"][frame]
+        for entry in selection:
+            if entry[0] == frameid:
+                return selection[0][1]
+
+    def setHost(self, subjob, frame, frameid, host):
+        '''Set the host for the given frame'''
+        self.getFrame(subjob, frame, frameid)["host"] = host
+
+    def setStart(self, subjob, frame, frameid):
+        '''Set the start time for the given frame'''
+        self.getFrame(subjob, frame, frameid)["start"] = QDateTime().currentDateTime()
+
+    def setEnd(self, subjob, frame, frameid):
+        '''Set the end time for the given frame'''
+        self.getFrame(subjob, frame, frameid)["end"] = QDateTime().currentDateTime()
+        self.setElapsed(subjob, frame, frameid)
+
+    def setElapsed(self, subjob, frame, frameid):
+        start = self.getFrame(subjob, frame, frameid)["start"]
+        end = self.getFrame(subjob, frame, frameid)["end"]
+        elapsed = start.secsTo(end)
+        self.getFrame(subjob, frame, frameid)["elapsed"] = elapsed
+
 
 class JobStatus(object):
     '''
@@ -105,30 +148,7 @@ class JobStatus(object):
             frame (int) -- frame number to set
             status(int) -- new status to frame to
         '''
-        from pprint import pprint
-        self.job[id]["frames"][frame][0][1]["status"] = 1
-        #pprint(self.jobManager.job[id][])
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+        self.job[id]["frames"][frame][0][1]["status"] = status
 
     def startFrame(self, id, frame):
         '''
@@ -240,6 +260,7 @@ class JobData(object):
         self.renderConfig = ConfigureCommand(parentClass.ui)
         self.ui =parentClass.ui
         self.jobManager = jobManager
+        self.frame = FrameData(job, )
 
     def createSubjob(self, id, priority):
         '''
@@ -341,11 +362,21 @@ class JobManager(object):
                         yield entry[1]["software"]
                     elif getAttr.upper() == 'STATUS':
                         yield entry[1]["status"]
-                    elif getAttr.upper() == 'WAITING':
-                        if entry[1]["status"] == 0:
-                            yield subjob, frame, entry[1]
-                        else:
-                            yield 0
+                    else:
+                        yield 0
+
+    def getFrame(self):
+        '''
+        Get a waiting frame and return it
+
+        VARS:
+            entry[1] == frame id
+        '''
+        for subjob in self.job.keys():
+            for frame in self.job[subjob]["frames"]:
+                for entry in self.job[subjob]["frames"][frame]:
+                    if entry[1]["status"] == 0:
+                        return subjob, frame, entry
 
     def requiredSoftware(self):
         '''Get the software required to render the job'''
