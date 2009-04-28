@@ -95,8 +95,9 @@ class Main(QMainWindow):
         self.softwareManager.setSoftware(self.ui.softwareSelection.currentText())
 
         # setup status server
-        self.statusServer = StatusServer(self)
+        self.statusServer = StatusServer(self.dataJob, self.dataGeneral, self)
         self.connect(self.statusServer, SIGNAL('INIT'), self.updateSystemDataDict)
+        self.connect(self.statusServer, SIGNAL('RENDER_COMPLETE'), self.submitJob.startRender)
 
         if not self.statusServer.listen(QHostAddress('0.0.0.0'), settings.netPort('status')):
             print "PyFarm :: StatusServer :: Could not start the server: %s" % self.statusServer.errorString()

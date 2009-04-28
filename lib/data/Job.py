@@ -59,6 +59,10 @@ class FrameData(object):
             if entry[0] == frameid:
                 return selection[0][1]
 
+    def setPID(self, subjob, frame, frameid, pid):
+        '''Set the process id for the given frame'''
+        self.getFrame(subjob, frame, frameid)["pid"] = pid
+
     def setHost(self, subjob, frame, frameid, host):
         '''Set the host for the given frame'''
         self.getFrame(subjob, frame, frameid)["host"] = host
@@ -77,6 +81,10 @@ class FrameData(object):
         end = self.getFrame(subjob, frame, frameid)["end"]
         elapsed = start.secsTo(end)
         self.getFrame(subjob, frame, frameid)["elapsed"] = elapsed
+
+    def setStatus(self, subjob, frame, frameid, status):
+        '''Set the status of the given frame'''
+        self.getFrame(subjob, frame, frameid)["status"] = status
 
 
 class JobStatus(object):
@@ -149,17 +157,6 @@ class JobStatus(object):
             status(int) -- new status to frame to
         '''
         self.job[id]["frames"][frame][0][1]["status"] = status
-
-    def startFrame(self, id, frame):
-        '''
-        Set the frame start time and set
-        status to rendering.
-
-        INPUT:
-            id (str) -- subjob id
-            frame (int) -- frame to change
-        '''
-        pass
 
     def listSubjobs(self):
         '''List the subjobs contained in self.job'''

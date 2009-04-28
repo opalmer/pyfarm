@@ -119,7 +119,7 @@ class Main(QObject):
         print "PyFarm :: Client.AdminServer :: Waiting for signals..."
 
         # start the que server
-        self.que = QueSlaveServer(self)
+        self.que = QueSlaveServer(self.master, self)
         if not self.que.listen(QHostAddress('0.0.0.0'), settings.netPort('que')):
             print "PyFarm :: Client.QueSlave :: Could not start the server: %s" % self.que.errorString()
             return
@@ -128,6 +128,7 @@ class Main(QObject):
     def shutdownServers(self):
         '''Calls the shutdown function all all servers'''
         self.admin.shutdown()
+        self.que.shutdown()
 
     def restart(self):
         '''Close all connections and restart the client'''

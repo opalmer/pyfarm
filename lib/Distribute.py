@@ -23,12 +23,16 @@ for the interface and the network.
 # From Python
 from pprint import pprint
 
+# From PyQt4
+from PyQt4.QtCore import SIGNAL, QObject
+
 # From PyFarm
 from lib.network.Que import QueClient
 
-class DistributeFrames(object):
+class DistributeFrames(QObject):
     '''Setup the que and gather the required data'''
-    def __init__(self, parentClass):
+    def __init__(self, parentClass, parent=None):
+        super(DistributeFrames, self).__init__(parent)
         self.modName = 'DistributeFrames'
         self.software = {}
         self.msg = parentClass.msg
@@ -57,14 +61,38 @@ class DistributeFrames(object):
                                 "software" : frame[2][1]["software"],
                                 "command" : frame[2][1]["command"]
                                 }
-                        #client = QueClient(host, self)
-                        #client.issueRequest(job, frame[0],)
+                        # set the dictionary state information
                         self.jobs[job].data.frame.setHost(data["subjob"], data["frameNum"], data["frameID"], host)
                         self.jobs[job].data.frame.setStart(data["subjob"], data["frameNum"], data["frameID"])
-                        self.jobs[job].data.frame.setEnd(data["subjob"], data["frameNum"], data["frameID"])
+
+                        # setup the client
+                        client = QueClient(host)
+                        self.connect(client, SIGNAL("pid"), self.setPID)
+                        self.connect(client, SIGNAL("finishedFrame"), self.finishedFrame)
+                        self.connect(client, SIGNAL("stdout"), self.logStdOut)
+                        self.connect(client, SIGNAL("stderr"), self.logStdErr)
+                        client.issueRequest(job, data["subjob"], str(data["frameNum"]), data["frameID"], data["software"], data["command"])
         else:
             self.msg.warning('Hosts Not Connected', 'Before rendering you must have at least one host connected to the network.')
 
+    def setPID(self, job, subjob, frame, frameid, pid):
+        '''Set the process id of the given entry'''
+        print "Setting PID"
+
+    def logStdOut(self, job, subjob,  frame, frameid, line):
+        '''Append the line to the appropriate log'''
+        print "Got standard out line"
+
+    def logStdErr(self, job, subjob,  frame, frameid, line):
+        '''Append the line to the appropriate log'''
+        print "Got standard error line"
+
+    def finishedFrame(self, job, subjob,  frame, frameid, host):
+        '''If a render is complete, inform the other parts of pyfarm'''
+        print "PyFarm :: %s :: %s completed a frame"
+        self.jobs[job].data.frame.setEnd(subjob, frame, frameid)
+        self.data.network.host.setStatus(host, 0)
+        self.sendFrames()
 
     def getFrame(self, host, job):
         '''Get a frame from the job dictionary'''
@@ -83,7 +111,6 @@ class DistributeFrames(object):
             else:
                 return 0
 
-
     def hasSoftware(self, host, software):
         '''Check and see if the given host has the software installed'''
         if software in self.software[host]:
@@ -94,6 +121,7 @@ class DistributeFrames(object):
     def sendFrame(self, ip):
         '''Send an individual frame to the given ip'''
         client = QueClient(ip)
+        #client.issueRequest(self, jb, sbjb, fNum, fID, sftw, args):
 
     def indexSoftware(self):
         '''

@@ -39,10 +39,12 @@ class StatusServerThread(QThread):
     Status server thread spawned upon every incoming connection to
     prevent collisions.
     '''
-    def __init__(self, socketId, parent=None):
+    def __init__(self, dataJob, dataGeneral, socketId, parent=None):
         super(StatusServerThread, self).__init__(parent)
         self.socketId = socketId
         self.parent  = parent
+        self.dataJob = dataJob
+        self.dataGeneral = dataGeneral
         self.modName = 'StatusServerThread'
 
     def run(self):
@@ -77,22 +79,41 @@ class StatusServerThread(QThread):
             # prepare vars for input stream
             action = QString()
             options = QString()
+            job = QString()
+            subjob = QString()
+            frame = QString()
+            id = QString()
+            pid = QString()
+            host = QString()
+            code = QString()
+
             print "PyFarm :: %s :: Unpacking packet" % self.modName
             stream >> action
             print "PyFarm :: %s :: Receieved the %s signal" % (self.modName, action)
-
             # if the action is a preset
-            if action in ("INIT", "UPDATE"):
-                stream >> options
+            if action in ("INIT", "newPID", "renderComplete", "renderFailed"):
                 if action == "INIT":
-                    self.parent.emitSignal('INIT', str(options))
-                elif action == "UPDATE":
-                    print "UPDATE FROM CLIENT"
+                    stream >> options
+                    self.parent.emit(SIGNAL('INIT'), str(options))
+                elif action == "newPID":
+                    stream >> job >> subjob >> frame >> id >> pid
+                    self.dataJob[str(job)].data.frame.setPID(str(subjob), int(frame), str(id), str(pid))
+                elif action == "renderComplete":
+                    stream >> host >> job >> subjob >> frame >> id
+                    self.dataJob[str(job)].data.frame.setStatus(str(subjob), int(frame), str(id), 2)
+                    self.dataJob[str(job)].data.frame.setEnd(str(subjob), int(frame), str(id))
+                    self.dataGeneral.network.host.setStatus(str(host), 0)
+                    self.parent.emit(SIGNAL("RENDER_COMPLETE"))
+                elif action == "renderFailed":
+                    stream >> host >> job >> subjob >> frame >> id >> code
+                    self.dataJob[str(job)].data.frame.setStatus(str(subjob), int(frame), str(id), 3)
+                    self.dataJob[str(job)].data.frame.setEnd(str(subjob), int(frame), str(id))
+                    self.dataGeneral.network.host.setStatus(str(host), 0)
+                    self.parent.emit(SIGNAL("RENDER_COMPLETE"))
+                    #self.parent.emit(SIGNAL("FAILED_RENDER"), (str(subjob), int(frame), str(id), str(code)))
 
                 # final send a back the original host
-                self.sendReply(socket, action, options)
-            else:
-                    self.sendError(socket, "%s is not a valid option" % action)
+            self.sendReply(socket, action, options)
             socket.waitForDisconnected()
 
     def sendReply(self, socket, action, options):
@@ -113,25 +134,17 @@ class StatusServer(QTcpServer):
     the main gui of a finished frame, addition of a host to the network, and
     other similiar functions.  See StatusServerThread for the server logic.
     '''
-    def __init__(self, parent=None):
+    def __init__(self, dataJob, dataGeneral, parent=None):
         super(StatusServer, self).__init__(parent)
         self.modName = 'StatusServer'
+        self.dataJob = dataJob
+        self.dataGeneral = dataGeneral
 
     def incomingConnection(self, socketId):
         print "PyFarm :: %s :: Incoming connection" % self.modName
-        self.thread = StatusServerThread(socketId, self)
+        self.thread = StatusServerThread(self.dataJob, self.dataGeneral, socketId, self)
         self.connect(self.thread, SIGNAL("finished()"), self.thread, SLOT("deleteLater()"))
         self.thread.start()
-
-    def emitSignal(self, sig, data):
-        '''
-        Emit a signal back to the main program
-
-        INPUT:
-            sig (str) -- name of signal to emit
-            data (str) -- data to emit
-        '''
-        self.emit(SIGNAL(sig), data)
 
 
 class StatusClient(QObject):
@@ -142,7 +155,7 @@ class StatusClient(QObject):
     INPUT:
         master (str) -- ip address of master to connect to
     '''
-    def __init__(self, master, port, parent=None):
+    def __init__(self, master, port=settings.netPort('status'), parent=None):
         super(StatusClient, self).__init__(parent)
         self.master = master
         self.modName = 'StatusClient'
@@ -166,6 +179,75 @@ class StatusClient(QObject):
             data (str) -- data to send
         '''
         self.issueRequest(QString(cmd), QString(data))
+
+    def sendPID(self, job, subjob, frame, id, pid):
+        '''Send the process id to the status server'''
+        self.request = QByteArray()
+        stream = QDataStream(self.request, QIODevice.WriteOnly)
+        stream.setVersion(QDataStream.Qt_4_2)
+        stream.writeUInt16(0)
+
+        # create the packet
+        stream << QString("newPID")
+        for var in (job, subjob, frame, id, pid):
+            stream << QString(var)
+
+        stream.device().seek(0)
+        stream.writeUInt16(self.request.size() - settings.netGeneral('unit16'))
+
+        if self.socket.isOpen():
+            print "PyFarm :: %s :: Already connected, closing socket" % self.modName
+            self.socket.close()
+
+        print "PyFarm :: %s :: Connecting to %s" % (self.modName, self.master)
+        self.socket.connectToHost(self.master, self.port)
+        self.socket.waitForDisconnected(800)
+
+    def renderComplete(self, host, job, subjob, frame, id):
+        '''Send a render complete packet to the status server'''
+        self.request = QByteArray()
+        stream = QDataStream(self.request, QIODevice.WriteOnly)
+        stream.setVersion(QDataStream.Qt_4_2)
+        stream.writeUInt16(0)
+
+        # create the packet
+        stream << QString("renderComplete")
+        for var in (host, job, subjob, frame, id):
+            stream << QString(var)
+
+        stream.device().seek(0)
+        stream.writeUInt16(self.request.size() - settings.netGeneral('unit16'))
+
+        if self.socket.isOpen():
+            print "PyFarm :: %s :: Already connected, closing socket" % self.modName
+            self.socket.close()
+
+        print "PyFarm :: %s :: Connecting to %s" % (self.modName, self.master)
+        self.socket.connectToHost(self.master, self.port)
+        self.socket.waitForDisconnected(800)
+
+    def renderFailed(self, host, job, subjob, frame, id, code):
+        '''Inform the staus of a failed render'''
+        self.request = QByteArray()
+        stream = QDataStream(self.request, QIODevice.WriteOnly)
+        stream.setVersion(QDataStream.Qt_4_2)
+        stream.writeUInt16(0)
+
+        # create the packet
+        stream << QString("renderFailed")
+        for var in (host, job, subjob, frame, id, code):
+            stream << QString(var)
+
+        stream.device().seek(0)
+        stream.writeUInt16(self.request.size() - settings.netGeneral('unit16'))
+
+        if self.socket.isOpen():
+            print "PyFarm :: %s :: Already connected, closing socket" % self.modName
+            self.socket.close()
+
+        print "PyFarm :: %s :: Connecting to %s" % (self.modName, self.master)
+        self.socket.connectToHost(self.master, self.port)
+        self.socket.waitForDisconnected(800)
 
     def issueRequest(self, action, options=None):
         '''Issue the given request the remove host'''
