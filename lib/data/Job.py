@@ -39,6 +39,45 @@ statistics = Statistics()
 typeCheck = TypeTest('JobData')
 error = ErrorProcessingSetup('JobData')
 
+class SubjobData(object):
+    '''Designed to set the individual parameters of a subjob'''
+    def __init__(self, job, dataClass):
+        self.job = job
+        self.dataClass = dataClass
+
+    def stats(self, subjob):
+        '''Return the status dictionary for the given subjob'''
+        return self.job[subjob]["statistics"]
+
+    def addToCount(self, subjob):
+        '''Add to the total frame framecount'''
+        oldVal = self.stats(subjob)["frames"]["frameCount"]
+        self.stats(subjob)["frames"]["frameCount"] = oldVal+1
+
+    def statusKey(self, subjob, status):
+        '''Return the dictionary entry for the given status'''
+        if status == 0:
+            return "waiting"
+        elif status == 1:
+            return "rendering"
+        elif status == 2:
+            return "complete"
+        elif status == 3:
+            return "failed"
+
+    def addToStatus(self, subjob, status):
+        '''Add to the count the correct status category for the given subjob'''
+        key = self.statusKey(subjob, status)
+        oldVal = self.stats(subjob)["frames"][key]
+        self.stats(subjob)["frames"][key] = oldVal + 1
+
+    def subtractFromStatus(self, subjob, status):
+        '''Add to the count the correct status category for the given subjob'''
+        key = self.statusKey(subjob, status)
+        oldVal = self.stats(subjob)["frames"][key]
+        self.stats(subjob)["frames"][key] = oldVal - 1
+
+
 class FrameData(object):
     '''
     Designed to set the individual parameters of a frame
@@ -46,8 +85,9 @@ class FrameData(object):
     INPUT:
         job (dict) -- job dictionary to work with
     '''
-    def __init__(self, job):
+    def __init__(self, job, dataClass):
         self.job = job
+        self.dataClass = dataClass
 
     def getFrame(self, subjob, frame, frameid):
         '''
@@ -84,7 +124,10 @@ class FrameData(object):
 
     def setStatus(self, subjob, frame, frameid, status):
         '''Set the status of the given frame'''
+        oldStatus = self.getFrame(subjob, frame, frameid)["status"]
         self.getFrame(subjob, frame, frameid)["status"] = status
+        self.dataClass.subjob.subtractFromStatus(subjob, oldStatus)
+        self.dataClass.subjob.addToStatus(subjob, status)
 
 
 class JobStatus(object):
@@ -103,7 +146,11 @@ class JobStatus(object):
         self.general = generalData
         self.jobManager = parent
         self.modName = 'JobStatus'
-        self.subjobs = [subjob for subjob in self.job.keys()]
+
+    def subjobs(self):
+        '''Yield all subjobs'''
+        for subjob in self.job.keys():
+            yield subjob
 
     def overall(self):
         '''
@@ -162,11 +209,6 @@ class JobStatus(object):
         '''List the subjobs contained in self.job'''
         return self.job.keys()
 
-    def subjobs(self):
-        '''Subjob generator'''
-        for subjob in self.job.keys():
-            yield subjob
-
     def listFrames(self, id=False):
         '''
         If id is given, list the frames of the id.  If
@@ -205,32 +247,28 @@ class JobStatus(object):
         '''Return the number of waiting frames'''
         count = 0
         for id in self.job.keys():
-            if id != None:
-                count += self.job[id]["statistics"]["frames"]["waiting"]
+            count += self.job[id]["statistics"]["frames"]["waiting"]
         return count
 
     def renderingFrameCount(self):
         '''Return the number of rendering frames'''
         count = 0
         for id in self.job.keys():
-            if id != None:
-                count += self.job[id]["statistics"]["frames"]["rendering"]
+            count += self.job[id]["statistics"]["frames"]["rendering"]
         return count
 
     def failedFrameCount(self):
         '''Return the number of failed frames'''
         count = 0
         for id in self.job.keys():
-            if id != None:
-                count += self.job[id]["statistics"]["frames"]["failed"]
+            count += self.job[id]["statistics"]["frames"]["failed"]
         return count
 
     def completeFrameCount(self):
         '''Return the number of complete frames'''
         count = 0
         for id in self.job.keys():
-            if id != None:
-                count += self.job[id]["statistics"]["frames"]["complete"]
+            count += self.job[id]["statistics"]["frames"]["complete"]
         return count
 
     def subjobCount(self):
@@ -248,8 +286,8 @@ class JobData(object):
         parentClass (mapped class) -- instance of main program
         jobManager (mapped class) -- instance of job manager
     '''
-    def __init__(self, job, name, parentClass, jobManager):
-        self.job = job
+    def __init__(self, name, parentClass, jobManager):
+        self.job = jobManager.job
         self.name = name
         self.general = parentClass.dataGeneral
         self.parent = parentClass
@@ -257,7 +295,8 @@ class JobData(object):
         self.renderConfig = ConfigureCommand(parentClass.ui)
         self.ui =parentClass.ui
         self.jobManager = jobManager
-        self.frame = FrameData(job, )
+        self.frame = FrameData(jobManager.job, self)
+        self.subjob = SubjobData(jobManager.job, self)
 
     def createSubjob(self, id, priority):
         '''
@@ -310,9 +349,9 @@ class JobData(object):
         else:
             self.job[id]["frames"][frame].append(["%x" % self.job[id]["statistics"]["frames"]["frameCount"], entry])
 
-        # update the subjob statistics
-        self.job[id]["statistics"]["frames"]["frameCount"] += 1
-        self.job[id]["statistics"]["frames"]["waiting"] += 1
+        # update the subjob statistics and UI
+        self.subjob.addToStatus(id, 0)
+        self.subjob.addToCount(id)
         self.jobManager.uiStatus.queue.frames.addWaiting()
         self.parent.tableManager.addFrame(self.name)
 
@@ -344,7 +383,7 @@ class JobManager(object):
     '''
     def __init__(self, name, parentClass):
         self.job = {}
-        self.data = JobData(self.job, name, parentClass, self)
+        self.data = JobData(name, parentClass, self)
         self.status = JobStatus(self.job, name, parentClass.dataGeneral, parentClass.ui, self)
         self.uiStatus = StatusManager(parentClass.dataGeneral, parentClass.ui)
 
@@ -362,6 +401,13 @@ class JobManager(object):
                     else:
                         yield 0
 
+    def yieldAllFrames(self):
+        '''Yield all frames'''
+        for subjob in self.job.keys():
+            for frame in self.job[subjob]["frames"]:
+                for entry in self.job[subjob]["frames"][frame]:
+                        yield subjob, frame, entry
+
     def getFrame(self):
         '''
         Get a waiting frame and return it
@@ -369,11 +415,9 @@ class JobManager(object):
         VARS:
             entry[1] == frame id
         '''
-        for subjob in self.job.keys():
-            for frame in self.job[subjob]["frames"]:
-                for entry in self.job[subjob]["frames"][frame]:
-                    if entry[1]["status"] == 0:
-                        return subjob, frame, entry
+        for frame in self.yieldAllFrames():
+            if frame[2][1]["status"] == 0:
+                    return frame[0], frame[1], frame[2]
 
     def requiredSoftware(self):
         '''Get the software required to render the job'''

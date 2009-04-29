@@ -52,7 +52,7 @@ class DistributeFrames(QObject):
             for host in self.hosts:
                 for job in self.jobs:
                     frame = self.getFrame(host, job)
-                    if frame: # check to make sure we found a frame
+                    if frame:
                         data = {
                                 "job" : job,
                                 "subjob" : frame[0],
@@ -75,6 +75,26 @@ class DistributeFrames(QObject):
         else:
             self.msg.warning('Hosts Not Connected', 'Before rendering you must have at least one host connected to the network.')
 
+    def getFrame(self, host, job):
+        '''Get a frame from the job dictionary'''
+        # if the host is in a waiting state
+        if self.network[host]["status"] == 0 and self.jobs[job].status.waitingFrameCount() != 0:
+            entry = self.jobs[job].getFrame()
+            if entry:
+                # inform the user of the node, then set its status
+                print "PyFarm :: %s :: %s is avaliable to render" % (self.modName, host)
+                subjob = entry[0]
+                frame = entry[1]
+                id = entry[2][0]
+
+                # set the frame and host status
+                self.data.network.host.setStatus(host, 1)
+                self.jobs[job].data.frame.setStatus(subjob, frame, id, 1)
+
+                return entry
+            else:
+                return 0
+
     def setPID(self, job, subjob, frame, frameid, pid):
         '''Set the process id of the given entry'''
         print "Setting PID"
@@ -93,23 +113,6 @@ class DistributeFrames(QObject):
         self.jobs[job].data.frame.setEnd(subjob, frame, frameid)
         self.data.network.host.setStatus(host, 0)
         self.sendFrames()
-
-    def getFrame(self, host, job):
-        '''Get a frame from the job dictionary'''
-        # if the host is in a waiting state
-        if self.network[host]["status"] == 0:
-            frame = self.jobs[job].getFrame()
-            if frame: # ONLY if we find a frame should we continue
-                # inform the user of the node, then set its status
-                print "PyFarm :: %s :: %s is avaliable to render" % (self.modName, host)
-                #print frame
-                # set the frame and host status
-                self.data.network.host.setStatus(host, 1)
-                self.jobs[job].status.setFrame(frame[0], frame[1], 1)
-
-                return frame
-            else:
-                return 0
 
     def hasSoftware(self, host, software):
         '''Check and see if the given host has the software installed'''

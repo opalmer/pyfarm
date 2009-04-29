@@ -127,6 +127,7 @@ class Main(QMainWindow):
         # populate the avaliable list of renderers
         self.softwareManager.setSoftware(self.ui.softwareSelection.currentText())
         self.ui.softwareSelection.currentText()
+        #self.ui.jobsRemove.setEnabled(1)
 
         # setup ui vars
         self.ui.currentJobs.horizontalHeader().setStretchLastSection(True)
@@ -171,8 +172,6 @@ class Main(QMainWindow):
         '''Take action when a frame is finished'''
         self.tableManager.frameComplete(job)
         self.submitJob.startRender()
-
-
 
 ################################
 ## BEGIN Context Menus
@@ -589,8 +588,11 @@ class Main(QMainWindow):
 
     def fakeSetup(self):
         '''Setup the fake information for presentation'''
+        from lib.ui.main.maya.RenderLayers import MayaCamAndLayers
         self.ui.inputJobName.setText('fakeJob')
-        self.ui.mayaScene.setText('/farm/projects/PyFarm/trunk/RC3/01_mr_renderLayers.ma')
+        getCamAndLayers = MayaCamAndLayers(self.ui.mayaRenderLayers, self.ui.mayaCamera)
+        self.ui.mayaScene.setText('/stuhome/PyFarm/trunk/tests/maya/2009/scenes/01_mr_renderLayers.ma')
+        getCamAndLayers.run('/stuhome/PyFarm/trunk/tests/maya/2009/scenes/01_mr_renderLayers.ma')
 
     def fakeTableEntries(self):
         '''Add a fake progress bar to the table'''
