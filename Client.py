@@ -26,7 +26,7 @@ import os.path
 from os import getcwd
 
 # From PyQt
-from PyQt4.QtCore import QObject, QCoreApplication, SIGNAL, SLOT
+from PyQt4.QtCore import QObject, QCoreApplication, SIGNAL, SLOT, QEvent
 from PyQt4.QtNetwork import QHostInfo, QHostAddress
 
 # From PyFarm
@@ -41,8 +41,9 @@ from lib.network.Broadcast import BroadcastReceiever
 settings = ParseXmlSettings('%s/settings.xml' % getcwd())
 
 class Main(QObject):
-    def __init__(self, parent=None):
+    def __init__(self, coreApp, parent=None):
         super(Main, self).__init__(parent)
+        print coreApp.argv()
         self.master = ''
         self.hostname = ''
         self.ip = ''
@@ -143,6 +144,6 @@ class Main(QObject):
         sys.exit("PyFarm :: Client :: Client Shutdown by Admin")
 
 app = QCoreApplication(sys.argv)
-main = Main()
+main = Main(app)
 main.listenForBroadcast()
 app.exec_()

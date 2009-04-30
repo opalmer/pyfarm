@@ -60,18 +60,7 @@ __HOMEPAGE__ = 'http://www.pyfarm.net'
 __DOCS__ = '%s/wiki' % __HOMEPAGE__
 
 class Main(QMainWindow):
-    '''
-    This is the controlling class for the main gui
-
-    NOTES:
-        + Functions that are CAPITALIZED from the start are primary
-        functions.  For example a function that brings up a file browsing
-        gui would be a primary function
-
-        + Functions that do not fall into the above category are utility
-        functions.  They are used more often and over a broader spectrum.
-        For example the setStartFrame is called whenever a new start frame is declared.
-    '''
+    '''This is the controlling class for the main gui'''
     def __init__(self):
         super(Main, self).__init__()
 
