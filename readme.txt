@@ -43,3 +43,16 @@ LICENSE
 
     You should have received a copy of the GNU General Public License
     along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
+
+INSTALLATION INSTRUCTIONS
+ 1.) Open a console window and enter the command below
+        gksu aptitude -y install python-qt4
+
+BASIC USAGE
+    1.) Run the client program, Client.py
+    2.) Run the main application, Main.pyw
+    3.) Find nodes
+    4.) Select a scene to render
+    5.) Name the job
+    6.) Submit
+    7.) Render
