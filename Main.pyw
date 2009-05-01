@@ -154,8 +154,8 @@ class Main(QMainWindow):
         self.connect(self.ui.removeHost, SIGNAL("pressed()"), self.dataGeneral.removeHost)
 
         # GENERATE SOME FAKE DATA
-        self.connect(self.ui.currentJobs, SIGNAL("cellActivated(int,int)"), self.fakePrintTableSelection)
-        self.fakeSetup()
+#        self.connect(self.ui.currentJobs, SIGNAL("cellActivated(int,int)"), self.fakePrintTableSelection)
+#        self.fakeSetup()
 
     def frameComplete(self, job):
         '''Take action when a frame is finished'''

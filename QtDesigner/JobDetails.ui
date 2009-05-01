@@ -14,6 +14,9 @@
    <string>Job Details</string>
   </property>
   <widget class="QGroupBox" name="jobGroupBox">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="geometry">
     <rect>
      <x>10</x>
@@ -87,6 +90,9 @@
    </widget>
   </widget>
   <widget class="QGroupBox" name="groupBox_2">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="geometry">
     <rect>
      <x>10</x>
@@ -257,6 +263,9 @@
      <layout class="QHBoxLayout">
       <item>
        <widget class="QPushButton" name="refreshNow">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
         <property name="text">
          <string>Refresh</string>
         </property>
@@ -264,6 +273,9 @@
       </item>
       <item>
        <widget class="QCheckBox" name="autoRefresh">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
         <property name="text">
          <string>Auto Refresh</string>
         </property>
@@ -303,6 +315,9 @@
       </item>
       <item>
        <widget class="QPushButton" name="saveFrameLog">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
         <property name="text">
          <string>Save Log</string>
         </property>

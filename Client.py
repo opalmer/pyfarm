@@ -22,12 +22,17 @@ PURPOSE: To handle and run all client connections on a remote machine
 '''
 # From Python
 import sys
-import os.path
 from os import getcwd
+from os.path import dirname
 
 # From PyQt
-from PyQt4.QtCore import QObject, QCoreApplication, SIGNAL, SLOT, QEvent
+from PyQt4.QtCore import QObject, QDir, QString
+from PyQt4.QtCore import QCoreApplication, SIGNAL, SLOT
 from PyQt4.QtNetwork import QHostInfo, QHostAddress
+
+#program = sys.argv[0]
+#print dirname(program)
+#print QDir(dirname(program)).canonicalPath()
 
 # From PyFarm
 from lib.Info import System
@@ -43,7 +48,9 @@ settings = ParseXmlSettings('%s/settings.xml' % getcwd())
 class Main(QObject):
     def __init__(self, coreApp, parent=None):
         super(Main, self).__init__(parent)
-        print coreApp.argv()
+#        self.core = coreApp
+#        self.relative = coreApp.argv()[0]
+#        self.absolute = QDir(coreApp.argv()[0]).canonicalPath()
         self.master = ''
         self.hostname = ''
         self.ip = ''
