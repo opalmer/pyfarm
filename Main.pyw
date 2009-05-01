@@ -55,7 +55,7 @@ from lib.network.Status import StatusServer
 from lib.ui.main.job.table.JobTableManager import JobTableManager
 
 __DEVELOPER__ = 'Oliver Palmer'
-__VERSION__ = 'RC3'
+__VERSION__ = 'RC3.193'
 __HOMEPAGE__ = 'http://www.pyfarm.net'
 __DOCS__ = '%s/wiki' % __HOMEPAGE__
 
