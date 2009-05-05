@@ -19,8 +19,6 @@ PURPOSE: Manages and updates the job details table
     You should have received a copy of the GNU General Public License
     along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 '''
-from os import getcwd
-
 # From PyQt
 from PyQt4.QtGui import QColor, QPushButton
 from PyQt4.QtCore import Qt, QString, QAbstractTableModel, QModelIndex, QVariant, QTime
@@ -29,7 +27,7 @@ from PyQt4.QtCore import Qt, QString, QAbstractTableModel, QModelIndex, QVariant
 from lib.Info import Int2Time
 from lib.ReadSettings import ParseXmlSettings
 
-settings = ParseXmlSettings('%s/settings.xml' % getcwd(), skipSoftware=True)
+settings = ParseXmlSettings('settings.xml', skipSoftware=True)
 SUBJOB, STATUS, UID, FRAME, START, END, ELAPSED, HOST, PID, SOFTWARE, COMMAND = range(11)
 
 class FrameEntry(object):

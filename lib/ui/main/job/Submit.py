@@ -20,7 +20,6 @@ PURPOSE: Contains classes related to initial job submission
     along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 '''
 # From Python
-from os import getcwd
 from os.path import isfile
 from pprint import pprint
 
@@ -32,7 +31,7 @@ from lib.RenderConfig import ConfigureCommand
 from lib.ui.main.CustomWidgets import MessageBox
 from lib.Distribute import DistributeFrames
 
-settings = ParseXmlSettings('%s/settings.xml' % getcwd())
+settings = ParseXmlSettings('settings.xml')
 
 class SubmitManager(object):
     '''

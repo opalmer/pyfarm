@@ -19,16 +19,14 @@ PURPOSE: To manage the status subsection of PyFarm
     You should have received a copy of the GNU General Public License
     along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 '''
-# From Python
-from os import getcwd
-
 # From PyQt
-from PyQt4.QtCore import QString
+from PyQt4.QtCore import QString, QDir
 from PyQt4.QtGui import QColor
 
 # From PyFarm
 from lib.ReadSettings import ParseXmlSettings
-settings = ParseXmlSettings('%s/settings.xml' % getcwd(), skipSoftware=True)
+settings = ParseXmlSettings('settings.xml',  skipSoftware=True)
+
 
 class PyFarm(object):
     '''Manager for the PyFarm status section'''

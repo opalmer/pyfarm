@@ -22,17 +22,17 @@ After discovering this information it will then try and discover the currently i
     along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 '''
 # From PyQt
-from os import listdir, system, getcwd
+from os import listdir, system
 from os.path import isfile, islink, isdir, normpath
 
 # From PyQt
-from PyQt4.QtCore import QThread, QObject, QRegExp, SIGNAL, SLOT
+from PyQt4.QtCore import QThread, QObject, QRegExp, SIGNAL, SLOT, QDir
 
 # From PyFarm
 from lib import Info
 from lib.ReadSettings import ParseXmlSettings
 
-settings = ParseXmlSettings('%s/settings.xml' % getcwd(), skipSoftware=True)
+settings = ParseXmlSettings('settings.xml',  skipSoftware=True)
 
 class ConfigureCommand(object):
     '''Configure the input options to a viable output'''

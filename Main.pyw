@@ -22,7 +22,7 @@ PURPOSE: Main program to run and manage PyFarm
 '''
 # From Python
 import sys
-import os.path
+from  os.path import dirname
 from time import time, sleep
 from random import randrange, random
 from pprint import pprint
@@ -32,13 +32,17 @@ from pprint import pprint
 from PyQt4.QtGui import QMainWindow, QMessageBox
 from PyQt4.QtGui import QTableWidgetItem, QTreeWidgetItem
 from PyQt4.QtGui import QColor, QProgressBar, QPushButton
+from PyQt4.QtCore import QDir
 from PyQt4.QtNetwork import QHostInfo, QHostAddress
+
+wd = dirname(str(QDir(sys.argv[0]).canonicalPath()))
+QDir().setCurrent(wd)
 
 # From PyFarm
 ## settings first
 from lib.RenderConfig import *
 from lib.ReadSettings import ParseXmlSettings
-settings = ParseXmlSettings('%s/settings.xml' % os.getcwd(), 'gui')
+settings = ParseXmlSettings('settings.xml', 'gui')
 
 import lib.Info as Info
 from lib.ui.RC3 import Ui_RC3

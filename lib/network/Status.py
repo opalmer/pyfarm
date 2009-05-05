@@ -20,9 +20,6 @@ of status information.
     You should have received a copy of the GNU General Public License
     along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 '''
-# From Python
-from os import getcwd
-
 # From PyQt (Seperated into sections)
 from PyQt4.QtCore import QThread, QObject, SIGNAL, SLOT, QString
 from PyQt4.QtCore import QByteArray, QDataStream, QIODevice
@@ -32,7 +29,7 @@ from PyQt4.QtNetwork import QAbstractSocket
 # From PyFarm
 from lib.ReadSettings import ParseXmlSettings
 
-settings = ParseXmlSettings('%s/settings.xml' % getcwd())
+settings = ParseXmlSettings('settings.xml')
 
 class StatusServerThread(QThread):
     '''

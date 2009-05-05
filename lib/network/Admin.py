@@ -19,9 +19,6 @@ PURPOSE: Network modules used in the administration of remote clients
     You should have received a copy of the GNU General Public License
     along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 '''
-# From Python
-from os import getcwd
-
 # From PyQt
 from PyQt4.QtCore import QThread, QString, QObject
 from PyQt4.QtCore import SIGNAL, QDataStream, QByteArray, QIODevice, SLOT
@@ -29,7 +26,7 @@ from PyQt4.QtNetwork import QAbstractSocket, QTcpSocket, QTcpServer
 
 # From PyFarm
 from lib.ReadSettings import ParseXmlSettings
-settings = ParseXmlSettings('%s/settings.xml' % getcwd(), skipSoftware=False)
+settings = ParseXmlSettings('settings.xml', skipSoftware=False)
 
 class AdminServerThread(QThread):
     '''Admin server thread spawned by AdminServer'''

@@ -20,10 +20,6 @@ the related variables
     You should have received a copy of the GNU General Public License
     along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 '''
-# From Python
-from os import getcwd
-from os.path import basename
-
 # From PyQt
 from PyQt4.QtGui import QFileDialog
 from PyQt4.QtCore import QString, QFileInfo
@@ -32,7 +28,8 @@ from PyQt4.QtCore import QString, QFileInfo
 from lib.ReadSettings import ParseXmlSettings
 from lib.ui.main.CustomWidgets import MessageBox
 from lib.ui.main.maya.RenderLayers import MayaCamAndLayers
-settings = ParseXmlSettings('%s/settings.xml' % getcwd())
+
+settings = ParseXmlSettings('settings.xml')
 
 
 class SoftwareContextManager(object):

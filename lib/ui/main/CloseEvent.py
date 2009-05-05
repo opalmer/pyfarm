@@ -19,9 +19,6 @@ PURPOSE: Close event classes, run when PyFarm is being closed by the user
     You should have received a copy of the GNU General Public License
     along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 '''
-# From Python
-from os import getcwd
-
 # From PyQt4
 from PyQt4.QtGui import QMessageBox
 from PyQt4.QtCore import QThread, QString, QObject, SIGNAL
@@ -31,7 +28,7 @@ from lib.network.Admin import AdminClient
 from lib.ReadSettings import ParseXmlSettings
 from lib.PyFarmExceptions import ErrorProcessingSetup
 
-settings = ParseXmlSettings('%s/settings.xml' % getcwd(), skipSoftware=True)
+settings = ParseXmlSettings('settings.xml', skipSoftware=True)
 
 class CloseEventManager(QObject):
     '''

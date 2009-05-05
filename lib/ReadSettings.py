@@ -31,7 +31,6 @@ from PyQt4.QtCore import QRegExp, QVariant
 # From PyFarm
 import Info
 from PyFarmExceptions import ErrorProcessingSetup
-#from lib.ui.main.CustomWidgets import XMLFileNotFound
 
 class SoftwareSearch(object):
     '''
