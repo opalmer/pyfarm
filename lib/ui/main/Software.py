@@ -20,6 +20,9 @@ the related variables
     You should have received a copy of the GNU General Public License
     along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 '''
+# From Python
+from os.path import basename
+
 # From PyQt
 from PyQt4.QtGui import QFileDialog
 from PyQt4.QtCore import QString, QFileInfo

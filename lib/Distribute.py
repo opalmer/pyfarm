@@ -124,7 +124,7 @@ class DistributeFrames(QObject):
     def sendFrame(self, ip):
         '''Send an individual frame to the given ip'''
         client = QueClient(ip)
-        #client.issueRequest(self, jb, sbjb, fNum, fID, sftw, args):
+        client.issueRequest(self, jb, sbjb, fNum, fID, sftw, args)
 
     def indexSoftware(self):
         '''

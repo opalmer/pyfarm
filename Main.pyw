@@ -56,6 +56,7 @@ from lib.data.General import GeneralManager
 from lib.network.Admin import AdminClient
 from lib.network.Broadcast import BroadcastSender
 from lib.network.Status import StatusServer
+from lib.network.StdLogging import TCPServerStdOut
 from lib.ui.main.job.table.JobTableManager import JobTableManager
 
 __DEVELOPER__ = 'Oliver Palmer'
@@ -87,14 +88,22 @@ class Main(QMainWindow):
         self.msg = MessageBox(self)
         self.softwareManager.setSoftware(self.ui.softwareSelection.currentText())
 
-        # setup status server
-        self.statusServer = StatusServer(self.dataJob, self.dataGeneral, self)
+        # network server setup
+        self.statusServer = StatusServer(self.dataJob, self.dataGeneral)
         self.connect(self.statusServer, SIGNAL('INIT'), self.updateSystemDataDict)
         self.connect(self.statusServer, SIGNAL('FRAME_COMPLETE'), self.frameComplete)
+        self.logServer = TCPServerStdOut()
 
+        # start the servers
         if not self.statusServer.listen(QHostAddress('0.0.0.0'), settings.netPort('status')):
             print "PyFarm :: StatusServer :: Could not start the server: %s" % self.statusServer.errorString()
-        print "PyFarm :: StatusServer :: Waiting for signals..."
+        else:
+            print "PyFarm :: StatusServer :: Waiting for signals..."
+
+        if not self.logServer.listen(QHostAddress('0.0.0.0'), settings.netPort('stdout')):
+            print "PyFarm :: LogServer :: Could not start the server: %s" % self.statusServer.errorString()
+        else:
+            print "PyFarm :: LogServer :: Waiting for log lines..."
 
         # setup some basic colors
         self.red = QColor(255, 0, 0)
@@ -120,7 +129,6 @@ class Main(QMainWindow):
         # populate the avaliable list of renderers
         self.softwareManager.setSoftware(self.ui.softwareSelection.currentText())
         self.ui.softwareSelection.currentText()
-        #self.ui.jobsRemove.setEnabled(1)
 
         # setup ui vars
         self.ui.currentJobs.horizontalHeader().setStretchLastSection(True)
@@ -156,10 +164,6 @@ class Main(QMainWindow):
         self.connect(self.ui.getHostInfo, SIGNAL("pressed()"), self.showHostInfo)
         self.connect(self.ui.addHost, SIGNAL("pressed()"), self._customHostDialog)
         self.connect(self.ui.removeHost, SIGNAL("pressed()"), self.dataGeneral.removeHost)
-
-        # GENERATE SOME FAKE DATA
-#        self.connect(self.ui.currentJobs, SIGNAL("cellActivated(int,int)"), self.fakePrintTableSelection)
-#        self.fakeSetup()
 
     def frameComplete(self, job):
         '''Take action when a frame is finished'''
@@ -517,11 +521,9 @@ class Main(QMainWindow):
 
         # open the widget
         widget.exec_()
-
 ################################
 ## END Host Management
 ################################
-
     def workSent(self, work):
         '''Inform the user that a job is being sent'''
         self.updateStatus('NETWORK', 'Sending frame %s from job %s to %s' % (work[2], work[1], work[0]), 'green')
@@ -570,14 +572,6 @@ class Main(QMainWindow):
             color (string) - The color name or hex value to set the section
         '''
         self.ui.status.append('<font color=%s><b>%s</b></font> - %s' % (color, section, msg))
-################################
-## END Status/Message System
-################################
-## BEGIN Job System Manager
-################################
-    def fakePrintTableSelection(self, x, y):
-        '''Print the current table selection'''
-        print "X: %i Y: %i" % (x, y)
 
     def fakeSetup(self):
         '''Setup the fake information for presentation'''
@@ -586,148 +580,6 @@ class Main(QMainWindow):
         getCamAndLayers = MayaCamAndLayers(self.ui.mayaRenderLayers, self.ui.mayaCamera)
         self.ui.mayaScene.setText('/stuhome/PyFarm/trunk/tests/maya/2009/scenes/01_mr_renderLayers.ma')
         getCamAndLayers.run('/stuhome/PyFarm/trunk/tests/maya/2009/scenes/01_mr_renderLayers.ma')
-
-    def fakeTableEntries(self):
-        '''Add a fake progress bar to the table'''
-        jobs = self.ui.currentJobs
-        jobNames = ["job1", "job2", "job3", "job4", "job5"]
-        self.jobNames = jobNames
-        states = [["Waiting", [self.black, self.white]], ["Rendering", [self.white, self.green]], ["Failed", [self.white, self.red]]]
-        statusKeys = [["Rendering", [self.black, self.orange]],
-                                    ["Rendering", [self.black, self.orange]],
-                                    ["Rendering", [self.black, self.orange]],
-                                    ["Failed",[self.black, self.red]],
-                                    ["Waiting", [self.black, self.white]]
-                                    ]
-
-        for row in range(0, len(jobNames)):
-            jobs.insertRow(row)
-            name = QTableWidgetItem(QString(jobNames[row]))
-
-            # set the status (inluding color)
-            status = QTableWidgetItem(statusKeys[row][0])
-            status.setTextColor(statusKeys[row][1][0])
-            status.setBackgroundColor(statusKeys[row][1][1])
-
-            # set the progress bar
-            s = 1
-            e = 50
-            self.s = s
-            self.e = e
-            progress = QProgressBar()
-            progress.setRange(s, e)
-            progress.setValue(1)
-            jobs.setItem(row, 0, name)
-            jobs.setItem(row, 1, status)
-            jobs.setCellWidget(row, 2, progress)
-            jobs.resizeColumnsToContents()
-
-            # change the color of the and progress area, based on status
-            if jobs.item(row, 1).text() == 'Failed':
-                status = QTableWidgetItem(QString("Rendering"))
-                status.setTextColor(self.black)
-                status.setBackgroundColor(self.orange)
-                jobs.setItem(row, 1, status)
-
-                # connect to fake failure
-                self.fakeProgressFailure = FakeProgressBarFailure(progress, self)
-                self.connect(self.fakeProgressFailure, SIGNAL("increment"), progress.setValue)
-                self.connect(self.fakeProgressFailure, SIGNAL("failed"), self.fakeFailRender)
-                self.fakeProgressFailure.start()
-
-            elif jobs.item(row, 1).text() == 'Waiting':
-                progress.setDisabled(1)
-                jobs.setCellWidget(row, 2, progress)
-            else:
-                fakeProgress = FakeProgressBar(progress, jobNames[row], row, self)
-                self.connect(fakeProgress, SIGNAL("increment"), progress.setValue)
-                self.connect(fakeProgress, SIGNAL("complete"), self.fakeSetRenderComplete)
-                fakeProgress.start()
-
-    def fakeFailRender(self):
-        '''Fake a failed render'''
-        self.fakeProgressFailure.quit()
-
-        newStatus = QTableWidgetItem(QString("Failed"))
-        newStatus.setTextColor(self.black)
-        newStatus.setBackgroundColor(self.red)
-
-        newName = QTableWidgetItem(QString(self.jobNames[3]))
-        newName.setTextColor(self.black)
-        newName.setBackgroundColor(self.red)
-
-        replaceProgress = QTableWidgetItem(QString("FRAME FAILED TO RENDER (SEE THE LOGS)"))
-        replaceProgress.setTextColor(self.black)
-        replaceProgress.setBackgroundColor(self.red)
-
-        self.ui.currentJobs.setItem(3, 0, newName)
-        self.ui.currentJobs.setItem(3, 1, newStatus)
-        self.ui.currentJobs.setItem(3, 2, replaceProgress)
-
-        self.fakeStartWaitingRender()
-
-    def fakeStartWaitingRender(self):
-        '''Fake a waiting render start'''
-        progress = QProgressBar()
-        progress.setRange(self.s, self.e)
-        progress.setValue(1)
-
-        newStatus = QTableWidgetItem(QString("Rendering"))
-        newStatus.setTextColor(self.black)
-        newStatus.setBackgroundColor(self.orange)
-
-        self.ui.currentJobs.setItem(4, 1, newStatus)
-        self.ui.currentJobs.setCellWidget(4, 2, progress)
-
-        fakeProgress = FakeProgressBar(progress, "MEL Script Test", 4, self)
-        self.connect(fakeProgress, SIGNAL("increment"), progress.setValue)
-        self.connect(fakeProgress, SIGNAL("complete"), self.fakeSetRenderComplete)
-        fakeProgress.start()
-
-    def fakeSetRenderComplete(self, inList):
-        '''Change the colors of complere renders'''
-        oldName = inList[0]
-        row = inList[1]
-
-        newName = QTableWidgetItem(QString(oldName))
-        newName.setTextColor(self.white)
-        newName.setBackgroundColor(self.green)
-
-        newStatus = QTableWidgetItem(QString("Complete"))
-        newStatus.setTextColor(self.white)
-        newStatus.setBackgroundColor(self.green)
-
-        progress = QTableWidgetItem()
-        progress.setBackgroundColor(self.green)
-
-        self.ui.currentJobs.setItem(row, 0, newName)
-        self.ui.currentJobs.setItem(row, 1, newStatus)
-        self.ui.currentJobs.setItem(row, 2, progress)
-
-    def openLog(self):
-        '''Open up the frame log and show it to the user'''
-        log = open("/farm/projects/PyFarm/trunk/RC3/job4_log.001.txt", 'r')
-        widget = LogViewer()
-
-        # add the contents of the log to the gui
-        for line in log:
-            widget.ui.log.append(line)
-
-        widget.exec_()
-
-    def RemoveJobFromTable(self):
-        '''Remove the fake bad job'''
-        jobs = self.ui.currentJobs
-        jobs.removeRow(jobs.currentRow())
-
-################################
-## END Job System Manager
-################################
-## BEGIN General Utilities
-################################
-    def printData(self):
-        '''print out the data dictionary'''
-        pprint(self.dataGeneral.dataGeneral())
 
     def closeEvent(self, event):
         '''Run when closing the main gui, used to "cleanup" the program state'''
