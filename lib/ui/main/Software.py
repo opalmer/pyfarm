@@ -120,6 +120,7 @@ class SoftwareContextManager(object):
             getCamAndLayers.run(render_file)
 
         if not render_file == '':
+            print QDir(render_file).canonicalPath()
             self.scene.setText(render_file)
 
     def browseForMayaOutDir(self):
