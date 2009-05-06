@@ -20,9 +20,9 @@ PURPOSE: Used to read in settings of PyFarm
     along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 '''
 # From Python
-from os.path import isdir, isfile
-from os import listdir
 import xml.dom.minidom
+from os import listdir
+from os.path import isdir, isfile
 
 # From PyQt
 from PyQt4.QtGui import QColor

@@ -21,11 +21,15 @@ the related variables
     along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 '''
 # From Python
-from os.path import basename
+import sys
+from os.path import basename, dirname
 
 # From PyQt
 from PyQt4.QtGui import QFileDialog
-from PyQt4.QtCore import QString, QFileInfo
+from PyQt4.QtCore import QString, QFileInfo, QDir
+
+wd = dirname(str(QDir(sys.argv[0]).canonicalPath()))
+QDir().setCurrent(wd)
 
 # From PyFarm
 from lib.ReadSettings import ParseXmlSettings
@@ -60,21 +64,27 @@ class SoftwareContextManager(object):
 
         OUTPUTS:
             self.scene -- path to ui component used to hold the file to render
-            '''
-        # if we are using maya
-        if settings.commonName(str(software)) == 'maya':
-            self.scene = self.ui.mayaScene
-            self._setDefaults(software)
+        '''
+        if software:
+            # if we are using maya
+            if settings.commonName(str(software)) == 'maya':
+                self.scene = self.ui.mayaScene
+                self._setDefaults(software)
 
-        # if we are using houdini
-        elif settings.commonName(str(software)) == 'houdini':
-            self.scene = self.ui.houdiniFile
-            self._setDefaults(software)
+            # if we are using houdini
+            elif settings.commonName(str(software)) == 'houdini':
+                self.scene = self.ui.houdiniFile
+                self._setDefaults(software)
 
-        # if we are using shake
-        elif settings.commonName(str(software)) == 'shake':
-            self.scene = self.ui.shakeScript
-            self._setDefaults(software)
+            # if we are using shake
+            elif settings.commonName(str(software)) == 'shake':
+                self.scene = self.ui.shakeScript
+                self._setDefaults(software)
+
+            return 1
+        else:
+            print "PyFarm :: DEBUG :: Could not find any software installed"
+            return 0
 
     def _setDefaults(self, software):
         '''

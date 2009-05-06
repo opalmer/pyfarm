@@ -60,7 +60,7 @@ from lib.network.StdLogging import TCPServerStdOut
 from lib.ui.main.job.table.JobTableManager import JobTableManager
 
 __DEVELOPER__ = 'Oliver Palmer'
-__VERSION__ = 'RC3.193'
+__VERSION__ = 'RC3.195'
 __HOMEPAGE__ = 'http://www.pyfarm.net'
 __DOCS__ = '%s/wiki' % __HOMEPAGE__
 
@@ -86,7 +86,19 @@ class Main(QMainWindow):
         self.submitJob = SubmitManager(self)
         self.ip = str(QHostInfo.fromName(self.hostname).addresses()[0].toString())
         self.msg = MessageBox(self)
-        self.softwareManager.setSoftware(self.ui.softwareSelection.currentText())
+        setSoftware = self.softwareManager.setSoftware(self.ui.softwareSelection.currentText())
+
+        if not setSoftware:
+            msg = """<p>Could not find any software installed on system.
+            This will not prevent you from launching PyFarm however you
+            will be unable to render.<br><br><b>Options:</b>
+            <ol>1.) Add remote hosts and use their installed software (not implimented yet)</ol>
+            <ol>2.) Edit %s/settings.xml and add custom search paths</ol>
+            <br><br>
+            See the <a href="http://www.google.com">wiki</a> for more information.
+            </p>
+            """ % wd
+            self.msg.warning("Software Not Installed", msg)
 
         # network server setup
         self.statusServer = StatusServer(self.dataJob, self.dataGeneral)
