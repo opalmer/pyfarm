@@ -56,7 +56,7 @@ from lib.data.General import GeneralManager
 from lib.network.Admin import AdminClient
 from lib.network.Broadcast import BroadcastSender
 from lib.network.Status import StatusServer
-from lib.network.StdLogging import TCPServerStdOut
+from lib.network.StdLogging import UdpLoggerServer
 from lib.ui.main.job.table.JobTableManager import JobTableManager
 
 __DEVELOPER__ = 'Oliver Palmer'
@@ -104,7 +104,8 @@ class Main(QMainWindow):
         self.statusServer = StatusServer(self.dataJob, self.dataGeneral)
         self.connect(self.statusServer, SIGNAL('INIT'), self.updateSystemDataDict)
         self.connect(self.statusServer, SIGNAL('FRAME_COMPLETE'), self.frameComplete)
-        self.logServer = TCPServerStdOut()
+        #self.logServer = TCPServerStdOut()
+        self.logServerB = UdpLoggerServer()
 
         # start the servers
         if not self.statusServer.listen(QHostAddress('0.0.0.0'), settings.netPort('status')):
@@ -112,10 +113,10 @@ class Main(QMainWindow):
         else:
             print "PyFarm :: StatusServer :: Waiting for signals..."
 
-        if not self.logServer.listen(QHostAddress('0.0.0.0'), settings.netPort('stdout')):
-            print "PyFarm :: LogServer :: Could not start the server: %s" % self.statusServer.errorString()
-        else:
-            print "PyFarm :: LogServer :: Waiting for log lines..."
+#        if not self.logServer.listen(QHostAddress('0.0.0.0'), settings.netPort('stdout')):
+#            print "PyFarm :: LogServer :: Could not start the server: %s" % self.statusServer.errorString()
+#        else:
+#            print "PyFarm :: LogServer :: Waiting for log lines..."
 
         # setup some basic colors
         self.red = QColor(255, 0, 0)
@@ -176,6 +177,8 @@ class Main(QMainWindow):
         self.connect(self.ui.getHostInfo, SIGNAL("pressed()"), self.showHostInfo)
         self.connect(self.ui.addHost, SIGNAL("pressed()"), self._customHostDialog)
         self.connect(self.ui.removeHost, SIGNAL("pressed()"), self.dataGeneral.removeHost)
+
+        self.fakeSetup()
 
     def frameComplete(self, job):
         '''Take action when a frame is finished'''
@@ -590,8 +593,8 @@ class Main(QMainWindow):
         from lib.ui.main.maya.RenderLayers import MayaCamAndLayers
         self.ui.inputJobName.setText('fakeJob')
         getCamAndLayers = MayaCamAndLayers(self.ui.mayaRenderLayers, self.ui.mayaCamera)
-        self.ui.mayaScene.setText('/stuhome/PyFarm/trunk/tests/maya/2009/scenes/01_mr_renderLayers.ma')
-        getCamAndLayers.run('/stuhome/PyFarm/trunk/tests/maya/2009/scenes/01_mr_renderLayers.ma')
+        self.ui.mayaScene.setText('/stuhome/01_mr_renderLayers.ma')
+        getCamAndLayers.run('/stuhome/01_mr_renderLayers.ma')
 
     def closeEvent(self, event):
         '''Run when closing the main gui, used to "cleanup" the program state'''

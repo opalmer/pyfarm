@@ -23,7 +23,7 @@ and standard error logs between nodes.
 # From PyQt
 from PyQt4.QtCore import QThread, QString, QObject
 from PyQt4.QtCore import SIGNAL, QDataStream, QByteArray, QIODevice, SLOT
-from PyQt4.QtNetwork import QAbstractSocket, QTcpSocket, QTcpServer
+from PyQt4.QtNetwork import QAbstractSocket, QTcpSocket, QTcpServer, QUdpSocket, QHostAddress
 
 # From PyFarm
 from lib.ReadSettings import ParseXmlSettings
@@ -31,180 +31,42 @@ settings = ParseXmlSettings('settings.xml', skipSoftware=False)
 
 UNIT16 = 8
 
-class TCPServerStdOutThread(QThread):
-    '''
-    Threaded TCP Server used to handle all incoming
-    standard output information.
-    '''
-    def __init__(self, socketid, parent):
-        super(TCPServerStdOutThread, self).__init__(parent)
-        self.socketid = socketid
-
-    def run(self):
-        '''Start the server'''
-        socket = QTcpSocket()
-        print "PyFarm :: Network.TCPServerStdOutThread :: Starting Thread"
-
-        if not socket.setSocketDescriptor(self.socketid):
-            print "setSocketDescriptor(%s) is NOT 1" % self.socketid
-            self.emit(SIGNAL("error(int)"), socket.error())
-            return
-
-        # while we are connected, do this
-        while socket.state() == QAbstractSocket.ConnectedState:
-            nextBlockSize = 0
-            stream = QDataStream(socket) # the stream is a QDataStream
-            stream.setVersion(QDataStream.Qt_4_2) # set the version of the stream
-            while True:
-                socket.waitForReadyRead(-1)
-                if socket.bytesAvailable() >= UNIT16:
-                    nextBlockSize = stream.readUInt16()
-                    job = QString()
-                    frame = QString()
-                    stdout = QString()
-                    host = QString()
-                    output = QStringList()
-                    stream >> job >> frame >>  host >> stdout
-                    for arg in (job, frame, host, stdout):
-                        output.append(arg)
-
-                    self.emit(SIGNAL("emitStdOutLine"), output)
-
-            if socket.bytesAvailable() < nextBlockSize:
-                while True:
-                    socket.waitForReadyRead(-1)
-                    if socket.bytesAvailable() >= nextBlockSize:
-                       pass
-
-        socket.close()
-        self.terminate()
-
-
-class TCPServerStdOut(QTcpServer):
-    '''Threaded CP Server used to handle incoming requests'''
-    def __init__(self, parent=None):
-        super(TCPServerStdOut, self).__init__(parent)
-        self.parent = parent
-
-    def incomingConnection(self, socketid):
-        '''If a new connection is found, start a thread for it'''
-        print "PyFarm :: Network.TCPServerStdOut :: Incoming Connection"
-        thread = TCPServerStdOutThread(socketid, self)
-        self.connect(thread, SIGNAL("emitStdOutLine"), self.emitLine)
-        self.connect(thread, SIGNAL("finished()"), thread, SLOT("deleteLater()"))
-        thread.start()
-
-    def emitLine(self, line):
-        self.emit(SIGNAL("emitStdOutLine"), line)
-
-
-class TCPStdOutClient(QTcpSocket):
-    '''TCP Socket client to send standard output to server'''
-    def __init__(self, client, port=settings.netPort('stdout'), parent=None):
-        super(TCPStdOutClient, self).__init__(parent)
-        self.client = client
-        self.port = port
-        self.parent = parent
-
-        self.socket = QTcpSocket()
-        self.request = None
-        self.nextBlockSize = 0
-
-        # setup the socket connections
-        self.connect(self.socket, SIGNAL("connected()"), self.sendRequest)
-        #self.connect(self.socket, SIGNAL("readyRead()"), self.readResponse)
-        self.connect(self.socket, SIGNAL("disconnected()"), self.serverHasStopped)
-        #self.connect(self.socket, SIGNAL("stateChanged(QAbstractSocket::SocketState)"), self.reportState)
-        self.connect(self.socket, SIGNAL("error(QAbstractSocket::SocketError)"), self.serverHasError)
-
-    def reportState(self, state):
-        print state
-
-    def issueRequest(self, jb, sbjb, fNum, fID, line):
-        job = QString(jb)
-        subjob = QString(sbjb)
-
-        self.request = QByteArray()
-        stream = QDataStream(self.request, QIODevice.WriteOnly)
-        stream.setVersion(QDataStream.Qt_4_2)
-        stream.writeUInt16(0)
-
-        # build the packet
-        for var in (self.client, jb, sbjb, fNum, fID):
-            packet = QString(var)
-            stream << packet
-
-        stream.device().seek(0)
-        stream.writeUInt16(self.request.size() - UNIT16)
-
-        if self.socket.isOpen():
-            self.socket.close()
-
-        print "Connecting to %s..." % self.client
-
-        # once the socket emits connected() self.sendRequest is called
-        self.socket.connectToHost(self.client, self.port)
-        self.socket.waitForDisconnected(100)
-
-    def sendRequest(self):
-        print "Sending work to %s..." % self.client
-        self.nextBlockSize = 0
-        self.socket.write(self.request)
-        self.request = None
-
-    def readResponse(self):
-        stream = QDataStream(self.socket)
-        stream.setVersion(QDataStream.Qt_4_2)
-
-        while True:
-            if self.nextBlockSize == 0:
-                if self.socket.bytesAvailable() < UNIT16:
-                    break
-                self.nextBlockSize = stream.readUInt16()
-            if self.socket.bytesAvailable() < self.nextBlockSize:
-                break
-
-            # prepare for info
-            action = QString()
-            host = QString()
-            job = QString()
-            subjob = QString()
-            frame = QString()
-            id = QString()
-            pid = QString()
-
-            # unpack the incoming packet
-            stream >> action
-            if action == QString("finished"):
-                stream >> job >> subjob >> frame >> id >> host
-                print "render complete"
-                self.emit(SIGNAL("pid"), (job, subjob, frame, id, host))
-
-            self.nextBlockSize = 0
-
-    def serverHasStopped(self):
-        print "Connection closed by waiting client @ %s" % self.client
-        self.socket.close()
-
-    def serverHasError(self, error):
-        print str(QString("Error: %1").arg(self.socket.errorString()))
-        self.socket.close()
-
-
-class UdpLoggerClient(object):
+class UdpLoggerClient(QObject):
     '''
     Logging client for standard output and
     standard error logs
     '''
-    def __init__(self, master, port):
+    def __init__(self, master, port=settings.netPort('stdout'), parent=None):
+        super(UdpLoggerClient, self).__init__(parent)
         self.master = master
         self.port = port
+        self.parent = parent
+        self.socket = QUdpSocket()
+        self.socket.connectToHost(self.master, self.port)
+
+    def writeLine(self, line):
+        self.socket.writeDatagram(line, QHostAddress(self.master), self.port)
 
 
-class UdpLoggerServer(object):
+class UdpLoggerServer(QUdpSocket):
     '''
     Logging server for standard output and
     standard error logs
     '''
-    def __init__(self, port):
+    def __init__(self, port=settings.netPort('stdout'), parent=None):
+        super(UdpLoggerServer, self).__init__(parent)
+        self.modName = "UdpLoggerServer -- UdpLoggerServer"
         self.port = port
+        self.parent = parent
+        self.bind(QHostAddress('0.0.0.0'), self.port)
+        self.connect(self, SIGNAL("readyRead()"), self.readPendingDatagrams)
+        print "PyFarm :: %s :: Log server running" % self.modName
+
+    def readPendingDatagrams(self):
+        while self.hasPendingDatagrams():
+            datagram = QByteArray()
+            datagram.resize(self.pendingDatagramSize())
+            sender = QHostAddress()
+            port = 0
+            data = self.readDatagram(datagram.size())
+            print "%s - %s" % (data[1].toString(), data[0])

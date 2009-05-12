@@ -6,9 +6,8 @@ frozen:
 	rsync -vruP --exclude="*.pyc" --exclude=".*" --exclude="*.txt" --exclude="*.cmd" --exclude="*.e4p" --exclude="*.html" --exclude="Makefile" --exclude="QtDesigner" --exclude="tests" --exclude="*.m*" --exclude="*bak*" /farm/projects/PyFarm/trunk/RC3/ /farm/projects/PyFarm/trunk/Frozen
 	
 sfdm-update:
-#	rm -Rfv /stuhome/PyFarm/trunk/*
-	rsync -vruP --perms --exclude="*.pyc" --exclude=".*" --exclude="*.html" --exclude="Makefile" --exclude="*.e4p" --exclude="*.txt" --exclude="QtDesigner" --exclude="*.cmd" /home/opalme20/PyFarm/trunk/RC3 /stuhome/PyFarm/trunk
-	find /stuhome/PyFarm/trunk/RC3 -name *.pyc | xargs rm -v
+	rm -Rfv /stuhome/PyFarm/trunk/*
+	rsync -vruP --perms --exclude="*.pyc" --exclude=".*" --exclude="*.html" --exclude="Makefile" --exclude="*.e4p" --exclude="*.txt" --exclude="QtDesigner" --exclude="*.cmd" /home/opalme20/PyFarm/trunk/v0.3 /stuhome/PyFarm/trunk
 
 	
 snapshot:
