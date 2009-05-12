@@ -29,6 +29,8 @@ from PyQt4.QtNetwork import QAbstractSocket, QTcpSocket, QTcpServer
 from lib.ReadSettings import ParseXmlSettings
 settings = ParseXmlSettings('settings.xml', skipSoftware=False)
 
+UNIT16 = 8
+
 class TCPServerStdOutThread(QThread):
     '''
     Threaded TCP Server used to handle all incoming
@@ -55,7 +57,7 @@ class TCPServerStdOutThread(QThread):
             stream.setVersion(QDataStream.Qt_4_2) # set the version of the stream
             while True:
                 socket.waitForReadyRead(-1)
-                if socket.bytesAvailable() >= settings.netGeneral('unit16'):
+                if socket.bytesAvailable() >= UNIT16:
                     nextBlockSize = stream.readUInt16()
                     job = QString()
                     frame = QString()
@@ -75,12 +77,14 @@ class TCPServerStdOutThread(QThread):
                        pass
 
         socket.close()
+        self.terminate()
 
 
 class TCPServerStdOut(QTcpServer):
     '''Threaded CP Server used to handle incoming requests'''
     def __init__(self, parent=None):
         super(TCPServerStdOut, self).__init__(parent)
+        self.parent = parent
 
     def incomingConnection(self, socketid):
         '''If a new connection is found, start a thread for it'''
@@ -100,6 +104,7 @@ class TCPStdOutClient(QTcpSocket):
         super(TCPStdOutClient, self).__init__(parent)
         self.client = client
         self.port = port
+        self.parent = parent
 
         self.socket = QTcpSocket()
         self.request = None
@@ -107,7 +112,7 @@ class TCPStdOutClient(QTcpSocket):
 
         # setup the socket connections
         self.connect(self.socket, SIGNAL("connected()"), self.sendRequest)
-        self.connect(self.socket, SIGNAL("readyRead()"), self.readResponse)
+        #self.connect(self.socket, SIGNAL("readyRead()"), self.readResponse)
         self.connect(self.socket, SIGNAL("disconnected()"), self.serverHasStopped)
         #self.connect(self.socket, SIGNAL("stateChanged(QAbstractSocket::SocketState)"), self.reportState)
         self.connect(self.socket, SIGNAL("error(QAbstractSocket::SocketError)"), self.serverHasError)
@@ -115,7 +120,7 @@ class TCPStdOutClient(QTcpSocket):
     def reportState(self, state):
         print state
 
-    def issueRequest(self, jb, sbjb, fNum, fID):
+    def issueRequest(self, jb, sbjb, fNum, fID, line):
         job = QString(jb)
         subjob = QString(sbjb)
 
@@ -139,7 +144,7 @@ class TCPStdOutClient(QTcpSocket):
 
         # once the socket emits connected() self.sendRequest is called
         self.socket.connectToHost(self.client, self.port)
-        self.socket.waitForDisconnected(800)
+        self.socket.waitForDisconnected(100)
 
     def sendRequest(self):
         print "Sending work to %s..." % self.client
@@ -184,3 +189,22 @@ class TCPStdOutClient(QTcpSocket):
     def serverHasError(self, error):
         print str(QString("Error: %1").arg(self.socket.errorString()))
         self.socket.close()
+
+
+class UdpLoggerClient(object):
+    '''
+    Logging client for standard output and
+    standard error logs
+    '''
+    def __init__(self, master, port):
+        self.master = master
+        self.port = port
+
+
+class UdpLoggerServer(object):
+    '''
+    Logging server for standard output and
+    standard error logs
+    '''
+    def __init__(self, port):
+        self.port = port
