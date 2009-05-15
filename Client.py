@@ -86,7 +86,7 @@ class Main(QObject):
             self.setInitialStatus()
             self.sendStatus()
         else:
-            pass
+            self.sendStatus()
 
     def setInitialStatus(self):
         '''
@@ -122,7 +122,7 @@ class Main(QObject):
         print "PyFarm :: Client.AdminServer :: Waiting for signals..."
 
         # start the que server
-        self.que = QueSlaveServer(self.master, self)
+        self.que = QueSlaveServer(self.master)
         if not self.que.listen(QHostAddress('0.0.0.0'), settings.netPort('que')):
             print "PyFarm :: Client.QueSlave :: Could not start the server: %s" % self.que.errorString()
             return

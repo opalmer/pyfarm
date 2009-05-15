@@ -35,6 +35,7 @@ class NetworkTableManager(object):
         self.data = data # maps to self.dataGeneral
         self.ui = ui
         self.parent = parent
+        self.hosts = []
 
         # initial setup
         self.ui.horizontalHeader().setStretchLastSection(True)

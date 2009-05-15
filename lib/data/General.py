@@ -280,25 +280,26 @@ class GeneralManager(object):
         software (dict) -- dictionary of installed software
         basic (True/False) -- if true ,only add the hostname,ip address, and status
         '''
-        if basic:
-            self.data["network"]["hosts"][ip] ={"hostname" : hostname,
-                                                                        "status": 0,
-                                                                        "rendered" : 0,
-                                                                        "failed" : 0
-                                                                        }
-        else:
-            if typeCheck.isDict(software):
+        if ip not in self.data["network"]["hosts"]:
+            if basic:
                 self.data["network"]["hosts"][ip] ={"hostname" : hostname,
                                                                             "status": 0,
-                                                                            "os" : os,
-                                                                            "arch" : arch,
-                                                                            "software" : software,
                                                                             "rendered" : 0,
                                                                             "failed" : 0
                                                                             }
-        self.data["network"]["stats"][0] += 1
-        self.netTable.addHostToTable(ip)
-        self.uiStatus.network.refreshConnected()
+            else:
+                if typeCheck.isDict(software):
+                    self.data["network"]["hosts"][ip] ={"hostname" : hostname,
+                                                                                "status": 0,
+                                                                                "os" : os,
+                                                                                "arch" : arch,
+                                                                                "software" : software,
+                                                                                "rendered" : 0,
+                                                                                "failed" : 0
+                                                                                }
+            self.data["network"]["stats"][0] += 1
+            self.netTable.addHostToTable(ip)
+            self.uiStatus.network.refreshConnected()
 
     def removeHost(self):
         '''

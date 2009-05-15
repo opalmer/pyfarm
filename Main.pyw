@@ -50,7 +50,6 @@ from lib.ui.main.CustomWidgets import *
 from lib.ui.main.job.Submit import SubmitManager
 from lib.ui.main.CloseEvent import CloseEventManager
 from lib.ui.main.Software import SoftwareContextManager
-from lib.ui.main.NetworkTableManager import NetworkTableManager
 from lib.data.Job import JobManager
 from lib.data.General import GeneralManager
 from lib.network.Admin import AdminClient
@@ -60,7 +59,7 @@ from lib.network.StdLogging import UdpLoggerServer
 from lib.ui.main.job.table.JobTableManager import JobTableManager
 
 __DEVELOPER__ = 'Oliver Palmer'
-__VERSION__ = '0.3.200'
+__VERSION__ = '0.3.201'
 __HOMEPAGE__ = 'http://www.pyfarm.net'
 __DOCS__ = '%s/wiki' % __HOMEPAGE__
 
@@ -103,7 +102,7 @@ class Main(QMainWindow):
 
         # network server setup
         self.statusServer = StatusServer(self.dataJob, self.dataGeneral)
-        self.connect(self.statusServer, SIGNAL('INIT'), self.updateSystemDataDict)
+        self.connect(self.statusServer, SIGNAL('INIT'), self.initHost)
         self.connect(self.statusServer, SIGNAL('FRAME_COMPLETE'), self.frameComplete)
         #self.logServer = TCPServerStdOut()
         self.logServerB = UdpLoggerServer()
@@ -453,7 +452,7 @@ class Main(QMainWindow):
         self.addHost(str(host))
         self.customHostDialog.close()
 
-    def updateSystemDataDict(self, info):
+    def initHost(self, info):
         '''Given the captured information, add it to self.generalData'''
         infosplit = info.split('||')
         sysinfo = infosplit[0].split(',')

@@ -24,10 +24,29 @@ for the interface and the network.
 from pprint import pprint
 
 # From PyQt4
-from PyQt4.QtCore import SIGNAL, QObject
+from PyQt4.QtCore import SIGNAL, QObject, QThread
 
 # From PyFarm
 from lib.network.Que import QueClient
+
+class EstablishConnection(QThread):
+    '''Used to thread the client connection process, to prevent gui lag'''
+    def __init__(self, job, host, data, parentClass, parent=None):
+        super(EstablishConnection, self).__init__(parent)
+        self.job = job
+        self.data = data
+        self.host = host
+        self.parent = parentClass
+
+    def run(self):
+        '''Setup the client and establish the connection'''
+        self.client = QueClient(self.host)
+        self.connect(self.client, SIGNAL("pid"), self.parent.setPID)
+        self.connect(self.client, SIGNAL("finishedFrame"), self.parent.finishedFrame)
+        self.connect(self.client, SIGNAL("stdout"), self.parent.logStdOut)
+        self.connect(self.client, SIGNAL("stderr"), self.parent.logStdErr)
+        self.client.issueRequest(self.job, self.data["subjob"], str(self.data["frameNum"]), self.data["frameID"], self.data["software"], self.data["command"])
+
 
 class DistributeFrames(QObject):
     '''Setup the que and gather the required data'''
@@ -66,12 +85,14 @@ class DistributeFrames(QObject):
                         self.jobs[job].data.frame.setStart(data["subjob"], data["frameNum"], data["frameID"])
 
                         # setup the client
-                        client = QueClient(host)
-                        self.connect(client, SIGNAL("pid"), self.setPID)
-                        self.connect(client, SIGNAL("finishedFrame"), self.finishedFrame)
-                        self.connect(client, SIGNAL("stdout"), self.logStdOut)
-                        self.connect(client, SIGNAL("stderr"), self.logStdErr)
-                        client.issueRequest(job, data["subjob"], str(data["frameNum"]), data["frameID"], data["software"], data["command"])
+                        client = EstablishConnection(job, host, data, self)
+                        client.start()
+#                        client = QueClient(host)
+#                        self.connect(client, SIGNAL("pid"), self.setPID)
+#                        self.connect(client, SIGNAL("finishedFrame"), self.finishedFrame)
+#                        self.connect(client, SIGNAL("stdout"), self.logStdOut)
+#                        self.connect(client, SIGNAL("stderr"), self.logStdErr)
+#                        client.issueRequest(job, data["subjob"], str(data["frameNum"]), data["frameID"], data["software"], data["command"])
         else:
             self.msg.warning('Hosts Not Connected', 'Before rendering you must have at least one host connected to the network.')
 
@@ -120,11 +141,6 @@ class DistributeFrames(QObject):
             return True
         else:
             return False
-
-    def sendFrame(self, ip):
-        '''Send an individual frame to the given ip'''
-        client = QueClient(ip)
-        client.issueRequest(self, jb, sbjb, fNum, fID, sftw, args)
 
     def indexSoftware(self):
         '''
