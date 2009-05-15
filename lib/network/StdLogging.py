@@ -21,9 +21,8 @@ and standard error logs between nodes.
     along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 '''
 # From PyQt
-from PyQt4.QtCore import QThread, QString, QObject
-from PyQt4.QtCore import SIGNAL, QDataStream, QByteArray, QIODevice, SLOT
-from PyQt4.QtNetwork import QAbstractSocket, QTcpSocket, QTcpServer, QUdpSocket, QHostAddress
+from PyQt4.QtCore import  QString, QObject, SIGNAL, QByteArray
+from PyQt4.QtNetwork import QHostAddress, QUdpSocket
 
 # From PyFarm
 from lib.ReadSettings import ParseXmlSettings

@@ -45,7 +45,7 @@ from lib.ReadSettings import ParseXmlSettings
 settings = ParseXmlSettings('settings.xml', 'gui')
 
 import lib.Info as Info
-from lib.ui.RC3 import Ui_RC3
+from lib.ui.MainWindow import Ui_MainWindow
 from lib.ui.main.CustomWidgets import *
 from lib.ui.main.job.Submit import SubmitManager
 from lib.ui.main.CloseEvent import CloseEventManager
@@ -60,7 +60,7 @@ from lib.network.StdLogging import UdpLoggerServer
 from lib.ui.main.job.table.JobTableManager import JobTableManager
 
 __DEVELOPER__ = 'Oliver Palmer'
-__VERSION__ = 'RC3.195'
+__VERSION__ = '0.3.200'
 __HOMEPAGE__ = 'http://www.pyfarm.net'
 __DOCS__ = '%s/wiki' % __HOMEPAGE__
 
@@ -70,8 +70,9 @@ class Main(QMainWindow):
         super(Main, self).__init__()
 
         # setup UI
-        self.ui = Ui_RC3()
+        self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
+        self.setWindowTitle("PyFarm -- Version %s" % __VERSION__)
 
         # update the installed avaliable software list
         for software in settings.installedSoftware():
@@ -113,11 +114,6 @@ class Main(QMainWindow):
         else:
             print "PyFarm :: StatusServer :: Waiting for signals..."
 
-#        if not self.logServer.listen(QHostAddress('0.0.0.0'), settings.netPort('stdout')):
-#            print "PyFarm :: LogServer :: Could not start the server: %s" % self.statusServer.errorString()
-#        else:
-#            print "PyFarm :: LogServer :: Waiting for log lines..."
-
         # setup some basic colors
         self.red = QColor(255, 0, 0)
         self.green = QColor(0, 128, 0)
@@ -145,9 +141,6 @@ class Main(QMainWindow):
 
         # setup ui vars
         self.ui.currentJobs.horizontalHeader().setStretchLastSection(True)
-
-        # Display information about pyfarm and support
-        #self.msg.info('Welcome to PyFarm -- Release Candidate 1', 'Thank you for testing PyFarm!  Please direct all inquiries about this softare to the homepage @ http://www.opalmer.com/pyfarm')
 
         # make signal connections
         ## ui signals
@@ -593,8 +586,8 @@ class Main(QMainWindow):
         from lib.ui.main.maya.RenderLayers import MayaCamAndLayers
         self.ui.inputJobName.setText('fakeJob')
         getCamAndLayers = MayaCamAndLayers(self.ui.mayaRenderLayers, self.ui.mayaCamera)
-        self.ui.mayaScene.setText('/stuhome/01_mr_renderLayers.ma')
-        getCamAndLayers.run('/stuhome/01_mr_renderLayers.ma')
+        self.ui.mayaScene.setText('/farm/projects/PyFarm/trunk/tests/maya/2009/scenes/01_mr_renderLayers.ma')
+        getCamAndLayers.run('/farm/projects/PyFarm/trunk/tests/maya/2009/scenes/01_mr_renderLayers.ma')
 
     def closeEvent(self, event):
         '''Run when closing the main gui, used to "cleanup" the program state'''
