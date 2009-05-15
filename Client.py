@@ -22,6 +22,7 @@ PURPOSE: To handle and run all client connections on a remote machine
 '''
 # From Python
 import sys
+from time import time
 from os.path import dirname
 
 # From PyQt
@@ -43,6 +44,67 @@ from lib.network.Broadcast import BroadcastReceiever
 
 settings = ParseXmlSettings('settings.xml')
 
+class BroadcastManager(object):
+    def __init__(self):
+        self.running = 0
+        self.object = None
+
+    def setRunning(self, obj):
+        '''Set running equal to 1'''
+        self.running = 1
+        self.object = obj
+
+    def setStopped(self):
+        '''Set running equal to 0'''
+        self.running = 0
+
+
+class AdminManager(object):
+    def __init__(self):
+        self.running = 0
+        self.object = None
+
+    def setRunning(self, obj):
+        '''Set running equal to 1'''
+        self.running = 1
+        self.object = obj
+
+    def setStopped(self):
+        '''Set running equal to 0'''
+        self.running = 0
+
+
+class QueManager(object):
+    def __init__(self):
+        self.running = 0
+        self.object = None
+
+    def setRunning(self, obj):
+        '''Set running equal to 1'''
+        self.running = 1
+        self.object = obj
+
+    def setStopped(self):
+        '''Set running equal to 0'''
+        self.running = 0
+
+
+class ServerManager(object):
+    '''
+    Simple class to help control and inform the program
+    of the servers
+    '''
+    def __init__(self):
+        self.broadcast = BroadcastManager()
+        self.admin = AdminManager()
+        self.que = QueManager()
+        self.servers = {
+                      "broadcast" : self.broadcast,
+                      "admin" : self.admin,
+                      "que" : self.que,
+                      }
+
+
 class Main(QObject):
     def __init__(self, parent=None):
         super(Main, self).__init__(parent)
@@ -54,6 +116,8 @@ class Main(QObject):
         self.rendered = 0
         self.failed = 0
         self.software = {}
+        self.servers = ServerManager()
+        self.session = None
 
     def setVarDefaults(self):
         '''Return the input vars to their initial states'''
@@ -71,22 +135,34 @@ class Main(QObject):
         listen = BroadcastReceiever(self)
         self.connect(listen, SIGNAL("masterAddress"), self.setMasterAddress)
         listen.run()
+        self.servers.broadcast.setRunning(listen)
 
-    def setMasterAddress(self, masterip):
+    def setMasterAddress(self, data):
         '''
         Step 2:
         Set self.master to the incoming ip
         '''
-        if masterip != self.master:
-            print "PyFarm :: BroadcastReceiever :: Incoming broadcast"
-            print "PyFarm :: BroadcastReceiever :: Receieved master address: %s" % masterip
-            self.master = masterip
-            self.hostname = str(QHostInfo.localHostName())
-            self.ip = GetLocalIP(self.master)
-            self.setInitialStatus()
-            self.sendStatus()
+        if self.uniqueSession(data[0]):
+            ip = data[1]
+            if ip != self.master:
+                print "PyFarm :: BroadcastReceiever :: Incoming broadcast"
+                print "PyFarm :: BroadcastReceiever :: Receieved master address: %s" % ip
+                self.master = ip
+                self.hostname = str(QHostInfo.localHostName())
+                self.ip = GetLocalIP(self.master)
+                self.setInitialStatus()
+                self.sendStatus()
+                self.initial = int(time())
+            elif ip == self.master:
+                print "PyFarm :: BroadcastReceiever :: Incoming broadcast"
+                self.sendStatus()
+
+    def uniqueSession(self, uuid):
+        if uuid != self.session:
+            self.session = uuid
+            return True
         else:
-            self.sendStatus()
+            return False
 
     def setInitialStatus(self):
         '''
@@ -117,21 +193,32 @@ class Main(QObject):
         self.connect(self.admin, SIGNAL("RESTART"), self.restart)
 
         if not self.admin.listen(QHostAddress('0.0.0.0'), settings.netPort('admin')):
-            print "PyFarm :: Client.AdminServer :: Could not start the server: %s" % self.admin.errorString()
-            return
-        print "PyFarm :: Client.AdminServer :: Waiting for signals..."
+            if self.servers.admin.running:
+                print "PyFarm :: Client.AdminServer :: Server is already running"
+            else:
+                print "PyFarm :: Client.AdminServer :: Could not start the server: %s" % self.admin.errorString()
+        else:
+            self.servers.admin.setRunning(self.admin)
+            print "PyFarm :: Client.AdminServer :: Waiting for signals..."
 
         # start the que server
-        self.que = QueSlaveServer(self.master)
+        self.que = QueSlaveServer(self.master, parent=self)
         if not self.que.listen(QHostAddress('0.0.0.0'), settings.netPort('que')):
-            print "PyFarm :: Client.QueSlave :: Could not start the server: %s" % self.que.errorString()
-            return
-        print "PyFarm :: Client.QueSlave :: Waiting for jobs..."
+            if self.servers.que.running:
+                print "PyFarm :: Client.QueSlave :: Server is already running"
+            else:
+                print "PyFarm :: Client.QueSlave :: Could not start the server: %s" % self.que.errorString()
+        else:
+            self.servers.que.setRunning(self.que)
+            print "PyFarm :: Client.QueSlave :: Waiting for jobs..."
 
     def shutdownServers(self):
         '''Calls the shutdown function all all servers'''
-        self.admin.shutdown()
-        self.que.shutdown()
+        if self.servers.admin.running:
+            self.admin.shutdown()
+
+        if self.servers.que.running:
+            self.que.shutdown()
 
     def restart(self):
         '''Close all connections and restart the client'''

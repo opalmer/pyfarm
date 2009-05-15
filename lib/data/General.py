@@ -30,6 +30,9 @@ from lib.ui.main.Status import StatusManager
 from lib.ReadSettings import ParseXmlSettings
 from lib.ui.main.NetworkTableManager import NetworkTableManager
 
+# From PyQt
+from PyQt4.QtGui import QMessageBox
+
 typeCheck = TypeTest('JobData')
 settings = ParseXmlSettings('%s/settings.xml' % getcwd())
 

@@ -32,7 +32,7 @@ from pprint import pprint
 from PyQt4.QtGui import QMainWindow, QMessageBox
 from PyQt4.QtGui import QTableWidgetItem, QTreeWidgetItem
 from PyQt4.QtGui import QColor, QProgressBar, QPushButton
-from PyQt4.QtCore import QDir
+from PyQt4.QtCore import QDir, QUuid
 from PyQt4.QtNetwork import QHostInfo, QHostAddress
 
 wd = dirname(str(QDir(sys.argv[0]).canonicalPath()))
@@ -59,9 +59,11 @@ from lib.network.StdLogging import UdpLoggerServer
 from lib.ui.main.job.table.JobTableManager import JobTableManager
 
 __DEVELOPER__ = 'Oliver Palmer'
-__VERSION__ = '0.3.201'
+__VERSION__ = '0.3.203'
 __HOMEPAGE__ = 'http://www.pyfarm.net'
 __DOCS__ = '%s/wiki' % __HOMEPAGE__
+__WIKI__ = __DOCS__
+__UUID__ = QUuid().createUuid()
 
 class Main(QMainWindow):
     '''This is the controlling class for the main gui'''
@@ -104,8 +106,7 @@ class Main(QMainWindow):
         self.statusServer = StatusServer(self.dataJob, self.dataGeneral)
         self.connect(self.statusServer, SIGNAL('INIT'), self.initHost)
         self.connect(self.statusServer, SIGNAL('FRAME_COMPLETE'), self.frameComplete)
-        #self.logServer = TCPServerStdOut()
-        self.logServerB = UdpLoggerServer()
+        self.logServer = UdpLoggerServer()
 
         # start the servers
         if not self.statusServer.listen(QHostAddress('0.0.0.0'), settings.netPort('status')):
@@ -553,7 +554,7 @@ class Main(QMainWindow):
     def findHosts(self):
         '''Get hosts via broadcast packet, add them to self.hosts'''
         self.updateStatus('NETWORK', 'Searching for hosts...', 'green')
-        findHosts = BroadcastSender(self)
+        findHosts = BroadcastSender(__UUID__, self)
         progress = ProgressDialog(QString("Network Broadcast Progress"), \
                                                             QString("Cancel Broadcast"), \
                                                             0, settings.broadcastValue('maxCount'), self)

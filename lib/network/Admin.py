@@ -28,6 +28,8 @@ from PyQt4.QtNetwork import QAbstractSocket, QTcpSocket, QTcpServer
 from lib.ReadSettings import ParseXmlSettings
 settings = ParseXmlSettings('settings.xml', skipSoftware=False)
 
+UNIT16 = 8
+
 class AdminServerThread(QThread):
     '''Admin server thread spawned by AdminServer'''
     def __init__(self, socketId, parent):
@@ -59,7 +61,7 @@ class AdminServerThread(QThread):
                 socket.waitForReadyRead(-1)
 
                 # load next block size with the total size of the stream
-                if socket.bytesAvailable() >= settings.netGeneral('unit16'):
+                if socket.bytesAvailable() >= UNIT16:
                     nextBlockSize = stream.readUInt16()
                     break
 
@@ -102,7 +104,7 @@ class AdminServerThread(QThread):
         stream.writeUInt16(0)
         stream << QString("ERROR") << QString(msg)
         stream.device().seek(0)
-        stream.writeUInt16(reply.size() - settings.netGeneral('unit16'))
+        stream.writeUInt16(reply.size() - UNIT16)
         socket.write(reply)
 
     def sendReply(self, socket, action, options):
@@ -112,7 +114,7 @@ class AdminServerThread(QThread):
         stream.writeUInt16(0)
         stream << action << options
         stream.device().seek(0)
-        stream.writeUInt16(reply.size() - settings.netGeneral('unit16'))
+        stream.writeUInt16(reply.size() - UNIT16)
         socket.write(reply)
 
     def sendSysInfo(self, socket):
@@ -132,7 +134,7 @@ class AdminServerThread(QThread):
         % (self.parent.serverAddress().toString(), QHostInfo.localHostName(), os, arch, settings.software())
         stream << QString("SYSINFO") << QString(output)
         stream.device().seek(0)
-        stream.writeUInt16(reply.size() - settings.netGeneral('unit16'))
+        stream.writeUInt16(reply.size() - UNIT16)
 
         # send the reply
         socket.write(reply)
@@ -158,9 +160,13 @@ class AdminServer(QTcpServer):
 
     def shutdown(self):
         '''Shutdown the server and try to terminate all threads'''
-        self.serverThread.quit()
-        self.serverThread.wait()
-        self.close()
+        try:
+            self.serverThread.quit()
+            self.serverThread.wait()
+        except AttributeError:
+            print "PyFarm :: %s :: No threads to terminate" % self.modName
+        finally:
+            self.close()
 
     def emitShutdown(self):
         '''
@@ -216,7 +222,7 @@ class AdminClient(QObject):
         else:
             stream << action
         stream.device().seek(0)
-        stream.writeUInt16(self.request.size() - settings.netGeneral('unit16'))
+        stream.writeUInt16(self.request.size() - UNIT16)
 
         if self.socket.isOpen():
             print "PyFarm :: %s :: Already connected, closing socket" % self.modName
@@ -239,7 +245,7 @@ class AdminClient(QObject):
 
         while True:
             if self.nextBlockSize == 0:
-                if self.socket.bytesAvailable() < settings.netGeneral('unit16'):
+                if self.socket.bytesAvailable() < UNIT16:
                     break
                 self.nextBlockSize = stream.readUInt16()
             if self.socket.bytesAvailable() < self.nextBlockSize:

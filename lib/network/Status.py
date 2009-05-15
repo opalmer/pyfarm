@@ -46,7 +46,6 @@ class StatusServerThread(QThread):
 
     def run(self):
         socket = QTcpSocket()
-        print "PyFarm :: %s :: Running server" % self.modName
 
         if not socket.setSocketDescriptor(self.socketId):
             self.emit(SIGNAL("error(int)"), socket.error())
@@ -84,7 +83,6 @@ class StatusServerThread(QThread):
             host = QString()
             code = QString()
 
-            print "PyFarm :: %s :: Unpacking packet" % self.modName
             stream >> action
             print "PyFarm :: %s :: Receieved the %s signal" % (self.modName, action)
             # if the action is a preset
@@ -164,10 +162,13 @@ class StatusClient(QObject):
         self.nextBlockSize = 0
         self.request = None
 
-        self.connect(self.socket, SIGNAL("connected()"),self.sendRequest)
-        self.connect(self.socket, SIGNAL("readyRead()"), self.readResponse)
-        self.connect(self.socket, SIGNAL("disconnected()"), self.serverHasStopped)
-        self.connect(self.socket, SIGNAL("error(QAbstractSocket::SocketError)"), self.serverHasError)
+        try:
+            self.connect(self.socket, SIGNAL("connected()"),self.sendRequest)
+            self.connect(self.socket, SIGNAL("readyRead()"), self.readResponse)
+            self.connect(self.socket, SIGNAL("disconnected()"), self.serverHasStopped)
+            self.connect(self.socket, SIGNAL("error(QAbstractSocket::SocketError)"), self.serverHasError)
+        except TypeError:
+            pass
 
     def updateMaster(self, cmd, data):
         '''
@@ -306,6 +307,6 @@ class StatusClient(QObject):
         print "PyFarm :: %s :: %s: stopped" % (self.modName, self.master)
         self.socket.close()
 
-    def serverHasError(self, error):
+    def serverHasError(self):
         print "PyFarm :: %s :: %s: %s" % (self.modName, self.master, self.socket.errorString())
         self.socket.close()

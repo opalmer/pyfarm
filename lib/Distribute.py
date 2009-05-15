@@ -32,7 +32,7 @@ from lib.network.Que import QueClient
 class EstablishConnection(QThread):
     '''Used to thread the client connection process, to prevent gui lag'''
     def __init__(self, job, host, data, parentClass, parent=None):
-        super(EstablishConnection, self).__init__(parent)
+        super(EstablishConnection, self).__init__(parentClass)
         self.job = job
         self.data = data
         self.host = host
@@ -40,7 +40,7 @@ class EstablishConnection(QThread):
 
     def run(self):
         '''Setup the client and establish the connection'''
-        self.client = QueClient(self.host)
+        self.client = QueClient(self.host, parent=self)
         self.connect(self.client, SIGNAL("pid"), self.parent.setPID)
         self.connect(self.client, SIGNAL("finishedFrame"), self.parent.finishedFrame)
         self.connect(self.client, SIGNAL("stdout"), self.parent.logStdOut)
