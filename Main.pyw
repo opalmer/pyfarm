@@ -22,7 +22,7 @@ PURPOSE: Main program to run and manage PyFarm
 '''
 # From Python
 import sys
-from  os.path import dirname
+from os.path import dirname
 from time import time, sleep
 from random import randrange, random
 from pprint import pprint
@@ -55,7 +55,7 @@ from lib.data.General import GeneralManager
 from lib.network.Admin import AdminClient
 from lib.network.Broadcast import BroadcastSender
 from lib.network.Status import StatusServer
-from lib.network.StdLogging import UdpLoggerServer
+from lib.network.JobLogging import UdpLoggerServer
 from lib.ui.main.job.table.JobTableManager import JobTableManager
 
 __DEVELOPER__ = 'Oliver Palmer'
@@ -64,6 +64,8 @@ __HOMEPAGE__ = 'http://www.pyfarm.net'
 __DOCS__ = '%s/wiki' % __HOMEPAGE__
 __WIKI__ = __DOCS__
 __UUID__ = QUuid().createUuid()
+
+log = settings.log
 
 class Main(QMainWindow):
     '''This is the controlling class for the main gui'''
@@ -110,9 +112,9 @@ class Main(QMainWindow):
 
         # start the servers
         if not self.statusServer.listen(QHostAddress('0.0.0.0'), settings.netPort('status')):
-            print "PyFarm :: StatusServer :: Could not start the server: %s" % self.statusServer.errorString()
+            log("PyFarm :: StatusServer :: Could not start the server: %s" % self.statusServer.errorString(), 'warning')
         else:
-            print "PyFarm :: StatusServer :: Waiting for signals..."
+            log("PyFarm :: StatusServer :: Waiting for signals...", 'standard')
 
         # setup some basic colors
         self.red = QColor(255, 0, 0)
@@ -175,8 +177,8 @@ class Main(QMainWindow):
 
     def frameComplete(self, job):
         '''Take action when a frame is finished'''
-        self.tableManager.frameComplete(job)
-        self.submitJob.startRender()
+        self.tableManager.frameComplete(job[0])
+        self.submitJob.sendFrame(job[1])
 
 ################################
 ## BEGIN Context Menus
@@ -598,19 +600,19 @@ class Main(QMainWindow):
             exit_dialog = closeEventManager.hostExitDialog()
 
             if exit_dialog == QMessageBox.Yes:
-                print "PyFarm :: Main.closeEvent :: Shutting Down Clients..."
+                log("PyFarm :: Main.closeEvent :: Shutting Down Clients...", 'standard')
                 closeEventManager.shutdownHosts()
 
             elif exit_dialog == QMessageBox.No:
-                print "PyFarm :: Main.closeEvent :: Restarting clients..."
+                log("PyFarm :: Main.closeEvent :: Restarting clients...", 'standard')
                 closeEventManager.restartHosts()
 
             elif exit_dialog == QMessageBox.Help:
-                print "PyFarm :: Main.closeEvent :: Presenting host help"
+                log("PyFarm :: Main.closeEvent :: Presenting host help", 'debug')
                 closeEventManager.exitHelp()
                 self.closeEvent(self)
         else:
-            print "PyFarm :: Main.closeEvent :: No hosts to shutdown"
+            log("PyFarm :: Main.closeEvent :: No hosts to shutdown", 'warning')
 ################################
 ## END General Utilities
 ################################

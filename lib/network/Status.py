@@ -28,8 +28,10 @@ from PyQt4.QtNetwork import QAbstractSocket
 
 # From PyFarm
 from lib.ReadSettings import ParseXmlSettings
-
 settings = ParseXmlSettings('settings.xml')
+log = settings.log
+
+UNIT16 = 8
 
 class StatusServerThread(QThread):
     '''
@@ -62,7 +64,7 @@ class StatusServerThread(QThread):
                 socket.waitForReadyRead(-1)
 
                 # load next block size with the total size of the stream
-                if socket.bytesAvailable() >= settings.netGeneral('unit16'):
+                if socket.bytesAvailable() >= UNIT16:
                     nextBlockSize = stream.readUInt16()
                     break
 
@@ -84,7 +86,7 @@ class StatusServerThread(QThread):
             code = QString()
 
             stream >> action
-            print "PyFarm :: %s :: Receieved the %s signal" % (self.modName, action)
+            log("PyFarm :: %s :: Receieved the %s signal" % (self.modName, action), 'debug')
             # if the action is a preset
             if action in ("INIT", "newPID", "renderComplete", "renderFailed"):
                 if action == "INIT":
@@ -95,19 +97,19 @@ class StatusServerThread(QThread):
                     self.dataJob[str(job)].data.frame.setPID(str(subjob), int(frame), str(id), str(pid))
                 elif action == "renderComplete":
                     stream >> host >> job >> subjob >> frame >> id
-                    print "PyFarm :: DEBUG :: Frame complete - %s %i %s" % (str(subjob), int(frame), str(id))
+                    log("PyFarm :: %s :: Frame complete - %s %i %s" % (self.modName, str(subjob), int(frame), str(id)), 'debug')
                     self.dataJob[str(job)].data.frame.setStatus(str(subjob), int(frame), str(id), 2)
                     self.dataJob[str(job)].data.frame.setEnd(str(subjob), int(frame), str(id))
                     self.dataGeneral.network.host.setStatus(str(host), 0)
-                    self.parent.emit(SIGNAL("FRAME_COMPLETE"), str(job))
+                    self.parent.emit(SIGNAL("FRAME_COMPLETE"), (str(job), host))
                 elif action == "renderFailed":
                     stream >> host >> job >> subjob >> frame >> id >> code
-                    print "PyFarm :: DEBUG :: Frame failed - %s %i %s" % (str(subjob), int(frame), str(id))
+                    log("PyFarm :: %s :: Frame failed - %s %i %s" % (self.modName, str(subjob), int(frame), str(id)), 'error')
                     self.dataJob[str(job)].data.frame.setStatus(str(subjob), int(frame), str(id), 3)
                     self.dataJob[str(job)].data.frame.setEnd(str(subjob), int(frame), str(id))
                     self.dataGeneral.network.host.setStatus(str(host), 0)
-                    self.parent.emit(SIGNAL("FRAME_COMPLETE"), str(job))
-                    #self.parent.emit(SIGNAL("FAILED_RENDER"), (str(subjob), int(frame), str(id), str(code)))
+                    #self.parent.emit(SIGNAL("FRAME_COMPLETE"), str(job))
+                    self.parent.emit(SIGNAL("FAILED_RENDER"), (str(subjob), int(frame), str(id), str(code)))
 
                 # final send a back the original host
             self.sendReply(socket, action, options)
@@ -120,7 +122,7 @@ class StatusServerThread(QThread):
         stream.writeUInt16(0)
         stream << action << options
         stream.device().seek(0)
-        stream.writeUInt16(reply.size() - settings.netGeneral('unit16'))
+        stream.writeUInt16(reply.size() - UNIT16)
         socket.write(reply)
 
 
@@ -138,7 +140,7 @@ class StatusServer(QTcpServer):
         self.dataGeneral = dataGeneral
 
     def incomingConnection(self, socketId):
-        print "PyFarm :: %s :: Incoming connection" % self.modName
+        log("PyFarm :: %s :: Incoming connection" % self.modName, 'debug')
         self.thread = StatusServerThread(self.dataJob, self.dataGeneral, socketId, self)
         self.connect(self.thread, SIGNAL("finished()"), self.thread, SLOT("deleteLater()"))
         self.thread.start()
@@ -193,13 +195,13 @@ class StatusClient(QObject):
             stream << QString(var)
 
         stream.device().seek(0)
-        stream.writeUInt16(self.request.size() - settings.netGeneral('unit16'))
+        stream.writeUInt16(self.request.size() - UNIT16)
 
         if self.socket.isOpen():
-            print "PyFarm :: %s :: Already connected, closing socket" % self.modName
+            log("PyFarm :: %s :: Already connected, closing socket" % self.modName, 'warning')
             self.socket.close()
 
-        print "PyFarm :: %s :: Connecting to %s" % (self.modName, self.master)
+        log("PyFarm :: %s :: Connecting to %s" % (self.modName, self.master), 'debug')
         self.socket.connectToHost(self.master, self.port)
         self.socket.waitForDisconnected(800)
 
@@ -216,13 +218,13 @@ class StatusClient(QObject):
             stream << QString(var)
 
         stream.device().seek(0)
-        stream.writeUInt16(self.request.size() - settings.netGeneral('unit16'))
+        stream.writeUInt16(self.request.size() - UNIT16)
 
         if self.socket.isOpen():
-            print "PyFarm :: %s :: Already connected, closing socket" % self.modName
+            log("PyFarm :: %s :: Already connected, closing socket" % self.modName, 'warning')
             self.socket.close()
 
-        print "PyFarm :: %s :: Connecting to %s" % (self.modName, self.master)
+        log("PyFarm :: %s :: Connecting to %s" % (self.modName, self.master), 'debug')
         self.socket.connectToHost(self.master, self.port)
         self.socket.waitForDisconnected(800)
 
@@ -239,13 +241,13 @@ class StatusClient(QObject):
             stream << QString(var)
 
         stream.device().seek(0)
-        stream.writeUInt16(self.request.size() - settings.netGeneral('unit16'))
+        stream.writeUInt16(self.request.size() - UNIT16)
 
         if self.socket.isOpen():
-            print "PyFarm :: %s :: Already connected, closing socket" % self.modName
+            log("PyFarm :: %s :: Already connected, closing socket" % self.modName, 'warning')
             self.socket.close()
 
-        print "PyFarm :: %s :: Connecting to %s" % (self.modName, self.master)
+        log("PyFarm :: %s :: Connecting to %s" % (self.modName, self.master), 'debug')
         self.socket.connectToHost(self.master, self.port)
         self.socket.waitForDisconnected(800)
 
@@ -260,30 +262,30 @@ class StatusClient(QObject):
         else:
             stream << action
         stream.device().seek(0)
-        stream.writeUInt16(self.request.size() - settings.netGeneral('unit16'))
+        stream.writeUInt16(self.request.size() - UNIT16)
 
         if self.socket.isOpen():
-            print "PyFarm :: %s :: Already connected, closing socket" % self.modName
+            log("PyFarm :: %s :: Already connected, closing socket" % self.modName, 'warning')
             self.socket.close()
 
-        print "PyFarm :: %s :: Connecting to %s" % (self.modName, self.master)
+        log("PyFarm :: %s :: Connecting to %s" % (self.modName, self.master), 'debug')
         self.socket.connectToHost(self.master, self.port)
         self.socket.waitForDisconnected(800)
 
     def sendRequest(self):
-        print "PyFarm :: %s :: Sending signal to server" % self.modName
+        log("PyFarm :: %s :: Sending signal to server" % self.modName, 'debug')
         self.nextBlockSize = 0
         self.socket.write(self.request)
         self.request = None
 
     def readResponse(self):
-        print "PyFarm :: %s :: Reading response" % self.modName
+        log("PyFarm :: %s :: Reading response" % self.modName, 'debug')
         stream = QDataStream(self.socket)
         stream.setVersion(QDataStream.Qt_4_2)
 
         while True:
             if self.nextBlockSize == 0:
-                if self.socket.bytesAvailable() < settings.netGeneral('unit16'):
+                if self.socket.bytesAvailable() < UNIT16:
                     break
                 self.nextBlockSize = stream.readUInt16()
             if self.socket.bytesAvailable() < self.nextBlockSize:
@@ -295,18 +297,18 @@ class StatusClient(QObject):
 
             if action in ("INIT", "UPDATE", "ERROR"):
                 if action == "INIT":
-                    print "PyFarm :: %s :: Master added this client to data" % (self.modName)
+                    log("PyFarm :: %s :: Master added this client to data" % (self.modName), 'debug')
                     self.emit(SIGNAL('MASTER_CONNECTED'))
                 elif action == "UPDATE":
-                    print "PyFarm :: %s :: Master updated status for this client" % (self.modName)
+                    log("PyFarm :: %s :: Master updated status for this client" % (self.modName), 'debug')
                 elif action == "ERROR":
-                    print "PyFarm :: %s :: Master has error" % self.modName
+                    log("PyFarm :: %s :: Master has error" % self.modName, 'error')
                     self.socket.close()
 
     def serverHasStopped(self):
-        print "PyFarm :: %s :: %s: stopped" % (self.modName, self.master)
+        log("PyFarm :: %s :: %s: stopped" % (self.modName, self.master), 'warning')
         self.socket.close()
 
     def serverHasError(self):
-        print "PyFarm :: %s :: %s: %s" % (self.modName, self.master, self.socket.errorString())
+        log("PyFarm :: %s :: %s: %s" % (self.modName, self.master, self.socket.errorString()), 'error')
         self.socket.close()

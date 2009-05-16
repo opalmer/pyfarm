@@ -35,6 +35,7 @@ from PyQt4.QtGui import QMessageBox
 
 typeCheck = TypeTest('JobData')
 settings = ParseXmlSettings('%s/settings.xml' % getcwd())
+log = settings.log
 
 class GeneralHostManager(object):
     '''
@@ -171,10 +172,10 @@ class GeneralNetworkManager(object):
 
     def echoNetworkStats(self):
         '''Echo some general network stats'''
-        print "Host Stats: \n\tEnabled: %i\n\tActive: %i\n\tDisabled: %i\n\tFailed: %i\n\tTotal Count: %i\n\tHost List:\n\t%s" %\
+        log("Host Stats: \n\tEnabled: %i\n\tActive: %i\n\tDisabled: %i\n\tFailed: %i\n\tTotal Count: %i\n\tHost List:\n\t%s" %\
         (self.enabledHostCount(), self.activeHostCount(), \
         self.disabledHostCount(), self.failedHostCount(), \
-        self.hostCount(), self.hostList())
+        self.hostCount(), self.hostList()), 'debug')
 
     def enabledHostCount(self):
         '''Return the current number of enabled hosts'''
@@ -206,17 +207,17 @@ class GeneralNetworkManager(object):
         exit_dialog = closeEventManager.singleHostExitDialog(ip)
 
         if exit_dialog == QMessageBox.Yes:
-            print "PyFarm :: Main.removeHost :: Shutting Down %s..." % ip
+            log("PyFarm :: Main.removeHost :: Shutting Down %s..." % ip, 'debug')
             closeEventManager.shutdownHost(ip)
             self.removeHostData(ip)
 
         elif exit_dialog == QMessageBox.No:
-            print "PyFarm :: Main.removeHost :: Restarting %s..." % ip
+            log("PyFarm :: Main.removeHost :: Restarting %s..." % ip, 'debug')
             closeEventManager.restartHost(ip)
             self.removeHostData(ip)
 
         elif exit_dialog == QMessageBox.Help:
-            print "PyFarm :: Main.removeHost :: Presenting host help"
+            log("PyFarm :: Main.removeHost :: Presenting host help", 'debug')
             closeEventManager.singleExitHelp(ip)
             self.removeHost(ip)
 

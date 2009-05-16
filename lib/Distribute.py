@@ -21,13 +21,21 @@ for the interface and the network.
     along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 '''
 # From Python
+import sys
+from os.path import dirname
 from pprint import pprint
 
 # From PyQt4
-from PyQt4.QtCore import SIGNAL, QObject, QThread
+from PyQt4.QtCore import SIGNAL, QObject, QThread, QDir
 
 # From PyFarm
 from lib.network.Que import QueClient
+from lib.ReadSettings import ParseXmlSettings
+
+wd = dirname(str(QDir(sys.argv[0]).canonicalPath()))
+QDir().setCurrent(wd)
+settings = ParseXmlSettings('settings.xml', type='log')
+log = settings.log
 
 class EstablishConnection(QThread):
     '''Used to thread the client connection process, to prevent gui lag'''
@@ -40,7 +48,7 @@ class EstablishConnection(QThread):
 
     def run(self):
         '''Setup the client and establish the connection'''
-        self.client = QueClient(self.host, parent=self)
+        self.client = QueClient(self.host)
         self.connect(self.client, SIGNAL("pid"), self.parent.setPID)
         self.connect(self.client, SIGNAL("finishedFrame"), self.parent.finishedFrame)
         self.connect(self.client, SIGNAL("stdout"), self.parent.logStdOut)
@@ -87,14 +95,24 @@ class DistributeFrames(QObject):
                         # setup the client
                         client = EstablishConnection(job, host, data, self)
                         client.start()
-#                        client = QueClient(host)
-#                        self.connect(client, SIGNAL("pid"), self.setPID)
-#                        self.connect(client, SIGNAL("finishedFrame"), self.finishedFrame)
-#                        self.connect(client, SIGNAL("stdout"), self.logStdOut)
-#                        self.connect(client, SIGNAL("stderr"), self.logStdErr)
-#                        client.issueRequest(job, data["subjob"], str(data["frameNum"]), data["frameID"], data["software"], data["command"])
         else:
             self.msg.warning('Hosts Not Connected', 'Before rendering you must have at least one host connected to the network.')
+
+    def sendFrame(self, hostIn):
+        host = str(hostIn)
+        for job in self.jobs:
+            frame = self.getFrame(host, job)
+            if frame:
+                data = {
+                        "job" : job,
+                        "subjob" : frame[0],
+                        "frameNum" : frame[1],
+                        "frameID" : frame[2][0],
+                        "software" : frame[2][1]["software"],
+                        "command" : frame[2][1]["command"]
+                        }
+                client = EstablishConnection(job, host, data, self)
+                client.start()
 
     def getFrame(self, host, job):
         '''Get a frame from the job dictionary'''
@@ -103,7 +121,7 @@ class DistributeFrames(QObject):
             entry = self.jobs[job].getFrame()
             if entry:
                 # inform the user of the node, then set its status
-                print "PyFarm :: %s :: %s is avaliable to render" % (self.modName, host)
+                log("PyFarm :: %s :: %s is avaliable to render" % (self.modName, host), 'debug')
                 subjob = entry[0]
                 frame = entry[1]
                 id = entry[2][0]
@@ -130,7 +148,7 @@ class DistributeFrames(QObject):
 
     def finishedFrame(self, job, subjob,  frame, frameid, host):
         '''If a render is complete, inform the other parts of pyfarm'''
-        print "PyFarm :: %s :: %s completed a frame"
+        log("PyFarm :: %s :: %s completed a frame", 'debug')
         self.jobs[job].data.frame.setEnd(subjob, frame, frameid)
         self.data.network.host.setStatus(host, 0)
         self.sendFrames()

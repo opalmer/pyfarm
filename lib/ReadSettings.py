@@ -20,6 +20,7 @@ PURPOSE: Used to read in settings of PyFarm
     along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 '''
 # From Python
+import sys
 import xml.dom.minidom
 from os import listdir
 from os.path import isdir, isfile
@@ -130,7 +131,6 @@ class ParseXmlSettings(object):
         self.doc (str) -- The xml self.document to read from
     '''
     def __init__(self, doc, type='cmd', skipSoftware=False):
-        self.os = Info.System().os()[0]
         self.error = ErrorProcessingSetup('ReadSettings.XmlSettings')
 
         # check for xml formatting errors
@@ -143,34 +143,39 @@ class ParseXmlSettings(object):
         except xml.parsers.expat.ExpatError, error:
             self.error.xmlFormattingError(doc, error)
 
-        # setup dictionaries
-        self.netPorts = self._netPort()
-        self.netGen = self._netGeneral()
+        if type != 'log':
+            self.os = Info.System().os()[0]
+            # setup dictionaries
+            self.netPorts = self._netPort()
+            self.netGen = self._netGeneral()
 
-        self.jobStatusDict = self._setStatusKeyDict()
-        self.hostStatusDict = self._setHostStatusDict()
-        self.boolColorDict = self._setBoolColor()
-        self.broadcastDict = self._setBroadcastDict()
-        self.bgColorDict = self._setBgColor()
-        self.fgColorDict  = self._setFgColor()
-        self.frameStatusDict = self._setFrameStatusDict()
-        self.strFrameStatus, self.intFrameStatus = self._setStandardStatusDict()
+            self.jobStatusDict = self._setStatusKeyDict()
+            self.hostStatusDict = self._setHostStatusDict()
+            self.boolColorDict = self._setBoolColor()
+            self.broadcastDict = self._setBroadcastDict()
+            self.bgColorDict = self._setBgColor()
+            self.fgColorDict  = self._setFgColor()
+            self.frameStatusDict = self._setFrameStatusDict()
+            self.strFrameStatus, self.intFrameStatus = self._setStandardStatusDict()
+            self._setupLog()
 
-        if not skipSoftware:
-            # setup general software setting
-            softwareGen = self._softwareGeneral()
-            self.softwareWidgetIndex = softwareGen[0]
-            self.softwareFileGrep = softwareGen[1]
+            if not skipSoftware:
+                # setup general software setting
+                softwareGen = self._softwareGeneral()
+                self.softwareWidgetIndex = softwareGen[0]
+                self.softwareFileGrep = softwareGen[1]
 
-            # gather the currently installed software and add it
-            #  to the software dictionary
-            self.softwareList = []
-            self.softwareCommand = {}
-            self.softwareCommonName = {}
-            for package in self._installedSoftware():
-                self.softwareList.append(package[0])
-                self.softwareCommand[package[0]] = package[1]
-                self.softwareCommonName[package[0]] = package[2]
+                # gather the currently installed software and add it
+                #  to the software dictionary
+                self.softwareList = []
+                self.softwareCommand = {}
+                self.softwareCommonName = {}
+                for package in self._installedSoftware():
+                    self.softwareList.append(package[0])
+                    self.softwareCommand[package[0]] = package[1]
+                    self.softwareCommonName[package[0]] = package[2]
+        else:
+            self._setupLog()
 
     def _getElement(self, parent, tag):
         '''Yield all elements from parent given a tagName'''
@@ -492,3 +497,41 @@ class ParseXmlSettings(object):
             return self.intFrameStatus[val]
         elif type(val) == str:
             return self.strFrameStatus[val]
+
+    def _setupLog(self):
+        '''Read the xml logging settings and set them up for later use'''
+        self.logLevels = {"ALL" : 0, "STANDARD" : 1,
+                            "DEBUG" : 2, "WARNING" : 3, "ERROR" : 4, "CRITICAL" : 5,
+                            "DEVEL1" : 6, "DEVEL2" : 7, "DEVEL3" :8,
+                            "DEVEL4" : 9, "DEVEL5" : 9, "DEVEL6" : 11,
+                            "NONE" : -1
+                            }
+        for parent in self._getElement(self.doc, 'settings'):
+            for setting in self._getElement(parent, 'status'):
+                for node in self._getElement(setting, 'general'):
+                    for child in node.childNodes:
+                        if child.localName == 'logging':
+                            # set the log level
+                            level = str(child.getAttribute('level')).upper()
+                            if level == "ALL":
+                                self.logLevel = range(len(self.logLevels)-1)
+                            elif level == "DEBUG":
+                                self.logLevel = [2, 3, 4, 5]
+                            elif level == "NONE":
+                                self.logLevel = [-1]
+                            else:
+                                self.logLevel = [self.logLevels[level]]
+
+#                            device = str(child.getAttribute('device')).upper()
+#                            if device == 'STDOUT':
+#                                self.logOut = sys.stdout
+#                            elif device == 'STDERR':
+#                                self.logOut = sys.stderr
+#                            else:
+#                                self.logOut = sys.stdout
+
+    def log(self, line, lvl):
+        '''Write the given line to self.log ONLY if set @ the current level requested'''
+        level = lvl.upper()
+        if self.logLevels[level] in self.logLevel:
+            print line

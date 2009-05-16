@@ -119,7 +119,7 @@ class FrameData(object):
     def setElapsed(self, subjob, frame, frameid):
         start = self.getFrame(subjob, frame, frameid)["start"]
         end = self.getFrame(subjob, frame, frameid)["end"]
-        elapsed = start.secsTo(end)
+        elapsed = QDateTime().secsTo(end)
         self.getFrame(subjob, frame, frameid)["elapsed"] = elapsed
 
     def setStatus(self, subjob, frame, frameid, status):
@@ -340,7 +340,7 @@ class JobData(object):
             "pid" : None, "software" : software,
             "start" : 0, "end" : 0, "elapsed" : 0,
             "command" : str(command),
-            "stdout" : {}, "stderr" : {}
+            "log" : []
             }
 
         # add the frame to the frames dictionary
@@ -370,6 +370,7 @@ class JobData(object):
                     self._addEntry(id, frame, software, self.renderConfig.maya(frame, layer.text()))
             else:
                 self._addEntry(id, frame, software, self.renderConfig.maya(frame))
+
         elif settings.commonName(str(self.ui.softwareSelection.currentText())) == 'houdini':
             print "houdini"
         elif settings.commonName(str(self.ui.softwareSelection.currentText())) == 'shake':

@@ -60,6 +60,9 @@ along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
                 <failed text="Failed" index="3" bgColor="255,0,0" txtColor="0,0,0"/>
             </hosts>
             <general>
+                <!--valid levels: all, standard, debug, warning, error, critical,
+                devel1, deve2, devel3, devel4, devel5, devel6, none -->
+                <logging level="standard" device="stdout" />
                 <nonZeroValue bgColor="0,0,0" txtColor="255,255,255"/>
                 <zeroValue bgColor="0,0,0" txtColor="255,0,0"/>
                 <percent maxVal="25" color="255,0,0" />

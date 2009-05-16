@@ -37,6 +37,7 @@ from lib.ui.main.CustomWidgets import MessageBox
 from lib.ui.main.maya.RenderLayers import MayaCamAndLayers
 
 settings = ParseXmlSettings('settings.xml')
+log = settings.log
 
 
 class SoftwareContextManager(object):
@@ -48,6 +49,7 @@ class SoftwareContextManager(object):
         self.ui = parentClass.ui
         self.contextMenu = parentClass.ui.softwareSelection
         self.msg = MessageBox(parentClass)
+        self.modName = 'Software.setSoftware'
 
     def commonName(self):
         '''
@@ -83,7 +85,7 @@ class SoftwareContextManager(object):
 
             return 1
         else:
-            print "PyFarm :: DEBUG :: Could not find any software installed"
+            log("PyFarm :: %s :: Could not find any software installed" % self.modName, 'critical')
             return 0
 
     def _setDefaults(self, software):

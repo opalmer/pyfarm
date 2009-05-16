@@ -54,7 +54,6 @@ class NetworkTableManager(object):
         # check to make sure the host is valid
         if ResolveHost(host) == 'BAD_HOST':
             self.warningMessage("Bad host or IP", "Sorry %s could not be resolved, please check your entry and try again." % host)
-            print "PyFarm :: %s :: Bad host or IP, could not add %s " % (modName, host)
         else:
             # prepare the information
             self.currentHost = []

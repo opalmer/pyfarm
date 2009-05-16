@@ -32,6 +32,7 @@ from lib.ui.main.CustomWidgets import MessageBox
 from lib.Distribute import DistributeFrames
 
 settings = ParseXmlSettings('settings.xml')
+log = settings.log
 
 class SubmitManager(object):
     '''
@@ -107,9 +108,12 @@ class SubmitManager(object):
 
     def startRender(self):
         '''Start the que and begin rendering'''
-        print "PyFarm :: %s :: Starting render" % self.modName
+        log("PyFarm :: %s :: Starting render" % self.modName, 'debug')
         if len(self.jobs):
-            render = DistributeFrames(self)
-            render.sendFrames()
+            self.distribute = DistributeFrames(self)
+            self.distribute.sendFrames()
         else:
             self.msg.warning("Please Submit A Job",  "You must submit a job before attempting to render")
+
+    def sendFrame(self, host):
+        self.distribute.sendFrame(host)
