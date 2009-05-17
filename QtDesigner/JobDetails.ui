@@ -263,9 +263,6 @@
      <layout class="QHBoxLayout">
       <item>
        <widget class="QPushButton" name="refreshNow">
-        <property name="enabled">
-         <bool>false</bool>
-        </property>
         <property name="text">
          <string>Refresh</string>
         </property>
@@ -314,12 +311,9 @@
        </spacer>
       </item>
       <item>
-       <widget class="QPushButton" name="saveFrameLog">
-        <property name="enabled">
-         <bool>false</bool>
-        </property>
+       <widget class="QPushButton" name="openLog">
         <property name="text">
-         <string>Save Log</string>
+         <string>Open Log</string>
         </property>
        </widget>
       </item>
@@ -339,7 +333,7 @@
  <connections>
   <connection>
    <sender>closeButton</sender>
-   <signal>pressed()</signal>
+   <signal>clicked()</signal>
    <receiver>JobDetails</receiver>
    <slot>close()</slot>
    <hints>

@@ -503,7 +503,7 @@ class ParseXmlSettings(object):
         self.logLevels = {"ALL" : 0, "STANDARD" : 1,
                             "DEBUG" : 2, "WARNING" : 3, "ERROR" : 4, "CRITICAL" : 5,
                             "DEVEL1" : 6, "DEVEL2" : 7, "DEVEL3" :8,
-                            "DEVEL4" : 9, "DEVEL5" : 9, "DEVEL6" : 11,
+                            "DEVEL4" : 9, "DEVEL5" : 10, "DEVEL6" : 11, "DEVEL" : 12,
                             "NONE" : -1
                             }
         for parent in self._getElement(self.doc, 'settings'):
@@ -517,6 +517,8 @@ class ParseXmlSettings(object):
                                 self.logLevel = range(len(self.logLevels)-1)
                             elif level == "DEBUG":
                                 self.logLevel = [2, 3, 4, 5]
+                            elif level == "DEVEL":
+                                self.logLevel = [6, 7, 8, 9, 10, 11, 12]
                             elif level == "NONE":
                                 self.logLevel = [-1]
                             else:

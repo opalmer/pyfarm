@@ -22,6 +22,7 @@ gui:
 	pyuic4 QtDesigner/MainWindow.ui >> lib/ui/MainWindow.py
 	pyuic4 QtDesigner/HostInfo.ui >> lib/ui/HostInfo.py
 	pyuic4 QtDesigner/JobDetails.ui >> lib/ui/JobDetails.py
+	pyuic4 QtDesigner/LogViewer.ui >> lib/ui/LogViewer.py
 	pyuic4 doc/docgen/QtDesigner/WikiDocGen.ui >> doc/docgen/lib/ui/WikiDocGen.py
 
 build-mac:

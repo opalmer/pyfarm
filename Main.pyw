@@ -109,6 +109,7 @@ class Main(QMainWindow):
         self.connect(self.statusServer, SIGNAL('INIT'), self.initHost)
         self.connect(self.statusServer, SIGNAL('FRAME_COMPLETE'), self.frameComplete)
         self.logServer = UdpLoggerServer()
+        self.connect(self.logServer, SIGNAL("incoming_line"), self.processLogLine)
 
         # start the servers
         if not self.statusServer.listen(QHostAddress('0.0.0.0'), settings.netPort('status')):
@@ -174,11 +175,15 @@ class Main(QMainWindow):
         self.connect(self.ui.removeHost, SIGNAL("pressed()"), self.dataGeneral.removeHost)
 
         self.fakeSetup()
+    def processLogLine(self, line):
+        '''Process an incoming log line'''
+        l = line[0].split("::")
+        self.dataJob[l[0]].data.frame.appendLogLine(l[1], l[2], l[3], l[4])
 
     def frameComplete(self, job):
         '''Take action when a frame is finished'''
         self.tableManager.frameComplete(job[0])
-        self.submitJob.sendFrame(job[1])
+        self.submitJob.distribute.sendFrame(job[1])
 
 ################################
 ## BEGIN Context Menus

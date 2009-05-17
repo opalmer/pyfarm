@@ -114,6 +114,3 @@ class SubmitManager(object):
             self.distribute.sendFrames()
         else:
             self.msg.warning("Please Submit A Job",  "You must submit a job before attempting to render")
-
-    def sendFrame(self, host):
-        self.distribute.sendFrame(host)

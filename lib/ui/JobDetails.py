@@ -19,7 +19,7 @@
 
 # Form implementation generated from reading ui file 'QtDesigner/JobDetails.ui'
 #
-# Created: Thu May 14 21:06:29 2009
+# Created: Sat May 16 20:01:38 2009
 #      by: PyQt4 UI code generator 4.4.4
 #
 # WARNING! All changes made in this file will be lost!
@@ -151,7 +151,6 @@ class Ui_JobDetails(object):
         self.hboxlayout = QtGui.QHBoxLayout()
         self.hboxlayout.setObjectName("hboxlayout")
         self.refreshNow = QtGui.QPushButton(self.layoutWidget1)
-        self.refreshNow.setEnabled(False)
         self.refreshNow.setObjectName("refreshNow")
         self.hboxlayout.addWidget(self.refreshNow)
         self.autoRefresh = QtGui.QCheckBox(self.layoutWidget1)
@@ -167,17 +166,16 @@ class Ui_JobDetails(object):
         self.hboxlayout.addWidget(self.refreshTime)
         spacerItem = QtGui.QSpacerItem(188, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
         self.hboxlayout.addItem(spacerItem)
-        self.saveFrameLog = QtGui.QPushButton(self.layoutWidget1)
-        self.saveFrameLog.setEnabled(False)
-        self.saveFrameLog.setObjectName("saveFrameLog")
-        self.hboxlayout.addWidget(self.saveFrameLog)
+        self.openLog = QtGui.QPushButton(self.layoutWidget1)
+        self.openLog.setObjectName("openLog")
+        self.hboxlayout.addWidget(self.openLog)
         self.closeButton = QtGui.QPushButton(self.layoutWidget1)
         self.closeButton.setObjectName("closeButton")
         self.hboxlayout.addWidget(self.closeButton)
         self.vboxlayout.addLayout(self.hboxlayout)
 
         self.retranslateUi(JobDetails)
-        QtCore.QObject.connect(self.closeButton, QtCore.SIGNAL("pressed()"), JobDetails.close)
+        QtCore.QObject.connect(self.closeButton, QtCore.SIGNAL("clicked()"), JobDetails.close)
         QtCore.QMetaObject.connectSlotsByName(JobDetails)
 
     def retranslateUi(self, JobDetails):
@@ -200,6 +198,6 @@ class Ui_JobDetails(object):
         self.refreshNow.setText(QtGui.QApplication.translate("JobDetails", "Refresh", None, QtGui.QApplication.UnicodeUTF8))
         self.autoRefresh.setText(QtGui.QApplication.translate("JobDetails", "Auto Refresh", None, QtGui.QApplication.UnicodeUTF8))
         self.refreshTime.setSuffix(QtGui.QApplication.translate("JobDetails", "s", None, QtGui.QApplication.UnicodeUTF8))
-        self.saveFrameLog.setText(QtGui.QApplication.translate("JobDetails", "Save Log", None, QtGui.QApplication.UnicodeUTF8))
+        self.openLog.setText(QtGui.QApplication.translate("JobDetails", "Open Log", None, QtGui.QApplication.UnicodeUTF8))
         self.closeButton.setText(QtGui.QApplication.translate("JobDetails", "Close", None, QtGui.QApplication.UnicodeUTF8))
 

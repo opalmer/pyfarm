@@ -64,6 +64,14 @@ class JobDetailsTableModel(QAbstractTableModel):
         self.dataDict = dataDict.jobData()
         self.loadData()
 
+    def log(self, subjob, frame, id):
+        '''Yield the log lines for the given subjob, frame, and id'''
+        log = self.dataDict[str(subjob)]["frames"][int(frame[0])]
+        for entry in log:
+            if entry[0] == str(id):
+                for line in entry[1]["log"]:
+                    yield line
+
     def sortByStatus(self):
         '''Sort the table by status'''
         def compare(a, b):

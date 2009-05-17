@@ -111,6 +111,8 @@ class DistributeFrames(QObject):
                         "software" : frame[2][1]["software"],
                         "command" : frame[2][1]["command"]
                         }
+                self.jobs[job].data.frame.setStart(data["subjob"], data["frameNum"], data["frameID"])
+                self.jobs[job].data.frame.setHost(data["subjob"], data["frameNum"], data["frameID"], host)
                 client = EstablishConnection(job, host, data, self)
                 client.start()
 
@@ -151,7 +153,6 @@ class DistributeFrames(QObject):
         log("PyFarm :: %s :: %s completed a frame", 'debug')
         self.jobs[job].data.frame.setEnd(subjob, frame, frameid)
         self.data.network.host.setStatus(host, 0)
-        self.sendFrames()
 
     def hasSoftware(self, host, software):
         '''Check and see if the given host has the software installed'''

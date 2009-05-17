@@ -29,12 +29,13 @@ from PyQt4.QtCore import QDateTime
 
 # From PyFarm
 from lib.ReadSettings import ParseXmlSettings
-from lib.Info import Statistics, TypeTest
+from lib.Info import Statistics, TypeTest, Int2Time
 from lib.PyFarmExceptions import ErrorProcessingSetup
 from lib.RenderConfig import ConfigureCommand
 from lib.ui.main.Status import StatusManager
 
 settings = ParseXmlSettings('%s/settings.xml' % getcwd())
+log = settings.log
 statistics = Statistics()
 typeCheck = TypeTest('JobData')
 error = ErrorProcessingSetup('JobData')
@@ -119,8 +120,7 @@ class FrameData(object):
     def setElapsed(self, subjob, frame, frameid):
         start = self.getFrame(subjob, frame, frameid)["start"]
         end = self.getFrame(subjob, frame, frameid)["end"]
-        elapsed = QDateTime().secsTo(end)
-        self.getFrame(subjob, frame, frameid)["elapsed"] = elapsed
+        self.getFrame(subjob, frame, frameid)["elapsed"] = end.toTime_t()-start.toTime_t()
 
     def setStatus(self, subjob, frame, frameid, status):
         '''Set the status of the given frame'''
@@ -129,6 +129,9 @@ class FrameData(object):
         self.dataClass.subjob.subtractFromStatus(subjob, oldStatus)
         self.dataClass.subjob.addToStatus(subjob, status)
 
+    def appendLogLine(self, subjob, frame, frameid, line):
+        '''Append the given line to the given entry'''
+        self.getFrame(subjob, int(frame), frameid)["log"].append(line)
 
 class JobStatus(object):
     '''
