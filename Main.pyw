@@ -183,6 +183,13 @@ class Main(QMainWindow):
     def frameComplete(self, job):
         '''Take action when a frame is finished'''
         self.tableManager.frameComplete(job[0])
+        self.dataJob[job[0]].data.frame.appendLogLine(job[2], job[3], job[4], "<br /><b>=======================================================</b>")
+        self.dataJob[job[0]].data.frame.appendLogLine(job[2], job[3], job[4], "<b>RENDER COMPLETE:</b>")
+        self.dataJob[job[0]].data.frame.appendLogLine(job[2], job[3], job[4], "<b>Host:</b> %s" % str(job[1]))
+        self.dataJob[job[0]].data.frame.appendLogLine(job[2], job[3], job[4], "<b>Sub-Job Name:</b> %s" % job[2])
+        self.dataJob[job[0]].data.frame.appendLogLine(job[2], job[3], job[4], "<b>Frame Number:</b> %i" %  job[3])
+        self.dataJob[job[0]].data.frame.appendLogLine(job[2], job[3], job[4], "<b>Frame ID:</b> %s" % job[4])
+        self.dataJob[job[0]].data.frame.appendLogLine(job[2], job[3], job[4], "<b>=======================================================</b>")
         self.submitJob.distribute.sendFrame(job[1])
 
 ################################
@@ -593,8 +600,8 @@ class Main(QMainWindow):
         from lib.ui.main.maya.RenderLayers import MayaCamAndLayers
         self.ui.inputJobName.setText('fakeJob')
         getCamAndLayers = MayaCamAndLayers(self.ui.mayaRenderLayers, self.ui.mayaCamera)
-        self.ui.mayaScene.setText('/farm/projects/PyFarm/trunk/tests/maya/2009/scenes/01_mr_renderLayers.ma')
-        getCamAndLayers.run('/farm/projects/PyFarm/trunk/tests/maya/2009/scenes/01_mr_renderLayers.ma')
+        self.ui.mayaScene.setText('/stuhome/01_mr_renderLayers.ma')
+        getCamAndLayers.run('/stuhome/01_mr_renderLayers.ma')
 
     def closeEvent(self, event):
         '''Run when closing the main gui, used to "cleanup" the program state'''

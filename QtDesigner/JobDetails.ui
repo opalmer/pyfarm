@@ -1,8 +1,7 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<ui version="4.0">
+<ui version="4.0" >
  <class>JobDetails</class>
- <widget class="QDialog" name="JobDetails">
-  <property name="geometry">
+ <widget class="QDialog" name="JobDetails" >
+  <property name="geometry" >
    <rect>
     <x>0</x>
     <y>0</y>
@@ -10,14 +9,14 @@
     <height>666</height>
    </rect>
   </property>
-  <property name="windowTitle">
+  <property name="windowTitle" >
    <string>Job Details</string>
   </property>
-  <widget class="QGroupBox" name="jobGroupBox">
-   <property name="enabled">
+  <widget class="QGroupBox" name="jobGroupBox" >
+   <property name="enabled" >
     <bool>false</bool>
    </property>
-   <property name="geometry">
+   <property name="geometry" >
     <rect>
      <x>10</x>
      <y>200</y>
@@ -25,11 +24,11 @@
      <height>81</height>
     </rect>
    </property>
-   <property name="title">
+   <property name="title" >
     <string>Job</string>
    </property>
-   <widget class="QWidget" name="layoutWidget">
-    <property name="geometry">
+   <widget class="QWidget" name="layoutWidget" >
+    <property name="geometry" >
      <rect>
       <x>10</x>
       <y>30</y>
@@ -37,51 +36,51 @@
       <height>48</height>
      </rect>
     </property>
-    <layout class="QGridLayout">
-     <item row="0" column="0">
-      <widget class="QLabel" name="jobDetails_job_status_label">
-       <property name="font">
+    <layout class="QGridLayout" >
+     <item row="0" column="0" >
+      <widget class="QLabel" name="jobDetails_job_status_label" >
+       <property name="font" >
         <font>
          <pointsize>10</pointsize>
         </font>
        </property>
-       <property name="text">
+       <property name="text" >
         <string>Name:</string>
        </property>
       </widget>
      </item>
-     <item row="0" column="1">
-      <widget class="QLabel" name="jobDetails_job_name">
-       <property name="font">
+     <item row="0" column="1" >
+      <widget class="QLabel" name="jobDetails_job_name" >
+       <property name="font" >
         <font>
          <pointsize>10</pointsize>
         </font>
        </property>
-       <property name="text">
+       <property name="text" >
         <string>NONE</string>
        </property>
       </widget>
      </item>
-     <item row="1" column="0">
-      <widget class="QLabel" name="jobDetails_job_name_label">
-       <property name="font">
+     <item row="1" column="0" >
+      <widget class="QLabel" name="jobDetails_job_name_label" >
+       <property name="font" >
         <font>
          <pointsize>10</pointsize>
         </font>
        </property>
-       <property name="text">
+       <property name="text" >
         <string>Status:</string>
        </property>
       </widget>
      </item>
-     <item row="1" column="1">
-      <widget class="QLabel" name="jobDetails_job_status">
-       <property name="font">
+     <item row="1" column="1" >
+      <widget class="QLabel" name="jobDetails_job_status" >
+       <property name="font" >
         <font>
          <pointsize>10</pointsize>
         </font>
        </property>
-       <property name="text">
+       <property name="text" >
         <string>NONE</string>
        </property>
       </widget>
@@ -89,11 +88,11 @@
     </layout>
    </widget>
   </widget>
-  <widget class="QGroupBox" name="groupBox_2">
-   <property name="enabled">
+  <widget class="QGroupBox" name="groupBox_2" >
+   <property name="enabled" >
     <bool>false</bool>
    </property>
-   <property name="geometry">
+   <property name="geometry" >
     <rect>
      <x>10</x>
      <y>50</y>
@@ -101,11 +100,11 @@
      <height>141</height>
     </rect>
    </property>
-   <property name="title">
+   <property name="title" >
     <string>Stats</string>
    </property>
-   <widget class="QWidget" name="layoutWidget_2">
-    <property name="geometry">
+   <widget class="QWidget" name="layoutWidget_2" >
+    <property name="geometry" >
      <rect>
       <x>9</x>
       <y>20</y>
@@ -113,107 +112,107 @@
       <height>101</height>
      </rect>
     </property>
-    <layout class="QGridLayout">
-     <item row="0" column="0">
-      <widget class="QLabel" name="label_44">
-       <property name="font">
+    <layout class="QGridLayout" >
+     <item row="0" column="0" >
+      <widget class="QLabel" name="label_44" >
+       <property name="font" >
         <font>
          <pointsize>10</pointsize>
          <weight>50</weight>
          <bold>false</bold>
         </font>
        </property>
-       <property name="text">
+       <property name="text" >
         <string>Waiting:</string>
        </property>
       </widget>
      </item>
-     <item row="0" column="1">
-      <widget class="QLabel" name="jobs_frames_waiting">
-       <property name="font">
+     <item row="0" column="1" >
+      <widget class="QLabel" name="jobs_frames_waiting" >
+       <property name="font" >
         <font>
          <pointsize>10</pointsize>
         </font>
        </property>
-       <property name="text">
+       <property name="text" >
         <string>0</string>
        </property>
       </widget>
      </item>
-     <item row="1" column="0">
-      <widget class="QLabel" name="label_28">
-       <property name="font">
+     <item row="1" column="0" >
+      <widget class="QLabel" name="label_28" >
+       <property name="font" >
         <font>
          <pointsize>10</pointsize>
          <weight>50</weight>
          <bold>false</bold>
         </font>
        </property>
-       <property name="text">
+       <property name="text" >
         <string>Rendering:</string>
        </property>
       </widget>
      </item>
-     <item row="1" column="1">
-      <widget class="QLabel" name="jobs_frames_rendering">
-       <property name="font">
+     <item row="1" column="1" >
+      <widget class="QLabel" name="jobs_frames_rendering" >
+       <property name="font" >
         <font>
          <pointsize>10</pointsize>
         </font>
        </property>
-       <property name="text">
+       <property name="text" >
         <string>0</string>
        </property>
       </widget>
      </item>
-     <item row="2" column="0">
-      <widget class="QLabel" name="label_31">
-       <property name="font">
+     <item row="2" column="0" >
+      <widget class="QLabel" name="label_31" >
+       <property name="font" >
         <font>
          <pointsize>10</pointsize>
          <weight>50</weight>
          <bold>false</bold>
         </font>
        </property>
-       <property name="text">
+       <property name="text" >
         <string>Complete:</string>
        </property>
       </widget>
      </item>
-     <item row="2" column="1">
-      <widget class="QLabel" name="jobs_frames_complete">
-       <property name="font">
+     <item row="2" column="1" >
+      <widget class="QLabel" name="jobs_frames_complete" >
+       <property name="font" >
         <font>
          <pointsize>10</pointsize>
         </font>
        </property>
-       <property name="text">
+       <property name="text" >
         <string>0</string>
        </property>
       </widget>
      </item>
-     <item row="3" column="0">
-      <widget class="QLabel" name="label_32">
-       <property name="font">
+     <item row="3" column="0" >
+      <widget class="QLabel" name="label_32" >
+       <property name="font" >
         <font>
          <pointsize>10</pointsize>
          <weight>50</weight>
          <bold>false</bold>
         </font>
        </property>
-       <property name="text">
+       <property name="text" >
         <string>Failed:</string>
        </property>
       </widget>
      </item>
-     <item row="3" column="1">
-      <widget class="QLabel" name="jobs_frames_failed">
-       <property name="font">
+     <item row="3" column="1" >
+      <widget class="QLabel" name="jobs_frames_failed" >
+       <property name="font" >
         <font>
          <pointsize>10</pointsize>
         </font>
        </property>
-       <property name="text">
+       <property name="text" >
         <string>0</string>
        </property>
       </widget>
@@ -221,8 +220,8 @@
     </layout>
    </widget>
   </widget>
-  <widget class="QWidget" name="layoutWidget">
-   <property name="geometry">
+  <widget class="QWidget" name="layoutWidget" >
+   <property name="geometry" >
     <rect>
      <x>160</x>
      <y>11</y>
@@ -230,10 +229,10 @@
      <height>641</height>
     </rect>
    </property>
-   <layout class="QVBoxLayout">
+   <layout class="QVBoxLayout" >
     <item>
-     <widget class="QLabel" name="label">
-      <property name="font">
+     <widget class="QLabel" name="label" >
+      <property name="font" >
        <font>
         <family>AlArabiya</family>
         <pointsize>14</pointsize>
@@ -241,68 +240,68 @@
         <bold>true</bold>
        </font>
       </property>
-      <property name="text">
+      <property name="text" >
        <string>Frame Log</string>
       </property>
-      <property name="alignment">
+      <property name="alignment" >
        <set>Qt::AlignCenter</set>
       </property>
      </widget>
     </item>
     <item>
-     <widget class="QTableView" name="frameTable">
-      <property name="editTriggers">
+     <widget class="QTableView" name="frameTable" >
+      <property name="editTriggers" >
        <set>QAbstractItemView::NoEditTriggers</set>
       </property>
-      <property name="selectionBehavior">
+      <property name="selectionMode" >
+       <enum>QAbstractItemView::SingleSelection</enum>
+      </property>
+      <property name="selectionBehavior" >
        <enum>QAbstractItemView::SelectRows</enum>
       </property>
      </widget>
     </item>
     <item>
-     <layout class="QHBoxLayout">
+     <layout class="QHBoxLayout" >
       <item>
-       <widget class="QPushButton" name="refreshNow">
-        <property name="text">
+       <widget class="QPushButton" name="refreshNow" >
+        <property name="text" >
          <string>Refresh</string>
         </property>
        </widget>
       </item>
       <item>
-       <widget class="QCheckBox" name="autoRefresh">
-        <property name="enabled">
-         <bool>false</bool>
-        </property>
-        <property name="text">
+       <widget class="QCheckBox" name="autoRefresh" >
+        <property name="text" >
          <string>Auto Refresh</string>
         </property>
        </widget>
       </item>
       <item>
-       <widget class="QSpinBox" name="refreshTime">
-        <property name="enabled">
+       <widget class="QSpinBox" name="refreshTime" >
+        <property name="enabled" >
          <bool>false</bool>
         </property>
-        <property name="suffix">
+        <property name="suffix" >
          <string>s</string>
         </property>
-        <property name="minimum">
+        <property name="minimum" >
          <number>1</number>
         </property>
-        <property name="maximum">
+        <property name="maximum" >
          <number>600</number>
         </property>
-        <property name="value">
+        <property name="value" >
          <number>5</number>
         </property>
        </widget>
       </item>
       <item>
        <spacer>
-        <property name="orientation">
+        <property name="orientation" >
          <enum>Qt::Horizontal</enum>
         </property>
-        <property name="sizeHint" stdset="0">
+        <property name="sizeHint" >
          <size>
           <width>188</width>
           <height>20</height>
@@ -311,15 +310,15 @@
        </spacer>
       </item>
       <item>
-       <widget class="QPushButton" name="openLog">
-        <property name="text">
+       <widget class="QPushButton" name="openLog" >
+        <property name="text" >
          <string>Open Log</string>
         </property>
        </widget>
       </item>
       <item>
-       <widget class="QPushButton" name="closeButton">
-        <property name="text">
+       <widget class="QPushButton" name="closeButton" >
+        <property name="text" >
          <string>Close</string>
         </property>
        </widget>
@@ -337,11 +336,11 @@
    <receiver>JobDetails</receiver>
    <slot>close()</slot>
    <hints>
-    <hint type="sourcelabel">
+    <hint type="sourcelabel" >
      <x>679</x>
      <y>643</y>
     </hint>
-    <hint type="destinationlabel">
+    <hint type="destinationlabel" >
      <x>367</x>
      <y>336</y>
     </hint>

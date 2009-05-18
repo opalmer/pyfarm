@@ -101,7 +101,7 @@ class StatusServerThread(QThread):
                     self.dataJob[str(job)].data.frame.setStatus(str(subjob), int(frame), str(id), 2)
                     self.dataJob[str(job)].data.frame.setEnd(str(subjob), int(frame), str(id))
                     self.dataGeneral.network.host.setStatus(str(host), 0)
-                    self.parent.emit(SIGNAL("FRAME_COMPLETE"), (str(job), host))
+                    self.parent.emit(SIGNAL("FRAME_COMPLETE"), (str(job), host, str(subjob), int(frame), str(id)))
                 elif action == "renderFailed":
                     stream >> host >> job >> subjob >> frame >> id >> code
                     log("PyFarm :: %s :: Frame failed - %s %i %s" % (self.modName, str(subjob), int(frame), str(id)), 'error')

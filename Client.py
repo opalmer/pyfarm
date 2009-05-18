@@ -147,7 +147,7 @@ class Main(QObject):
             ip = data[1]
             if ip != self.master:
                 log("PyFarm :: BroadcastReceiever :: Incoming broadcast", 'debug')
-                log("PyFarm :: BroadcastReceiever :: Receieved master address: %s" % ip, 'debug')
+                log("PyFarm :: BroadcastReceiever :: Receieved master address: %s" % ip, 'standard')
                 self.master = ip
                 self.hostname = str(QHostInfo.localHostName())
                 self.ip = GetLocalIP(self.master)
@@ -195,24 +195,24 @@ class Main(QObject):
 
         if not self.admin.listen(QHostAddress('0.0.0.0'), settings.netPort('admin')):
             if self.servers.admin.running:
-                log("PyFarm :: Client.AdminServer :: Server is already running", 'warning')
+                log("PyFarm :: AdminServer :: Server is already running", 'warning')
             else:
-                log("PyFarm :: Client.AdminServer :: Could not start the server: %s" % self.admin.errorString(), 'error')
-            log("PyFarm :: Client.AdminServer :: Server running",'all')
+                log("PyFarm :: AdminServer :: Could not start the server: %s" % self.admin.errorString(), 'error')
+            log("PyFarm :: AdminServer :: Server running",'standard')
         else:
             self.servers.admin.setRunning(self.admin)
-            log("PyFarm :: Client.AdminServer :: Waiting for signals...", 'debug')
+            log("PyFarm :: AdminServer :: Waiting for signals...", 'debug')
 
         # start the que server
         self.que = QueSlaveServer(self.master, parent=self)
         if not self.que.listen(QHostAddress('0.0.0.0'), settings.netPort('que')):
             if self.servers.que.running:
-                log("PyFarm :: Client.QueSlave :: Server is already running", 'warning')
+                log("PyFarm :: QueSlave :: Server is already running", 'warning')
             else:
-                log("PyFarm :: Client.QueSlave :: Could not start the server: %s" % self.que.errorString(), 'error')
+                log("PyFarm :: QueSlave :: Could not start the server: %s" % self.que.errorString(), 'error')
         else:
             self.servers.que.setRunning(self.que)
-            log("PyFarm :: Client.QueSlave :: Waiting for jobs...", 'all')
+            log("PyFarm :: QueSlave :: Server running...", 'standard')
 
     def shutdownServers(self):
         '''Calls the shutdown function all all servers'''
@@ -226,11 +226,11 @@ class Main(QObject):
         '''Close all connections and restart the client'''
         self.shutdownServers()
         self.setVarDefaults()
-        log("PyFarm :: BroadcastReceiever :: Listening for broadcast", 'debug')
+        log("PyFarm :: BroadcastReceiever :: Listening for broadcast", 'standard')
 
     def shutdown(self):
         '''Close all connections and shutdown the client'''
-        log("PyFarm :: Client :: Got shutdown signal from Admin Server", 'debug')
+        log("PyFarm :: Client :: Got shutdown signal from Admin Server", 'standard')
         self.shutdownServers()
         sys.exit("PyFarm :: Client :: Client Shutdown by Admin")
 
