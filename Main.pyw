@@ -600,8 +600,16 @@ class Main(QMainWindow):
         from lib.ui.main.maya.RenderLayers import MayaCamAndLayers
         self.ui.inputJobName.setText('fakeJob')
         getCamAndLayers = MayaCamAndLayers(self.ui.mayaRenderLayers, self.ui.mayaCamera)
-        self.ui.mayaScene.setText('/stuhome/01_mr_renderLayers.ma')
-        getCamAndLayers.run('/stuhome/01_mr_renderLayers.ma')
+        # for home
+        try:
+            getCamAndLayers.run('/farm/projects/PyFarm/trunk/tests/maya/2009/scenes/01_mr_renderLayers.ma')
+            self.ui.mayaScene.setText('/farm/projects/PyFarm/trunk/tests/maya/2009/scenes/01_mr_renderLayers.ma')
+        # for monty
+        except IOError:
+            getCamAndLayers.run('/stuhome/01_mr_renderLayers.ma')
+            self.ui.mayaScene.setText('/stuhome/01_mr_renderLayers.ma')
+
+        self.submitJob.submitJob()
 
     def closeEvent(self, event):
         '''Run when closing the main gui, used to "cleanup" the program state'''
