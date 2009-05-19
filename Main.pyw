@@ -175,6 +175,7 @@ class Main(QMainWindow):
         self.connect(self.ui.removeHost, SIGNAL("pressed()"), self.dataGeneral.removeHost)
 
         self.fakeSetup()
+
     def processLogLine(self, line):
         '''Process an incoming log line'''
         l = line[0].split("::")
@@ -598,7 +599,7 @@ class Main(QMainWindow):
     def fakeSetup(self):
         '''Setup the fake information for presentation'''
         from lib.ui.main.maya.RenderLayers import MayaCamAndLayers
-        self.ui.inputJobName.setText('fakeJob')
+        self.ui.inputJobName.setText('TestJobA')
         getCamAndLayers = MayaCamAndLayers(self.ui.mayaRenderLayers, self.ui.mayaCamera)
         # for home
         try:
