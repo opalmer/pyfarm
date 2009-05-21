@@ -609,7 +609,9 @@ class Main(QMainWindow):
         except IOError:
             getCamAndLayers.run('/stuhome/01_mr_renderLayers.ma')
             self.ui.mayaScene.setText('/stuhome/01_mr_renderLayers.ma')
-
+        self.ui.inputJobName.setText('TestJobA')
+        self.submitJob.submitJob()
+        self.ui.inputJobName.setText('TestJobB')
         self.submitJob.submitJob()
 
     def closeEvent(self, event):
