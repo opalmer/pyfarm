@@ -25,7 +25,7 @@ from time import time
 from os import getcwd
 
 # From PyQt4
-from PyQt4.QtCore import QDateTime
+from PyQt4.QtCore import QDateTime, QFile, QIODevice, QTextStream, QDir
 
 # From PyFarm
 from lib.ReadSettings import ParseXmlSettings
@@ -86,8 +86,9 @@ class FrameData(object):
     INPUT:
         job (dict) -- job dictionary to work with
     '''
-    def __init__(self, job, dataClass):
+    def __init__(self, job, name, dataClass):
         self.job = job
+        self.name = name
         self.dataClass = dataClass
 
     def getFrame(self, subjob, frame, frameid):
@@ -129,9 +130,28 @@ class FrameData(object):
         self.dataClass.subjob.subtractFromStatus(subjob, oldStatus)
         self.dataClass.subjob.addToStatus(subjob, status)
 
-    def appendLogLine(self, subjob, frame, frameid, line):
+    def writeLine(self, logIn, line):
+        '''Write the given line to the log'''
+        log = QFile(logIn)
+        log.open(QIODevice.WriteOnly)
+        log.writeData(line)
+        log.close()
+
+    def appendLogLine(self, logDir, subjob, frame, frameid, line):
         '''Append the given line to the given entry'''
-        self.getFrame(subjob, int(frame), frameid)["log"].append(line)
+        log = self.getFrame(subjob, int(frame), frameid)["log"]
+        if log:
+            self.writeLine(log, line)
+        else:
+            sep = logDir.separator().toAscii()
+            logdir = "%s%s%s%s%s" % (logDir.path(), sep, self.name, sep, subjob)
+            QDir().mkpath(logdir)
+            logIn = "%s%s%s%s%s%s%s_%s_%s_%s.txt" % (logDir.path(), sep, self.name, sep, subjob, sep,\
+                                self.name, subjob, frame, frameid)
+            self.getFrame(subjob, int(frame), frameid)["log"] = logIn
+            self.writeLine(logIn, line)
+
+        #self.getFrame(subjob, int(frame), frameid)["log"].append(line)
 
 class JobStatus(object):
     '''
@@ -298,7 +318,7 @@ class JobData(object):
         self.renderConfig = ConfigureCommand(parentClass.ui)
         self.ui =parentClass.ui
         self.jobManager = jobManager
-        self.frame = FrameData(jobManager.job, self)
+        self.frame = FrameData(jobManager.job, name, self)
         self.subjob = SubjobData(jobManager.job, self)
 
     def createSubjob(self, id, priority):

@@ -31,7 +31,7 @@ from pprint import pprint
 # widget, subsidgets, and utility imports
 from PyQt4.QtGui import QMainWindow, QMessageBox
 from PyQt4.QtGui import QTableWidgetItem, QTreeWidgetItem
-from PyQt4.QtGui import QColor, QProgressBar, QPushButton
+from PyQt4.QtGui import QColor, QProgressBar, QPushButton, QFileDialog
 from PyQt4.QtCore import QDir, QUuid
 from PyQt4.QtNetwork import QHostInfo, QHostAddress
 
@@ -59,7 +59,7 @@ from lib.network.JobLogging import UdpLoggerServer
 from lib.ui.main.job.table.JobTableManager import JobTableManager
 
 __DEVELOPER__ = 'Oliver Palmer'
-__VERSION__ = '0.3.203'
+__VERSION__ = '0.3.210'
 __HOMEPAGE__ = 'http://www.pyfarm.net'
 __DOCS__ = '%s/wiki' % __HOMEPAGE__
 __WIKI__ = __DOCS__
@@ -71,11 +71,25 @@ class Main(QMainWindow):
     '''This is the controlling class for the main gui'''
     def __init__(self):
         super(Main, self).__init__()
-
         # setup UI
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
         self.setWindowTitle("PyFarm -- Version %s" % __VERSION__)
+        self.modName = 'Main'
+
+        # setup the working directory and default log output
+        self.qdir = QDir()
+        self.cwd = self.qdir.currentPath()
+        self.sep = self.qdir.separator().toAscii()
+        self.logOutDir = QDir("%s%slogs" % (self.cwd, self.sep))
+
+        # if the directory does not exist, create it
+        if not self.logOutDir.exists():
+            log('PyFarm :: %s :: Creating output directory' % self.modName, 'standard')
+            self.qdir.mkpath(self.logOutDir.path())
+
+        self.ui.logDir.setText(self.logOutDir.path())
+        self.connect(self.ui.browseForLogDir, SIGNAL("pressed()"), self.setNewLogDir)
 
         # update the installed avaliable software list
         for software in settings.installedSoftware():
@@ -176,21 +190,35 @@ class Main(QMainWindow):
 
         self.fakeSetup()
 
+    def setNewLogDir(self):
+        '''Set a new output logging directory'''
+        currentDir = self.logOutDir.path()
+        outdir = QFileDialog.getExistingDirectory(\
+            None,
+            self.trUtf8("Please Select an Output Directory"),
+            currentDir,
+            QFileDialog.Options(QFileDialog.ShowDirsOnly))
+
+        if outdir != '':
+            self.ui.logDir.setText(outdir)
+            self.logOutDir = QDir(outdir)
+
     def processLogLine(self, line):
         '''Process an incoming log line'''
         l = line[0].split("::")
-        self.dataJob[l[0]].data.frame.appendLogLine(l[1], l[2], l[3], l[4])
+        self.dataJob[l[0]].data.frame.appendLogLine(self.logOutDir, l[1], l[2], l[3], l[4],)
 
     def frameComplete(self, job):
         '''Take action when a frame is finished'''
+        logdir = self.logOutDir
         self.tableManager.frameComplete(job[0])
-        self.dataJob[job[0]].data.frame.appendLogLine(job[2], job[3], job[4], "<br /><b>=======================================================</b>")
-        self.dataJob[job[0]].data.frame.appendLogLine(job[2], job[3], job[4], "<b>RENDER COMPLETE:</b>")
-        self.dataJob[job[0]].data.frame.appendLogLine(job[2], job[3], job[4], "<b>Host:</b> %s" % str(job[1]))
-        self.dataJob[job[0]].data.frame.appendLogLine(job[2], job[3], job[4], "<b>Sub-Job Name:</b> %s" % job[2])
-        self.dataJob[job[0]].data.frame.appendLogLine(job[2], job[3], job[4], "<b>Frame Number:</b> %i" %  job[3])
-        self.dataJob[job[0]].data.frame.appendLogLine(job[2], job[3], job[4], "<b>Frame ID:</b> %s" % job[4])
-        self.dataJob[job[0]].data.frame.appendLogLine(job[2], job[3], job[4], "<b>=======================================================</b>")
+        self.dataJob[job[0]].data.frame.appendLogLine(logdir, job[2], job[3], job[4], "<br /><b>=======================================================</b>")
+        self.dataJob[job[0]].data.frame.appendLogLine(logdir, job[2], job[3], job[4], "<b>RENDER COMPLETE:</b>")
+        self.dataJob[job[0]].data.frame.appendLogLine(logdir, job[2], job[3], job[4], "<b>Host:</b> %s" % str(job[1]))
+        self.dataJob[job[0]].data.frame.appendLogLine(logdir, job[2], job[3], job[4], "<b>Sub-Job Name:</b> %s" % job[2])
+        self.dataJob[job[0]].data.frame.appendLogLine(logdir, job[2], job[3], job[4], "<b>Frame Number:</b> %i" %  job[3])
+        self.dataJob[job[0]].data.frame.appendLogLine(logdir, job[2], job[3], job[4], "<b>Frame ID:</b> %s" % job[4])
+        self.dataJob[job[0]].data.frame.appendLogLine(logdir, job[2], job[3], job[4], "<b>=======================================================</b>")
         self.submitJob.distribute.sendFrame(job[1])
 
 ################################
@@ -609,10 +637,10 @@ class Main(QMainWindow):
         except IOError:
             getCamAndLayers.run('/stuhome/01_mr_renderLayers.ma')
             self.ui.mayaScene.setText('/stuhome/01_mr_renderLayers.ma')
-        self.ui.inputJobName.setText('TestJobA')
-        self.submitJob.submitJob()
-        self.ui.inputJobName.setText('TestJobB')
-        self.submitJob.submitJob()
+#    self.ui.inputJobName.setText('TestJobA')
+#    self.submitJob.submitJob()
+#    self.ui.inputJobName.setText('TestJobB')
+#    self.submitJob.submitJob()
 
     def closeEvent(self, event):
         '''Run when closing the main gui, used to "cleanup" the program state'''
