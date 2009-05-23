@@ -206,19 +206,12 @@ class Main(QMainWindow):
     def processLogLine(self, line):
         '''Process an incoming log line'''
         l = line[0].split("::")
-        self.dataJob[l[0]].data.frame.appendLogLine(self.logOutDir, l[1], l[2], l[3], l[4],)
+        self.dataJob[l[0]].data.frame.writeLine(l[1], l[2], l[3], l[4])
 
     def frameComplete(self, job):
         '''Take action when a frame is finished'''
         logdir = self.logOutDir
         self.tableManager.frameComplete(job[0])
-        self.dataJob[job[0]].data.frame.appendLogLine(logdir, job[2], job[3], job[4], "<br /><b>=======================================================</b>")
-        self.dataJob[job[0]].data.frame.appendLogLine(logdir, job[2], job[3], job[4], "<b>RENDER COMPLETE:</b>")
-        self.dataJob[job[0]].data.frame.appendLogLine(logdir, job[2], job[3], job[4], "<b>Host:</b> %s" % str(job[1]))
-        self.dataJob[job[0]].data.frame.appendLogLine(logdir, job[2], job[3], job[4], "<b>Sub-Job Name:</b> %s" % job[2])
-        self.dataJob[job[0]].data.frame.appendLogLine(logdir, job[2], job[3], job[4], "<b>Frame Number:</b> %i" %  job[3])
-        self.dataJob[job[0]].data.frame.appendLogLine(logdir, job[2], job[3], job[4], "<b>Frame ID:</b> %s" % job[4])
-        self.dataJob[job[0]].data.frame.appendLogLine(logdir, job[2], job[3], job[4], "<b>=======================================================</b>")
         self.submitJob.distribute.sendFrame(job[1])
 
 ################################

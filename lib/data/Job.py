@@ -130,28 +130,11 @@ class FrameData(object):
         self.dataClass.subjob.subtractFromStatus(subjob, oldStatus)
         self.dataClass.subjob.addToStatus(subjob, status)
 
-    def writeLine(self, logIn, line):
+    def writeLine(self, subjob, frame, frameid, line):
         '''Write the given line to the log'''
-        log = QFile(logIn)
-        log.open(QIODevice.WriteOnly)
-        log.writeData(line)
+        log = open(self.getFrame(subjob, int(frame), frameid)["log"], 'a')
+        log.write(line+'\n')
         log.close()
-
-    def appendLogLine(self, logDir, subjob, frame, frameid, line):
-        '''Append the given line to the given entry'''
-        log = self.getFrame(subjob, int(frame), frameid)["log"]
-        if log:
-            self.writeLine(log, line)
-        else:
-            sep = logDir.separator().toAscii()
-            logdir = "%s%s%s%s%s" % (logDir.path(), sep, self.name, sep, subjob)
-            QDir().mkpath(logdir)
-            logIn = "%s%s%s%s%s%s%s_%s_%s_%s.txt" % (logDir.path(), sep, self.name, sep, subjob, sep,\
-                                self.name, subjob, frame, frameid)
-            self.getFrame(subjob, int(frame), frameid)["log"] = logIn
-            self.writeLine(logIn, line)
-
-        #self.getFrame(subjob, int(frame), frameid)["log"].append(line)
 
 class JobStatus(object):
     '''
@@ -348,10 +331,10 @@ class JobData(object):
         else:
             return False
 
-    def _addEntry(self, id, frame, software, command):
+    def _addEntry(self, id, frame, log, software, command):
         '''
         Add an entry to a subjob.  This function was created to
-        help keep cleaner code.
+        help keep code cleaner
 
         INPUT:
             id -- subjob id
@@ -363,10 +346,14 @@ class JobData(object):
             "pid" : None, "software" : software,
             "start" : 0, "end" : 0, "elapsed" : 0,
             "command" : str(command),
-            "log" : []
+            "log" : str(log)
             }
 
-        # add the frame to the frames dictionary
+        # open the log and write to, creating a placeholder
+        l = open(str(log), 'w')
+        l.close()
+
+        # add the frame to the frames dictionary (dictionary used in case of multiple layers selected [not implimented atm])
         if frame not in self.job[id]["frames"]:
             self.job[id]["frames"][frame] = [["%x" % self.job[id]["statistics"]["frames"]["frameCount"], entry]]
         else:
@@ -387,12 +374,23 @@ class JobData(object):
             frame (int) --  frame number
             software (str) -- software package to render with
         '''
+        # setup log var and create the needed directory
+        uiLogDir = self.ui.logDir.text()
+        logDir = QDir(uiLogDir)
+        logDirPath = logDir.path()
+        sep = logDir.separator().toAscii()
+        logDir = "%s%s%s%s%s" % (logDirPath, sep, self.name, sep,id)
+        QDir().mkpath(str(logDir))
         if settings.commonName(str(self.ui.softwareSelection.currentText())) == 'maya':
             if len(self.ui.mayaRenderLayers.selectedIndexes()):
                 for layer in self.ui.mayaRenderLayers.selectedItems():
-                    self._addEntry(id, frame, software, self.renderConfig.maya(frame, layer.text()))
+                    self._addEntry(id, frame, "%s%s%s%s%s%s%s_%s_%x_%s.txt" % (logDirPath, sep, self.name, sep, id,\
+                                           sep, self.name, id, self.job[id]["statistics"]["frames"]["frameCount"], str(frame).zfill(3)),\
+                                           software, self.renderConfig.maya(frame, layer.text()))
             else:
-                self._addEntry(id, frame, software, self.renderConfig.maya(frame))
+                self._addEntry(id, frame, "%s%s%s%s%s%s%s_%s_%x_%s.txt" % (logDirPath, sep, self.name, sep, id,\
+                                       sep, self.name, id, self.job[id]["statistics"]["frames"]["frameCount"], str(frame).zfill(3)),\
+                                       software, self.renderConfig.maya(frame))
 
         elif settings.commonName(str(self.ui.softwareSelection.currentText())) == 'houdini':
             print "houdini"
