@@ -39,7 +39,7 @@ finally:
 
 def Int2Time(s):
         '''Given an input integer, return time elapsed'''
-        #s=ms/1000
+#        s=ms/1000
         m,s=divmod(s,60)
         h,m=divmod(m,60)
         d,h=divmod(h,24)

@@ -23,7 +23,6 @@ for the interface and the network.
 # From Python
 import sys
 from os.path import dirname
-from pprint import pprint
 
 # From PyQt4
 from PyQt4.QtCore import SIGNAL, QObject, QThread, QDir
@@ -65,19 +64,26 @@ class DistributeFrames(QObject):
         self.msg = parentClass.msg
         self.jobs = parentClass.jobs
         self.data = parentClass.dataGeneral
+        self.tableManager = parentClass.tableManager
         self.network = parentClass.dataGeneral.dataGeneral()["network"]["hosts"]
         self.hosts = self.network.keys()
-        self.priority = 1
+        self.priority = 0
 
         # run setup functions
         self.indexSoftware()
+
+    def renderableJobs(self):
+        '''Yield jobs that are either waiting or rendering'''
+        for job in self.jobs.keys():
+            if self.jobs[job].status.overall() in [0, 1]:
+                yield job
 
     def sendFrames(self):
         '''Send the first frames out to the remote clients'''
         hostCount = len(self.hosts)
         if hostCount > 0:
             for host in self.hosts:
-                for job in self.jobs:
+                for job in self.renderableJobs():
                     frame = self.getFrame(host, job)
                     if frame:
                         data = {
@@ -95,12 +101,15 @@ class DistributeFrames(QObject):
                         # setup the client
                         client = EstablishConnection(job, host, data, self)
                         client.start()
+
+                        # change the state of the currently rendering job
+                        self.tableManager.setJobStatus(job)
         else:
             self.msg.warning('Hosts Not Connected', 'Before rendering you must have at least one host connected to the network.')
 
     def sendFrame(self, hostIn):
         host = str(hostIn)
-        for job in self.jobs:
+        for job in self.renderableJobs():
             frame = self.getFrame(host, job)
             if frame:
                 data = {

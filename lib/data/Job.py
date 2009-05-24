@@ -158,17 +158,27 @@ class JobStatus(object):
         for subjob in self.job.keys():
             yield subjob
 
-    def overall(self):
-        '''
-        Return the overall job status
+    def hasFailed(self):
+        '''Return true if the job has failed'''
+        if float(self.failedFrameCount())/float(self.frameCount()) >= .5:
+            return 1
+        else:
+            return 0
 
-        INPUT:
-            id (str) -- subjob id
-        '''
-        subjobs = []
-        for subjob in self.job.keys():
-            subjobs.append(subjob)
-        return statistics.mode(subjob)
+    def overall(self):
+        '''Return the overall job status'''
+        ratio = .5
+        total = self.frameCount()
+        rendered = self.failedFrameCount()+self.completeFrameCount()
+
+        if rendered < total and not self.hasFailed():
+            return 1
+        elif rendered == total:
+            return 2
+        elif rendered < total and self.hasFailed():
+            return 3
+        else:
+            return "Other: %i, %i, %i, %i" % (failed, complete, rendered, total)
 
     def subjob(self, id):
         '''Return the status of a subjob'''
@@ -304,7 +314,7 @@ class JobData(object):
         self.frame = FrameData(jobManager.job, name, self)
         self.subjob = SubjobData(jobManager.job, self)
 
-    def createSubjob(self, id, priority):
+    def createSubjob(self, id, priority, status=None):
         '''
         Create a sub job
 
@@ -312,8 +322,11 @@ class JobData(object):
             id (str) -- subjob id to create
             priority (int) -- priority to give job
         '''
+        if not status:
+            status = 0
+
         if id not in self.job:
-            self.job[id] = {"priority" : priority, "status" : 0,
+            self.job[id] = {"priority" : priority, "status" : status,
                                     "statistics": {
                                         "frames" : {
                                             "minTime" : 0,
@@ -396,6 +409,32 @@ class JobData(object):
             print "houdini"
         elif settings.commonName(str(self.ui.softwareSelection.currentText())) == 'shake':
             print "shake"
+
+    def addFrameFromXML(self, subjob, frame, frameID, fStatus, log, pid, elapsed, start, end, host, software, command):
+        '''Custom add frame function for frames coming from an xml'''
+        # create the dictionary entry
+        entry = {"status" : fStatus, "host" : host,
+            "pid" : pid, "software" : software,
+            "start" : start, "end" : end, "elapsed" : elapsed,
+            "command" : command,
+            "log" : log
+            }
+
+        # open the log and write to, creating a placeholder
+        l = open(str(log), 'w')
+        l.close()
+
+        # add the frame to the frames dictionary (dictionary used in case of multiple layers selected [not implimented atm])
+        if frame not in self.job[subjob]["frames"]:
+            self.job[subjob]["frames"][frame] = [[frameID, entry]]
+        else:
+            self.job[subjob]["frames"][frame].append([frameID, entry])
+
+        # update the subjob statistics and UI
+        self.subjob.addToStatus(subjob, 0)
+        self.subjob.addToCount(subjob)
+        self.jobManager.uiStatus.queue.frames.addWaiting()
+        self.parent.tableManager.addFrame(self.name)
 
 
 class JobManager(object):

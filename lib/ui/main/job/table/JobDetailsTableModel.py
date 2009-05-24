@@ -33,7 +33,7 @@ SUBJOB, STATUS, UID, FRAME, START, END, ELAPSED, HOST, PID, SOFTWARE, COMMAND = 
 class FrameEntry(object):
     def __init__(self, subjob, status, uid, framenum, start, end, elapsed, host, pid, software, command):
         self.subjob = QString(subjob)
-        self.status = QString().setNum(status)
+        self.status = status
         self.uid = QString(uid)
         self.framenum = QString().setNum(framenum)
         self.start = start
@@ -109,7 +109,6 @@ class JobDetailsTableModel(QAbstractTableModel):
     def loadData(self):
         '''Load the data'''
         self.frames = []
-
         # get the frames and other info
         #  then add it to self.frames
         for subjob in self.dataDict.keys():
@@ -156,24 +155,12 @@ class JobDetailsTableModel(QAbstractTableModel):
             return QVariant(int(Qt.AlignLeft|Qt.AlignVCenter))
         # set the text color
         elif role == Qt.TextColorRole and column == STATUS:
-            if frame.status == "0":
-                return settings.fgColor(frame.status)
-            elif frame.status == "1":
-                return settings.fgColor(frame.status)
-            elif frame.status == "2":
-                return settings.fgColor(frame.status)
-            elif frame.status == "3":
+            if frame.status in range(0, 4):
                 return settings.fgColor(frame.status)
 
         # set the background color
         elif role == Qt.BackgroundColorRole:
-            if frame.status == "0":
-                return settings.bgColor(frame.status)
-            elif frame.status == "1":
-                return settings.bgColor(frame.status)
-            elif frame.status == "2":
-                return settings.bgColor(frame.status)
-            elif frame.status == "3":
+            if frame.status in range(0, 4):
                 return settings.bgColor(frame.status)
         return QVariant()
 

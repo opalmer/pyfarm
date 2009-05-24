@@ -224,9 +224,11 @@ class Main(QObject):
 
     def restart(self):
         '''Close all connections and restart the client'''
+        log("PyFarm :: Client :: Restarting client", 'standard')
         self.shutdownServers()
         self.setVarDefaults()
         log("PyFarm :: BroadcastReceiever :: Listening for broadcast", 'standard')
+        log("PyFarm :: Client :: Restart sequence complete", 'standard')
 
     def shutdown(self):
         '''Close all connections and shutdown the client'''

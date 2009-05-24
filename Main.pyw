@@ -52,6 +52,7 @@ from lib.ui.main.CloseEvent import CloseEventManager
 from lib.ui.main.Software import SoftwareContextManager
 from lib.data.Job import JobManager
 from lib.data.General import GeneralManager
+from lib.data.XMLLoadSave import SaveQueToXML, LoadQueFromXML
 from lib.network.Admin import AdminClient
 from lib.network.Broadcast import BroadcastSender
 from lib.network.Status import StatusServer
@@ -59,7 +60,7 @@ from lib.network.JobLogging import UdpLoggerServer
 from lib.ui.main.job.table.JobTableManager import JobTableManager
 
 __DEVELOPER__ = 'Oliver Palmer'
-__VERSION__ = '0.3.210'
+__VERSION__ = '0.3.212'
 __HOMEPAGE__ = 'http://www.pyfarm.net'
 __DOCS__ = '%s/wiki' % __HOMEPAGE__
 __WIKI__ = __DOCS__
@@ -121,7 +122,9 @@ class Main(QMainWindow):
         # network server setup
         self.statusServer = StatusServer(self.dataJob, self.dataGeneral)
         self.connect(self.statusServer, SIGNAL('INIT'), self.initHost)
+        ## log server setup
         self.connect(self.statusServer, SIGNAL('FRAME_COMPLETE'), self.frameComplete)
+        self.connect(self.statusServer, SIGNAL('FRAME_FAILED'), self.frameFailed)
         self.logServer = UdpLoggerServer()
         self.connect(self.logServer, SIGNAL("incoming_line"), self.processLogLine)
 
@@ -187,8 +190,50 @@ class Main(QMainWindow):
         self.connect(self.ui.getHostInfo, SIGNAL("pressed()"), self.showHostInfo)
         self.connect(self.ui.addHost, SIGNAL("pressed()"), self._customHostDialog)
         self.connect(self.ui.removeHost, SIGNAL("pressed()"), self.dataGeneral.removeHost)
+        ## save/load from XML
+        self.connect(self.ui.saveQue, SIGNAL("triggered()"), self.xmlSaveJobs)
+        self.connect(self.ui.loadQue, SIGNAL("triggered()"), self.xmlLoadJobs)
 
         self.fakeSetup()
+        #xml = LoadQueFromXML(self)
+        #xml.load('/farm/projects/PyFarm/trunk/v0.3/test.xml')
+
+    def xmlLoadJobs(self):
+        '''Load job information from an external XML file'''
+        xml = LoadQueFromXML(self)
+
+        inFile = QFileDialog.getOpenFileName(\
+            None,
+            self.trUtf8("Please Select A File To Load The Job From"),
+            wd,
+            self.trUtf8("XML Job Data (*.xml)"),
+            None)
+
+        try:
+            xml.load(inFile)
+        except IOError:
+            self.msg.warning("No File Entered", "Sorry, but you did not select a file to write to.  Without a file to write to PyFarm will be unable to save your job data.")
+
+    def xmlSaveJobs(self):
+        '''Save the current to to an external xml file'''
+        xml = SaveQueToXML(self.dataJob)
+        outFile = QFileDialog.getSaveFileName(\
+            None,
+            self.trUtf8("Please Select A File To Save The Job To"),
+            wd,
+            self.trUtf8("XML Job Data (*.xml)"),
+            None)
+
+        try:
+            if str(outFile).endswith('.xml'):
+                xml.save(outFile)
+            else:
+                if outFile.length() > 5:
+                    xml.save(outFile+'.xml')
+                else:
+                    self.msg.warning("No File Entered", "Sorry, but you did not select a file to write to.  Without a file to write to PyFarm will be unable to save your job data.")
+        except IOError:
+            self.msg.warning("No File Entered", "Sorry, but you did not select a file to write to.  Without a file to write to PyFarm will be unable to save your job data.")
 
     def setNewLogDir(self):
         '''Set a new output logging directory'''
@@ -208,9 +253,13 @@ class Main(QMainWindow):
         l = line[0].split("::")
         self.dataJob[l[0]].data.frame.writeLine(l[1], l[2], l[3], l[4])
 
+    def frameFailed(self, job):
+        '''Take action when a frame has failed'''
+        self.tableManager.frameFailed(job[0])
+        self.submitJob.distribute.sendFrame(job[1])
+
     def frameComplete(self, job):
         '''Take action when a frame is finished'''
-        logdir = self.logOutDir
         self.tableManager.frameComplete(job[0])
         self.submitJob.distribute.sendFrame(job[1])
 
@@ -235,7 +284,6 @@ class Main(QMainWindow):
         menu = QMenu()
         menu.addAction('Job Details', self.JobDetails)
         menu.addAction('Remove Job', self.RemoveJobFromTable)
-        #menu.addAction('Error Logs')
         menu.exec_(self.globalPoint(self.ui.currentJobs, pos))
 
     def houdiniNodeListMenu(self, pos):

@@ -21,7 +21,6 @@ PURPOSE: Contains classes related to initial job submission
 '''
 # From Python
 from os.path import isfile
-from pprint import pprint
 
 # From PyFarm
 from lib import Info
@@ -53,24 +52,33 @@ class SubmitManager(object):
         self.rendering = 0
         self.tableManager = parentClass.tableManager
 
-    def submitJob(self):
+    def submitJob(self, name=None, priority=None, status=None):
         '''
         Begin processing information from the
         user interface
         '''
-        priority = self.ui.inputJobPriority.value()
-        jobName = str(self.ui.inputJobName.text())
-        jobID = self.runChecks()
+        if not priority:
+            priority = self.ui.inputJobPriority.value()
+
+        if not status:
+            status = 0
+
+        if not name:
+            jobName = str(self.ui.inputJobName.text())
+            jobID = self.runChecks()
+        else:
+            jobName = name
+            jobID = None
 
         # if the job has not been defined, define it
         if jobName not in self.jobs:
             self.jobs[jobName] = JobManager(jobName, self)
             self.tableManager.addJob(jobName)
 
-        if jobID:
-            self.createJob(jobName, jobID, priority)
+        if jobID and not name:
+            self.createJob(jobName, jobID, priority, status)
 
-    def createJob(self, jobName, id, priority):
+    def createJob(self, jobName, id, priority, status=None):
         '''
         Create a job and add it to the dictionary
 
@@ -84,6 +92,12 @@ class SubmitManager(object):
         else:
             self.msg.warning("Please Wait Before Submitting Another Job",
                              "You must wait at least two seconds before submitting another job.")
+
+    def addFromXML(self, job, subjob, sbStatus, sbPriority, frame, frameID, fStatus, log, pid, elapsed, start, end, host, software, command):
+        '''Add the given info the job table, use when loading from XML'''
+        job = self.jobs[job].data
+        job.createSubjob(subjob, sbPriority, sbStatus)
+        job.addFrameFromXML(subjob, frame, frameID, fStatus, log, pid, elapsed, start, end, host, software, command)
 
     def runChecks(self):
         '''Check to be sure the user has entered the minium values'''

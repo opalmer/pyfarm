@@ -241,28 +241,16 @@ class ParseXmlSettings(object):
             for child in self._getElement(parent, 'status'):
                 yield child
 
-    def _setJobStatusDict(self):
-        '''
-        Discover the status key entries in the xml file and
-        add them to the dictionary
-        '''
-        statusDict = {}
-        for child in self._statusKeyGenerator():
-            for node in self._getElement(child, 'job'):
-                for status in child.childNodes:
-                    if status.nodeType== 1:
-                        pass
-
-        return statusDict
-
     def _setHostStatusDict(self):
         '''Sets up the host status text, index, and color'''
         statusDict = {}
+        index = 0
         for child in self._statusKeyGenerator():
             for node in self._getElement(child, 'hosts'):
                 for status in node.childNodes:
                     if status.nodeType== 1:
-                        statusDict[int(status.getAttribute('index'))] = str(status.getAttribute('text'))
+                        statusDict[index] = str(status.getAttribute('text'))
+                        index += 1
 
         return statusDict
 
@@ -283,48 +271,56 @@ class ParseXmlSettings(object):
     def _setBgColor(self):
         '''Set the bg color dictionary'''
         output = {}
+        index = 0
         for parent in self._getElement(self.doc, 'settings'):
             for node in self._getElement(parent, 'status'):
                 for children in self._getElement(node, 'job'):
                     for child in children.childNodes:
                         if child.nodeType == 1:
                             color = child.getAttribute('bgColor').split(',')
-                            output[str(child.getAttribute('index'))] = QVariant(QColor(int(color[0]), int(color[1]), int(color[2])))
+                            output[index] = QVariant(QColor(int(color[0]), int(color[1]), int(color[2])))
+                            index += 1
         return output
 
     def _setFgColor(self):
         '''Set the fg color dictionary'''
         output = {}
+        index = 0
         for parent in self._getElement(self.doc, 'settings'):
             for node in self._getElement(parent, 'status'):
                 for children in self._getElement(node, 'job'):
                     for child in children.childNodes:
                         if child.nodeType == 1:
                             color = child.getAttribute('txtColor').split(',')
-                            output[str(child.getAttribute('index'))] = QVariant(QColor(int(color[0]), int(color[1]), int(color[2])))
+                            output[index] = QVariant(QColor(int(color[0]), int(color[1]), int(color[2])))
+                            index += 1
         return output
 
     def _setFrameStatusDict(self):
         '''Set the fg color dictionary'''
         output = {}
+        index = 0
         for parent in self._getElement(self.doc, 'settings'):
             for node in self._getElement(parent, 'status'):
                 for children in self._getElement(node, 'job'):
                     for child in children.childNodes:
                         if child.nodeType == 1:
-                            output[str(child.getAttribute('index'))] = QVariant(child.getAttribute('text'))
+                            output[index] = QVariant(child.getAttribute('text'))
+                            index += 1
         return output
 
     def _setStatusKeyDict(self):
         '''Setup the status key dictionary'''
         statusDict = {}
+        index = 0
         for parent in self._getElement(self.doc, 'settings'):
             for status in self._getElement(parent, 'status'):
                 for child in status.childNodes:
                     if child.localName == 'job':
                         for grandchild in child.childNodes:
                             if grandchild.nodeType == 1:
-                                statusDict[int(grandchild.getAttribute('index'))] = str(grandchild.getAttribute('text'))
+                                statusDict[index] = str(grandchild.getAttribute('text'))
+                                index += 1
         return statusDict
 
     def netPort(self, service):
@@ -460,13 +456,15 @@ class ParseXmlSettings(object):
         '''Setup the standard status dictionaries'''
         strDict = {}
         intDict = {}
+        index = 0
         for parent in self._getElement(self.doc, 'settings'):
             for node in self._getElement(parent, 'status'):
                 for children in self._getElement(node, 'job'):
                     for child in children.childNodes:
                         if child.nodeType == 1:
-                            intDict[int(child.getAttribute('index'))] = str(child.getAttribute('text'))
-                            strDict[str(child.getAttribute('text'))] = int(child.getAttribute('index'))
+                            intDict[index] = str(child.getAttribute('text'))
+                            strDict[str(child.getAttribute('text'))] = index
+                            index += 1
         return strDict, intDict
 
     def broadcastValue(self, key):
@@ -478,16 +476,16 @@ class ParseXmlSettings(object):
 
     def bgColor(self, key):
         '''Get the background color of the requested status key'''
-        return self.bgColorDict[str(key)]
+        return self.bgColorDict[key]
 
-    def fgColor(self, key, type=None):
+    def fgColor(self, key):
         '''Get the foreground color of the requested status key'''
-        return self.fgColorDict[str(key)]
+        return self.fgColorDict[key]
 
     def frameStatus(self, key='Disabled'):
         '''Return the frame status string'''
         if key != 'Disabled':
-            return self.frameStatusDict[str(key)]
+            return self.frameStatusDict[key]
         else:
             return self.frameStatusDict
 
@@ -523,14 +521,6 @@ class ParseXmlSettings(object):
                                 self.logLevel = [-1]
                             else:
                                 self.logLevel = [self.logLevels[level]]
-
-#                            device = str(child.getAttribute('device')).upper()
-#                            if device == 'STDOUT':
-#                                self.logOut = sys.stdout
-#                            elif device == 'STDERR':
-#                                self.logOut = sys.stderr
-#                            else:
-#                                self.logOut = sys.stdout
 
     def log(self, line, lvl):
         '''Write the given line to self.log ONLY if set @ the current level requested'''

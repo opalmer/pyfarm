@@ -108,7 +108,7 @@ class StatusServerThread(QThread):
                     self.dataJob[str(job)].data.frame.setStatus(str(subjob), int(frame), str(id), 3)
                     self.dataJob[str(job)].data.frame.setEnd(str(subjob), int(frame), str(id))
                     self.dataGeneral.network.host.setStatus(str(host), 0)
-                    self.parent.emit(SIGNAL("FAILED_RENDER"), (str(subjob), int(frame), str(id), str(code)))
+                    self.parent.emit(SIGNAL("FRAME_FAILED"), (str(job), host, str(subjob), int(frame), str(id)))
 
             # final send a back the original host
             self.sendReply(socket, action, options)
