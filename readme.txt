@@ -1,6 +1,6 @@
 PROGRAM
-    PyFarm vRC3.193
-    Released May 1 2009
+    PyFarm v0.3.214
+	Released On TBD (Still requires packaging)
 
 DEVELOPED BY
     Oliver Palmer
@@ -9,7 +9,7 @@ HOMEPAGE
     www.pyfarm.net
 
 DESCRIPTION
-    PyFarm is  render farm client written in Python and PyQt.  Currenly in the early stages
+    PyFarm is a render farm client written in Python and PyQt.  Currenly in the early stages
     of its lifespawn PyFarm seeks to support cross platform distributed rendering in a variety of
     software packges. Designed to be easy to configure and use PyFarm is meant to bridge the
     gap between production level pipeline render systems and a standard user interface.
@@ -18,14 +18,14 @@ SUPPORTED PLATFORMS
     Debian Linux Based Systems
 
 SUPPORTED SOFTWARE
-    Maya 2008+
+    Maya 8.0+
 
-KNOWN ISSUES
-    +Software is discovered but cannot be rendered from (Houdini and Shake)
-    +When rendering from more than eight machines the interface lags
-    +Main gui will not open if software is not discovered
-    +Adding a job with an empty name will show a warning but still add the job
-    +Please see the about release candidates page: http://www.pyfarm.net/wiki/doku.php?id=technical:about_release_candidates
+KNOWN ISSUES - MAJOR
+	+ Adding a job from an external xml file does not set its proper status
+	+ When shutting down the gui with active clients, not all clients shutdown/restart
+	+ If a job finishes its status can be reset but clients still rendering
+		- This problem is more superficial in that it does not prevent the job itself
+		from finishing, just the gui from displaying the proper state
 
 LICENSE
     This file is part of PyFarm.
