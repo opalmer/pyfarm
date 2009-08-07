@@ -1,0 +1,3 @@
+v0.3.215:
+	-Changed installation instructions for pyqt4 from gksu to sudo
+	-Added official changelog

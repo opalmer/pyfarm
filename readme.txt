@@ -1,6 +1,6 @@
 PROGRAM
-    PyFarm v0.3.214
-	Released On TBD (Still requires packaging)
+    PyFarm v0.3.215
+    Released On August 6 2009
 
 DEVELOPED BY
     Oliver Palmer
@@ -45,8 +45,9 @@ LICENSE
     along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
 INSTALLATION INSTRUCTIONS
- 1.) Open a console window and enter the command below
-        gksu aptitude -y install python-qt4
+ 1.) Open a console window and enter the command below (Note: The password will not be echoed back
+     to you when you enter it.  This is done by the operating system for security reasons.)
+        sudo aptitude -y install python-qt4
 
 BASIC USAGE
     1.) Run the client program, Client.py
