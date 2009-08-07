@@ -60,7 +60,7 @@ from lib.network.JobLogging import UdpLoggerServer
 from lib.ui.main.job.table.JobTableManager import JobTableManager
 
 __DEVELOPER__ = 'Oliver Palmer'
-__VERSION__ = '0.3.212'
+__VERSION__ = '0.3.216'
 __HOMEPAGE__ = 'http://www.pyfarm.net'
 __DOCS__ = '%s/wiki' % __HOMEPAGE__
 __WIKI__ = __DOCS__
@@ -193,10 +193,6 @@ class Main(QMainWindow):
         ## save/load from XML
         self.connect(self.ui.saveQue, SIGNAL("triggered()"), self.xmlSaveJobs)
         self.connect(self.ui.loadQue, SIGNAL("triggered()"), self.xmlLoadJobs)
-
-        self.fakeSetup()
-        #xml = LoadQueFromXML(self)
-        #xml.load('/farm/projects/PyFarm/trunk/v0.3/test.xml')
 
     def xmlLoadJobs(self):
         '''Load job information from an external XML file'''
@@ -664,24 +660,6 @@ class Main(QMainWindow):
             color (string) - The color name or hex value to set the section
         '''
         self.ui.status.append('<font color=%s><b>%s</b></font> - %s' % (color, section, msg))
-
-    def fakeSetup(self):
-        '''Setup the fake information for presentation'''
-        from lib.ui.main.maya.RenderLayers import MayaCamAndLayers
-        self.ui.inputJobName.setText('TestJobA')
-        getCamAndLayers = MayaCamAndLayers(self.ui.mayaRenderLayers, self.ui.mayaCamera)
-        # for home
-        try:
-            getCamAndLayers.run('/farm/projects/PyFarm/trunk/tests/maya/2009/scenes/01_mr_renderLayers.ma')
-            self.ui.mayaScene.setText('/farm/projects/PyFarm/trunk/tests/maya/2009/scenes/01_mr_renderLayers.ma')
-        # for monty
-        except IOError:
-            getCamAndLayers.run('/stuhome/01_mr_renderLayers.ma')
-            self.ui.mayaScene.setText('/stuhome/01_mr_renderLayers.ma')
-#    self.ui.inputJobName.setText('TestJobA')
-#    self.submitJob.submitJob()
-#    self.ui.inputJobName.setText('TestJobB')
-#    self.submitJob.submitJob()
 
     def closeEvent(self, event):
         '''Run when closing the main gui, used to "cleanup" the program state'''
