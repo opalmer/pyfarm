@@ -4,10 +4,6 @@ clean:
 
 frozen:
 	rsync -vruP --exclude="*.pyc" --exclude=".*" --exclude="*.txt" --exclude="*.cmd" --exclude="*.e4p" --exclude="*.html" --exclude="Makefile" --exclude="QtDesigner" --exclude="tests" --exclude="*.m*" --exclude="*bak*" /farm/projects/PyFarm/trunk/RC3/ /farm/projects/PyFarm/trunk/Frozen
-	
-sfdm-update:
-	rm -Rfv /stuhome/PyFarm/trunk/*
-	rsync -vruP --perms --exclude="*.pyc" --exclude=".*" --exclude="*.html" --exclude="Makefile" --exclude="*.e4p" --exclude="*.txt" --exclude="QtDesigner" --exclude="*.cmd" /home/opalme20/PyFarm/trunk/v0.3 /stuhome/PyFarm/trunk
 
 snapshot:
 	mkdir -p /farm/projects/PyFarm/trunk/RC3/build/snapshots/pyfarm_`date +%F_%H-%M`_snapshot
@@ -15,15 +11,17 @@ snapshot:
 	
 gui:
 	cat GNU-GPL_Header.txt > lib/ui/MainWindow.py
-	cat GNU-GPL_Header.txt > lib/ui/HostInfo.py
-	cat GNU-GPL_Header.txt > lib/ui/JobDetails.py
-	cat GNU-GPL_Header.txt > lib/ui/LogViewer.py
-	cat GNU-GPL_Header.txt > doc/docgen/lib/ui/WikiDocGen.py
 	pyuic4 QtDesigner/MainWindow.ui >> lib/ui/MainWindow.py
+	cat GNU-GPL_Header.txt > lib/ui/HostInfo.py
 	pyuic4 QtDesigner/HostInfo.ui >> lib/ui/HostInfo.py
+	cat GNU-GPL_Header.txt > lib/ui/JobDetails.py
 	pyuic4 QtDesigner/JobDetails.ui >> lib/ui/JobDetails.py
+	cat GNU-GPL_Header.txt > lib/ui/LogViewer.py
 	pyuic4 QtDesigner/LogViewer.ui >> lib/ui/LogViewer.py
+	cat GNU-GPL_Header.txt > doc/docgen/lib/ui/WikiDocGen.py
 	pyuic4 doc/docgen/QtDesigner/WikiDocGen.ui >> doc/docgen/lib/ui/WikiDocGen.py
+	cat GNU-GPL_Header.txt > doc/docgen/lib/ui/NewTicket.py
+	pyuic4 QtDesigner/NewTicket.ui >> lib/ui/NewTicket.py
 
 build-mac:
 	find . -name *.pyc | xargs rm -v

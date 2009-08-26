@@ -19,7 +19,7 @@
 
 # Form implementation generated from reading ui file 'QtDesigner/LogViewer.ui'
 #
-# Created: Sat May 23 22:32:03 2009
+# Created: Tue Aug 25 19:09:21 2009
 #      by: PyQt4 UI code generator 4.4.4
 #
 # WARNING! All changes made in this file will be lost!

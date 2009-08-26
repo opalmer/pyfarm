@@ -60,7 +60,7 @@ from lib.network.JobLogging import UdpLoggerServer
 from lib.ui.main.job.table.JobTableManager import JobTableManager
 
 __DEVELOPER__ = 'Oliver Palmer'
-__VERSION__ = '0.3.216'
+__VERSION__ = '0.5'
 __HOMEPAGE__ = 'http://www.pyfarm.net'
 __DOCS__ = '%s/wiki' % __HOMEPAGE__
 __WIKI__ = __DOCS__
