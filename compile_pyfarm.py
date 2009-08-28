@@ -1,7 +1,8 @@
+#!/usr/bin/python
 '''
 HOMEPAGE: www.pyfarm.net
-INITIAL: Aug 25 2009
-PURPOSE: Main module dedicated to sqlite database interaction.
+INITIAL: August 27 2009
+PURPOSE: To compile all of pyfarm's modules
 
     This file is part of PyFarm.
     Copyright (C) 2008-2009 Oliver Palmer
@@ -19,22 +20,6 @@ PURPOSE: Main module dedicated to sqlite database interaction.
     You should have received a copy of the GNU General Public License
     along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 '''
+import compileall
 
-import sqlite3
-
-class DBObject(object):
-    '''Database object to setup initial vars and objects'''
-    def __init__(self, location=":memory:"):
-        self.connection = sqlite4.conn(location)
-        self.db = self.connection.cursor()
-
-class LocalStorage(object):
-    '''Local hard drive database storage object'''
-    def __init__(self, location):
-        self.db = DBObject(location).db
-        
-class RAMStorage(object):
-    '''Ramdom access memory database storage object'''
-    def __init__(self):
-        self.db = DBObject().db
-        
+compileall.compile_dir('lib/', force=True)

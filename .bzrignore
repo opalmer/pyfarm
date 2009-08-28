@@ -26,3 +26,5 @@ logsB
 xmlTestData.py
 test.xml
 frozen
+compiled
+snapshots

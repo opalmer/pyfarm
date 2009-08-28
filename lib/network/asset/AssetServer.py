@@ -1,7 +1,7 @@
 '''
 HOMEPAGE: www.pyfarm.net
-INITIAL: Aug 25 2009
-PURPOSE: Main module dedicated to sqlite database interaction.
+INITIAL: August 27 2009
+PURPOSE: Asset server used to serve files to other components of PyFarm
 
     This file is part of PyFarm.
     Copyright (C) 2008-2009 Oliver Palmer
@@ -20,21 +20,16 @@ PURPOSE: Main module dedicated to sqlite database interaction.
     along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
-import sqlite3
+import BaseHTTPServer
 
-class DBObject(object):
-    '''Database object to setup initial vars and objects'''
-    def __init__(self, location=":memory:"):
-        self.connection = sqlite4.conn(location)
-        self.db = self.connection.cursor()
-
-class LocalStorage(object):
-    '''Local hard drive database storage object'''
-    def __init__(self, location):
-        self.db = DBObject(location).db
+class AssetServer(object):
+    '''Asset server class used to serve files to connecting clients'''
+    def __init__(self, port, address=''):
+        self.handler = BaseHTTPServer.BaseHTTPRequestHandler
+        self.server = BaseHTTPServer.HTTPServer
+        self.address = (address, port)
         
-class RAMStorage(object):
-    '''Ramdom access memory database storage object'''
-    def __init__(self):
-        self.db = DBObject().db
-        
+    def run(self):
+        '''Run the AssetServer'''
+        self.httpd = self.server(self.address, self.handler)
+        self.httpd.serve_forever()

@@ -2,12 +2,9 @@ SHELL := /bin/bash
 clean:
 	find . -name *.pyc | xargs rm -v
 
-frozen:
-	rsync -vruP --exclude="*.pyc" --exclude=".*" --exclude="*.txt" --exclude="*.cmd" --exclude="*.e4p" --exclude="*.html" --exclude="Makefile" --exclude="QtDesigner" --exclude="tests" --exclude="*.m*" --exclude="*bak*" /farm/projects/PyFarm/trunk/RC3/ /farm/projects/PyFarm/trunk/Frozen
-
 snapshot:
-	mkdir -p /farm/projects/PyFarm/trunk/RC3/build/snapshots/pyfarm_`date +%F_%H-%M`_snapshot
-	rsync -vruP --exclude="*.pyc" --exclude=".*" --exclude="*.txt" --exclude="*.cmd" --exclude="*.e4p" --exclude="*.html" --exclude="Makefile" --exclude="build" --exclude="QtDesigner" --exclude="prototyping" --exclude="*.m*" --exclude="*bak*" /farm/projects/PyFarm/trunk/RC3/ /farm/projects/PyFarm/trunk/RC3/build/snapshots/pyfarm_`date +%F_%H-%M`_snapshot
+	mkdir -p snapshots/pyfarm_`date +%F_%H-%M`_snapshot
+	rsync -vrP --exclude="compiled" --exclude="logs" --exclude="*.pyc" --exclude=".*" --exclude="*.txt" --exclude="*.cmd" --exclude="*.e4p" --exclude="*.html" --exclude="Makefile" --exclude="build" --exclude="QtDesigner" --exclude="prototyping" --exclude="*.m*" --exclude="*bak*" * snapshots/pyfarm_`date +%F_%H-%M`_snapshot
 	
 gui:
 	cat GNU-GPL_Header.txt > lib/ui/MainWindow.py
@@ -23,8 +20,10 @@ gui:
 	cat GNU-GPL_Header.txt > doc/docgen/lib/ui/NewTicket.py
 	pyuic4 QtDesigner/NewTicket.ui >> lib/ui/NewTicket.py
 
-build-mac:
-	find . -name *.pyc | xargs rm -v
-	python build/mac/setup.py py2app
-	rsync -vruP --exclude="*.pyc" --exclude=".*" /farm/projects/PyFarm/trunk/RC3/lib /farm/projects/PyFarm/trunk/RC3/build/mac/Main.app/Contents/Resources 
-	cp -Rfv /farm/projects/PyFarm/trunk/RC3/settings.xml /farm/projects/PyFarm/trunk/RC3/build/mac/Main.app/Contents/Resources
+compile:
+	mkdir -p compiled
+	python compile_pyfarm.py
+	rsync -vrP --include="*.pyc" --exclude="*.py" ./lib ./compiled
+	rsync -vP --include="*.pyc" --exclude="*.py" ./lib/ ./compiled
+	rsync -vP --include="*.txt" --include="*.py*" --include="*.xml" --include="*.html" --include="*.cmd" --exclude="*.e4p" --exclude="compiled" --exclude="MakeFile" * ./compiled
+	find lib -name *.pyc | xargs rm -v
