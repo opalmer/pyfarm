@@ -2,7 +2,7 @@
 HOMEPAGE: www.pyfarm.net
 INITIAL: Dec 8 2008
 PURPOSE: Module used to return miscellaneous info either about the system
-or PyFarm itself.
+or PyFarm itself.  Module also used to perform various functions and conversions.
 
     This file is part of PyFarm.
     Copyright (C) 2008-2009 Oliver Palmer
@@ -37,6 +37,7 @@ finally:
     from PyQt4.QtCore import QObject, QThread
     from PyFarmExceptions import ErrorProcessingSetup
 
+
 def Int2Time(s):
         '''Given an input integer, return time elapsed'''
 #        s=ms/1000
@@ -44,6 +45,16 @@ def Int2Time(s):
         h,m=divmod(m,60)
         d,h=divmod(h,24)
         return str(d),str(h),str(m),str(s)
+
+def bold(state):
+    '''Return bold or unbold modifies depending on the state and os'''
+    if System().os()[0] in ("linux", "mac"):
+        if state == 1:
+            return "\033[1m"
+        elif state == 0:
+            return "\033[0;0m"
+    else:
+        return ""
 
 def ModulePath(module, level=0):
     '''Given a module return it's path to the n'th level'''
@@ -65,7 +76,7 @@ class System(object):
     Return important information about the system
     '''
     def __init__(self):
-        super(System,  self).__init__()
+        pass
 
     def time(self, format ):
         '''Return the current system time to the user'''
@@ -379,16 +390,3 @@ class TypeTest(object):
             return item
         else:
             raise self.error.typeError('long', self.getType(item))
-
-if __name__ == '__main__':
-    from random import randint
-
-    numList = []
-    num = 0
-    while num <= 20:
-        numList.append(randint(1, 6))
-        num += 1
-
-    stats = Statistics()
-    stat = stats.get(numList, ['mean', 'min', 'max'])
-    print "Average: %f\nMin: %i\nMax: %i"% (stat[0], stat[1], stat[2])

@@ -22,6 +22,8 @@ PURPOSE: Main program to run and manage PyFarm
 '''
 # From Python
 import sys
+import getopt
+from os import getcwd
 from os.path import dirname
 from time import time, sleep
 from random import randrange, random
@@ -45,6 +47,7 @@ from lib.ReadSettings import ParseXmlSettings
 settings = ParseXmlSettings('settings.xml', 'gui')
 
 import lib.Info as Info
+import lib.InputFlags
 from lib.ui.MainWindow import Ui_MainWindow
 from lib.ui.main.CustomWidgets import *
 from lib.ui.main.job.Submit import SubmitManager
@@ -687,8 +690,31 @@ class Main(QMainWindow):
 ## END General Utilities
 ################################
 
-# setup and run the event loop
-app = QApplication(sys.argv)
-main = Main()
-main.show()
-sys.exit(app.exec_())
+if __name__ != '__MAIN__':
+    flags = lib.InputFlags
+    help = flags.CommandLineHelp(sys.argv[0])
+    sysinfo = flags.SystemInfo()
+    util = flags.SystemUtilities(getcwd())
+    try:
+        opts, args = getopt.getopt(sys.argv[1:], "h?", ["help", "sysinfo", "compile", "clean"])
+        if len(opts) > 0 or len(args) > 0:
+            for o, a in opts:
+                if o in ("-h", "-?","--help"):
+                    help.echo()
+                elif o == "--sysinfo":
+                    sysinfo.echo()
+                elif o == "--compile":
+                    util.compile()
+                elif o == "--clean":
+                    util.clean()
+        else:
+                app = QApplication(sys.argv)
+                main = Main()
+                main.show()
+                sys.exit(app.exec_())
+
+    # if not a valid flag, output help
+    except getopt.GetoptError, err:
+        help.invalidFlag(err)
+else:
+    sys.exit("ERROR: %s is meant to be executed and not imported")
