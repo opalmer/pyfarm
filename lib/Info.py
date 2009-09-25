@@ -27,14 +27,18 @@ except ImportError:
     pass
 
 finally:
-    from os import sep, name, getenv
-    import uuid
-    import time
-    import socket
+    # From Python
+    import uuid, time, socket
+    from os import sep, name, getenv, walk
+    from fnmatch import filter
     from random import randint
     from subprocess import Popen,PIPE
-    from os.path import dirname, join
+    from os.path import dirname, join, abspath
+
+    # From PyQt4
     from PyQt4.QtCore import QObject, QThread
+
+    # From PyFarm
     from PyFarmExceptions import ErrorProcessingSetup
 
 
@@ -69,6 +73,12 @@ def ModulePath(module, level=0):
             OUT += '%s/' % i
 
         return OUT
+
+def find(match, root):
+    '''Match the given file starting with the given root'''
+    for path, dirs, files in walk(abspath(root)):
+        for filename in filter(files, match):
+            yield join(path, filename)
 
 
 class System(object):
@@ -120,13 +130,6 @@ class System(object):
         elif self.os() == 'windows':
             # there is a not a way to do this on windows...yet
             pass
-
-    def coreCount(self):
-        '''Return the number of cores installed on the system'''
-        pass
-        # OS X: sysctl -n hw.logicalcpu
-        # Win: getEnv(NUMBER_OF_PROCESSORS)
-        # Linux: cat /proc/cpuinfo | grep siblings | awk {'print $3'}
 
     def hostname(self):
         '''Return the name of the computer'''

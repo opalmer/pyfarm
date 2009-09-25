@@ -21,8 +21,7 @@ PURPOSE: Main program to run and manage PyFarm
     along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 '''
 # From Python
-import sys
-import getopt
+import sys, getopt
 from os import getcwd
 from os.path import dirname
 from time import time, sleep
@@ -63,7 +62,7 @@ from lib.network.JobLogging import UdpLoggerServer
 from lib.ui.main.job.table.JobTableManager import JobTableManager
 
 __DEVELOPER__ = 'Oliver Palmer'
-__VERSION__ = '0.5'
+__VERSION__ = '0.5.2xx'
 __HOMEPAGE__ = 'http://www.pyfarm.net'
 __DOCS__ = '%s/wiki' % __HOMEPAGE__
 __WIKI__ = __DOCS__
@@ -692,17 +691,22 @@ class Main(QMainWindow):
 
 if __name__ != '__MAIN__':
     flags = lib.InputFlags
+    cwd = getcwd()
     help = flags.CommandLineHelp(sys.argv[0])
-    sysinfo = flags.SystemInfo()
-    util = flags.SystemUtilities(getcwd())
+    sysinfo = flags.SystemInfo(__VERSION__, cwd)
+    util = flags.SystemUtilities(cwd)
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "h?", ["help", "sysinfo", "compile", "clean"])
+        opts, args = getopt.getopt(sys.argv[1:], "h?", ["help", "allinfo", "systeminfo","softwareinfo","compile", "clean"])
         if len(opts) > 0 or len(args) > 0:
             for o, a in opts:
                 if o in ("-h", "-?","--help"):
                     help.echo()
-                elif o == "--sysinfo":
-                    sysinfo.echo()
+                elif o == "--allinfo":
+                    sysinfo.all()
+                elif o == "--systeminfo":
+                    sysinfo.system(1)
+                elif o == "--softwareinfo":
+                    sysinfo.software(1)
                 elif o == "--compile":
                     util.compile()
                 elif o == "--clean":
