@@ -60,6 +60,7 @@ from lib.network.Broadcast import BroadcastSender
 from lib.network.Status import StatusServer
 from lib.network.JobLogging import UdpLoggerServer
 from lib.ui.main.job.table.JobTableManager import JobTableManager
+from lib.data.db.DBMain import DBSetup
 
 __DEVELOPER__ = 'Oliver Palmer'
 __VERSION__ = '0.5.2xx'
@@ -74,6 +75,10 @@ class Main(QMainWindow):
     '''This is the controlling class for the main gui'''
     def __init__(self):
         super(Main, self).__init__()
+        # setup the backend database
+        DBSetup(":memory:")
+        sys.exit(0) # because we are testing the db functions
+
         # setup UI
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
@@ -109,6 +114,7 @@ class Main(QMainWindow):
         self.msg = MessageBox(self)
         setSoftware = self.softwareManager.setSoftware(self.ui.softwareSelection.currentText())
 
+        # if we cannot find any software installed
         if not setSoftware:
             msg = """<p>Could not find any software installed on system.
             This will not prevent you from launching PyFarm however you
@@ -710,7 +716,7 @@ if __name__ != '__MAIN__':
                 elif o == "--compile":
                     util.compile()
                 elif o == "--clean":
-                    util.clean()
+                    util.clean(1)
         else:
                 app = QApplication(sys.argv)
                 main = Main()
