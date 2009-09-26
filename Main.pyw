@@ -60,7 +60,6 @@ from lib.network.Broadcast import BroadcastSender
 from lib.network.Status import StatusServer
 from lib.network.JobLogging import UdpLoggerServer
 from lib.ui.main.job.table.JobTableManager import JobTableManager
-from lib.data.db.DBMain import DBSetup
 
 __DEVELOPER__ = 'Oliver Palmer'
 __VERSION__ = '0.5.2xx'
@@ -77,7 +76,6 @@ class Main(QMainWindow):
         super(Main, self).__init__()
         # setup the backend database
         DBSetup(":memory:")
-        sys.exit(0) # because we are testing the db functions
 
         # setup UI
         self.ui = Ui_MainWindow()
@@ -702,7 +700,7 @@ if __name__ != '__MAIN__':
     sysinfo = flags.SystemInfo(__VERSION__, cwd)
     util = flags.SystemUtilities(cwd)
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "h?", ["help", "allinfo", "systeminfo","softwareinfo","compile", "clean"])
+        opts, args = getopt.getopt(sys.argv[1:], "h?", ["help", "allinfo", "systeminfo","softwareinfo","compile", "clean", "devel"])
         if len(opts) > 0 or len(args) > 0:
             for o, a in opts:
                 if o in ("-h", "-?","--help"):
@@ -717,6 +715,17 @@ if __name__ != '__MAIN__':
                     util.compile()
                 elif o == "--clean":
                     util.clean(1)
+
+                # for development testing
+                elif o == "--devel":
+                    print "===============================\
+                \n---Running Development Code---\
+                \n===============================\n"
+                    from lib.data.db.DBMain import DBSetup
+                    DBSetup()
+                    print "\n===============================\
+                \n---Development Run Complete---\
+                \n==============================="
         else:
                 app = QApplication(sys.argv)
                 main = Main()

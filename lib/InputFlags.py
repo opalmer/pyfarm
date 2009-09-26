@@ -55,6 +55,7 @@ class CommandLineHelp(object):
         out += bold(1)+"--softwareinfo"+bold(0)+" >> Show installed software info only\n\n\t"
         out += bold(1)+"--compile"+bold(0)+" >> Byte compile all of PyFarm's modules for speed\n\n\t"
         out += bold(1)+"--clean"+bold(0)+" >> Cleanup the local PyFarm installation (byte-compiled files, tmp databases, etc)\n\n\t"
+        out += bold(1)+"--devel"+bold(0)+" >> Used to run specific development code\n\n\t"
 
         print out
         sys.exit(2)
