@@ -722,7 +722,8 @@ if __name__ != '__MAIN__':
                 \n---Running Development Code---\
                 \n===============================\n"
                     from lib.data.db.DBMain import DBSetup
-                    DBSetup()
+                    db = "testdb.sqlite"
+                    DBSetup(db)
                     print "\n===============================\
                 \n---Development Run Complete---\
                 \n==============================="
