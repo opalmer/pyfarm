@@ -63,7 +63,9 @@ from lib.ui.main.job.table.JobTableManager import JobTableManager
 
 __DEVELOPER__ = 'Oliver Palmer'
 __VERSION__ = '0.5.2xx'
+__REPOSITORY__ = 'lp:pyfarm'
 __HOMEPAGE__ = 'http://www.pyfarm.net'
+__DAILYBUILD__ = 'http://www.pyfarm.net/download/daily/source/pyfarm_daily_build.zip'
 __DOCS__ = '%s/wiki' % __HOMEPAGE__
 __WIKI__ = __DOCS__
 __UUID__ = QUuid().createUuid()
