@@ -1,3 +1,28 @@
+'''
+HOMEPAGE: www.pyfarm.net
+INITIAL: October 14 2009
+PURPOSE: Network modules used in the administration of remote clients
+
+    This file is part of PyFarm.
+    Copyright (C) 2008-2009 Oliver Palmer
+
+    PyFarm is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    PyFarm is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
+
+    This module is derived from the BasicHTTPServer provided with python.
+    Some modifications were required to bring the module to its current state.
+'''
+
 # From Python
 import os
 import posixpath
@@ -10,26 +35,26 @@ try:
     from cStringIO import StringIO
 except ImportError:
     from StringIO import StringIO
-	
+
 # From PyQt
 from PyQt4.QtCore import QThread
 
 __version__ = "0.3"
 
 class AssetServer(object):
-	"""File server object to serve files on the given address and port"""
-	def __init__(self, address, port):
-		self.address = (address, port)
-		
-	def runServer(self):
-		"""Run the asset server and prepare for requests"""
-		httpd = BaseHTTPServer.HTTPServer(self.address, RequestHandler) 
-		httpd.serve_forever()
-		
+    """File server object to serve files on the given address and port"""
+    def __init__(self, address, port):
+        self.address = (address, port)
+
+    def runServer(self):
+        """Run the asset server and prepare for requests"""
+        httpd = BaseHTTPServer.HTTPServer(self.address, RequestHandler)
+        httpd.serve_forever()
+
 
 class RequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     """
-	Simple HTTP request handler with GET and HEAD commands.
+    Simple HTTP request handler with GET and HEAD commands.
 
     This serves files from the current directory and any of its
     subdirectories.  The MIME type for files is determined by
@@ -56,7 +81,7 @@ class RequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 
     def send_head(self):
         """
-		Common code for GET and HEAD commands.
+        Common code for GET and HEAD commands.
 
         This sends the response code and MIME headers.
 
@@ -100,7 +125,7 @@ class RequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 
     def list_directory(self, path):
         """
-		Helper to produce a directory listing (absent index.html).
+        Helper to produce a directory listing (absent index.html).
 
         Return value is either a file object, or None (indicating an
         error).  In either case, the headers are sent, making the
@@ -141,7 +166,7 @@ class RequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 
     def translate_path(self, path):
         """
-		Translate a /-separated PATH to the local filename syntax.
+        Translate a /-separated PATH to the local filename syntax.
 
         Components that mean special things to the local file system
         (e.g. drive or directory names) are ignored.  (XXX They should
@@ -163,7 +188,7 @@ class RequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 
     def copyfile(self, source, outputfile):
         """
-		Copy all data between two file objects.
+        Copy all data between two file objects.
 
         The SOURCE argument is a file object open for reading
         (or anything with a read() method) and the DESTINATION
@@ -179,7 +204,7 @@ class RequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 
     def guess_type(self, path):
         """
-		Guess the type of a file.
+        Guess the type of a file.
 
         Argument is a PATH (a filename).
 
@@ -213,6 +238,6 @@ class RequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 
 
 if __name__ == '__main__':
-	server_address = ('', 9031)
-	httpd = BaseHTTPServer.HTTPServer(server_address, RequestHandler) 
-	httpd.serve_forever()
+    server_address = ('', 9030)
+    httpd = BaseHTTPServer.HTTPServer(server_address, RequestHandler)
+    httpd.serve_forever()
