@@ -4,7 +4,7 @@ INITIAL: October 14 2009
 PURPOSE: Network modules used in the administration of remote clients
 
     This file is part of PyFarm.
-    Copyright (C) 2008-2009 Oliver Palmer
+    Copyright (C) 2008-2010 Oliver Palmer
 
     PyFarm is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
