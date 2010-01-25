@@ -1,7 +1,7 @@
 '''
 HOMEPAGE: www.pyfarm.net
-INITIAL: Jan 18 2010
-PURPOSE: To setup, connect, and process a sqlite database
+INITIAL: Jan 24 2010
+PURPOSE: Main program to run and manage PyFarm
 
     This file is part of PyFarm.
     Copyright (C) 2008-2010 Oliver Palmer
@@ -22,7 +22,7 @@ PURPOSE: To setup, connect, and process a sqlite database
 
 import sqlite3
 
-class DB(object):
+class DBSetup(object):
     '''
     Database object to handle all data reguarding PyFarm
 
@@ -32,13 +32,9 @@ class DB(object):
         be changed however:
             db="pyfarm.sql"
     '''
-    def __init__(db=":memory:"):
+    def __init__(self,  db=":memory:"):
         self.con = sqlite3.connect(db)
         self.sql = self.con.cursor()
-
-    ####
-    # all main statements start here
-    ####
 
     def execute(self, statement):
         '''Commit any recent actions to the database'''
@@ -52,11 +48,16 @@ class DB(object):
         VARIABLES:
             f (file) -- file to write database to
         '''
-        db = open(f,'w')
+        db = open(f,'a')
         for entry in self.sql.iterdump():
             db.write("%s\n" % entry)
         db.close()
 
-    def close(self):
-        '''Close out the database and connection objects'''
-        pass
+
+def DumpDatabases(databases, dbFileStr):
+    '''Given a set of database objects, dump them to storage'''
+    for database in databases:
+        database.dump(dbFileStr)
+
+if __name__ == "__main__":
+    db = DBSetup("test")
