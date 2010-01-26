@@ -33,13 +33,33 @@ class DBSetup(object):
             db="pyfarm.sql"
     '''
     def __init__(self,  db=":memory:"):
-        self.con = sqlite3.connect(db)
-        self.sql = self.con.cursor()
+        self.db = sqlite3.connect(db)
+        self.sql = self.db.cursor()
 
     def execute(self, statement):
         '''Commit any recent actions to the database'''
-        self.sql.execute(statement)
-        self.sql.commit()
+        self.sql.execute("""%s""" % statement)
+        self.db.commit()
+        return self.sql.fetchone()
+
+    def createTable(self, tableName,  values):
+        '''
+        Create a table with the given table name
+
+        VARIABLES:
+            values (list) -- List of values to insert into table
+                ex. ["status int", "software text"]
+        '''
+        statement = "CREATE TABLE IF NOT EXISTS %s (" % tableName
+        maxLen = len(values)
+        count = 1
+        for value in values:
+            statement += "%s" % value
+            if count < maxLen:
+                statement += ","
+            count += 1
+        statement += ")"
+        self.execute(statement)
 
     def dump(self, f):
         '''
@@ -49,9 +69,13 @@ class DBSetup(object):
             f (file) -- file to write database to
         '''
         db = open(f,'a')
-        for entry in self.sql.iterdump():
+        for entry in self.db.iterdump():
             db.write("%s\n" % entry)
         db.close()
+
+    def close(self):
+        '''Close the sql database'''
+        self.sql.close()
 
 
 def DumpDatabases(databases, dbFileStr):
@@ -60,4 +84,25 @@ def DumpDatabases(databases, dbFileStr):
         database.dump(dbFileStr)
 
 if __name__ == "__main__":
-    db = DBSetup("test")
+    import time
+    import random
+
+    # do this at script start
+    db = DBSetup()
+    db.execute("CREATE TABLE IF NOT EXISTS queue (job text, subjob text, status int, host text,\
+                                                pid int, software text, start int, end int, frame int \
+                                                command text, log text)")
+
+#    for job in jobs:
+#        subjobs = []
+#        for num in range(1000, random.randint(1003, 1009)):
+#            subjobs.append(hex(num))
+#        for subjob in subjobs:
+#            for frame in range(1, 5):
+#                pass
+
+    # the rest of the code is executed BY the user's actions
+    db.execute("INSERT INTO queue VALUES ('Job A','0x7F9AD', 0, 'HostA', 3228, 'Maya 2008', 8742421, 8892525, 12, 'render -rv', '/path/to/file')")
+#    print db.execute("SELECT * FROM stocks ORDER BY price")
+#    db.dump("test.sql")
+    db.close()
