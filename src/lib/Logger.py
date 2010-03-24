@@ -18,9 +18,30 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
+
+
+====================
+DEV NOTES:
++ DOCS: http://docs.python.org/library/logging.html
++ Perhaps add custom levels to access with log.this('line')
+such methods could be used for custom errors, process log
+seperation, etc. (or perhaps something like log.all())
++ Add option for individual logs or one complete logger
++ Provide better formatting for log time
++ Possible replacement for the current inter-node logging system
+        ----This may not be a good idea as this logging system is
+        meant more for the main thread of execution (Main.pyw)
++ Option to read config from file (and/or set via keyword arguments)
++ A new log record function/class to get last log/etc
++ Buffer handeling to better cope with something like log.all()
++ log shutdown handeling
++ in appplication logging disable with logging.disable()
+    This will require an array to handle the main logging objects
+====================
 '''
 
 import logging
+
 
 class LogLevelException(Exception):
     '''
@@ -34,38 +55,42 @@ class LogLevelException(Exception):
         return repr("%s is not a valid log level" % self.level)
 
 
-class LogMain(logging):
-    '''Main logging object used to configure other loggers'''
-    def __init__(self, module="PyFarm", level="INFO", log="PyFarm.log"):
-        self.levels = {
-                        "DEBUG" : self.DEBUG,
-                        "INFO" : self.INFO,
-                        "WARNING" : self.WARNING,
-                        "ERROR" : self.ERROR,
-                        "CRITICAL" : self.CRITICAL
-                      }
+def LogSetup(module='Default', level='info', log='PyFarm.log'):
+    '''
+    Setup logging and return the main logging object
 
-        if maxLevel.upper() not in self.levels.keys():
-            raise LogLevelException(maxLevel)
-        else:
-            self.setLevel(self.levels[maxLevel.upper()])
+    VARIABLES:
+        module (str) -- Module to create the logger for
+        level (str) -- Maximum level to log for the configured
+        object
+        log (str) -- Log to write all infomation to
+    '''
+    levels = {
+        'debug': logging.DEBUG,
+        'info': logging.INFO,
+        'warning': logging.WARNING,
+        'error': logging.ERROR,
+        'critical': logging.CRITICAL
+    }
 
-        self.log = open(logFile, "w+")
-        self.module = module
+    if level.lower() not in levels.keys():
+        raise LogLevelException(level)
+    else:
+        lvl = levels[level]
 
-    def _writeToLog(self, line):
-        '''Write the given line to the given file'''
-        self.log.write(line)
-        self.log.flush()
+        # create a logger and stream handeler
+        logger = logging.getLogger(module)
+        streamHandeler = logging.StreamHandeler()
 
-    # reimpliment the logger's methods
-    def debug(self, line): pass
-    def info(self, line): pass
-    def warning(self, line): pass
-    def error(self, line): pass
-    def critical(self, line): pass
+        # set the log level for both logging objects
+        logger.setLevel(lvl)
+        streamHandeler.setLevel(lvl)
+
+        # configure log formatting and apply it
+        formatting = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+        streamHandeler.setFormatter(formatting)
+        logger.addHandeler(streamHandeler)
 
 
-class NetLog(LogMain):
-    def __init__(self):
-        super(NetLog, self).__init__()
+if __name__ == "__main__":
+    print True
