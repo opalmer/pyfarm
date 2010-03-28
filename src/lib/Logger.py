@@ -40,19 +40,25 @@ seperation, etc. (or perhaps something like log.all())
 ====================
 '''
 
-import sys
 import logging
 import logging.config
 
 LEVELS = {
-    'DEBUG': logging.DEBUG,
-    'INFO': logging.INFO,
-    'WARNING': logging.WARNING,
-    'ERROR': logging.ERROR,
-    'CRITICAL': logging.CRITICAL
+    'DEBUG': logging.DEBUG, # lvl 10
+    'INFO': logging.INFO, # lvl 20
+    'WARNING': logging.WARNING, # lvl 30
+    'ERROR': logging.ERROR, # lvl 40
+    'CRITICAL': logging.CRITICAL # lvl 50
 }
 
-def SetupLog(module, cfg="../logging.cfg"):
+EXTENDED_LEVELS = {
+    'SETTINGS' : 21,
+    'DEBUG.SETTINGS'  : 11,
+    'NETWORK' : 22,
+    'DEBUG.NETWORK' :  12
+}
+
+def SetupLog(module, cfg="logging.ini"):
     '''
     Setup the main logging object, run getLogger() when ready to
     create and use the logging object.
@@ -67,11 +73,24 @@ def SetupLog(module, cfg="../logging.cfg"):
     # for configuration file format
     logging.config.fileConfig(cfg)
     log = logging.getLogger(module)
+
+    # add some extra levels
+    #  you must access them with log.log(lvl, msg)
+    for name, level in EXTENDED_LEVELS.items():
+        logging.addLevelName(level, name)
+
     return log
 
+# basic example usage of new logging facility
 if __name__ == "__main__":
-    log = SetupLog("Main.pyw")
+    import os
+    import sys
+
+    log = SetupLog(os.path.basename(sys.argv[0]))
     log.info("This is a log message")
     log.critical("Fail!")
     log.debug("This is a program, I am sure of it")
-    log.TestHandler("hello")
+    log.log(11, "Now setting a parameter")
+    log.log(21,  "The parameter is")
+    log.log(12,  "Now connecting to")
+    log.log(22,  "Connected to")
