@@ -40,57 +40,38 @@ seperation, etc. (or perhaps something like log.all())
 ====================
 '''
 
+import sys
 import logging
+import logging.config
 
+LEVELS = {
+    'DEBUG': logging.DEBUG,
+    'INFO': logging.INFO,
+    'WARNING': logging.WARNING,
+    'ERROR': logging.ERROR,
+    'CRITICAL': logging.CRITICAL
+}
 
-class LogLevelException(Exception):
+def SetupLog(module, cfg="../logging.cfg"):
     '''
-    Raised when an invalid level is presented to the
-    logger by the user
-    '''
-    def __init__(self, level):
-        self.level = level
-
-    def __str__(self):
-        return repr("%s is not a valid log level" % self.level)
-
-
-def LogSetup(module='Default', level='info', log='PyFarm.log'):
-    '''
-    Setup logging and return the main logging object
+    Setup the main logging object, run getLogger() when ready to
+    create and use the logging object.
 
     VARIABLES:
-        module (str) -- Module to create the logger for
-        level (str) -- Maximum level to log for the configured
-        object
-        log (str) -- Log to write all infomation to
+    level (str) -- max level to return log info for
+    module (str) -- module name log for
     '''
-    levels = {
-        'debug': logging.DEBUG,
-        'info': logging.INFO,
-        'warning': logging.WARNING,
-        'error': logging.ERROR,
-        'critical': logging.CRITICAL
-    }
-
-    if level.lower() not in levels.keys():
-        raise LogLevelException(level)
-    else:
-        lvl = levels[level]
-
-        # create a logger and stream handeler
-        logger = logging.getLogger(module)
-        streamHandeler = logging.StreamHandeler()
-
-        # set the log level for both logging objects
-        logger.setLevel(lvl)
-        streamHandeler.setLevel(lvl)
-
-        # configure log formatting and apply it
-        formatting = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
-        streamHandeler.setFormatter(formatting)
-        logger.addHandeler(streamHandeler)
-
+    # see http://docs.python.org/library/logging.html#logging.LogRecord
+    # for creating your own log records
+    # see http://docs.python.org/library/logging.html#configuration-file-format
+    # for configuration file format
+    logging.config.fileConfig(cfg)
+    log = logging.getLogger(module)
+    return log
 
 if __name__ == "__main__":
-    print True
+    log = SetupLog("Main.pyw")
+    log.info("This is a log message")
+    log.critical("Fail!")
+    log.debug("This is a program, I am sure of it")
+    log.TestHandler("hello")
