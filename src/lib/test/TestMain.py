@@ -25,3 +25,5 @@ PURPOSE: To provide a central location to run PyFarm's main test suite'
 # http://www.riverbankcomputing.co.uk/static/Docs/PyQt4/html/qtest.html
 
 import unittest
+
+__MODULE__ = "lib.test.TestMain"
