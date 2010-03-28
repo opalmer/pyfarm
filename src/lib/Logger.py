@@ -55,7 +55,8 @@ EXTENDED_LEVELS = {
     'SETTINGS' : 21,
     'DEBUG.SETTINGS'  : 11,
     'NETWORK' : 22,
-    'DEBUG.NETWORK' :  12
+    'DEBUG.NETWORK' :  12,
+    'SQLITE' : 5 # LOW level for safety!
 }
 
 def SetupLog(module, cfg="logging.ini"):
@@ -87,10 +88,23 @@ if __name__ == "__main__":
     import sys
 
     log = SetupLog(os.path.basename(sys.argv[0]))
+    log.info("Current log level is %i" % log.getEffectiveLevel())
     log.info("This is a log message")
     log.critical("Fail!")
     log.debug("This is a program, I am sure of it")
+
+    # custom log levels
     log.log(11, "Now setting a parameter")
-    log.log(21,  "The parameter is")
-    log.log(12,  "Now connecting to")
-    log.log(22,  "Connected to")
+    log.log(21, "The parameter is")
+    log.log(12, "Now connecting to")
+    log.log(22, "Connected to")
+
+    if log.getEffectiveLevel() > EXTENDED_LEVELS["SQLITE"]:
+        log.critical("Your log level is not low level enough to handle calls from SQLITE")
+        log.info("Changing log level to %i" % EXTENDED_LEVELS["SQLITE"])
+        log.setLevel(EXTENDED_LEVELS["SQLITE"])
+        log.info("New log level set!")
+
+    # now try using low level logging
+    log.debug("Log level: %i" % EXTENDED_LEVELS["SQLITE"])
+    log.log(5, "Sqlite operation")
