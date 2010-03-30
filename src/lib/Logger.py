@@ -42,6 +42,17 @@ LEVELS = {
     'DEBUG.NETCOM' : 4,
 }
 
+class LogMain(object):
+    '''Basic wrapper class to store and configure the log'''
+    def __init__(self):
+        self.levels = LEVELS
+        self.log = SetupLog()
+
+    def moduleName(self, name):
+        '''Set the name of the log object'''
+        return self.log.getLogger(name)
+
+
 def SetupLog(cfg="cfg/logging.ini"):
     '''
     Setup the main logging object, run getLogger() when ready to
