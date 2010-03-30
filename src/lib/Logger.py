@@ -25,14 +25,6 @@ import logging.config
 
 __MODULE__ = "lib.Logger"
 
-#LEVELS = {
-#    'DEBUG': logging.DEBUG,
-#    'INFO': logging.INFO,
-#    'WARNING': logging.WARNING,
-#    'ERROR': logging.ERROR,
-#    'CRITICAL': logging.CRITICAL
-#}
-
 # the lower the level, the more dangerous it is!
 LEVELS = {
     'CRITICAL': int(logging.CRITICAL),  # lvl 50
@@ -50,7 +42,7 @@ LEVELS = {
     'DEBUG.NETCOM' : 4,
 }
 
-def SetupLog(cfg="logging.ini"):
+def SetupLog(cfg="cfg/logging.ini"):
     '''
     Setup the main logging object, run getLogger() when ready to
     create and use the logging object.
