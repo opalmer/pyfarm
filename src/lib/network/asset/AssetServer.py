@@ -36,6 +36,8 @@ except ImportError:
 # From PyQt
 from PyQt4.QtCore import QThread
 
+import lib.Logger as logger
+
 __version__ = "0.3"
 
 class AssetServer(object):

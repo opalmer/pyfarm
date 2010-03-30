@@ -26,6 +26,8 @@ import os.path
 
 # From PyQt
 from PyQt4.QtCore import QThread
+
+import lib.Logger as logger
 """
 NOTES:
 Options 1:

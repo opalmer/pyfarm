@@ -30,6 +30,9 @@ import sys
 from twisted.python import log, failure
 from twisted.internet import posixbase
 
+# PyFarm Imports
+import lib.Logger as logger
+
 
 
 class TwistedSocketNotifier(QSocketNotifier):
