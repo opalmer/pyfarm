@@ -1,0 +1,309 @@
+<ui version="4.0" >
+ <class>HostInfo</class>
+ <widget class="QDialog" name="HostInfo" >
+  <property name="geometry" >
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>445</width>
+    <height>269</height>
+   </rect>
+  </property>
+  <property name="windowTitle" >
+   <string>Remote Host Information</string>
+  </property>
+  <widget class="QPushButton" name="closeButton" >
+   <property name="geometry" >
+    <rect>
+     <x>350</x>
+     <y>236</y>
+     <width>80</width>
+     <height>28</height>
+    </rect>
+   </property>
+   <property name="text" >
+    <string>Close</string>
+   </property>
+  </widget>
+  <widget class="QGroupBox" name="groupBox" >
+   <property name="geometry" >
+    <rect>
+     <x>10</x>
+     <y>10</y>
+     <width>181</width>
+     <height>221</height>
+    </rect>
+   </property>
+   <property name="font" >
+    <font>
+     <pointsize>12</pointsize>
+    </font>
+   </property>
+   <property name="title" >
+    <string>Host Info</string>
+   </property>
+   <widget class="QWidget" name="layoutWidget" >
+    <property name="geometry" >
+     <rect>
+      <x>10</x>
+      <y>20</y>
+      <width>161</width>
+      <height>196</height>
+     </rect>
+    </property>
+    <layout class="QGridLayout" name="gridLayout" >
+     <item row="0" column="0" >
+      <widget class="QLabel" name="label" >
+       <property name="font" >
+        <font>
+         <pointsize>10</pointsize>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
+       <property name="text" >
+        <string>IP:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="2" colspan="3" >
+      <widget class="QLabel" name="ipAddress" >
+       <property name="font" >
+        <font>
+         <pointsize>10</pointsize>
+        </font>
+       </property>
+       <property name="text" >
+        <string>NONE</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="0" colspan="2" >
+      <widget class="QLabel" name="label_2" >
+       <property name="font" >
+        <font>
+         <pointsize>10</pointsize>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
+       <property name="text" >
+        <string>Hostname:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="2" colspan="3" >
+      <widget class="QLabel" name="hostname" >
+       <property name="font" >
+        <font>
+         <pointsize>10</pointsize>
+        </font>
+       </property>
+       <property name="text" >
+        <string>NONE</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="0" colspan="2" >
+      <widget class="QLabel" name="label_3" >
+       <property name="font" >
+        <font>
+         <pointsize>10</pointsize>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
+       <property name="text" >
+        <string>Status:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="2" colspan="3" >
+      <widget class="QLabel" name="status" >
+       <property name="font" >
+        <font>
+         <pointsize>10</pointsize>
+        </font>
+       </property>
+       <property name="text" >
+        <string>NONE</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="0" colspan="2" >
+      <widget class="QLabel" name="label_4" >
+       <property name="font" >
+        <font>
+         <pointsize>10</pointsize>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
+       <property name="text" >
+        <string>OS:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="2" colspan="3" >
+      <widget class="QLabel" name="os" >
+       <property name="font" >
+        <font>
+         <pointsize>10</pointsize>
+        </font>
+       </property>
+       <property name="text" >
+        <string>NONE</string>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="0" colspan="2" >
+      <widget class="QLabel" name="label_5" >
+       <property name="font" >
+        <font>
+         <pointsize>10</pointsize>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
+       <property name="text" >
+        <string>Architecture:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="2" colspan="3" >
+      <widget class="QLabel" name="architecture" >
+       <property name="font" >
+        <font>
+         <pointsize>10</pointsize>
+        </font>
+       </property>
+       <property name="text" >
+        <string>NONE</string>
+       </property>
+      </widget>
+     </item>
+     <item row="5" column="0" colspan="2" >
+      <widget class="QLabel" name="label_6" >
+       <property name="font" >
+        <font>
+         <pointsize>10</pointsize>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
+       <property name="text" >
+        <string>Rendered:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="5" column="2" colspan="3" >
+      <widget class="QLabel" name="rendered" >
+       <property name="font" >
+        <font>
+         <pointsize>10</pointsize>
+        </font>
+       </property>
+       <property name="text" >
+        <string>NONE</string>
+       </property>
+      </widget>
+     </item>
+     <item row="6" column="0" >
+      <widget class="QLabel" name="label_7" >
+       <property name="font" >
+        <font>
+         <pointsize>10</pointsize>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
+       <property name="text" >
+        <string>Failed:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="6" column="2" colspan="3" >
+      <widget class="QLabel" name="failed" >
+       <property name="font" >
+        <font>
+         <pointsize>10</pointsize>
+        </font>
+       </property>
+       <property name="text" >
+        <string>NONE</string>
+       </property>
+      </widget>
+     </item>
+     <item row="7" column="0" colspan="2" >
+      <widget class="QLabel" name="label_8" >
+       <property name="font" >
+        <font>
+         <pointsize>10</pointsize>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
+       <property name="text" >
+        <string>Failure Rate:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="7" column="2" colspan="3" >
+      <widget class="QLabel" name="failureRate" >
+       <property name="font" >
+        <font>
+         <pointsize>10</pointsize>
+        </font>
+       </property>
+       <property name="text" >
+        <string>NONE</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+  </widget>
+  <widget class="QTreeWidget" name="softwareTree" >
+   <property name="geometry" >
+    <rect>
+     <x>200</x>
+     <y>20</y>
+     <width>231</width>
+     <height>211</height>
+    </rect>
+   </property>
+   <property name="font" >
+    <font>
+     <pointsize>10</pointsize>
+    </font>
+   </property>
+   <property name="editTriggers" >
+    <set>QAbstractItemView::NoEditTriggers</set>
+   </property>
+   <column>
+    <property name="text" >
+     <string>Installed Software</string>
+    </property>
+   </column>
+  </widget>
+ </widget>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>closeButton</sender>
+   <signal>pressed()</signal>
+   <receiver>HostInfo</receiver>
+   <slot>close()</slot>
+   <hints>
+    <hint type="sourcelabel" >
+     <x>329</x>
+     <y>273</y>
+    </hint>
+    <hint type="destinationlabel" >
+     <x>199</x>
+     <y>149</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+</ui>

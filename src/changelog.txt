@@ -1,0 +1,6 @@
+NOTE: The changelog is ONLY updated for new releases
+
+v0.3.216:
+	-Changed installation instructions for pyqt4 from gksu to sudo
+	-Added official changelog
+	-Removed test routines that prevented launching
