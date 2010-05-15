@@ -25,7 +25,7 @@ __MODULE__ = "Main.pyw"
 
 # From Python
 import sys, getopt
-from os import getcwd
+from os import getcwd, mkdir
 from os.path import dirname
 from time import time, sleep
 from random import randrange, random
@@ -58,11 +58,8 @@ settings = ParseXmlSettings('./cfg/settings.xml', 'gui')
 # setup logging
 logMain = lib.Logger.LogMain()
 log = logMain.moduleName(__MODULE__)  # the logger for THIS module
-logger = {
-    "logger" : logMain,
-    "levels" : lib.Logger.LEVELS
-}
-#log.setLevel(logger["level"]) # set the logging level for this module (carefull!)
+LOG_LEVELS = lib.Logger.LEVELS
+
 
 import lib.Info as Info
 import lib.InputFlags
@@ -105,12 +102,13 @@ class Main(QMainWindow):
         self.qdir = QDir()
         self.cwd = self.qdir.currentPath()
         self.sep = self.qdir.separator().toAscii()
-        self.logOutDir = QDir("%s%slogs" % (self.cwd, self.sep))
+        self.logDir = "%s%slogs" % (self.cwd, self.sep)
+        self.logOutDir = QDir(self.logDir)
 
         # if the directory does not exist, create it
         if not self.logOutDir.exists():
-            log('PyFarm :: %s :: Creating output directory' % self.modName, 'standard')
-            self.qdir.mkpath(self.logOutDir.path())
+            print "Log directory does not exist, creating %s" % self.logDir
+            mkdir(self.logDir)
 
         self.ui.logDir.setText(self.logOutDir.path())
         self.connect(self.ui.browseForLogDir, SIGNAL("pressed()"), self.setNewLogDir)
@@ -124,7 +122,7 @@ class Main(QMainWindow):
         self.dataGeneral = GeneralManager(self.ui, __VERSION__)
         self.hostname = str(QHostInfo.localHostName())
         self.tableManager = JobTableManager(self)
-        self.softwareManager = SoftwareContextManager(self)
+        self.softwareManager = SoftwareContextManager(self, logMain, LOG_LEVELS)
         self.submitJob = SubmitManager(self)
         self.ip = str(QHostInfo.fromName(self.hostname).addresses()[0].toString())
         self.msg = MessageBox(self)
@@ -145,21 +143,20 @@ class Main(QMainWindow):
 
         # network server setup
         ## status server setup
-        self.statusServer = StatusServer(self.dataJob, self.dataGeneral, logger)
+        self.statusServer = StatusServer(self.dataJob, self.dataGeneral, logMain, LOG_LEVELS)
         self.connect(self.statusServer, SIGNAL('INIT'), self.initHost)
         self.connect(self.statusServer, SIGNAL('FRAME_COMPLETE'), self.frameComplete)
         self.connect(self.statusServer, SIGNAL('FRAME_FAILED'), self.frameFailed)
 
         ## log server setup
-        self.logServer = UdpLoggerServer(logger)
+        self.logServer = UdpLoggerServer(logMain, LOG_LEVELS)
         self.connect(self.logServer, SIGNAL("incoming_line"), self.processLogLine)
 
         # start the servers
         if not self.statusServer.listen(QHostAddress('0.0.0.0'), settings.netPort('status')):
             log.exception("Could not start StatusServer: %s" % self.statusServer.errorString())
-            #log("PyFarm :: StatusServer :: Could not start the server: %s" % self.statusServer.errorString(), 'warning')
         else:
-            log.log(logger["levels"]["NETWORK"], "Status server running on port %s" % settings.netPort('status'))
+            log.log(LOG_LEVELS["NETWORK"], "Status server running on port %s" % settings.netPort('status'))
 
         # setup some basic colors
         self.red = QColor(255, 0, 0)
@@ -709,7 +706,7 @@ class Main(QMainWindow):
                 closeEventManager.exitHelp()
                 self.closeEvent(self)
         else:
-            log.log(logger["levels"]["DEBUG.NETWORK"], "closeEvent() - No hosts to shutdown")
+            log.log(LOG_LEVELS["DEBUG.NETWORK"], "closeEvent() - No hosts to shutdown")
 ################################
 ## END General Utilities
 ################################
@@ -739,22 +736,18 @@ if __name__ != '__MAIN__':
 
                 # for development testing
                 elif o == "--devel":
-                    print "===============================\
-                \n---Running Development Code---\
-                \n===============================\n"
+                    log.debug("Running development code")
                     from lib.data.db.DBMain import DBSetup
                     db = "testdb.sqlite"
                     DBSetup(db)
-                    print "\n===============================\
-                \n---Development Run Complete---\
-                \n==============================="
+                    log.debug("Finished running development code")
         else:
                 #log.log(, "Setting up QApplication")
                 app = QApplication(sys.argv)
                 main = Main()
-                log.log(logger.LEVELS["DEBUG.UI"], "Showing UI...")
+                log.log(LOG_LEVELS["DEBUG.UI"], "Showing UI...")
                 main.show()
-                log.log(logger.LEVELS["DEBUG.UI"],  "UI active!")
+                log.log(LOG_LEVELS["DEBUG.UI"],  "UI active!")
                 sys.exit(app.exec_())
 
     # if not a valid flag, output help

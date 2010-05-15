@@ -48,11 +48,15 @@ class SoftwareContextManager(object):
     Manages the input of files and parameters basd on the current
     software selection.
     '''
-    def __init__(self, parentClass):
+    def __init__(self, parentClass, logger, LOG_LEVELS):
         self.ui = parentClass.ui
         self.contextMenu = parentClass.ui.softwareSelection
         self.msg = MessageBox(parentClass)
-        self.modName = 'Software.setSoftware'
+
+        # setup logging
+        self.log = logger.moduleName("Software.SoftwareContextManager")
+        self.log.debug("SoftwareContextManager loaded")
+        self.logLevels = LOG_LEVELS
 
     def commonName(self):
         '''
@@ -88,7 +92,7 @@ class SoftwareContextManager(object):
 
             return 1
         else:
-            log("PyFarm :: %s :: Could not find any software installed" % self.modName, 'critical')
+            self.log.warning("Could not find any software installed")
             return 0
 
     def _setDefaults(self, software):

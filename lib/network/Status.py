@@ -132,13 +132,13 @@ class StatusServer(QTcpServer):
     the main gui of a finished frame, addition of a host to the network, and
     other similiar functions.  See StatusServerThread for the server logic.
     '''
-    def __init__(self, dataJob, dataGeneral, log,  parent=None):
+    def __init__(self, dataJob, dataGeneral, logger, logLevels, parent=None):
         super(StatusServer, self).__init__(parent)
         # setup logging
-        print log
-        self.log = log["logger"].moduleName("%s.StatusServer" % __MODULE__)
-        #self.log.setLevel(log["level"])
-        self.logLevels = log["levels"]
+        self.log = logger.moduleName("Status.StatusServer")
+        self.log.debug("StatusServer loaded")
+        self.logLevels = logLevels
+
         self.dataJob = dataJob
         self.dataGeneral = dataGeneral
         self.log.log(self.logLevels["DEBUG.NETWORK"], "Data structure assigned")

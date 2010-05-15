@@ -3,3 +3,4 @@
 .eric4project
 test.sql
 *.log*
+*.pyc

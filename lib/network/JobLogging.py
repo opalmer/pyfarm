@@ -39,8 +39,6 @@ class UdpLoggerClient(QObject):
     '''
     def __init__(self, master, port=settings.netPort('stdout'), parent=None):
         super(UdpLoggerClient, self).__init__(parent)
-        # FIXME->IMPROPER FORMART: self.log = logger.SetupLog("%s.UdpLoggerClient" % __MODULE__)
-        # see UdpLoggerServer
         self.master = master
         self.port = port
         self.parent = parent
@@ -48,8 +46,6 @@ class UdpLoggerClient(QObject):
         self.socket.connectToHost(self.master, self.port)
 
     def writeLine(self, line):
-        # FIXME->IMPROPER FORMART: self.log.log(NETCOMS, "Sending line to %s" % self.master)
-        # see UdpLoggerServer
         self.socket.writeDatagram(line, QHostAddress(self.master), self.port)
         self.log.log(NETCOMS,  "Sent: %s" % str(line))
 
@@ -59,12 +55,12 @@ class UdpLoggerServer(QUdpSocket):
     Logging server for standard output and
     standard error logs
     '''
-    def __init__(self, log, port=settings.netPort('stdout'), parent=None):
+    def __init__(self, logger, logLevels, port=settings.netPort('stdout'), parent=None):
         super(UdpLoggerServer, self).__init__(parent)
         # logging setup
-        self.log = log["logging"].getLogger("%s.UdpLoggerServer" % __MODULE__)
-        #self.log.setLevel(log["level"])
-        self.logLevels = log["levels"]
+        self.log = logger.moduleName("JobLogging.UdpLoggerServer")
+        self.log.debug("UdpLoggerServer loaded")
+        self.logLevels = logLevels
 
         self.port = port
         self.parent = parent
