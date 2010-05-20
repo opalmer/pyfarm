@@ -25,15 +25,17 @@ import logging.config
 
 __MODULE__ = "lib.Logger"
 
-# the lower the level, the more dangerous it is!
+# the lower the level, the more dangerous (cpu wise) it is!
 LEVELS = {
     'CRITICAL': int(logging.CRITICAL),  # lvl 50
     'ERROR': int(logging.ERROR), # lvl 40
     'WARNING': int(logging.WARNING), # lvl 30
+    'FIXME' : 25,
     'UI' : 23,
     'NETWORK' : 22,
     'SETTINGS' : 21,
     'INFO': int(logging.INFO), # lvl 20
+    'NOT IMPLIMENTED' : 14,
     'DEBUG.UI' : 13,
     'DEBUG.NETWORK' :  12,
     'DEBUG.SETTINGS'  : 11,

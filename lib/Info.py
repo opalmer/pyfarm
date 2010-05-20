@@ -34,6 +34,7 @@ finally:
     from random import randint
     from subprocess import Popen,PIPE
     from os.path import dirname, join, abspath
+    from multiprocessing import cpu_count
 
     # From PyQt4
     from PyQt4.QtCore import QObject, QThread
@@ -152,6 +153,26 @@ class System(object):
         elif self.os() == 'windows':
             p = Popen(['ipconfig'])
         return mac
+
+    def cpuCount(self):
+        '''Return the number of cpus on the system'''
+        return cpu_count()
+
+    def ramTotal(self):
+        '''Return the total amount of ram in the system'''
+        pass
+
+    def ramUsed(self):
+        '''Return the total amount of ram currently in use'''
+        pass
+
+    def swapTotal(self):
+        '''Return the total amout of swap'''
+        pass
+
+    def swapUsed(self):
+        '''Return the total amount of swap currently in use'''
+        pass
 
 
 class Stopwatch(QThread):
@@ -395,3 +416,9 @@ class TypeTest(object):
             return item
         else:
             raise self.error.typeError('long', self.getType(item))
+
+
+def MemoryUsage():
+    '''Return the memory usage of the currently running program'''
+    return int(os.popen('ps -p %d -o rss | tail -1' %
+    os.getpid()).read().split()[0])

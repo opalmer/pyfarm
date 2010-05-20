@@ -21,7 +21,7 @@ data dictionary
     along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 '''
 # From Python
-from os import getcwd
+from os import getcwd, getpid
 
 # From PyFarm
 import lib.Logger as logger
