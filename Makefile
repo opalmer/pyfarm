@@ -15,15 +15,12 @@ gui:
 	pyuic4 QtDesigner/JobDetails.ui >> lib/ui/JobDetails.py
 	cat GNU-GPL_Header.txt > lib/ui/LogViewer.py
 	pyuic4 QtDesigner/LogViewer.ui >> lib/ui/LogViewer.py
-	cat GNU-GPL_Header.txt > doc/docgen/lib/ui/WikiDocGen.py
-	pyuic4 doc/docgen/QtDesigner/WikiDocGen.ui >> doc/docgen/lib/ui/WikiDocGen.py
-	cat GNU-GPL_Header.txt > doc/docgen/lib/ui/NewTicket.py
+	cat GNU-GPL_Header.txt > lib/ui/NewTicket.py
 	pyuic4 QtDesigner/NewTicket.ui >> lib/ui/NewTicket.py
 
 compile:
+	echo "NOT IMPLIMENTED: make compile"
 	mkdir -p compiled
-	python compile_pyfarm.py
-	rsync -vrP --include="*.pyc" --exclude="*.py" ./lib ./compiled
-	rsync -vP --include="*.pyc" --exclude="*.py" ./lib/ ./compiled
-	rsync -vP --include="*.txt" --include="*.py*" --include="*.xml" --include="*.html" --include="*.cmd" --exclude="*.e4p" --exclude="compiled" --exclude="MakeFile" * ./compiled
-	find lib -name *.pyc | xargs rm -v
+	echo "FIXME: Main.pyw --compile > not fully written yet"
+	python Main.pyw --compile
+	echo "FIXME: Main.pyw --compile > proper logging not implimented"

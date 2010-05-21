@@ -1,11 +1,9 @@
-'''
     This file is part of PyFarm.
-    Copyright (C) 2008-2009 Oliver Palmer
 
     PyFarm is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
+    any later version.
 
     PyFarm is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -14,13 +12,12 @@
 
     You should have received a copy of the GNU General Public License
     along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
-'''
 # -*- coding: utf-8 -*-
 
 # Form implementation generated from reading ui file 'QtDesigner/MainWindow.ui'
 #
-# Created: Tue Aug 25 20:40:13 2009
-#      by: PyQt4 UI code generator 4.4.4
+# Created: Fri May 21 16:48:02 2010
+#      by: PyQt4 UI code generator 4.7.2
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -47,6 +44,7 @@ class Ui_MainWindow(object):
         font.setWeight(75)
         font.setBold(True)
         self.jobs.setFont(font)
+        self.jobs.setStatusTip("")
         self.jobs.setObjectName("jobs")
         self.networkToolbox = QtGui.QWidget()
         self.networkToolbox.setObjectName("networkToolbox")
@@ -181,7 +179,7 @@ class Ui_MainWindow(object):
         self.mayaFgMap.setInsertPolicy(QtGui.QComboBox.InsertAtTop)
         self.mayaFgMap.setSizeAdjustPolicy(QtGui.QComboBox.AdjustToContents)
         self.mayaFgMap.setObjectName("mayaFgMap")
-        self.mayaFgMap.addItem(QtCore.QString())
+        self.mayaFgMap.addItem("")
         self.gridlayout.addWidget(self.mayaFgMap, 0, 1, 1, 1)
         self.label_36 = QtGui.QLabel(self.layoutWidget_3)
         font = QtGui.QFont()
@@ -199,7 +197,7 @@ class Ui_MainWindow(object):
         self.myaMRThreadCount.setFont(font)
         self.myaMRThreadCount.setMinimum(1)
         self.myaMRThreadCount.setMaximum(32)
-        self.myaMRThreadCount.setProperty("value", QtCore.QVariant(2))
+        self.myaMRThreadCount.setProperty("value", 2)
         self.myaMRThreadCount.setObjectName("myaMRThreadCount")
         self.gridlayout.addWidget(self.myaMRThreadCount, 1, 1, 1, 1)
         self.label_37 = QtGui.QLabel(self.layoutWidget_3)
@@ -217,13 +215,13 @@ class Ui_MainWindow(object):
         font.setBold(False)
         self.myaMRLogLevel.setFont(font)
         self.myaMRLogLevel.setObjectName("myaMRLogLevel")
-        self.myaMRLogLevel.addItem(QtCore.QString())
-        self.myaMRLogLevel.addItem(QtCore.QString())
-        self.myaMRLogLevel.addItem(QtCore.QString())
-        self.myaMRLogLevel.addItem(QtCore.QString())
-        self.myaMRLogLevel.addItem(QtCore.QString())
-        self.myaMRLogLevel.addItem(QtCore.QString())
-        self.myaMRLogLevel.addItem(QtCore.QString())
+        self.myaMRLogLevel.addItem("")
+        self.myaMRLogLevel.addItem("")
+        self.myaMRLogLevel.addItem("")
+        self.myaMRLogLevel.addItem("")
+        self.myaMRLogLevel.addItem("")
+        self.myaMRLogLevel.addItem("")
+        self.myaMRLogLevel.addItem("")
         self.gridlayout.addWidget(self.myaMRLogLevel, 2, 1, 1, 1)
         self.mayaRenderOptions.addWidget(self.mentalray)
         self.software = QtGui.QWidget()
@@ -341,9 +339,9 @@ class Ui_MainWindow(object):
         self.mayaRenderer.setFont(font)
         self.mayaRenderer.setSizeAdjustPolicy(QtGui.QComboBox.AdjustToContents)
         self.mayaRenderer.setObjectName("mayaRenderer")
-        self.mayaRenderer.addItem(QtCore.QString())
-        self.mayaRenderer.addItem(QtCore.QString())
-        self.mayaRenderer.addItem(QtCore.QString())
+        self.mayaRenderer.addItem("")
+        self.mayaRenderer.addItem("")
+        self.mayaRenderer.addItem("")
         self.gridlayout1.addWidget(self.mayaRenderer, 3, 1, 1, 1)
         self.label_26 = QtGui.QLabel(self.layoutWidget)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Fixed, QtGui.QSizePolicy.Fixed)
@@ -395,6 +393,7 @@ class Ui_MainWindow(object):
         font.setWeight(50)
         font.setBold(False)
         self.mayaScene.setFont(font)
+        self.mayaScene.setText("")
         self.mayaScene.setObjectName("mayaScene")
         self.gridlayout1.addWidget(self.mayaScene, 0, 1, 1, 6)
         self.optionStack.addWidget(self.mayaSettings)
@@ -454,7 +453,7 @@ class Ui_MainWindow(object):
         self.houdiniOutputPixelAspect.setFont(font)
         self.houdiniOutputPixelAspect.setMinimum(0.1)
         self.houdiniOutputPixelAspect.setMaximum(4.0)
-        self.houdiniOutputPixelAspect.setProperty("value", QtCore.QVariant(1.0))
+        self.houdiniOutputPixelAspect.setProperty("value", 1.0)
         self.houdiniOutputPixelAspect.setObjectName("houdiniOutputPixelAspect")
         self.gridlayout2.addWidget(self.houdiniOutputPixelAspect, 0, 1, 1, 1)
         self.houdiniOutputWidthLabel = QtGui.QLabel(self.layoutWidget1)
@@ -545,6 +544,7 @@ class Ui_MainWindow(object):
         font.setWeight(50)
         font.setBold(False)
         self.houdiniFile.setFont(font)
+        self.houdiniFile.setText("")
         self.houdiniFile.setObjectName("houdiniFile")
         self.gridlayout3.addWidget(self.houdiniFile, 0, 1, 1, 1)
         self.houdiniBrowseForScene = QtGui.QPushButton(self.layoutWidget2)
@@ -577,6 +577,7 @@ class Ui_MainWindow(object):
         font.setWeight(50)
         font.setBold(False)
         self.shakeScript.setFont(font)
+        self.shakeScript.setText("")
         self.shakeScript.setObjectName("shakeScript")
         self.hboxlayout.addWidget(self.shakeScript)
         self.shakeBrowseForScript = QtGui.QPushButton(self.layoutWidget3)
@@ -688,9 +689,10 @@ class Ui_MainWindow(object):
         font.setBold(False)
         self.inputStartFrame.setFont(font)
         self.inputStartFrame.setCorrectionMode(QtGui.QAbstractSpinBox.CorrectToNearestValue)
+        self.inputStartFrame.setPrefix("")
         self.inputStartFrame.setMinimum(1)
         self.inputStartFrame.setMaximum(999999999)
-        self.inputStartFrame.setProperty("value", QtCore.QVariant(1))
+        self.inputStartFrame.setProperty("value", 1)
         self.inputStartFrame.setObjectName("inputStartFrame")
         self.gridlayout4.addWidget(self.inputStartFrame, 1, 3, 1, 1)
         self.startFrameLabel = QtGui.QLabel(self.layoutWidget4)
@@ -730,7 +732,7 @@ class Ui_MainWindow(object):
         self.inputJobPriority.setFont(font)
         self.inputJobPriority.setMinimum(1)
         self.inputJobPriority.setMaximum(10)
-        self.inputJobPriority.setProperty("value", QtCore.QVariant(5))
+        self.inputJobPriority.setProperty("value", 5)
         self.inputJobPriority.setObjectName("inputJobPriority")
         self.gridlayout4.addWidget(self.inputJobPriority, 1, 1, 1, 1)
         self.jobs.addTab(self.submitToolbox, "")

@@ -1,11 +1,9 @@
-'''
     This file is part of PyFarm.
-    Copyright (C) 2008-2009 Oliver Palmer
 
     PyFarm is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
+    any later version.
 
     PyFarm is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -14,13 +12,12 @@
 
     You should have received a copy of the GNU General Public License
     along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
-'''
 # -*- coding: utf-8 -*-
 
 # Form implementation generated from reading ui file 'QtDesigner/LogViewer.ui'
 #
-# Created: Tue Aug 25 20:40:14 2009
-#      by: PyQt4 UI code generator 4.4.4
+# Created: Fri May 21 16:48:06 2010
+#      by: PyQt4 UI code generator 4.7.2
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -68,7 +65,7 @@ class Ui_LogViewer(object):
         self.refreshTime.setGeometry(QtCore.QRect(220, 707, 58, 26))
         self.refreshTime.setMinimum(1)
         self.refreshTime.setMaximum(600)
-        self.refreshTime.setProperty("value", QtCore.QVariant(5))
+        self.refreshTime.setProperty("value", 5)
         self.refreshTime.setObjectName("refreshTime")
         LogViewer.setCentralWidget(self.centralwidget)
         self.menubar = QtGui.QMenuBar(LogViewer)
