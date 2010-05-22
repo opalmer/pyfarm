@@ -2,10 +2,6 @@ SHELL := /bin/bash
 clean:
 	echo "NOT IMPLIMENTED: Use Main.pyw --clean"
 
-snapshot:
-	mkdir -p snapshots/pyfarm_`date +%F_%H-%M`_snapshot
-	rsync -vrP --exclude="compiled" --exclude="logs" --exclude="*.pyc" --exclude=".*" --exclude="*.txt" --exclude="*.cmd" --exclude="*.e4p" --exclude="*.html" --exclude="Makefile" --exclude="build" --exclude="QtDesigner" --exclude="prototyping" --exclude="*.m*" --exclude="*bak*" * snapshots/pyfarm_`date +%F_%H-%M`_snapshot
-	
 gui:
 	cat GNU-GPL_Header.txt > lib/ui/MainWindow.py
 	pyuic4 QtDesigner/MainWindow.ui >> lib/ui/MainWindow.py
@@ -17,6 +13,7 @@ gui:
 	pyuic4 QtDesigner/LogViewer.ui >> lib/ui/LogViewer.py
 	cat GNU-GPL_Header.txt > lib/ui/NewTicket.py
 	pyuic4 QtDesigner/NewTicket.ui >> lib/ui/NewTicket.py
+	echo "FIXME: Transition gui complie to Main.pyw --make-gui"
 
 compile:
 	echo "NOT IMPLIMENTED: make compile"

@@ -1,6 +1,6 @@
 '''
     This file is part of PyFarm.
-    Copyright 2009-2010 (C) Oliver Palmer
+    Copyright 2008-2010 (C) Oliver Palmer
 
     PyFarm is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -19,7 +19,7 @@
 
 # Form implementation generated from reading ui file 'QtDesigner/MainWindow.ui'
 #
-# Created: Fri May 21 17:02:43 2010
+# Created: Fri May 21 17:13:32 2010
 #      by: PyQt4 UI code generator 4.7.2
 #
 # WARNING! All changes made in this file will be lost!
