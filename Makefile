@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 clean:
-	find . -name *.pyc | xargs rm -v
+	echo "NOT IMPLIMENTED: Use Main.pyw --clean"
 
 snapshot:
 	mkdir -p snapshots/pyfarm_`date +%F_%H-%M`_snapshot

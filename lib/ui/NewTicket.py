@@ -1,4 +1,6 @@
+'''
     This file is part of PyFarm.
+    Copyright 2009-2010 (C) Oliver Palmer
 
     PyFarm is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -12,11 +14,12 @@
 
     You should have received a copy of the GNU General Public License
     along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
+'''
 # -*- coding: utf-8 -*-
 
 # Form implementation generated from reading ui file 'QtDesigner/NewTicket.ui'
 #
-# Created: Fri May 21 16:48:06 2010
+# Created: Fri May 21 17:02:47 2010
 #      by: PyQt4 UI code generator 4.7.2
 #
 # WARNING! All changes made in this file will be lost!
