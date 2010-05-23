@@ -39,7 +39,7 @@ from lib.ReadSettings import ParseXmlSettings
 from lib.ui.main.CustomWidgets import MessageBox
 from lib.ui.main.maya.RenderLayers import MayaCamAndLayers
 
-settings = ParseXmlSettings('./cfg/settings.xml')
+settings = ParseXmlSettings('./cfg/settings.xml',  'cmd',  1, logger.LogMain(), logger.LEVELS)
 log = settings.log
 
 

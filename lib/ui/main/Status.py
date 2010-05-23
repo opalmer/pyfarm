@@ -26,7 +26,7 @@ from PyQt4.QtGui import QColor
 # From PyFarm
 import lib.Logger as logger
 from lib.ReadSettings import ParseXmlSettings
-settings = ParseXmlSettings('./cfg/settings.xml',  skipSoftware=True)
+settings = ParseXmlSettings('./cfg/settings.xml',  'cmd',  1, logger.LogMain(), logger.LEVELS)
 
 __MODULE__ = "lib.ui.main.Status"
 

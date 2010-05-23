@@ -27,10 +27,11 @@ from PyQt4.QtNetwork import QTcpServer, QTcpSocket
 from PyQt4.QtNetwork import QAbstractSocket
 
 # From PyFarm
+import lib.Logger as logger
 from lib.ReadSettings import ParseXmlSettings
 
 __MODULE__ = "lib.network.Status"
-settings = ParseXmlSettings('./cfg/settings.xml')
+settings = ParseXmlSettings('./cfg/settings.xml',  'cmd',  1, logger.LogMain(), logger.LEVELS)
 UNIT16 = 8
 
 class StatusServerThread(QThread):

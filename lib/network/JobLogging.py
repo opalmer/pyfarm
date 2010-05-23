@@ -29,7 +29,7 @@ import lib.Logger as logger
 from lib.ReadSettings import ParseXmlSettings
 
 __MODULE__ = "lib.network.JobLogging"
-settings = ParseXmlSettings('./cfg/settings.xml', skipSoftware=False)
+settings = ParseXmlSettings('./cfg/settings.xml',  'cmd',  0, logger.LogMain(), logger.LEVELS)
 UNIT16 = 8
 
 class UdpLoggerClient(QObject):
@@ -48,7 +48,6 @@ class UdpLoggerClient(QObject):
     def writeLine(self, line):
         self.socket.writeDatagram(line, QHostAddress(self.master), self.port)
         self.log.log(NETCOMS,  "Sent: %s" % str(line))
-
 
 class UdpLoggerServer(QUdpSocket):
     '''

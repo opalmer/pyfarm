@@ -30,7 +30,7 @@ from lib.ReadSettings import ParseXmlSettings
 
 __MODULE__ = "lib.network.Broadcast"
 
-settings = ParseXmlSettings('./cfg/settings.xml')
+settings = ParseXmlSettings('./cfg/settings.xml',  'cmd',  1, logger.LogMain(), logger.LEVELS)
 import lib.Logger as logger
 
 class BroadcastSender(QThread):

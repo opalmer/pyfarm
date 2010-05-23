@@ -37,7 +37,7 @@ from PyQt4.QtGui import QMessageBox
 __MODULE__ = "lib.data.General"
 
 typeCheck = TypeTest('JobData')
-settings = ParseXmlSettings('%s/cfg/settings.xml' % getcwd())
+settings = ParseXmlSettings('%s/cfg/settings.xml' % getcwd(),  'cmd',  1, logger.LogMain(), logger.LEVELS)
 
 class GeneralHostManager(object):
     '''

@@ -34,7 +34,7 @@ from lib.ui.main.job.table.JobDetailsTableModel import JobDetailsTableModel
 
 __MODULE__ = "lib.ui.main.job.table.JobTableManager"
 
-settings = ParseXmlSettings('./cfg/settings.xml', skipSoftware=True)
+settings = ParseXmlSettings('./cfg/settings.xml',  'cmd',  1, logger.LogMain(), logger.LEVELS)
 SUBJOB, STATUS, UID, FRAME, START, END, ELAPSED, HOST, PID, SOFTWARE, COMMAND = range(11)
 
 class JobStatusObject(object):

@@ -31,7 +31,7 @@ from lib.PyFarmExceptions import ErrorProcessingSetup
 
 __MODULE__ =  "lib.ui.main.CloseEvent"
 
-settings = ParseXmlSettings('./cfg/settings.xml', skipSoftware=True)
+settings = ParseXmlSettings('./cfg/settings.xml',  'cmd',  1, logger.LogMain(), logger.LEVELS)
 
 class CloseEventManager(QObject):
     '''

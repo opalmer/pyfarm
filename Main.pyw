@@ -52,14 +52,13 @@ from lib.RenderConfig import *
 from lib.ReadSettings import ParseXmlSettings
 import lib.network.QtReactor
 
-# apply settings and setup logging
-settings = ParseXmlSettings('./cfg/settings.xml', 'gui')
-
 # setup logging
 logMain = lib.Logger.LogMain()
 log = logMain.moduleName(__MODULE__)  # the logger for THIS module
 LOG_LEVELS = lib.Logger.LEVELS
 
+# apply settings
+settings = ParseXmlSettings('./cfg/settings.xml', 'gui',0, logMain, LOG_LEVELS)
 
 import lib.Info as Info
 import lib.InputFlags
@@ -712,47 +711,26 @@ class Main(QMainWindow):
 ################################
 
 if __name__ != '__MAIN__':
-    flags = lib.InputFlags
-    cwd = getcwd()
-    help = flags.CommandLineHelp(sys.argv[0])
-    sysinfo = flags.SystemInfo(__VERSION__, cwd)
-    util = flags.SystemUtilities(cwd)
-    try:
-        opts, args = getopt.getopt(sys.argv[1:], "h?", ["help", "allinfo", "systeminfo","softwareinfo","compile", "clean", "devel"])
-        if len(opts) > 0 or len(args) > 0:
-            for o, a in opts:
-                if o in ("-h", "-?","--help"):
-                    help.echo()
-                elif o == "--allinfo":
-                    sysinfo.all()
-                elif o == "--systeminfo":
-                    sysinfo.system(1)
-                elif o == "--softwareinfo":
-                    sysinfo.software(1)
-                elif o == "--compile":
-                    util.compile()
-                elif o == "--clean":
-                    util.clean(1)
+    sysUtil = lib.InputFlags.SystemUtilities(logMain, LOG_LEVELS)
+    sysInfo = lib.InputFlags.SystemInfo(logMain, LOG_LEVELS)
 
-                # for development testing
-                elif o == "--devel":
-                    log.debug("Running development code")
-                    from lib.data.db.DBMain import DBSetup
-                    db = "testdb.sqlite"
-                    DBSetup(db)
-                    log.debug("Finished running development code")
-        else:
-                #log.log(, "Setting up QApplication")
-                app = QApplication(sys.argv)
-                main = Main()
-                log.log(LOG_LEVELS["DEBUG.UI"], "Showing UI...")
-                main.show()
-                log.log(LOG_LEVELS["DEBUG.UI"],  "UI active!")
-                sys.exit(app.exec_())
+    # command line opton parsing
+    from optparse import OptionParser
+    parser = OptionParser(version="PyFarm v%s" % __VERSION__)
+    parser.add_option("--software", dest="software",  action="callback", callback=sysInfo.software,
+                                    help="Return a list of software installed")
+    parser.add_option("--system", dest="system",  action="callback", callback=sysInfo.system,
+                                    help="Return information about the system")
+    parser.add_option("--clean",  action="callback",  callback=sysUtil.clean,
+                                    help="remove all byte-compiled Python files")
+    (options, args) = parser.parse_args()
 
-    # if not a valid flag, output help
-    except getopt.GetoptError, err:
-        help.invalidFlag(err)
+    app = QApplication(sys.argv)
+    main = Main()
+    log.log(LOG_LEVELS["DEBUG.UI"], "Showing UI...")
+    main.show()
+    log.log(LOG_LEVELS["DEBUG.UI"],  "UI active!")
+    sys.exit(app.exec_())
 else:
     log.critical("This program is not meant to be imported!")
     sys.exit(1)

@@ -33,7 +33,7 @@ from lib.Distribute import DistributeFrames
 
 __MODULE__ = "lib.ui.main.job.Submit"
 
-settings = ParseXmlSettings('./cfg/settings.xml')
+settings = ParseXmlSettings('./cfg/settings.xml',  'cmd',  1, logger.LogMain(), logger.LEVELS)
 
 class SubmitManager(object):
     '''

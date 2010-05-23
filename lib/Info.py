@@ -85,11 +85,30 @@ def find(match, root):
 
 
 class System(object):
-    '''
-    Return important information about the system
-    '''
-    def __init__(self):
-        pass
+    '''Return important information about the system'''
+    def __init__(self, logger, logLevels):
+        self.memInfo = {}
+        # logging setup
+        self.log = logger.moduleName("Info.System")
+        self.logLevels = logLevels
+
+        self.log.debug("Getting memory stats")
+        # get memory information
+        line = 0
+        for text in open("/proc/meminfo", "r"):
+            l = text.split("\n")[0]
+            value = int(l.split()[1])/1000/1000
+            if line == 0:
+                self.memInfo["ramTotal"] = value
+            elif line == 1:
+                self.memInfo["ramFree"] = value
+            elif line == 13:
+                self.memInfo["swapTotal"] = value
+            elif line == 14:
+                self.memInfo["swapFree"] = value
+            line += 1
+
+        self.log.debug("Info.System loaded")
 
     def time(self, format ):
         '''Return the current system time to the user'''
@@ -160,19 +179,19 @@ class System(object):
 
     def ramTotal(self):
         '''Return the total amount of ram in the system'''
-        pass
+        return self.memInfo["ramTotal"]
 
-    def ramUsed(self):
+    def ramFree(self):
         '''Return the total amount of ram currently in use'''
-        pass
+        return self.memInfo["ramFree"]
 
     def swapTotal(self):
         '''Return the total amout of swap'''
-        pass
+        return self.memInfo["swapTotal"]
 
-    def swapUsed(self):
+    def swapFree(self):
         '''Return the total amount of swap currently in use'''
-        pass
+        return self.memInfo["swapFree"]
 
 
 class Stopwatch(QThread):

@@ -30,35 +30,14 @@ along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
         <search os="linux" software="maya">
             <path>/usr/autodesk</path>
         </search>
-        <search os="mac" software="maya">
-            <path>/Applications/Autodesk</path>
-        </search>
-        <search os="win" software="maya">
-            <path>C:\Program Files\Autodesk</path>
-        </search>
-        <!--
-            Hodini Search Declarations
-        -->
         <search os="linux" software="houdini">
             <path>/opt</path>
             <path>/usr</path>
         </search>
-        <search os="mac" software="houdini">
-        </search>
-        <search os="win" software="houdini">
-                <path>C:\Program Files\Side Effects Software</path>
-                <path>C:\Program Files(x86)\Side Effects Software</path>
-        </search>
-        <!--
-            Shake Search Declarations
-        -->
         <search os="linux" software="shake">
             <path>/usr/apple/shake-v4.00.0607</path>
             <path>/opt/shake-v4.00.0607</path>
             <path>/usr/local/shake-v4.00.0607</path>
-        </search>
-        <search os="mac" software="shake">
-            <path>/Applications/Shake/shake.app/Contents/MacOS</path>
         </search>
         <!-- General Software Settings -->
         <maya widgetIndex="0" fileGrep="Maya Scene File (*.mb *.ma)"/>
@@ -79,9 +58,7 @@ along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
             <server type="stdout" port="9634" />
             <server type="status" port="9635" />
         </network>
-        <!--
-            Status Settings Subsection
-        -->
+        <!-- Status Settings Subsection -->
         <status>
             <!--
                 bgColor - color of the background (table cell, etc.)

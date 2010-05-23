@@ -45,7 +45,7 @@ from lib.network.Admin import AdminServer
 from lib.ReadSettings import ParseXmlSettings
 from lib.network.Broadcast import BroadcastReceiever
 
-settings = ParseXmlSettings('./cfg/settings.xml')
+settings = ParseXmlSettings('./cfg/settings.xml',  'cmd',  1, logger.LogMain(), logger.LEVELS)
 
 # setup logging
 logging = logger.SetupLog()

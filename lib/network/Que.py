@@ -32,7 +32,7 @@ from lib.ReadSettings import ParseXmlSettings
 
 __MODULE__ = "lib.network.Que"
 
-settings = ParseXmlSettings('./cfg/settings.xml', skipSoftware=False)
+settings = ParseXmlSettings('./cfg/settings.xml',  'cmd',  0, logger.LogMain(), logger.LEVELS)
 
 UNIT16 = 8
 

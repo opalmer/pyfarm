@@ -21,3 +21,8 @@ compile:
 	echo "FIXME: Main.pyw --compile > not fully written yet"
 	python Main.pyw --compile
 	echo "FIXME: Main.pyw --compile > proper logging not implimented"
+
+profile:
+	rm -f logs/profile.log
+	mkdir -p logs
+	python -m cProfile Main.pyw > logs/profile.log

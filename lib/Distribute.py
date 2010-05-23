@@ -36,7 +36,7 @@ __MODULE__ = "lib.Distribute"
 
 wd = dirname(str(QDir(sys.argv[0]).canonicalPath()))
 QDir().setCurrent(wd)
-settings = ParseXmlSettings('./cfg/settings.xml', type='log')
+settings = ParseXmlSettings('./cfg/settings.xml',  'log',  1, logger.LogMain(), logger.LEVELS)
 log = settings.log
 
 class EstablishConnection(QThread):

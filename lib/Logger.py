@@ -30,7 +30,7 @@ LEVELS = {
     'CRITICAL': int(logging.CRITICAL),  # lvl 50
     'ERROR': int(logging.ERROR), # lvl 40
     'WARNING': int(logging.WARNING), # lvl 30
-    'FIXME' : 25,
+    'FIXME' : 24,
     'UI' : 23,
     'NETWORK' : 22,
     'SETTINGS' : 21,
@@ -82,7 +82,7 @@ if __name__ == "__main__":
     import os
     import sys
 
-    log = SetupLog(os.path.basename(sys.argv[0]))
+    log = SetupLog()
     log.info("Current log level is %i" % log.getEffectiveLevel())
     log.info("This is a log message")
     log.critical("Fail!")

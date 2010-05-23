@@ -37,7 +37,7 @@ from lib.ui.main.Status import StatusManager
 
 __MODULE__ = "lib.data.Job"
 
-settings = ParseXmlSettings('%s/cfg/settings.xml' % getcwd())
+settings = ParseXmlSettings('%s/cfg/settings.xml' % getcwd(),  'cmd',  1, logger.LogMain(), logger.LEVELS)
 statistics = Statistics()
 typeCheck = TypeTest('JobData')
 error = ErrorProcessingSetup('JobData')

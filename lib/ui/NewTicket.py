@@ -19,7 +19,7 @@
 
 # Form implementation generated from reading ui file 'QtDesigner/NewTicket.ui'
 #
-# Created: Fri May 21 17:13:36 2010
+# Created: Sat May 22 18:21:24 2010
 #      by: PyQt4 UI code generator 4.7.2
 #
 # WARNING! All changes made in this file will be lost!

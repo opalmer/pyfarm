@@ -29,71 +29,39 @@ from ReadSettings import ParseXmlSettings
 
 __MODULE__ = "lib.InputFlags"
 
-class CommandLineHelp(object):
-    '''Return command line usage help'''
-    def __init__(self, program):
-        self.program = program
-
-    def invalidFlag(self, error):
-        '''Tell the user that the given flag is invalid'''
-        print "ERROR: %s" % error
-        sys.exit(2)
-
-    def echo(self):
-        '''Echo the help to the command line'''
-        helpFlags = ("-h", "-?", "--help")
-        i = 0
-        out = bold(1)+"PROGRAM"+bold(0)+"\n\t%s\n" % sys.argv[0]
-        out += bold(1)+"USAGE"+bold(0)+"\n\t%s [optional flag]\n" % sys.argv[0]
-        out += bold(1)+"FLAGS"+bold(0)+"\n\t"
-        for flag in helpFlags:
-            if i < len(helpFlags)-1:
-                out += bold(1)+flag+bold(0)+", "
-            else:
-                out += bold(1)+flag+bold(0)+" >> Command line usage help (this text)\n\n\t"
-            i += 1
-
-        out += bold(1)+"--allinfo"+bold(0)+" >> Show info about PyFarm and the system it is running on (os, architecture, software, etc)\n\n\t"
-        out += bold(1)+"--sysinfo"+bold(0)+" >> Show system info only\n\n\t"
-        out += bold(1)+"--softwareinfo"+bold(0)+" >> Show installed software info only\n\n\t"
-        out += bold(1)+"--compile"+bold(0)+" >> Byte compile all of PyFarm's modules for speed\n\n\t"
-        out += bold(1)+"--clean"+bold(0)+" >> Cleanup the local PyFarm installation (byte-compiled files, tmp databases, etc)\n\n\t"
-        out += bold(1)+"--devel"+bold(0)+" >> Used to run specific development code\n\n\t"
-
-        print out
-        sys.exit(2)
-
-
 class SystemInfo(object):
     '''Gather and prepare to return info about the system'''
-    def __init__(self, version, cwd, ):
-        self.version = version
-        self.cwd = cwd
+    def __init__(self, logger, logLevels):
+        self.cwd = os.getcwd()
+        # logging setup
+        self.logger = logger
+        self.log = logger.moduleName("InputFlags.SystemInfo")
+        self.logLevels = logLevels
+        self.log.debug("SysteInfo loaded")
 
-    def all(self):
-        '''Echo the all information to the command line'''
-        out = bold(1)+"PyFarm Version:"+bold(0)+" %s" % self.version
-        out += self.system(0)
-        out += self.software(0)
+    def system(self, option=None, opt=None, value=None, parser=None):
+        '''Echo only system information to the command line'''
+        self.log.debug("Getting system info")
+        system = System(self.logger, self.logLevels)
+        out = "\nOS Type : %s" % system.os()[0]
+        out += "\nOS Architecture : %s" % system.os()[1]
+        out += "\nHostname : %s" % system.hostname()
+        out += "\nCPU Count: %s" % system.cpuCount()
+        out += "\nRAM Total: %i" % system.ramTotal()
+        self.log.log(self.logLevels["FIXME"], "Incorrect free ram value")
+        out += "\nRAM Free: %i" % system.ramFree()
+        self.log.log(self.logLevels["FIXME"], "Incorrect total swap value")
+        out += "\nSWAP Total: %i" % system.swapTotal()
+        self.log.log(self.logLevels["FIXME"], "Incorrect free swap value")
+        out += "\nSWAP Free: %i" % system.swapFree()
+        self.log.debug("Returning system info")
         print out
         sys.exit(0)
 
-    def system(self, oneShot):
-        '''Echo only system information to the command line'''
-        system = System()
-        out = bold(1)+"\nOS Type:"+bold(0)+" %s" % system.os()[0]
-        out += bold(1)+"\nOS Architecture:"+bold(0)+" %s" % system.os()[1]
-        out += bold(1)+"\nHostname:"+bold(0)+" %s" % system.hostname()
-
-        if oneShot:
-            print out
-            sys.exit(0)
-        else:
-            return out
-
-    def software(self, oneShot):
+    def software(self, option=None, opt=None, value=None, parser=None):
         '''Echo only installed software information to the command line'''
-        out = bold(1)+"\nInstalled Software: "+bold(0)
+        self.log.debug("Getting software info")
+        out = "\nInstalled Software: "+bold(0)
         count = 0
 
         # find the software and add it to the output
@@ -105,33 +73,24 @@ class SystemInfo(object):
                 out += "%s" % software
             count += 1
 
-        if oneShot:
-            print out
-            sys.exit(0)
-        else:
-            return out
+        self.log.debug("Returning software info")
+        print out
+        sys.exit(0)
 
 
 class SystemUtilities(object):
     '''General system utilities to run from the command line'''
-    def __init__(self, cwd):
-        self.cwd = cwd
+    def __init__(self, logger, logLevels):
+        self.cwd = os.getcwd()
+        # logging setup
+        self.log = logger.moduleName("InputFlags.SystemUtilities")
+        self.logLevels = logLevels
+        self.log.debug("SystemUtilities loaded")
 
-    def compile(self):
-        '''Byte compile all modules'''
-        self.clean(0)
-        print "Running compile..."
-        for f in find("*.py", self.cwd):
-             py_compile.compile(f)
-        print "...done!"
-        sys.exit(0)
-
-    def clean(self, closeProcess):
+    def clean(self, option=None, opt=None, value=None, parser=None):
         '''Cleanup any extra or byte-compiled files'''
-        print "Running clean..."
-        for pyc in find("*.pyc", self.cwd):
+        self.log.debug("Running clean")
+        for pyc in find("*.pyc", os.getcwd()):
             os.remove(pyc)
-        print "...done!"
-
-        if closeProcess:
-            sys.exit(0)
+        self.log.debug("Clean complete")
+        sys.exit(0)

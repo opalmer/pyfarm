@@ -35,7 +35,7 @@ from lib.ReadSettings import ParseXmlSettings
 
 __MODULE__ = "lib.RenderConfig"
 
-settings = ParseXmlSettings('./cfg/settings.xml',  skipSoftware=True)
+settings = ParseXmlSettings('./cfg/settings.xml',  'cmd',  1, logger.LogMain(), logger.LEVELS)
 
 class ConfigureCommand(object):
     '''Configure the input options to a viable output'''
