@@ -1,6 +1,6 @@
 '''
 HOMEPAGE: www.pyfarm.net
-INITIAL: March 22 2010
+INITIAL: May 22 2010
 PURPOSE: To provide a standard logging facility for PyFarm
 
 This file is part of PyFarm.
@@ -20,86 +20,124 @@ You should have received a copy of the GNU General Public License
 along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
-import logging
-import logging.config
+import sys
+import time
 
+__LOGLEVEL__ = 4
 __MODULE__ = "lib.Logger"
 
-# the lower the level, the more dangerous (cpu wise) it is!
-LEVELS = {
-    'CRITICAL': int(logging.CRITICAL),  # lvl 50
-    'ERROR': int(logging.ERROR), # lvl 40
-    'WARNING': int(logging.WARNING), # lvl 30
-    'FIXME' : 24,
-    'UI' : 23,
-    'NETWORK' : 22,
-    'SETTINGS' : 21,
-    'INFO': int(logging.INFO), # lvl 20
-    'NOT IMPLIMENTED' : 14,
-    'DEBUG.UI' : 13,
-    'DEBUG.NETWORK' :  12,
-    'DEBUG.SETTINGS'  : 11,
-    'DEBUG': int(logging.DEBUG), # lvl 10
-    'SQLITE' : 5,
-    'DEBUG.NETCOM' : 4,
-}
+class Logger(object):
+	'''
+	Custom logging object for PyFarm
 
-class LogMain(object):
-    '''Basic wrapper class to store and configure the log'''
-    def __init__(self):
-        self.levels = LEVELS
-        self.log = SetupLog()
+	VARS:
+		level (int) -- minimum level to log
+		solo (bool) -- If set the true only requests matching level will be served
+		logfile (str) -- file to log to
+	'''
+	def __init__(self, name, level=5, logfile=None, solo=False):
+		self.level = level
+		self.solo = solo
+		self.timeFormat = "%Y-%m-%d %H:%M:%S"
+		self.levelList = ['SQLITE','NETPACKET','QUEUE','CONDITIONAL',
+		'DEBUG','INFO','WARNING','ERROR','CRITICAL','FATAL']
 
-    def moduleName(self, name):
-        '''Set the name of the log object'''
-        return self.log.getLogger(name)
+		self.setName(name)
+		self.setLevel(level)
+
+		if logfile:
+			self.logfile = open(logfile, "a")
+		else:
+			self.logfile = None
+
+		self.debug("Logger module setup")
+
+	def _out(self, level, msg):
+		'''Perform final formatting and output the message to the appropriate locations'''
+		out = "%s - %s - %s - %s" % (time.strftime(self.timeFormat), level, self.name, msg)
+		if level in self.levels:
+			print out
+			if self.logfile:
+				self.logfile.write(out+"\n")
+				self.logfile.flush()
+
+	def close(self):
+		'''Close out the log file'''
+		self.logfile.close()
+
+	def setName(self, name):
+		'''Set the name for the logger'''
+		self.name = name
+
+	def setLevel(self, level):
+		'''Set the level and configure the level list'''
+		self.level = level
+		if not self.solo:
+			self.levels = self.levelList[self.level:]
+		else:
+			self.levels = self.levelList[self.level]
+
+	def setSolo(self, solo):
+		'''If set to 1 only the logLevel matching solo will be output'''
+		self.solo = solo
+		self.levels = self.levelList[self.solo]
+
+	def sqlite(self, msg):
+		'''Print a sqlite message'''
+		self._out(self.levelList[0], msg)
+
+	def netpacket(self, msg):
+		'''Print a netpacket message'''
+		self._out(self.levelList[1], msg)
+
+	def queue(self, msg):
+		'''Print a queue message'''
+		self._out(self.levelList[2], msg)
+
+	def conditional(self, msg):
+		'''Print a conditional message'''
+		self._out(self.levelList[3], msg)
+
+	def debug(self, msg):
+		'''Print a debug message'''
+		self._out(self.levelList[4], msg)
+
+	def info(self, msg):
+		'''Print an info message'''
+		self._out(self.levelList[5], msg)
+
+	def warning(self, msg):
+		'''Print a warning message'''
+		self._out(self.levelList[6], msg)
+
+	def error(self, msg):
+		'''Print an error message'''
+		self._out(self.levelList[7], msg)
+
+	def critital(self, msg):
+		'''Print a critical message'''
+		self._out(self.levelList[8], msg)
+
+	def fatal(self, msg):
+		'''Print a fatal error message and exit'''
+		self._out(self.levelList[9], msg)
+		sys.exit(1)
 
 
-def SetupLog(cfg="cfg/logging.ini"):
-    '''
-    Setup the main logging object, run getLogger() when ready to
-    create and use the logging object.
+if __name__ == '__MAIN__':
+	log = Logger("LogTest", __LOGLEVEL__, logfile="testlog.log")
 
-    VARIABLES:
-    level (str) -- max level to return log info for
-    module (str) -- module name log for
-    '''
-    # see http://docs.python.org/library/logging.html#logging.LogRecord
-    # for creating your own log records
-    # see http://docs.python.org/library/logging.html#configuration-file-format
-    # for configuration file format
-    logging.config.fileConfig(cfg)
-
-    # add some extra levels
-    #  you must access them with log.log(lvl, msg)
-    for name, level in LEVELS.items():
-        logging.addLevelName(level, name)
-
-    return logging
-
-# basic example usage of new logging facility
-if __name__ == "__main__":
-    import os
-    import sys
-
-    log = SetupLog()
-    log.info("Current log level is %i" % log.getEffectiveLevel())
-    log.info("This is a log message")
-    log.critical("Fail!")
-    log.debug("This is a program, I am sure of it")
-
-    # custom log levels
-    log.log(11, "Now setting a parameter")
-    log.log(21, "The parameter is")
-    log.log(12, "Now connecting to")
-    log.log(22, "Connected to")
-
-    if log.getEffectiveLevel() > EXTENDED_LEVELS["SQLITE"]:
-        log.critical("Your log level is not low level enough to handle calls from SQLITE")
-        log.info("Changing log level to %i" % EXTENDED_LEVELS["SQLITE"])
-        log.setLevel(EXTENDED_LEVELS["SQLITE"])
-        log.info("New log level set!")
-
-    # now try using low level logging
-    log.debug("Log level: %i" % EXTENDED_LEVELS["SQLITE"])
-    log.log(5, "Sqlite operation")
+	# now for a test
+	i = 0
+	while i < 1000:
+		log.sqlite("This is a sqlite message")
+		log.netpacket("This is a netpacket message")
+		log.queue("This is a queue message")
+		log.conditional("This is a conditional message")
+		log.debug("This is a debug message")
+		log.info("This is a info message")
+		log.warning("This is a warning message")
+		log.error("This is a error message")
+		log.critital("This is a critital message")
+		log.fatal("This is a fatal message")
+		i += 1
