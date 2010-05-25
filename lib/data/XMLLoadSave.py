@@ -19,7 +19,7 @@ PURPOSE: Module used to read and write XML files for the que
     You should have received a copy of the GNU General Public License
     along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 '''
-import lib.Logger as logger
+from lib.Logger import Logger
 from PyQt4.QtCore import QIODevice, QFile, QDateTime
 from PyQt4.QtCore import QString, QXmlStreamWriter, QXmlStreamReader
 
@@ -179,4 +179,3 @@ class LoadQueFromXML(object):
                     self.addFromXML(job, subjob["subid"], subjob["status"], subjob["priority"], frame["num"], frame["id"],
                                         frame["status"], frame["log"], frame["pid"], frame["elapsed"], frame["start"],
                                         frame["end"], frame["host"], frame["software"], frame["command"])
-

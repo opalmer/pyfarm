@@ -24,14 +24,14 @@ from PyQt4.QtGui import QMessageBox
 from PyQt4.QtCore import QThread, QString, QObject, SIGNAL
 
 # From PyFarm
-import lib.Logger as logger
+from lib.Logger import Logger
 from lib.network.Admin import AdminClient
 from lib.ReadSettings import ParseXmlSettings
 from lib.PyFarmExceptions import ErrorProcessingSetup
 
 __MODULE__ =  "lib.ui.main.CloseEvent"
-
-settings = ParseXmlSettings('./cfg/settings.xml',  'cmd',  1, logger.LogMain(), logger.LEVELS)
+__LOGLEVEL__ = 4
+settings = ParseXmlSettings('./cfg/settings.xml',  'cmd',  skipSoftware=True)
 
 class CloseEventManager(QObject):
     '''

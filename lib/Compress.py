@@ -21,7 +21,7 @@ along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
 import zlib
-import lib.Logger as logger
+from lib.Logger import Logger
 
 __MODULE__ = "lib.Compress"
 

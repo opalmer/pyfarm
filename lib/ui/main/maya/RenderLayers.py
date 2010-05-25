@@ -22,7 +22,7 @@ PURPOSE: Main program to run and manage PyFarm
 # From PyQt
 from PyQt4.QtCore import QThread, QRegExp, QString
 
-import lib.Logger as logger
+from lib.Logger import Logger
 
 __MODULE__ = "lib.ui.main.maya.RenderLayers"
 

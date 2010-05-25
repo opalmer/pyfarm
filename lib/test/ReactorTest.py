@@ -1,4 +1,4 @@
-import lib.Logger as logger
+from lib.Logger import Logger
 from twisted.internet import reactor, protocol
 
 class QuickDisconnectProtocol(protocol.Protocol):

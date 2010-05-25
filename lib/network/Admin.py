@@ -25,12 +25,13 @@ from PyQt4.QtCore import SIGNAL, QDataStream, QByteArray, QIODevice, SLOT
 from PyQt4.QtNetwork import QAbstractSocket, QTcpSocket, QTcpServer
 
 # From PyFarm
-import lib.Logger as logger
+from lib.Logger import Logger
 from lib.ReadSettings import ParseXmlSettings
 
 __MODULE__ = "lib.network.Admin"
+__LOGLEVEL__ = 4
 
-settings = ParseXmlSettings('./cfg/settings.xml',  'cmd',  0, logger.LogMain(), logger.LEVELS)
+settings = ParseXmlSettings('./cfg/settings.xml',  'cmd',  skipSoftware=False)
 
 UNIT16 = 8
 

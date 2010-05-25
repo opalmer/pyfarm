@@ -23,21 +23,18 @@ PURPOSE: Small library for discovering system info and installed software
 import os, sys, py_compile, fnmatch
 
 # From PyFarm
-import lib.Logger as logger
+from lib.Logger import Logger
 from Info import System, bold, find
 from ReadSettings import ParseXmlSettings
 
 __MODULE__ = "lib.InputFlags"
+__LOGLEVEL__ = 4
 
 class SystemInfo(object):
     '''Gather and prepare to return info about the system'''
-    def __init__(self, logger, logLevels):
+    def __init__(self):
         self.cwd = os.getcwd()
-        # logging setup
-        self.logger = logger
-        self.log = logger.moduleName("InputFlags.SystemInfo")
-        self.logLevels = logLevels
-        self.log.debug("SysteInfo loaded")
+        self.log = Logger("InputFlags.SystemInfo", __LOGLEVEL__)
 
     def system(self, option=None, opt=None, value=None, parser=None):
         '''Echo only system information to the command line'''
@@ -80,12 +77,9 @@ class SystemInfo(object):
 
 class SystemUtilities(object):
     '''General system utilities to run from the command line'''
-    def __init__(self, logger, logLevels):
+    def __init__(self):
         self.cwd = os.getcwd()
-        # logging setup
-        self.log = logger.moduleName("InputFlags.SystemUtilities")
-        self.logLevels = logLevels
-        self.log.debug("SystemUtilities loaded")
+        self.log = Logger("InputFlags.SystemUtilities", __LOGLEVEL__)
 
     def clean(self, option=None, opt=None, value=None, parser=None):
         '''Cleanup any extra or byte-compiled files'''

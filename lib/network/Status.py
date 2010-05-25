@@ -27,11 +27,11 @@ from PyQt4.QtNetwork import QTcpServer, QTcpSocket
 from PyQt4.QtNetwork import QAbstractSocket
 
 # From PyFarm
-import lib.Logger as logger
+from lib.Logger import Logger
 from lib.ReadSettings import ParseXmlSettings
 
 __MODULE__ = "lib.network.Status"
-settings = ParseXmlSettings('./cfg/settings.xml',  'cmd',  1, logger.LogMain(), logger.LEVELS)
+settings = ParseXmlSettings('./cfg/settings.xml',  'cmd',  skipSoftware=True)
 UNIT16 = 8
 
 class StatusServerThread(QThread):
@@ -136,10 +136,8 @@ class StatusServer(QTcpServer):
     def __init__(self, dataJob, dataGeneral, logger, logLevels, parent=None):
         super(StatusServer, self).__init__(parent)
         # setup logging
-        self.log = logger.moduleName("Status.StatusServer")
+        self.log = Logger("Status.StatusServer", __LOGLEVEL__)
         self.log.debug("StatusServer loaded")
-        self.logLevels = logLevels
-
         self.dataJob = dataJob
         self.dataGeneral = dataGeneral
         self.log.log(self.logLevels["DEBUG.NETWORK"], "Data structure assigned")

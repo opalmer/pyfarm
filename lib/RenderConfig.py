@@ -30,12 +30,12 @@ from PyQt4.QtCore import QThread, QObject, QRegExp, SIGNAL, SLOT, QDir
 
 # From PyFarm
 from lib import Info
-import lib.Logger as logger
+from lib.Logger import Logger
 from lib.ReadSettings import ParseXmlSettings
 
 __MODULE__ = "lib.RenderConfig"
 
-settings = ParseXmlSettings('./cfg/settings.xml',  'cmd',  1, logger.LogMain(), logger.LEVELS)
+settings = ParseXmlSettings('./cfg/settings.xml')
 
 class ConfigureCommand(object):
     '''Configure the input options to a viable output'''

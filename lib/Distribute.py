@@ -28,16 +28,16 @@ from os.path import dirname
 from PyQt4.QtCore import SIGNAL, QObject, QThread, QDir
 
 # From PyFarm
-import lib.Logger as logger
+from lib.Logger import Logger
 from lib.network.Que import QueClient
 from lib.ReadSettings import ParseXmlSettings
 
 __MODULE__ = "lib.Distribute"
+__LOGLEVEL__ = 4
 
 wd = dirname(str(QDir(sys.argv[0]).canonicalPath()))
 QDir().setCurrent(wd)
-settings = ParseXmlSettings('./cfg/settings.xml',  'log',  1, logger.LogMain(), logger.LEVELS)
-log = settings.log
+settings = ParseXmlSettings('./cfg/settings.xml',  'log',  skipSoftware=True)
 
 class EstablishConnection(QThread):
     '''Used to thread the client connection process, to prevent gui lag'''

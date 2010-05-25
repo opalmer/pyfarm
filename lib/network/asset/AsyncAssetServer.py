@@ -44,7 +44,7 @@ tended to hang below 10% processor utilization.
 
 There exists a live host running this web server: nada.ics.uci.edu
 '''
-import lib.Logger as logger
+from lib.Logger import Logger
 import asynchat, asyncore, socket, SimpleHTTPServer
 import sys, cgi, cStringIO, os, traceback, zlib
 

@@ -20,7 +20,7 @@ PURPOSE: Module used to handle error processing for PyFarm
     along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
-import lib.Logger as logger
+from lib.Logger import Logger
 
 __MODULE__ = "lib.PyFarmExceptions"
 

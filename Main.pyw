@@ -21,7 +21,11 @@ PURPOSE: Main program to run and manage PyFarm
     along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
+__DEVELOPER__ = 'Oliver Palmer'
+__HOMEPAGE__ = 'http://www.pyfarm.net'
+__VERSION__ = '0.5.2xx'
 __MODULE__ = "Main.pyw"
+__LOGLEVEL__ = 4
 
 # From Python
 import sys, getopt
@@ -47,18 +51,16 @@ QDir().setCurrent(wd)
 
 # From PyFarm
 ## settings first
-import lib.Logger
+from lib.Logger import Logger
 from lib.RenderConfig import *
 from lib.ReadSettings import ParseXmlSettings
 import lib.network.QtReactor
 
-# setup logging
-logMain = lib.Logger.LogMain()
-log = logMain.moduleName(__MODULE__)  # the logger for THIS module
-LOG_LEVELS = lib.Logger.LEVELS
+# sestup logging
+log = Logger(__MODULE__, __LOGLEVEL__)
 
 # apply settings
-settings = ParseXmlSettings('./cfg/settings.xml', 'gui',0, logMain, LOG_LEVELS)
+settings = ParseXmlSettings('./cfg/settings.xml', 'gui',skipSoftware=False)
 
 import lib.Info as Info
 import lib.InputFlags
@@ -77,11 +79,6 @@ from lib.network.JobLogging import UdpLoggerServer
 from lib.ui.main.job.table.JobTableManager import JobTableManager
 log.debug("Modules imported")
 
-__DEVELOPER__ = 'Oliver Palmer'
-__HOMEPAGE__ = 'http://www.pyfarm.net'
-__VERSION__ = '0.5.2xx'
-__DOCS__ = '%s/wiki' % __HOMEPAGE__
-__WIKI__ = __DOCS__
 __UUID__ = QUuid().createUuid()
 
 class Main(QMainWindow):
@@ -121,7 +118,7 @@ class Main(QMainWindow):
         self.dataGeneral = GeneralManager(self.ui, __VERSION__)
         self.hostname = str(QHostInfo.localHostName())
         self.tableManager = JobTableManager(self)
-        self.softwareManager = SoftwareContextManager(self, logMain, LOG_LEVELS)
+        self.softwareManager = SoftwareContextManager(self)
         self.submitJob = SubmitManager(self)
         self.ip = str(QHostInfo.fromName(self.hostname).addresses()[0].toString())
         self.msg = MessageBox(self)
@@ -711,8 +708,8 @@ class Main(QMainWindow):
 ################################
 
 if __name__ != '__MAIN__':
-    sysUtil = lib.InputFlags.SystemUtilities(logMain, LOG_LEVELS)
-    sysInfo = lib.InputFlags.SystemInfo(logMain, LOG_LEVELS)
+    sysUtil = lib.InputFlags.SystemUtilities()
+    sysInfo = lib.InputFlags.SystemInfo()
 
     # command line opton parsing
     from optparse import OptionParser

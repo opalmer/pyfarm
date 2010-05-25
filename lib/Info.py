@@ -40,10 +40,11 @@ finally:
     from PyQt4.QtCore import QObject, QThread
 
     # From PyFarm
-    import lib.Logger as logger
+    from lib.Logger import Logger
     from PyFarmExceptions import ErrorProcessingSetup
 
 __MODULE__ = "lib.Info"
+__LOGLEVEL__ = 4
 
 def Int2Time(s):
         '''Given an input integer, return time elapsed'''
@@ -86,13 +87,9 @@ def find(match, root):
 
 class System(object):
     '''Return important information about the system'''
-    def __init__(self, logger, logLevels):
+    def __init__(self):
+        self.log = Logger("Info.System")
         self.memInfo = {}
-        # logging setup
-        self.log = logger.moduleName("Info.System")
-        self.logLevels = logLevels
-
-        self.log.debug("Getting memory stats")
         # get memory information
         line = 0
         for text in open("/proc/meminfo", "r"):

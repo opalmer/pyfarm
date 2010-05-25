@@ -24,11 +24,12 @@ from PyQt4.QtCore import QString, QDir
 from PyQt4.QtGui import QColor
 
 # From PyFarm
-import lib.Logger as logger
+from lib.Logger import Logger
 from lib.ReadSettings import ParseXmlSettings
-settings = ParseXmlSettings('./cfg/settings.xml',  'cmd',  1, logger.LogMain(), logger.LEVELS)
+settings = ParseXmlSettings('./cfg/settings.xml',  'cmd',  skipSoftware=True)
 
 __MODULE__ = "lib.ui.main.Status"
+__LOGLEVEL__ = 4
 
 class PyFarm(object):
     '''Manager for the PyFarm status section'''

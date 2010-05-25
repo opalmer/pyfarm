@@ -36,7 +36,7 @@ except ImportError:
 # From PyQt
 from PyQt4.QtCore import QThread
 
-import lib.Logger as logger
+from lib.Logger import Logger
 
 __version__ = "0.3"
 

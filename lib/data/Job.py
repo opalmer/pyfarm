@@ -28,7 +28,7 @@ from os import getcwd
 from PyQt4.QtCore import QDateTime, QFile, QIODevice, QTextStream, QDir
 
 # From PyFarm
-import lib.Logger as logger
+from lib.Logger import Logger
 from lib.ReadSettings import ParseXmlSettings
 from lib.Info import Statistics, TypeTest, Int2Time
 from lib.PyFarmExceptions import ErrorProcessingSetup
@@ -36,8 +36,9 @@ from lib.RenderConfig import ConfigureCommand
 from lib.ui.main.Status import StatusManager
 
 __MODULE__ = "lib.data.Job"
+__LOGLEVEL__ = 4
 
-settings = ParseXmlSettings('%s/cfg/settings.xml' % getcwd(),  'cmd',  1, logger.LogMain(), logger.LEVELS)
+settings = ParseXmlSettings('%s/cfg/settings.xml' % getcwd(),  'cmd',  skipSoftware=True)
 statistics = Statistics()
 typeCheck = TypeTest('JobData')
 error = ErrorProcessingSetup('JobData')

@@ -36,7 +36,7 @@ wd = dirname(str(QDir(sys.argv[0]).canonicalPath()))
 QDir().setCurrent(wd)
 
 # From PyFarm
-import lib.Logger as logger
+from lib.Logger import Logger
 from lib.Info import System
 from lib.network.Utils import GetLocalIP
 from lib.network.Status import StatusClient

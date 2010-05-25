@@ -25,11 +25,12 @@ import sys
 from os.path import basename, dirname
 
 # From PyQt
-import lib.Logger as logger
+from lib.Logger import Logger
 from PyQt4.QtGui import QFileDialog
 from PyQt4.QtCore import QString, QFileInfo, QDir
 
 __MODULE__ = "lib.ui.main.Software"
+__LOGLEVEL__ = 4
 
 wd = dirname(str(QDir(sys.argv[0]).canonicalPath()))
 QDir().setCurrent(wd)
@@ -39,7 +40,7 @@ from lib.ReadSettings import ParseXmlSettings
 from lib.ui.main.CustomWidgets import MessageBox
 from lib.ui.main.maya.RenderLayers import MayaCamAndLayers
 
-settings = ParseXmlSettings('./cfg/settings.xml',  'cmd',  1, logger.LogMain(), logger.LEVELS)
+settings = ParseXmlSettings('./cfg/settings.xml',  'cmd',  skipSoftware=True)
 log = settings.log
 
 
@@ -48,15 +49,11 @@ class SoftwareContextManager(object):
     Manages the input of files and parameters basd on the current
     software selection.
     '''
-    def __init__(self, parentClass, logger, LOG_LEVELS):
+    def __init__(self, parentClass):
         self.ui = parentClass.ui
         self.contextMenu = parentClass.ui.softwareSelection
         self.msg = MessageBox(parentClass)
-
-        # setup logging
-        self.log = logger.moduleName("Software.SoftwareContextManager")
-        self.log.debug("SoftwareContextManager loaded")
-        self.logLevels = LOG_LEVELS
+        self.log = Logger("Software.SoftwareContextManager", __LOGLEVEL__)
 
     def commonName(self):
         '''

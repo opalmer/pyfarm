@@ -24,13 +24,14 @@ from PyQt4.QtGui import QColor, QPushButton
 from PyQt4.QtCore import Qt, QString, QAbstractTableModel, QModelIndex, QVariant, QTime
 
 # From PyFarm
-import lib.Logger as logger
+from lib.Logger import Logger
 from lib.Info import Int2Time
 from lib.ReadSettings import ParseXmlSettings
 
 __MODULE__ = "lib.ui.main.job.table.JobDetailsTableModel"
+__LOGLEVEL__ = 4
 
-settings = ParseXmlSettings('./cfg/settings.xml',  'cmd',  1, logger.LogMain(), logger.LEVELS)
+settings = ParseXmlSettings('./cfg/settings.xml',  'cmd',  skipSoftware=True)
 SUBJOB, STATUS, UID, FRAME, START, END, ELAPSED, HOST, PID, SOFTWARE, COMMAND = range(11)
 
 class FrameEntry(object):

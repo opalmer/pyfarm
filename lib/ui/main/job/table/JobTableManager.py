@@ -26,15 +26,16 @@ from PyQt4.QtGui import QProgressBar, QDialog, QMainWindow, QBrush, QColor
 from PyQt4.QtGui import QTableWidgetItem, QTableWidgetSelectionRange, QPushButton
 
 # From PyFarm
-import lib.Logger as logger
+from lib.Logger import Logger
 from lib.ui.JobDetails import Ui_JobDetails
 from lib.ui.LogViewer import Ui_LogViewer
 from lib.ReadSettings import ParseXmlSettings
 from lib.ui.main.job.table.JobDetailsTableModel import JobDetailsTableModel
 
 __MODULE__ = "lib.ui.main.job.table.JobTableManager"
+__LOGLEVEL__ = 4
 
-settings = ParseXmlSettings('./cfg/settings.xml',  'cmd',  1, logger.LogMain(), logger.LEVELS)
+settings = ParseXmlSettings('./cfg/settings.xml',  'cmd',  skipSoftware=True)
 SUBJOB, STATUS, UID, FRAME, START, END, ELAPSED, HOST, PID, SOFTWARE, COMMAND = range(11)
 
 class JobStatusObject(object):

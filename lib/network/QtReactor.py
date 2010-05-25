@@ -31,7 +31,7 @@ from twisted.python import log, failure
 from twisted.internet import posixbase
 
 # PyFarm Imports
-import lib.Logger as logger
+from lib.Logger import Logger
 
 
 

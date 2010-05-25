@@ -25,11 +25,12 @@ from PyQt4.QtCore import  QString, QObject, SIGNAL, QByteArray
 from PyQt4.QtNetwork import QHostAddress, QUdpSocket
 
 # From PyFarm
-import lib.Logger as logger
+from lib.Logger import Logger
 from lib.ReadSettings import ParseXmlSettings
 
 __MODULE__ = "lib.network.JobLogging"
-settings = ParseXmlSettings('./cfg/settings.xml',  'cmd',  0, logger.LogMain(), logger.LEVELS)
+__LOGLEVEL__ = 4
+settings = ParseXmlSettings('./cfg/settings.xml',  'cmd',  skipSoftware=False)
 UNIT16 = 8
 
 class UdpLoggerClient(QObject):

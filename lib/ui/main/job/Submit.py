@@ -24,7 +24,7 @@ from os.path import isfile
 
 # From PyFarm
 from lib import Info
-import lib.Logger as logger
+from lib.Logger import Logger
 from lib.data.Job import JobManager
 from lib.ReadSettings import ParseXmlSettings
 from lib.RenderConfig import ConfigureCommand
@@ -32,8 +32,9 @@ from lib.ui.main.CustomWidgets import MessageBox
 from lib.Distribute import DistributeFrames
 
 __MODULE__ = "lib.ui.main.job.Submit"
+__LOGLEVEL__ = 4
 
-settings = ParseXmlSettings('./cfg/settings.xml',  'cmd',  1, logger.LogMain(), logger.LEVELS)
+settings = ParseXmlSettings('./cfg/settings.xml',  'cmd',  skipSoftware=True)
 
 class SubmitManager(object):
     '''

@@ -30,7 +30,7 @@ from PyQt4.QtGui import QFont, QVBoxLayout, QGridLayout
 from PyQt4.QtCore import SIGNAL, SLOT, QString, QObject
 
 # From PyFarm
-import lib.Logger as logger
+from lib.Logger import Logger
 from lib.ui.HostInfo import Ui_HostInfo
 
 __MODULE__ = "lib.ui.main.CustomWidgets"

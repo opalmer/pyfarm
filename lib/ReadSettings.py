@@ -31,10 +31,11 @@ from PyQt4.QtCore import QRegExp, QVariant
 
 # From PyFarm
 import Info
-import lib.Logger as logger
+from lib.Logger import Logger
 from PyFarmExceptions import ErrorProcessingSetup
 
 __MODULE__ = "lib.ReadSettings"
+__LOGLEVEL__ = 4
 
 class SoftwareSearch(object):
     '''
@@ -42,13 +43,10 @@ class SoftwareSearch(object):
         Used to find and relay information about the currently installed
         software to the xml parser
     '''
-    def __init__(self, logger, logLevels):
+    def __init__(self):
         self.modName = 'ReadSettings.SoftwareSearch'
-        # logging setup
-        self.logger = logger
-        self.log = logger.moduleName("ReadSettings.SoftwareSearch")
-        self.logLevels = logLevels
-        self.os = Info.System(logger, logLevels).os()[0]
+        self.log = Logger(self.modName)
+        self.os = Info.System().os()[0]
         self.log.debug("SoftwareSearch loaded")
 
     def _findProgram(self, expession, path, rendererSearch, expCapStart, programName):
@@ -138,13 +136,10 @@ class ParseXmlSettings(object):
     INPUT:
         self.doc (str) -- The xml self.document to read from
     '''
-    def __init__(self, doc, type, skipSoftware, logger, logLevels):
+    def __init__(self, doc, type='cmd', skipSoftware=True):
+        self.log = Logger("ReadSettings.ParseXmlSettings", __LOGLEVEL__)
         # old input vals: type='cmd', skipSoftware=False
         self.error = ErrorProcessingSetup('ReadSettings.XmlSettings')
-        # logging setup
-        self.logger = logger
-        self.log = logger.moduleName("ReadSettings.ParseXmlSettings")
-        self.logLevels = logLevels
 
         # check for xml formatting errors
         try:
@@ -157,7 +152,7 @@ class ParseXmlSettings(object):
             self.error.xmlFormattingError(doc, error)
 
         if type != 'log':
-            self.os = Info.System(logger, logLevels).os()[0]
+            self.os = Info.System().os()[0]
             # setup dictionaries
             self.netPorts = self._netPort()
             self.netGen = self._netGeneral()
@@ -219,7 +214,7 @@ class ParseXmlSettings(object):
         Find the currently installed software and add it
         to the software dictionary
         '''
-        software_installed = SoftwareSearch(self.logger, self.logLevels)
+        software_installed = SoftwareSearch()
         for parent in self._getElement(self.doc, 'software'):
             for search in self._getElement(parent, 'search'):
                 if search.getAttribute('os') == self.os:

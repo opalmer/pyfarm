@@ -24,7 +24,7 @@ data dictionary
 from os import getcwd, getpid
 
 # From PyFarm
-import lib.Logger as logger
+from lib.Logger import Logger
 from lib.Info import TypeTest
 from lib.ui.main.CloseEvent import CloseEventManager
 from lib.ui.main.Status import StatusManager
@@ -35,9 +35,10 @@ from lib.ui.main.NetworkTableManager import NetworkTableManager
 from PyQt4.QtGui import QMessageBox
 
 __MODULE__ = "lib.data.General"
+__LOGLEVEL__ = 4
 
 typeCheck = TypeTest('JobData')
-settings = ParseXmlSettings('%s/cfg/settings.xml' % getcwd(),  'cmd',  1, logger.LogMain(), logger.LEVELS)
+settings = ParseXmlSettings('%s/cfg/settings.xml' % getcwd(),  'cmd',  skipSoftware=True)
 
 class GeneralHostManager(object):
     '''

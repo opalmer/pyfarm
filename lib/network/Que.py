@@ -25,14 +25,15 @@ from PyQt4.QtCore import QThread, QProcess
 from PyQt4.QtCore import SIGNAL, SLOT, QByteArray, QDataStream, QString, QIODevice
 
 # From PyFarm
-import lib.Logger as logger
+from lib.Logger import Logger
 from lib.network.Status import StatusClient
 from lib.network.JobLogging import UdpLoggerClient
 from lib.ReadSettings import ParseXmlSettings
 
 __MODULE__ = "lib.network.Que"
+__LOGLEVEL__ = 4
 
-settings = ParseXmlSettings('./cfg/settings.xml',  'cmd',  0, logger.LogMain(), logger.LEVELS)
+settings = ParseXmlSettings('./cfg/settings.xml',  'cmd',  skipSoftware=False)
 
 UNIT16 = 8
 

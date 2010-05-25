@@ -25,13 +25,13 @@ from PyQt4.QtNetwork import QUdpSocket, QHostAddress
 from PyQt4.QtCore import QThread, QByteArray, QTimer, QString, SIGNAL
 
 # From PyFarm
-import lib.Logger as logger
+from lib.Logger import Logger
 from lib.ReadSettings import ParseXmlSettings
 
 __MODULE__ = "lib.network.Broadcast"
+__LOGLEVEL__ = 4
 
-settings = ParseXmlSettings('./cfg/settings.xml',  'cmd',  1, logger.LogMain(), logger.LEVELS)
-import lib.Logger as logger
+settings = ParseXmlSettings('./cfg/settings.xml',  'cmd',  skipSoftware=True)
 
 class BroadcastSender(QThread):
     '''Class to send broadcast signals to client network'''

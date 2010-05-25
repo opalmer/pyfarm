@@ -20,7 +20,7 @@ PURPOSE: To manage the network table and display relevant data
     along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 '''
 from PyQt4.QtGui import QTableWidgetItem
-import lib.Logger as logger
+from lib.Logger import Logger
 from lib.network.Utils import ResolveHost
 from lib.ui.main.CloseEvent import CloseEventManager
 from lib.ui.main.CustomWidgets import HostStatus
