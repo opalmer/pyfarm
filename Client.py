@@ -31,6 +31,7 @@ from PyQt4.QtCore import QCoreApplication, SIGNAL, SLOT
 from PyQt4.QtNetwork import QHostInfo, QHostAddress
 
 __MODULE__ = "Client.py"
+__LOGLEVEL__ = 4
 
 wd = dirname(str(QDir(sys.argv[0]).canonicalPath()))
 QDir().setCurrent(wd)
@@ -45,17 +46,8 @@ from lib.network.Admin import AdminServer
 from lib.ReadSettings import ParseXmlSettings
 from lib.network.Broadcast import BroadcastReceiever
 
-settings = ParseXmlSettings('./cfg/settings.xml',  'cmd',  1, logger.LogMain(), logger.LEVELS)
-
-# setup logging
-logging = logger.SetupLog()
-logger = {
-    'logging' : logging,
-    'levels' :  logger.LEVELS,
-    'level' :  logger.LEVELS["INFO"] # global level override
-}
-log = logging.getLogger(__MODULE__) # the logger for THIS module
-#log.setLevel(logger["level"]) # set the logging level for this module (carefull!)
+settings = ParseXmlSettings('./cfg/settings.xml',  'cmd',  skipSoftware=True)
+log = Logger(__MODULE__, __LOGLEVEL__)
 
 class BroadcastManager(object):
     def __init__(self):
@@ -117,6 +109,8 @@ class ServerManager(object):
                       "que" : self.que,
                       }
 
+        log.netserver("ServerManager Running")
+
 
 class Main(QObject):
     def __init__(self, parent=None):
@@ -125,12 +119,14 @@ class Main(QObject):
         self.hostname = ''
         self.ip = ''
         self.sysInfo = ''
-
         self.rendered = 0
         self.failed = 0
         self.software = {}
         self.servers = ServerManager()
         self.session = None
+        log.debug("Client Initiated")
+        self.logAdmin = Logger("AdminServer")
+        self.logQueue = Logger("Queue")
 
     def setVarDefaults(self):
         '''Return the input vars to their initial states'''
@@ -158,8 +154,8 @@ class Main(QObject):
         if self.uniqueSession(data[0]):
             ip = data[1]
             if ip != self.master:
-                log.log(logger["levels"]["DEBUG.NETWORK"],  "Incoming Broadcast")
-                log.log(logger["levels"]["NETWORK"],  "Receieved master address: %s" % ip)
+                log.netserver("Incoming Broadcast")
+                log.netserver("Receieved master address: %s" % ip)
                 self.master = ip
                 self.hostname = str(QHostInfo.localHostName())
                 self.ip = GetLocalIP(self.master)
@@ -167,7 +163,7 @@ class Main(QObject):
                 self.sendStatus()
                 self.initial = int(time())
             elif ip == self.master:
-                log.log(logger["levels"]["DEBUG.NETWORK"],  "Incoming Broadcast")
+                log.netserver("Incoming Broadcast")
                 self.sendStatus()
 
     def uniqueSession(self, uuid):
@@ -207,24 +203,25 @@ class Main(QObject):
 
         if not self.admin.listen(QHostAddress('0.0.0.0'), settings.netPort('admin')):
             if self.servers.admin.running:
-                log("PyFarm :: AdminServer :: Server is already running", 'warning')
+                self.logAdmin.warning("Server is already running")
             else:
-                log("PyFarm :: AdminServer :: Could not start the server: %s" % self.admin.errorString(), 'error')
-            log("PyFarm :: AdminServer :: Server running",'standard')
+                self.logAdmin.error("Could not start the server: %s" % self.admin.errorString())
+            self.logAdmin.netserver("Server is running")
         else:
             self.servers.admin.setRunning(self.admin)
-            log("PyFarm :: AdminServer :: Waiting for signals...", 'debug')
+            self.logAdmin.netserver("Waiting for signals...")
 
         # start the que server
         self.que = QueSlaveServer(self.master, parent=self)
+
         if not self.que.listen(QHostAddress('0.0.0.0'), settings.netPort('que')):
             if self.servers.que.running:
-                log("PyFarm :: QueSlave :: Server is already running", 'warning')
+                self.logQueue.warning("Server is already running")
             else:
-                log("PyFarm :: QueSlave :: Could not start the server: %s" % self.que.errorString(), 'error')
+                self.logQueue.error("Could not start the server: %s" % self.que.errorString())
         else:
             self.servers.que.setRunning(self.que)
-            log("PyFarm :: QueSlave :: Server running...", 'standard')
+            self.logQueue.debug("Server is running")
 
     def shutdownServers(self):
         '''Calls the shutdown function all all servers'''
@@ -236,19 +233,21 @@ class Main(QObject):
 
     def restart(self):
         '''Close all connections and restart the client'''
-        log("PyFarm :: Client :: Restarting client", 'standard')
+        log.info("Restarting client")
         self.shutdownServers()
         self.setVarDefaults()
-        log("PyFarm :: BroadcastReceiever :: Listening for broadcast", 'standard')
-        log("PyFarm :: Client :: Restart sequence complete", 'standard')
+        log.netserver("Listening for broadcast")
+        log.debug("Restart sequence complete")
 
     def shutdown(self):
         '''Close all connections and shutdown the client'''
-        log("PyFarm :: Client :: Got shutdown signal from Admin Server", 'standard')
+        log.warning("Got shutdown signal from admin server")
         self.shutdownServers()
-        sys.exit("PyFarm :: Client :: Client Shutdown by Admin")
+        log.fatal("Client shutdown by admin")
 
+log.debug("Starting QCoreApplication")
 app = QCoreApplication(sys.argv)
 main = Main(app)
 main.listenForBroadcast()
+log.debug("Client Running")
 app.exec_()

@@ -41,8 +41,6 @@ from lib.ui.main.CustomWidgets import MessageBox
 from lib.ui.main.maya.RenderLayers import MayaCamAndLayers
 
 settings = ParseXmlSettings('./cfg/settings.xml',  'cmd',  skipSoftware=True)
-log = settings.log
-
 
 class SoftwareContextManager(object):
     '''

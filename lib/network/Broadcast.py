@@ -81,7 +81,8 @@ class BroadcastReceiever(QThread):
     def __init__(self, parent=None):
         super(BroadcastReceiever, self).__init__(parent)
         self.modName = 'BroadcastReceiever'
-        log("PyFarm :: %s :: Listening for broadcast" % self.modName, 'standard')
+        self.log = Logger("Broadcast.BroadcastReceiever")
+        self.log.netserver("Listening for broadcast")
 
     def readIncomingBroadcast(self):
         '''Read the incoming host ip and emit it to the client'''

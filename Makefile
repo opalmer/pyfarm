@@ -26,3 +26,6 @@ profile:
 	rm -f logs/profile.log
 	mkdir -p logs
 	python -m cProfile Main.pyw > logs/profile.log
+
+testing:
+	rsync -ruvph ~/pyfarm /farm/ --exclude=*.git* --exclude=*.pyc --exclude=QtDesigner* --exclude=.eric* --exclude=*log* --exclude=*.txt --exclude=*GNU*
