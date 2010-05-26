@@ -25,7 +25,7 @@ __DEVELOPER__ = 'Oliver Palmer'
 __HOMEPAGE__ = 'http://www.pyfarm.net'
 __VERSION__ = '0.5.2xx'
 __MODULE__ = "Main.pyw"
-__LOGLEVEL__ = 4
+__LOGLEVEL__ = 2
 
 # From Python
 import sys, getopt
@@ -139,20 +139,20 @@ class Main(QMainWindow):
 
         # network server setup
         ## status server setup
-        self.statusServer = StatusServer(self.dataJob, self.dataGeneral, logMain, LOG_LEVELS)
+        self.statusServer = StatusServer(self.dataJob, self.dataGeneral)
         self.connect(self.statusServer, SIGNAL('INIT'), self.initHost)
         self.connect(self.statusServer, SIGNAL('FRAME_COMPLETE'), self.frameComplete)
         self.connect(self.statusServer, SIGNAL('FRAME_FAILED'), self.frameFailed)
 
         ## log server setup
-        self.logServer = UdpLoggerServer(logMain, LOG_LEVELS)
+        self.logServer = UdpLoggerServer()
         self.connect(self.logServer, SIGNAL("incoming_line"), self.processLogLine)
 
         # start the servers
         if not self.statusServer.listen(QHostAddress('0.0.0.0'), settings.netPort('status')):
             log.exception("Could not start StatusServer: %s" % self.statusServer.errorString())
         else:
-            log.log(LOG_LEVELS["NETWORK"], "Status server running on port %s" % settings.netPort('status'))
+            log.netserver("Status server running on port %s" % settings.netPort('status'))
 
         # setup some basic colors
         self.red = QColor(255, 0, 0)
@@ -698,11 +698,11 @@ class Main(QMainWindow):
                 closeEventManager.restartHosts()
 
             elif exit_dialog == QMessageBox.Help:
-                log.log(logger["levels"]["DEBUG.UI"], "closeEvent() - Presenting host help")
+                log.ui("closeEvent() - Presenting host help")
                 closeEventManager.exitHelp()
                 self.closeEvent(self)
         else:
-            log.log(LOG_LEVELS["DEBUG.NETWORK"], "closeEvent() - No hosts to shutdown")
+            log.network("closeEvent() - No hosts to shutdown")
 ################################
 ## END General Utilities
 ################################
@@ -724,10 +724,9 @@ if __name__ != '__MAIN__':
 
     app = QApplication(sys.argv)
     main = Main()
-    log.log(LOG_LEVELS["DEBUG.UI"], "Showing UI...")
+    log.ui("Showing UI...")
     main.show()
-    log.log(LOG_LEVELS["DEBUG.UI"],  "UI active!")
+    log.ui("UI active!")
     sys.exit(app.exec_())
 else:
-    log.critical("This program is not meant to be imported!")
-    sys.exit(1)
+    log.fatal("This program is not meant to be imported!")

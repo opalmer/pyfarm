@@ -105,8 +105,6 @@ class System(object):
                 self.memInfo["swapFree"] = value
             line += 1
 
-        self.log.debug("Info.System loaded")
-
     def time(self, format ):
         '''Return the current system time to the user'''
         return time.strftime("%d %b %Y %H:%M:%S")

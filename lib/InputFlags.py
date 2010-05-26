@@ -39,17 +39,17 @@ class SystemInfo(object):
     def system(self, option=None, opt=None, value=None, parser=None):
         '''Echo only system information to the command line'''
         self.log.debug("Getting system info")
-        system = System(self.logger, self.logLevels)
+        system = System()
         out = "\nOS Type : %s" % system.os()[0]
         out += "\nOS Architecture : %s" % system.os()[1]
         out += "\nHostname : %s" % system.hostname()
         out += "\nCPU Count: %s" % system.cpuCount()
         out += "\nRAM Total: %i" % system.ramTotal()
-        self.log.log(self.logLevels["FIXME"], "Incorrect free ram value")
+        self.log.fixme("Incorrect free ram value")
         out += "\nRAM Free: %i" % system.ramFree()
-        self.log.log(self.logLevels["FIXME"], "Incorrect total swap value")
+        self.log.fixme("Incorrect total swap value")
         out += "\nSWAP Total: %i" % system.swapTotal()
-        self.log.log(self.logLevels["FIXME"], "Incorrect free swap value")
+        self.log.fixme("Incorrect free swap value")
         out += "\nSWAP Free: %i" % system.swapFree()
         self.log.debug("Returning system info")
         print out
@@ -62,13 +62,16 @@ class SystemInfo(object):
         count = 0
 
         # find the software and add it to the output
-        self.software = ParseXmlSettings('./cfg/settings.xml').installedSoftware()
-        for software in self.software:
-            if count < len(self.software)-1:
-                out += "%s, " % software
-            else:
-                out += "%s" % software
-            count += 1
+        self.software = ParseXmlSettings('./cfg/settings.xml', 'cmd',skipSoftware=False).installedSoftware()
+        if not len(self.software):
+            out = "No software installed"
+        else:
+            for software in self.software:
+                if count < len(self.software)-1:
+                    out += "%s, " % software
+                else:
+                    out += "%s" % software
+                count += 1
 
         self.log.debug("Returning software info")
         print out

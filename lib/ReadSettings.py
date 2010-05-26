@@ -47,7 +47,6 @@ class SoftwareSearch(object):
         self.modName = 'ReadSettings.SoftwareSearch'
         self.log = Logger(self.modName)
         self.os = Info.System().os()[0]
-        self.log.debug("SoftwareSearch loaded")
 
     def _findProgram(self, expession, path, rendererSearch, expCapStart, programName):
         '''
@@ -136,7 +135,7 @@ class ParseXmlSettings(object):
     INPUT:
         self.doc (str) -- The xml self.document to read from
     '''
-    def __init__(self, doc, type='cmd', skipSoftware=True):
+    def __init__(self, doc, type='cmd', skipSoftware=False):
         self.log = Logger("ReadSettings.ParseXmlSettings", __LOGLEVEL__)
         # old input vals: type='cmd', skipSoftware=False
         self.error = ErrorProcessingSetup('ReadSettings.XmlSettings')
@@ -184,7 +183,6 @@ class ParseXmlSettings(object):
                     self.softwareCommonName[package[0]] = package[2]
         else:
             self._setupLog()
-        self.log.debug("ParseXmlSettings loaded")
 
     def _getElement(self, parent, tag):
         '''Yield all elements from parent given a tagName'''

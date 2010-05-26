@@ -63,10 +63,8 @@ def DBDump(db, location):
     pass
 
 if __name__ != "__MAIN__":
-    import time
-    # get memory usage: http://code.activestate.com/recipes/286222-memory-usage/
-    print "Running DBGeneral Demo."
-    print "Creating database"
+    log = Logger("DBGeneral.Test")
+    log.debug("Running DBGeneral Demo.")
+    log.debug("Creating database")
     db = DBSetup()
-    time.sleep(15)
-    print "done."
+    log.debug("done")

@@ -37,6 +37,7 @@ class BroadcastSender(QThread):
     '''Class to send broadcast signals to client network'''
     def __init__(self, uuid, parent=None):
         super(BroadcastSender, self).__init__(parent)
+        self.log = Logger("Broadcast.BroadcastSender",__LOGLEVEL__)
         # setup some standard vars, so we dont broadcast forever
         self.uuid = uuid
         self.count = 0
@@ -46,7 +47,7 @@ class BroadcastSender(QThread):
 
     def run(self):
         '''Start the broadcast thread and setup the outgoing connection'''
-        log("PyFarm :: %s :: Sending broadcast" % self.modName, 'debug')
+        self.log.netclient("Sending broadcast")
         self.socket = QUdpSocket()
         self.datagram = QByteArray()
         self.timer = QTimer()
@@ -70,7 +71,7 @@ class BroadcastSender(QThread):
 
     def quit(self):
         '''End the process and kill the thread'''
-        log("PyFarm :: %s :: Stopping broadcast" % self.modName, 'debug')
+        self.log.netclient("Stopping broadcast")
         self.timer.stop()
         self.exit(0)
 

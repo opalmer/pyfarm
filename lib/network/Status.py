@@ -31,6 +31,7 @@ from lib.Logger import Logger
 from lib.ReadSettings import ParseXmlSettings
 
 __MODULE__ = "lib.network.Status"
+__LOGLEVEL__ = 3
 settings = ParseXmlSettings('./cfg/settings.xml',  'cmd',  skipSoftware=True)
 UNIT16 = 8
 
@@ -133,14 +134,14 @@ class StatusServer(QTcpServer):
     the main gui of a finished frame, addition of a host to the network, and
     other similiar functions.  See StatusServerThread for the server logic.
     '''
-    def __init__(self, dataJob, dataGeneral, logger, logLevels, parent=None):
+    def __init__(self, dataJob, dataGeneral, parent=None):
         super(StatusServer, self).__init__(parent)
         # setup logging
         self.log = Logger("Status.StatusServer", __LOGLEVEL__)
-        self.log.debug("StatusServer loaded")
+        self.log.netserver("StatusServer loaded")
         self.dataJob = dataJob
         self.dataGeneral = dataGeneral
-        self.log.log(self.logLevels["DEBUG.NETWORK"], "Data structure assigned")
+        self.log.netserver("Data structure assigned")
 
     def incomingConnection(self, socketId):
         log("PyFarm :: %s :: Incoming connection" % self.modName, 'debug')

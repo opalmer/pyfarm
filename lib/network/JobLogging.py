@@ -55,18 +55,15 @@ class UdpLoggerServer(QUdpSocket):
     Logging server for standard output and
     standard error logs
     '''
-    def __init__(self, logger, logLevels, port=settings.netPort('stdout'), parent=None):
+    def __init__(self, port=settings.netPort('stdout'), parent=None):
         super(UdpLoggerServer, self).__init__(parent)
-        # logging setup
-        self.log = logger.moduleName("JobLogging.UdpLoggerServer")
-        self.log.debug("UdpLoggerServer loaded")
-        self.logLevels = logLevels
-
+        self.log = Logger("JobLogging.UdpLoggerServer")
         self.port = port
         self.parent = parent
         self.bind(QHostAddress('0.0.0.0'), self.port)
         self.connect(self, SIGNAL("readyRead()"), self.readPendingDatagrams)
-        self.log.log(self.logLevels["NETWORK"], "UDP job log server running on port %s" % self.port)
+        self.log.netserver("UDP job log server running on port %s" % self.port)
+        self.log.netserver("UdpLoggerServer loaded")
 
     def readPendingDatagrams(self):
         while self.hasPendingDatagrams():
