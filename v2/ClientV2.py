@@ -21,9 +21,11 @@ PURPOSE: To handle and run all client connections on a remote machine
     along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 '''
 # From Python
+import os
 import sys
 
 # From PyFarm
+from lib.Settings import ReadConfig
 from lib.Logger import Logger
 from lib.net import Qt4Reactor
 from lib.net.udp.Broadcast import BroadcastSender, BroadcastReceiever
@@ -38,18 +40,20 @@ from twisted.internet import reactor
 from twisted.internet.protocol import DatagramProtocol
 
 __LOGLEVEL__ = 4
-__MODULE__ = "Client.py"
+__MODULE__ = "ClientV2.py"
 
 class Main(QObject):
     def __init__(self, parent=None):
         super(Main, self).__init__(parent)
+        self.config = ReadConfig("%s/cfg" % os.path.dirname(sys.argv[0]))
+        self.log = Logger(__MODULE__)
 
     def listenForBroadcast(self):
         '''
         Step 1:
         Listen for an incoming broadcast from the master
         '''
-        listen = BroadcastReceiever(self)
+        listen = BroadcastReceiever(self.config, self)
         self.connect(listen, SIGNAL("masterAddress"), self.setMasterAddress)
         listen.run()
 
@@ -58,28 +62,9 @@ class Main(QObject):
         Step 2:
         Set self.master to the incoming ip
         '''
-        if self.uniqueSession(data[0]):
-            ip = data[1]
-            if ip != self.master:
-                log.netserver("Incoming Broadcast")
-                log.netserver("Receieved master address: %s" % ip)
-                self.master = ip
-                self.hostname = str(QHostInfo.localHostName())
-                self.ip = GetLocalIP(self.master)
-                self.setInitialStatus()
-                self.sendStatus()
-                self.initial = int(time())
-            elif ip == self.master:
-                log.netserver("Incoming Broadcast")
-                self.sendStatus()
-
-    def uniqueSession(self, uuid):
-        '''Check and see if we are only running a single instance of the client'''
-        if uuid != self.session:
-            self.session = uuid
-            return True
-        else:
-            return False
+        ip = data[1]
+        self.log.netserver("Incoming Broadcast")
+        self.log.netserver("Receieved master address: %s" % ip)
 
 app = QCoreApplication(sys.argv)
 main = Main(app)

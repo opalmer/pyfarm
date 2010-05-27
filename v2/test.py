@@ -21,37 +21,50 @@ PURPOSE: To handle and run all client connections on a remote machine
     along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 '''
 # From Python
+import os
 import sys
 
-# From PyQt
-from PyQt4.QtCore import QCoreApplication, QObject
-
 # From PyFarm
+from lib.Settings import ReadConfig
 from lib.Logger import Logger
-from lib.net.Qt4Reactor import QTReactor
+from lib.net import Qt4Reactor
+from lib.net.udp.Broadcast import BroadcastSender, BroadcastReceiever
+Qt4Reactor.install()
+
+# From PyQt
+from PyQt4.QtCore import QCoreApplication, QObject, SIGNAL, SLOT
 
 # From Twisted
 from twisted.internet import main
+from twisted.internet import reactor
 from twisted.internet.protocol import DatagramProtocol
-from twisted.application.internet import MulticastServer
 
 __LOGLEVEL__ = 4
-
-class MulticastClientUDP(DatagramProtocol):
-
-    def datagramReceived(self, datagram, address):
-            print "Received:" + repr(datagram)
-
-#reactor.run()
+__MODULE__ = "test.py"
 
 class Main(QObject):
     def __init__(self, parent=None):
         super(Main, self).__init__(parent)
-        reactor.listenUDP(0, MulticastClientUDP()).write('UniqueID', ('10.56.1.2', 8005))
+        self.config = ReadConfig("%s/cfg" % os.path.dirname(sys.argv[0]))
+        self.log = Logger(__MODULE__)
 
+    def incriment(self):
+        self.log.debug("Incrimenting!")
+
+    def completed(self):
+        self.log.debug("Completed")
+
+    def sendBroadcast(self):
+        '''
+        Step 1:
+        Listen for an incoming broadcast from the master
+        '''
+        broadcast = BroadcastSender(self.config, self)
+        self.connect(broadcast, SIGNAL("next"), self.incriment)
+        self.connect(broadcast, SIGNAL("done"), self.completed)
+        broadcast.send()
 
 app = QCoreApplication(sys.argv)
-reactor = QTReactor(app=app)
-main.installReactor(reactor)
 main = Main(app)
+main.sendBroadcast()
 app.exec_()
