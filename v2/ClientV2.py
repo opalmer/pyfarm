@@ -23,40 +23,65 @@ PURPOSE: To handle and run all client connections on a remote machine
 # From Python
 import sys
 
-# From PyQt
-from PyQt4.QtCore import QCoreApplication, QObject
-
 # From PyFarm
 from lib.Logger import Logger
 from lib.net import Qt4Reactor
+from lib.net.udp.Broadcast import BroadcastSender, BroadcastReceiever
 Qt4Reactor.install()
+
+# From PyQt
+from PyQt4.QtCore import QCoreApplication, QObject, SIGNAL, SLOT
 
 # From Twisted
 from twisted.internet import main
 from twisted.internet import reactor
 from twisted.internet.protocol import DatagramProtocol
-from twisted.application.internet import MulticastServer
 
 __LOGLEVEL__ = 4
-
-class MulticastServerUDP(DatagramProtocol):
-    def startProtocol(self):
-        print 'Started Listening'
-        # Join a specific multicast group, which is the IP we will respond to
-        self.transport.joinGroup('10.56.1.2')
-
-    def datagramReceived(self, datagram, address):
-        # The uniqueID check is to ensure we only service requests from ourselves
-        if datagram == 'UniqueID':
-            print "Server Received:" + repr(datagram)
-            self.transport.write("data", address)
+__MODULE__ = "Client.py"
 
 class Main(QObject):
     def __init__(self, parent=None):
         super(Main, self).__init__(parent)
-        reactor.listenMulticast(8005, MulticastServerUDP())
-        self.startTimer(120)
+
+    def listenForBroadcast(self):
+        '''
+        Step 1:
+        Listen for an incoming broadcast from the master
+        '''
+        listen = BroadcastReceiever(self)
+        self.connect(listen, SIGNAL("masterAddress"), self.setMasterAddress)
+        listen.run()
+
+    def setMasterAddress(self, data):
+        '''
+        Step 2:
+        Set self.master to the incoming ip
+        '''
+        if self.uniqueSession(data[0]):
+            ip = data[1]
+            if ip != self.master:
+                log.netserver("Incoming Broadcast")
+                log.netserver("Receieved master address: %s" % ip)
+                self.master = ip
+                self.hostname = str(QHostInfo.localHostName())
+                self.ip = GetLocalIP(self.master)
+                self.setInitialStatus()
+                self.sendStatus()
+                self.initial = int(time())
+            elif ip == self.master:
+                log.netserver("Incoming Broadcast")
+                self.sendStatus()
+
+    def uniqueSession(self, uuid):
+        '''Check and see if we are only running a single instance of the client'''
+        if uuid != self.session:
+            self.session = uuid
+            return True
+        else:
+            return False
 
 app = QCoreApplication(sys.argv)
 main = Main(app)
+main.listenForBroadcast()
 app.exec_()

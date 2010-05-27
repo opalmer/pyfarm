@@ -26,9 +26,9 @@ from PyQt4.QtCore import QThread, QByteArray, QTimer, QString, SIGNAL
 
 # From PyFarm
 from lib.Logger import Logger
-from lib.ReadSettings import ParseXmlSettings
+from lib.Settings import ReadConfig
 
-__MODULE__ = "lib.network.Broadcast"
+__MODULE__ = "lib.net.udp.Broadcast"
 __LOGLEVEL__ = 4
 
 class BroadcastSender(QThread):
@@ -63,7 +63,8 @@ class BroadcastSender(QThread):
         else:
             self.datagram.clear() # if we do not clear first the datagram will be appended to
             self.datagram.insert(0, QString(self.uuid))
-            self.socket.writeDatagram(self.datagram.data(), QHostAddress("255.255.255.255"), settings.netPort('broadcast'))
+            self.log.fixme("Broadcast port not set using settings method!!!")
+            self.socket.writeDatagram(self.datagram.data(), QHostAddress("255.255.255.255"), 65500)
             self.count += 1
             self.emit(SIGNAL("next"))
 
@@ -97,4 +98,5 @@ class BroadcastReceiever(QThread):
         '''Run the main thread and listen for connections'''
         self.socket = QUdpSocket()
         self.connect(self.socket, SIGNAL("readyRead()"), self.readIncomingBroadcast)
-        self.socket.bind(QHostAddress("0.0.0.0"), settings.netPort('broadcast'))
+        self.log.fixme("Broadcast port not set using settings method!!!")
+        self.socket.bind(QHostAddress("0.0.0.0"), 65500)

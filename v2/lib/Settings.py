@@ -63,10 +63,10 @@ class ReadConfig(object):
         out = {}
         return out
 
-if __name__ != "__MAIN__":
-    ini = sys.argv[1]
-    cfg = ConfigParser.ConfigParser()
-    cfg.read(ini)
-    print cfg.items('drivers')
-    for path in cfg.items('search-paths'):
-        print path
+#if __name__ != "__MAIN__":
+#    ini = sys.argv[1]
+#    cfg = ConfigParser.ConfigParser()
+#    cfg.read(ini)
+#    print cfg.items('drivers')
+#    for path in cfg.items('search-paths'):
+#        print path
