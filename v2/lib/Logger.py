@@ -76,8 +76,16 @@ class Logger(object):
 
     def _out(self, level, msg):
         '''Perform final formatting and output the message to the appropriate locations'''
-        out = "%s - %s - %s - %s" % (time.strftime(self.timeFormat), level, self.name, msg)
         if level in self.levels:
+            if level == "FATAL":
+                out = "%s - %s%s%s - %s - %s" % (time.strftime(self.timeFormat),
+                bold(1, 'FATAL'), level, bold(0, 'FATAL'), self.name, msg)
+            elif level == "CRITICAL":
+                out = "%s - %s%s%s - %s - %s" % (time.strftime(self.timeFormat),
+                bold(1, 'CRITICAL'), level, bold(0, 'CRITICAL'), self.name, msg)
+            else:
+                out = "%s - %s - %s - %s" % (time.strftime(self.timeFormat), level, self.name, msg)
+
             print out
             if self.logfile:
                 self.logfile.write(out+"\n")
@@ -168,7 +176,21 @@ class Logger(object):
         '''Print a critical message'''
         self._out(self.levelList[14], msg)
 
-    def fatal(self, msg):
+    def fatal(self, msg, exitCode=0):
         '''Print a fatal error message and exit'''
         self._out(self.levelList[15], msg)
-        sys.exit(1)
+        sys.exit(exitCode)
+
+def bold(makeBold, error=None):
+    '''Return either bold or unbold strings'''
+    if makeBold:
+        if error == "FATAL":
+            return "\033[1;41m"
+        elif error == "CRITICAL":
+            return "\033[1;33m"
+        elif error == "WARNING":
+            return "\033[0;36m"
+        else:
+            return "\033[0m"
+    else:
+        return "\033[0;0m"

@@ -35,7 +35,7 @@ from PyQt4.QtGui import QApplication, QMainWindow
 
 # From PyFarm
 from lib.Logger import Logger
-from lib.sys.Info import SystemInfo
+from lib.system.Info import SystemInfo
 from lib.ui.MainWindow import Ui_MainWindow
 
 # sestup logging
@@ -675,19 +675,30 @@ class Main(QMainWindow):
 #################################
 
 if __name__ != '__MAIN__':
-#    sysUtil = lib.InputFlags.SystemUtilities()
-#    sysInfo = lib.InputFlags.SystemInfo()
-#
-#    # command line opton parsing
-#    from optparse import OptionParser
-#    parser = OptionParser(version="PyFarm v%s" % __VERSION__)
+    # command line opton parsing
+    import lib.InputFlags as flags
+    from optparse import OptionParser
+    about = flags.About(__DEVELOPER__, 'GNU-GPL_Header.txt')
+    sysutil = flags.SystemUtilities()
+    sysinfo = flags.SystemInfo()
+
+    parser = OptionParser(version="PyFarm v%s" % __VERSION__)
+    parser.add_option("--author", dest="author", action="callback",
+                        callback=about.author, help="Return the developer's name")
+    parser.add_option("--license", dest="license", action="callback",
+                        callback=about.license, help="Get the GPL license header")
+    parser.add_option("--sysinfo", dest="sysinfo", action="callback",
+                        callback=sysinfo.showinfo, help="Get processor, ram, etc. info")
+    parser.add_option("--clean",  action="callback",  callback=sysutil.clean,
+                        help="remove all byte-compiled Python files")
+    (options, args) = parser.parse_args()
 #    parser.add_option("--software", dest="software",  action="callback", callback=sysInfo.software,
 #                                    help="Return a list of software installed")
 #    parser.add_option("--system", dest="system",  action="callback", callback=sysInfo.system,
 #                                    help="Return information about the system")
-#    parser.add_option("--clean",  action="callback",  callback=sysUtil.clean,
-#                                    help="remove all byte-compiled Python files")
-#    (options, args) = parser.parse_args()
+
+
+
 
     app = QApplication(sys.argv)
     main = Main()

@@ -27,6 +27,7 @@ import multiprocessing
 
 # From PyFarm
 from lib.Settings import ReadConfig
+from lib.system.Utility import SimpleCommand
 
 __MODULE__ = 'lib.sys.SysInfo'
 __LOGLEVEL__ = 6
@@ -39,65 +40,92 @@ class SystemInfo(object):
         self.software = Software(self.config)
         self.network = Network(self.config.netadapter)
 
+class OperatingSystem(object):
+    '''Query and return information about the operating system'''
+    def __init__(self):
+        pass
+
+    def os(self):
+        '''Return the type of os'''
+        types = {'posix': 'linux',
+                 'nt' : 'windows',
+                 'mac' : 'mac'}
+
+        try:
+            return types[os.name()]
+        except KeyError:
+            log.fatal("%s is not an UNSUPPORTED operating system" % os.name())
+
+    def version(self):
+        '''Return the version of the given os'''
+        pass
+
+    def architecture(self):
+        '''Return the architecure type of the given os'''
+        return
+
+
 class Hardware(object):
     '''Used to query information about the local hardware'''
-    #
-    #
-    # REAING IN FROM /PROC WOULD
-    # BE PREFERRED!!!!
-    #
-    # find the proc file: man <command>
-    # example: man free returns /proc/meminfo
-    #
-    def ramtotal(self):
+    def __init__(self):
+        # since these are constant values. store them for later use
+        self.rammax = float(SimpleCommand("free | grep Mem | awk '{print $2}'"))/1024
+        self.swapmax = float(SimpleCommand("free | grep Swap | awk '{print $2}'"))/1024
+
+    def _toGigabyte(self, value, toGigabyte):
+        '''If requested, convert to gigabytes'''
+        if toGigabyte:
+            return value/1024
+        else:
+            return int(value)
+
+    def ramtotal(self, toGigabyte=False):
         '''Return the total amout of installed ram'''
-        # free | grep Mem | awk '{print $2}'
-        pass
+        return self._toGigabyte(self.rammax, toGigabyte)
 
-    def ramused(self):
+    def ramused(self, toGigabyte=False):
         '''Return the amout of ram used'''
-        # free | grep Mem | awk '{print $3}'
-        pass
+        mb = float(SimpleCommand("free | grep 'buffers/cache' | awk '{print $3}'"))/1024
+        return self._toGigabyte(mb, toGigabyte)
 
-    def swapfree(self):
-        '''Return amout of ram free'''
-        pass
+    def ramfree(self, toGigabyte=False):
+        '''Return the amount of free ram'''
+        return self._toGigabyte(self.rammax-self.ramused(), toGigabyte)
 
-    def swaptotal(self):
+    def swaptotal(self, toGigabyte=False):
         '''Return the total amount of swap'''
-        # cat /proc/swaps | grep partition | awk '{print $3}'
-        pass
+        return self._toGigabyte(self.swapmax, toGigabyte)
 
-    def swapused(self):
+    def swapused(self, toGigabyte=False):
         '''Return the total amout of swap used'''
-        # cat /proc/swaps | grep partition | awk '{print $4}'
-        pass
+        mb = float(SimpleCommand("free | grep Swap | awk '{print $3}'"))/1024
+        return self._toGigabyte(mb, toGigabyte)
 
-    def swapfree(self):
+    def swapfree(self, toGigabyte=False):
         '''Return amout of swap free'''
-        pass
+        return self._toGigabyte(self.swapmax-self.swapused(), toGigabyte)
 
     def cpucount(self):
         '''Return the cpu count'''
         return multiprocessing.cpu_count()
 
-    def cpuusage(self):
-        '''Return cpu usage for 1,5,15 mins'''
-        # 1 min avg: uptime | awk '{print $8'}
-        # 5 min avg: uptime | awk '{print $9'}
-        # 15 min av: uptime | awk '{print $10'}
-        pass
+    def cpuload(self):
+        '''Return cpu load averages for 1,5,15 mins'''
+        return open('/proc/loadavg').readlines()[0].split()[:3]
 
     def uptime(self):
         '''Return uptime information'''
-        # uptime | awk '{print $1'}
-        pass
+        return float(open('/proc/uptime').readlines()[0].split()[0])
 
+    def idletime(self):
+        '''Return total idle time'''
+        return float(open('/proc/uptime').readlines()[0].split()[1])
 
 class Software(object):
     '''Query and return information about the software on the local system'''
     def __init__(self, config):
        pass
+
 
 class Network(object):
     '''Query and return information about the local network'''
