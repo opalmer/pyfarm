@@ -33,15 +33,16 @@ __LOGLEVEL__ = 4
 
 class BroadcastSender(QThread):
     '''Class to send broadcast signals to client network'''
-    def __init__(self, uuid, parent=None):
+    def __init__(self, config, uuid, parent=None):
         super(BroadcastSender, self).__init__(parent)
-        self.log = Logger("Broadcast.BroadcastSender",__LOGLEVEL__)
+        self.config = config
+        self.port = self.config.servers['broadcast']
+        self.log = Logger("Broadcast.BroadcastReceiever")
         # setup some standard vars, so we dont broadcast forever
         self.uuid = uuid
-        self.count = 0
-        self.interval = settings.broadcastValue('interval')
-        self.maxCount = settings.broadcastValue('maxCount')
-        self.modName = 'BroadcastSender'
+        self.count = 1
+        self.interval = self.config.broadcast['interval']
+        self.maxCount = self.config.broadcast['maxcount']
 
     def run(self):
         '''Start the broadcast thread and setup the outgoing connection'''
@@ -57,14 +58,17 @@ class BroadcastSender(QThread):
         Send the broadcast packet so long as we have not exceeded
         the above specs.
         '''
+        self.socket = QUdpSocket()
+        self.datagram = QByteArray()
         if self.count > self.maxCount:
+            self.log.debug("Emission complete")
             self.emit(SIGNAL("done"), 0)
             self.quit()
         else:
+            self.log.netclient("Emitted signal %i of %i" % (self.count,self.maxCount))
             self.datagram.clear() # if we do not clear first the datagram will be appended to
-            self.datagram.insert(0, QString(self.uuid))
-            self.log.fixme("Broadcast port not set using settings method!!!")
-            self.socket.writeDatagram(self.datagram.data(), QHostAddress("255.255.255.255"), 65500)
+            self.datagram.insert(0, QString("Test"))
+            self.socket.writeDatagram(self.datagram.data(), QHostAddress("255.255.255.255"), self.port)
             self.count += 1
             self.emit(SIGNAL("next"))
 
@@ -77,11 +81,11 @@ class BroadcastSender(QThread):
 
 class BroadcastReceiever(QThread):
     '''Class to receieve broadcast signal from master'''
-    def __init__(self, parent=None):
+    def __init__(self, config, parent=None):
         super(BroadcastReceiever, self).__init__(parent)
-        self.modName = 'BroadcastReceiever'
+        self.config = config
+        self.port = self.config.servers["broadcast"]
         self.log = Logger("Broadcast.BroadcastReceiever")
-        self.log.netserver("Listening for broadcast")
 
     def readIncomingBroadcast(self):
         '''Read the incoming host ip and emit it to the client'''
@@ -92,11 +96,12 @@ class BroadcastReceiever(QThread):
             data = self.socket.readDatagram(datagram.size())
             ip = str(data[1].toString())
             msg = str(data[0])
+        self.log.netserver("Incoming broadcast from %s" % ip)
         self.emit(SIGNAL("masterAddress"), (msg, ip))
 
     def run(self):
         '''Run the main thread and listen for connections'''
         self.socket = QUdpSocket()
         self.connect(self.socket, SIGNAL("readyRead()"), self.readIncomingBroadcast)
-        self.log.fixme("Broadcast port not set using settings method!!!")
-        self.socket.bind(QHostAddress("0.0.0.0"), 65500)
+        self.socket.bind(QHostAddress("0.0.0.0"), self.port)
+        self.log.netserver("Listening on port %i" % self.port)

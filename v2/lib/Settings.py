@@ -21,6 +21,7 @@ You should have received a copy of the GNU General Public License
 along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 '''
 # From Python
+import os
 import sys
 import ConfigParser
 
@@ -32,9 +33,16 @@ __LOGLEVEL__ = 4
 
 class ReadConfig(object):
     '''Read in and perform basic operations on configuration files'''
-    def __init__(self, config, skipSoftware=True):
-        self.config = config
+    def __init__(self, configDir, skipSoftware=True):
+        # read in configs
+        self.config = "%s/general.ini" % configDir
+        self.softwareConfigs = [ cfg for cfg in os.listdir("%s/software" % configDir) ]
+        self.parser = ConfigParser.ConfigParser()
+        self.parser.read(self.config)
+
+        # establish settings
         self.servers = self.configServers()
+        self.broadcast = self.configBroadcast()
         self.database = self.configDatabase()
         self.logging = self.configLogging()
 
@@ -43,30 +51,49 @@ class ReadConfig(object):
         if not skipSoftware:
             self.software = self.configSoftware()
 
+    def _intConvert(self, makeInt, value):
+        '''If requested, return an integer value'''
+        if makeInt:
+            return int(value)
+        else:
+            return value
+
+    def _config(self, item, intVals=False, checkEmpty=False):
+        '''
+        Return a dictionary using the selected item
+
+        VARIABLES:
+            item (str) -- Item to parse in config
+            intVals (bool) -- If enabled convert all retrieved
+            values to integers
+            checkEmpty (bool) -- check for empty values [None, False, 0, etc.].
+            If the value is empty, do not add it to the dictionary
+        '''
+        out = {}
+        for key,value in self.parser.items(item):
+            if not checkEmpty:
+                out[key] = self._intConvert(intVals, value)
+            elif checkEmpty and value not in ("NONE","FALSE","NO","0"):
+                out[key] = self._intConvert(intVals, value)
+        return out
+
     def configServers(self):
         '''Return a dictionary of servers and their port numbers'''
-        out = {}
-        return out
+        return self._config('servers', intVals=True)
+
+    def configBroadcast(self):
+        '''Return a dictionary with broadcast settings'''
+        return self._config('broadcast', intVals=True)
 
     def configDatabase(self):
         '''Return a dictionary with database information'''
-        out = {}
-        return out
+        return self._config('database', checkEmpty=True)
 
     def configLogging(self):
         '''Return a dictionary with log information'''
-        out = {}
-        return out
+        return self._config('logging', checkEmpty=True)
 
     def configSoftware(self):
         '''Find (if necessary) and return a software dictionary'''
         out = {}
         return out
-
-#if __name__ != "__MAIN__":
-#    ini = sys.argv[1]
-#    cfg = ConfigParser.ConfigParser()
-#    cfg.read(ini)
-#    print cfg.items('drivers')
-#    for path in cfg.items('search-paths'):
-#        print path
