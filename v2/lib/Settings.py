@@ -45,6 +45,7 @@ class ReadConfig(object):
         self.broadcast = self.configBroadcast()
         self.database = self.configDatabase()
         self.logging = self.configLogging()
+        self.netadapter = self.configNetAdapter()
 
         # searching for software takes time, so we can skip
         #  it if we really need to.
@@ -92,6 +93,11 @@ class ReadConfig(object):
     def configLogging(self):
         '''Return a dictionary with log information'''
         return self._config('logging', checkEmpty=True)
+
+    def configNetAdapter(self):
+        '''Return the network adapter to use'''
+        for key, value in self.parser.items("network-adapter"):
+            return value
 
     def configSoftware(self):
         '''Find (if necessary) and return a software dictionary'''
