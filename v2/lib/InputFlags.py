@@ -24,7 +24,7 @@ import os
 import sys
 
 # From PyFarm
-from lib.Logger import Logger, bold
+from lib.Logger import Logger
 from lib.system.Info import Hardware
 
 __MODULE__ = "lib.InputFlags"
@@ -57,12 +57,12 @@ class SystemInfo(object):
         print "\t\tFree: %.2f GB" % hardware.swapfree(1)
 
         #for stat in hardware.
-        log.fatal("Returned system info, exiting")
+        self.log.terminate("Program terminated by command line flag")
 
     def software(self, option=None, opt=None, value=None, parser=None):
         '''Echo only installed software information to the command line'''
         self.log.debug("Getting software info")
-        out = "\nInstalled Software: "+bold(0)
+        out = "\nInstalled Software: "+log.bold(0)
         count = 0
 
         # find the software and add it to the output
@@ -79,7 +79,7 @@ class SystemInfo(object):
 
         self.log.debug("Returning software info")
         print out
-        sys.exit(0)
+        self.log.terminate("Program terminated by command line flag")
 
 
 class SystemUtilities(object):
@@ -94,7 +94,7 @@ class SystemUtilities(object):
         for pyc in find("*.pyc", os.getcwd()):
             os.remove(pyc)
         self.log.debug("Clean complete")
-        self.log.fatal("Cleanup complete, exiting")
+        self.log.terminate("Program terminated by command line flag")
 
 
 class About(object):
@@ -105,11 +105,11 @@ class About(object):
 
     def author(self, option=None, opt=None, value=None, parser=None):
         '''Return the author's name'''
-        print "%sDeveloped By:%s %s" % (bold(1), bold(0), self.dev)
-        log.fatal("Program terminated by command line flag")
+        print "%sDeveloped By:%s %s" % (log.bold(1), log.bold(0), self.dev)
+        log.terminate("Program terminated by command line flag")
 
     def license(self, option=None, opt=None, value=None, parser=None):
         '''Return the gpl header'''
         for line in self.gpl:
             print line.strip()
-        log.fatal("Program terminated by command line flag")
+        log.terminate("Program terminated by command line flag")

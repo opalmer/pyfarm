@@ -63,8 +63,17 @@ class Logger(object):
                 12 : "WARNING",
                 13 : "ERROR",
                 14 : "CRITICAL",
-                15 : "FATAL"
+                15 : "FATAL",
+                16 : "TERMINATED"
             }
+
+        self.levelColors = {
+                                        "WARNING" : "\033[0;36m",
+                                        "CRITICAL" : "\033[1;33m",
+                                        "FATAL" : "\033[1;41m",
+                                        "TERMINATED" : "\033[0;32m"
+                                    }
+
 
         self.setName(name)
         self.setLevel(level)
@@ -77,12 +86,9 @@ class Logger(object):
     def _out(self, level, msg):
         '''Perform final formatting and output the message to the appropriate locations'''
         if level in self.levels:
-            if level == "FATAL":
+            if level in self.levelColors.keys():
                 out = "%s - %s%s%s - %s - %s" % (time.strftime(self.timeFormat),
-                bold(1, 'FATAL'), level, bold(0, 'FATAL'), self.name, msg)
-            elif level == "CRITICAL":
-                out = "%s - %s%s%s - %s - %s" % (time.strftime(self.timeFormat),
-                bold(1, 'CRITICAL'), level, bold(0, 'CRITICAL'), self.name, msg)
+                self.bold(1, level), level, self.bold(0, level), self.name, msg)
             else:
                 out = "%s - %s - %s - %s" % (time.strftime(self.timeFormat), level, self.name, msg)
 
@@ -90,6 +96,16 @@ class Logger(object):
             if self.logfile:
                 self.logfile.write(out+"\n")
                 self.logfile.flush()
+
+    def bold(self, makeBold, error="\033[0m"):
+        '''Return either bold or unbold strings'''
+        if makeBold:
+            if error in self.levelColors.keys():
+                return self.levelColors[error]
+            else:
+                return error
+        else:
+            return "\033[0;0m"
 
     def close(self):
         '''Close out the log file'''
@@ -181,16 +197,7 @@ class Logger(object):
         self._out(self.levelList[15], msg)
         sys.exit(exitCode)
 
-def bold(makeBold, error=None):
-    '''Return either bold or unbold strings'''
-    if makeBold:
-        if error == "FATAL":
-            return "\033[1;41m"
-        elif error == "CRITICAL":
-            return "\033[1;33m"
-        elif error == "WARNING":
-            return "\033[0;36m"
-        else:
-            return "\033[0m"
-    else:
-        return "\033[0;0m"
+    def terminate(self, msg):
+        '''Terminate the running program with a final log message'''
+        self._out(self.levelList[16], msg)
+        sys.exit(0)

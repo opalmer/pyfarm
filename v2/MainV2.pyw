@@ -28,15 +28,24 @@ __MODULE__ = 'Main.pyw'
 __LOGLEVEL__ = 2
 
 # From Python
+import os
 import sys
 
 # From PyQt
 from PyQt4.QtGui import QApplication, QMainWindow
+from PyQt4.QtCore import QObject, SIGNAL, SLOT
+
+# Qt4 Reactor
+from lib.net import Qt4Reactor
+Qt4Reactor.install()
 
 # From PyFarm
 from lib.Logger import Logger
+from lib.Settings import ReadConfig
 from lib.system.Info import SystemInfo
 from lib.ui.MainWindow import Ui_MainWindow
+from lib.net.udp.Broadcast import BroadcastSender
+from lib.net.tcp.Status import StatusServer
 
 # sestup logging
 log = Logger(__MODULE__, __LOGLEVEL__)
@@ -674,6 +683,43 @@ class Main(QMainWindow):
 ### END General Utilities
 #################################
 
+class Testing(QObject):
+    '''Quick testing code'''
+    def __init__(self, parent=None):
+        super(Testing, self).__init__(parent)
+        self.log = Logger("Main.Testing")
+        self.config = ReadConfig("%s/cfg" % os.path.dirname(sys.argv[0]))
+        self.log.debug("Test code initilized")
+
+    def broadIncriment(self):
+        self.log.netclient("Incrimented")
+
+    def broadDone(self, signal):
+        self.log.netclient("Broadcast complete")
+
+    def sendBroadcast(self):
+        '''Send out a broadcast to inform clients of the master node'''
+        broadcast = BroadcastSender(self.config, self)
+        self.connect(broadcast, SIGNAL("next"), self.broadIncriment)
+        self.connect(broadcast, SIGNAL("done"), self.broadDone)
+        broadcast.send()
+
+    def runStatusServer(self):
+        '''Run the status server and listen for connections'''
+        self.log.netserver("Running status server")
+
+    def run(self, option=None, opt=None, value=None, parser=None):
+        global __TESTING__
+        __TESTING__ = 1
+        self.log.debug("Running test code")
+
+        self.runStatusServer()
+        self.sendBroadcast()
+
+        self.log.debug("Test run complete")
+        self.log.terminate("Testing Terminated")
+
+
 if __name__ != '__MAIN__':
     # command line opton parsing
     import lib.InputFlags as flags
@@ -681,7 +727,9 @@ if __name__ != '__MAIN__':
     about = flags.About(__DEVELOPER__, 'GNU-GPL_Header.txt')
     sysutil = flags.SystemUtilities()
     sysinfo = flags.SystemInfo()
+    test = Testing()
 
+    # command line option parser
     parser = OptionParser(version="PyFarm v%s" % __VERSION__)
     parser.add_option("--author", dest="author", action="callback",
                         callback=about.author, help="Return the developer's name")
@@ -691,20 +739,21 @@ if __name__ != '__MAIN__':
                         callback=sysinfo.showinfo, help="Get processor, ram, etc. info")
     parser.add_option("--clean",  action="callback",  callback=sysutil.clean,
                         help="remove all byte-compiled Python files")
+    parser.add_option("--test", action="callback", callback=test.run,
+                        help="run testing code")
     (options, args) = parser.parse_args()
-#    parser.add_option("--software", dest="software",  action="callback", callback=sysInfo.software,
-#                                    help="Return a list of software installed")
-#    parser.add_option("--system", dest="system",  action="callback", callback=sysInfo.system,
-#                                    help="Return information about the system")
 
-
-
-
+    # main application
     app = QApplication(sys.argv)
-    main = Main()
-    log.ui("Showing UI...")
-    main.show()
-    log.ui("UI active!")
-    sys.exit(app.exec_())
+    try:
+        tmp = __TESTING__
+        log.warning("Entering testing mode")
+    except NameError: # if __TESTING__ is not defined, show the gui instead
+        main = Main()
+        log.ui("Displaying interfaced")
+        main.show()
+        log.ui("Interface displayed")
+    finally:
+        sys.exit(app.exec_())
 else:
     log.fatal("This program is not meant to be imported!")
