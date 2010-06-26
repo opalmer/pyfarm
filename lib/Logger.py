@@ -63,8 +63,17 @@ class Logger(object):
                 12 : "WARNING",
                 13 : "ERROR",
                 14 : "CRITICAL",
-                15 : "FATAL"
+                15 : "FATAL",
+                16 : "TERMINATED"
             }
+
+        self.levelColors = {
+                                        "WARNING" : "\033[0;36m",
+                                        "CRITICAL" : "\033[1;33m",
+                                        "FATAL" : "\033[1;41m",
+                                        "TERMINATED" : "\033[0;32m"
+                                    }
+
 
         self.setName(name)
         self.setLevel(level)
@@ -76,12 +85,27 @@ class Logger(object):
 
     def _out(self, level, msg):
         '''Perform final formatting and output the message to the appropriate locations'''
-        out = "%s - %s - %s - %s" % (time.strftime(self.timeFormat), level, self.name, msg)
         if level in self.levels:
+            if level in self.levelColors.keys():
+                out = "%s - %s%s%s - %s - %s" % (time.strftime(self.timeFormat),
+                self.bold(1, level), level, self.bold(0, level), self.name, msg)
+            else:
+                out = "%s - %s - %s - %s" % (time.strftime(self.timeFormat), level, self.name, msg)
+
             print out
             if self.logfile:
                 self.logfile.write(out+"\n")
                 self.logfile.flush()
+
+    def bold(self, makeBold, error="\033[0m"):
+        '''Return either bold or unbold strings'''
+        if makeBold:
+            if error in self.levelColors.keys():
+                return self.levelColors[error]
+            else:
+                return error
+        else:
+            return "\033[0;0m"
 
     def close(self):
         '''Close out the log file'''
@@ -168,7 +192,12 @@ class Logger(object):
         '''Print a critical message'''
         self._out(self.levelList[14], msg)
 
-    def fatal(self, msg):
+    def fatal(self, msg, exitCode=0):
         '''Print a fatal error message and exit'''
         self._out(self.levelList[15], msg)
-        sys.exit(1)
+        sys.exit(exitCode)
+
+    def terminate(self, msg):
+        '''Terminate the running program with a final log message'''
+        self._out(self.levelList[16], msg)
+        sys.exit(0)

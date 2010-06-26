@@ -22,46 +22,38 @@ PyFarm is distributed in the hopehttp://docs.python.org/library/sqlite3.html tha
 
 import sqlite3
 
-def DBSetup(host, db=":memory:"):
+def DBSetup(db=":memory:"):
     '''Setup the database and the default tables'''
-    self.host = host
     sql = sqlite3.connect(db)
     db = sql.cursor()
-    if self.host == 'master':
-        db.executescript("""
-            CREATE TABLE IF NOT EXISTS hosts(
-                uuid text,
-                hostname text,
-                ip text,
-                mac text,
-                cpu_count int,
-                frames_max int,
-                frames_rendering int,
-                ram_total int,
-                ram_used int,
-                load real
-            );
+    db.executescript("""
+        CREATE TABLE IF NOT EXISTS hosts(
+            uuid text,
+            hostname text,
+            ip text,
+            mac text,
+            cpu_count int,
+            frames_max int,
+            frames_rendering int,
+            ram_total int,
+            ram_used int,
+            load real
+        );
 
-            CREATE TABLE IF NOT EXISTS frames(
-                frame int,
-                job text,
-                subjob text,
-                software_required text,
-                time_start real,
-                time_end real
-            );
+        CREATE TABLE IF NOT EXISTS frames(
+            frame int,
+            job text,
+            subjob text,
+            software_required text,
+            time_start real,
+            time_end real
+        );
 
-            CREATE TABLE IF NOT EXISTS settings(
-                port_server_status int,
-                port_server_queue int
-            );
-            """)
-
-    elif self.host == 'client':
-        log.notimplimented("Client database not yet implimented")
-
-    else:
-        log.fatal("%s is not a valid option for DBSetup!" % self.host)
+        CREATE TABLE IF NOT EXISTS settings(
+            port_server_status int,
+            port_server_queue int
+        );
+        """)
     sql.commit()
     db.close()
     return db

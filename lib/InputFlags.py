@@ -20,15 +20,17 @@ PURPOSE: Small library for discovering system info and installed software
     along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 '''
 # From Python
-import os, sys, py_compile, fnmatch
+import os
+import sys
 
 # From PyFarm
 from lib.Logger import Logger
-from Info import System, bold, find
-from ReadSettings import ParseXmlSettings
+from lib.system.Info import Hardware
 
 __MODULE__ = "lib.InputFlags"
 __LOGLEVEL__ = 4
+
+log = Logger(__MODULE__, __LOGLEVEL__)
 
 class SystemInfo(object):
     '''Gather and prepare to return info about the system'''
@@ -36,29 +38,31 @@ class SystemInfo(object):
         self.cwd = os.getcwd()
         self.log = Logger("InputFlags.SystemInfo", __LOGLEVEL__)
 
-    def system(self, option=None, opt=None, value=None, parser=None):
-        '''Echo only system information to the command line'''
-        self.log.debug("Getting system info")
-        system = System()
-        out = "\nOS Type : %s" % system.os()[0]
-        out += "\nOS Architecture : %s" % system.os()[1]
-        out += "\nHostname : %s" % system.hostname()
-        out += "\nCPU Count: %s" % system.cpuCount()
-        out += "\nRAM Total: %i" % system.ramTotal()
-        self.log.fixme("Incorrect free ram value")
-        out += "\nRAM Free: %i" % system.ramFree()
-        self.log.fixme("Incorrect total swap value")
-        out += "\nSWAP Total: %i" % system.swapTotal()
-        self.log.fixme("Incorrect free swap value")
-        out += "\nSWAP Free: %i" % system.swapFree()
-        self.log.debug("Returning system info")
-        print out
-        sys.exit(0)
+    def showinfo(self, option=None, opt=None, value=None, parser=None):
+        '''Return all information about the system'''
+        hardware = Hardware()
+        load = hardware.cpuload()
+        print "Hardware Information:"
+        print "\tCPU Count: %i" % hardware.cpucount()
+        print "\tCPU Load Averages: %s, %s, %s" % (load[0], load[1], load[2])
+        print "\tUptime: %.2f hr" % (hardware.uptime()/3600)
+        print "\tIdle Time: %.2f hr" % (hardware.idletime()/3600)
+        print "\n\tMemory (RAM):"
+        print "\t\tTotal: %.2f GB" % hardware.ramtotal(1)
+        print "\t\tUsed: %.2f GB" % hardware.ramused(1)
+        print "\t\tFree: %.2f GB" % hardware.ramfree(1)
+        print "\n\tMemory (Swap):"
+        print "\t\tTotal: %.2f GB" % hardware.swaptotal(1)
+        print "\t\tUsed: %.2f GB" % hardware.swapused(1)
+        print "\t\tFree: %.2f GB" % hardware.swapfree(1)
+
+        #for stat in hardware.
+        self.log.terminate("Program terminated by command line flag")
 
     def software(self, option=None, opt=None, value=None, parser=None):
         '''Echo only installed software information to the command line'''
         self.log.debug("Getting software info")
-        out = "\nInstalled Software: "+bold(0)
+        out = "\nInstalled Software: "+log.bold(0)
         count = 0
 
         # find the software and add it to the output
@@ -75,7 +79,7 @@ class SystemInfo(object):
 
         self.log.debug("Returning software info")
         print out
-        sys.exit(0)
+        self.log.terminate("Program terminated by command line flag")
 
 
 class SystemUtilities(object):
@@ -90,4 +94,22 @@ class SystemUtilities(object):
         for pyc in find("*.pyc", os.getcwd()):
             os.remove(pyc)
         self.log.debug("Clean complete")
-        sys.exit(0)
+        self.log.terminate("Program terminated by command line flag")
+
+
+class About(object):
+    '''Store and return information about PyFarm itself'''
+    def __init__(self,dev, gpl):
+        self.dev = dev
+        self.gpl = open(gpl, 'r')
+
+    def author(self, option=None, opt=None, value=None, parser=None):
+        '''Return the author's name'''
+        print "%sDeveloped By:%s %s" % (log.bold(1), log.bold(0), self.dev)
+        log.terminate("Program terminated by command line flag")
+
+    def license(self, option=None, opt=None, value=None, parser=None):
+        '''Return the gpl header'''
+        for line in self.gpl:
+            print line.strip()
+        log.terminate("Program terminated by command line flag")
