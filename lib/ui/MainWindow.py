@@ -19,7 +19,7 @@
 
 # Form implementation generated from reading ui file 'QtDesigner/MainWindow.ui'
 #
-# Created: Sat May 22 18:21:22 2010
+# Created: Sat Jun 26 04:25:22 2010
 #      by: PyQt4 UI code generator 4.7.2
 #
 # WARNING! All changes made in this file will be lost!

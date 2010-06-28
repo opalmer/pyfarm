@@ -99,9 +99,13 @@ class SystemUtilities(object):
 
 class About(object):
     '''Store and return information about PyFarm itself'''
-    def __init__(self,dev, gpl):
+    def __init__(self, dev, gpl):
         self.dev = dev
-        self.gpl = open(gpl, 'r')
+
+        try:
+            self.gpl = open(gpl, 'r')
+        except IOError:
+            self.gpl = 'Could not find license: %s' % gpl
 
     def author(self, option=None, opt=None, value=None, parser=None):
         '''Return the author's name'''

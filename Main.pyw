@@ -35,17 +35,12 @@ import sys
 from PyQt4.QtGui import QApplication, QMainWindow
 from PyQt4.QtCore import QObject, SIGNAL, SLOT
 
-# Qt4 Reactor
-from lib.net import Qt4Reactor
-Qt4Reactor.install()
-
 # From PyFarm
 from lib.Logger import Logger
 from lib.Settings import ReadConfig
 from lib.system.Info import SystemInfo
 from lib.ui.MainWindow import Ui_MainWindow
 from lib.net.udp.Broadcast import BroadcastSender
-from lib.net.tcp.Status import StatusServer
 
 # sestup logging
 log = Logger(__MODULE__, __LOGLEVEL__)
@@ -60,6 +55,7 @@ class Main(QMainWindow):
         self.setWindowTitle("PyFarm -- Version %s" % __VERSION__)
 
         # system hardware/software settings
+        self.config = ReadConfig("%s/cfg" % os.path.dirname(sys.argv[0]))
         self.sysinfo = SystemInfo('cfg')
         self.hardware = self.sysinfo.hardware
         self.software = self.sysinfo.software
@@ -141,12 +137,11 @@ class Main(QMainWindow):
 #        self.orange = QColor(255, 165, 0)
 #
 #        # inform the user of their settings
-#        self.updateStatus('SETTINGS', 'Got settings from settings.xml', 'purple')
-#        self.updateStatus('SETTINGS', 'Server IP: %s' % settings.netGeneral('host'), 'purple')
-#        self.updateStatus('SETTINGS', 'Broadcast Port: %s' % settings.netPort('broadcast'), 'purple')
-#        self.updateStatus('SETTINGS', 'StdOut Port: %s' % settings.netPort('stdout'), 'purple')
-#        self.updateStatus('SETTINGS', 'StdErr Port: %s' % settings.netPort('stderr'), 'purple')
-#        self.updateStatus('SETTINGS', 'Que Port: %s' % settings.netPort('que'), 'purple')
+        self.updateStatus('SETTINGS', 'Got settings from settings.xml', 'purple')
+        self.updateStatus('SETTINGS', 'Server IP: %s' % self.network.ip(), 'purple')
+        self.updateStatus('SETTINGS', 'Broadcast Port: %s' % self.config.servers['broadcast'], 'purple')
+        self.updateStatus('SETTINGS', 'Logging Port: %s' % self.config.servers['logging'], 'purple')
+        self.updateStatus('SETTINGS', 'Queue Port: %s' %self.config.servers['queue'], 'purple')
 #
 #        for program in settings.installedSoftware():
 #            self.updateStatus('SETTINGS', '%s: %s' % (program, settings.command(program)), 'purple')
@@ -182,7 +177,7 @@ class Main(QMainWindow):
 #
 #        # connect ui vars for
 #        ## network section signals
-#        self.connect(self.ui.findHosts, SIGNAL("pressed()"), self.findHosts)
+        self.connect(self.ui.findHosts, SIGNAL("pressed()"), self.findHosts)
 #        self.connect(self.ui.getHostInfo, SIGNAL("pressed()"), self.showHostInfo)
 #        self.connect(self.ui.addHost, SIGNAL("pressed()"), self._customHostDialog)
 #        self.connect(self.ui.removeHost, SIGNAL("pressed()"), self.dataGeneral.removeHost)
@@ -205,7 +200,24 @@ class Main(QMainWindow):
 #            xml.load(inFile)
 #        except IOError:
 #            self.msg.warning("No File Entered", "Sorry, but you did not select a file to write to.  Without a file to write to PyFarm will be unable to save your job data.")
-#
+
+    def foundHost(self, host):
+        '''When a host is found, run the appropriate actions'''
+        log.netclient("Found host: %s" % host)
+
+    def searchStarted(self):
+        print "Running"
+
+    def findHosts(self):
+        '''Get hosts via broadcast packet, add them to self.hosts'''
+        # 1) Start timer
+        # 2) Run broadcast
+        # 3) Kill broadcast after timer expires
+        self.broadcast = BroadcastSender(self.config)
+        self.connect(self.broadcast, SIGNAL("client-address"), self.foundHost)
+        self.connect(self.broadcast, SIGNAL("started()"), self.searchStarted)
+        self.broadcast.run()
+
 #    def xmlSaveJobs(self):
 #        '''Save the current to to an external xml file'''
 #        xml = SaveQueToXML(self.dataJob)
@@ -627,8 +639,6 @@ class Main(QMainWindow):
 #        self.updateStatus('QUEUE', '%s frames waiting to render' % self.que.size(), 'brown')
 #        self.ui.render.setEnabled(True)
 #
-#    def findHosts(self):
-#        '''Get hosts via broadcast packet, add them to self.hosts'''
 #        self.updateStatus('NETWORK', 'Searching for hosts...', 'green')
 #        findHosts = BroadcastSender(__UUID__, self)
 #        progress = ProgressDialog(QString("Network Broadcast Progress"), \
@@ -646,16 +656,16 @@ class Main(QMainWindow):
 #################################
 ### END Job/Que System
 #################################
-#    def updateStatus(self, section, msg, color='black'):
-#        '''
-#        Update the ui's status window
-#
-#        VARS:
-#            section (string)-- The section to report from (ex. NETWORK)
-#            msg (string) - The message to post
-#            color (string) - The color name or hex value to set the section
-#        '''
-#        self.ui.status.append('<font color=%s><b>%s</b></font> - %s' % (color, section, msg))
+    def updateStatus(self, section, msg, color='black'):
+        '''
+        Update the ui's status window
+
+        VARS:
+            section (string)-- The section to report from (ex. NETWORK)
+            msg (string) - The message to post
+            color (string) - The color name or hex value to set the section
+        '''
+        self.ui.status.append('<font color=%s><b>%s</b></font> - %s' % (color, section, msg))
 #
 #    def closeEvent(self, event):
 #        '''Run when closing the main gui, used to "cleanup" the program state'''
@@ -700,9 +710,9 @@ class Testing(QObject):
     def sendBroadcast(self):
         '''Send out a broadcast to inform clients of the master node'''
         broadcast = BroadcastSender(self.config, self)
-        self.connect(broadcast, SIGNAL("next"), self.broadIncriment)
-        self.connect(broadcast, SIGNAL("done"), self.broadDone)
-        broadcast.send()
+        #self.connect(broadcast, SIGNAL("next"), self.broadIncriment)
+        #self.connect(broadcast, SIGNAL("done"), self.broadDone)
+        broadcast.run()
 
     def runStatusServer(self):
         '''Run the status server and listen for connections'''
@@ -718,7 +728,6 @@ class Testing(QObject):
 
         self.log.debug("Test run complete")
         self.log.terminate("Testing Terminated")
-
 
 if __name__ != '__MAIN__':
     # command line opton parsing
@@ -745,15 +754,17 @@ if __name__ != '__MAIN__':
 
     # main application
     app = QApplication(sys.argv)
+    log.debug("PID: %s" % os.getpid())
     try:
         tmp = __TESTING__
         log.warning("Entering testing mode")
-    except NameError: # if __TESTING__ is not defined, show the gui instead
+    except NameError:
         main = Main()
         log.ui("Displaying interfaced")
         main.show()
         log.ui("Interface displayed")
     finally:
         sys.exit(app.exec_())
+
 else:
     log.fatal("This program is not meant to be imported!")

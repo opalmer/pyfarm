@@ -27,46 +27,42 @@ import sys
 # From PyFarm
 from lib.Settings import ReadConfig
 from lib.Logger import Logger
-from lib.net import Qt4Reactor
 from lib.net.udp.Broadcast import BroadcastSender, BroadcastReceiever
-Qt4Reactor.install()
 
 # From PyQt
 from PyQt4.QtCore import QCoreApplication, QObject, SIGNAL, SLOT
 
-# From Twisted
-from twisted.internet import main
-from twisted.internet import reactor
-from twisted.internet.protocol import DatagramProtocol
-
 __LOGLEVEL__ = 4
-__MODULE__ = "ClientV2.py"
+__MODULE__ = "Client.py"
+log = Logger(__MODULE__)
 
 class Main(QObject):
     def __init__(self, parent=None):
         super(Main, self).__init__(parent)
         self.config = ReadConfig("%s/cfg" % os.path.dirname(sys.argv[0]))
-        self.log = Logger(__MODULE__)
+        self.master = ''
 
     def listenForBroadcast(self):
         '''
         Step 1:
         Listen for an incoming broadcast from the master
         '''
-        listen = BroadcastReceiever(self.config, self)
-        self.connect(listen, SIGNAL("masterAddress"), self.setMasterAddress)
-        listen.run()
+        self.broadcast = BroadcastReceiever(self.config, self)
+        self.connect(self.broadcast, SIGNAL("master-address"), self.setMasterAddress)
+        self.broadcast.run()
+        print "Hello"
 
-    def setMasterAddress(self, data):
+    def setMasterAddress(self, masterip):
         '''
         Step 2:
         Set self.master to the incoming ip
         '''
-        ip = data[1]
-        self.log.netserver("Incoming Broadcast")
-        self.log.netserver("Receieved master address: %s" % ip)
+        if masterip != self.master:
+            self.master = masterip
+            log.netserver("Got master: %s" % self.master)
 
 app = QCoreApplication(sys.argv)
+log.debug("PID: %s" % os.getpid())
 main = Main(app)
 main.listenForBroadcast()
 app.exec_()

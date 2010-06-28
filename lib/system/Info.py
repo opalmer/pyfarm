@@ -134,20 +134,18 @@ class Network(object):
 
     def ip(self):
         '''Return the ip address'''
-        # ifconfig <adapter> | grep "inet addr" | gawk -F: '{print $2}' | gawk '{print $1}'
-        pass
+        query = "ifconfig %s | grep 'inet addr' | gawk -F: '{print $2}' | gawk '{print $1}'" % self.adapter
+        return SimpleCommand(query)
 
     def subnet(self):
         '''Return subnet information for the adapter'''
-        # ifconfig <adapter> | grep "inet addr" | gawk -F: '{print $4}' | gawk '{print $1}'
-        pass
+        query = "ifconfig %s | grep 'inet addr' | gawk -F: '{print $4}' | gawk '{print $1}'" % self.adapter
+        return SimpleCommand(query)
 
     def hostname(self):
         '''Return the hostname'''
-        # hostname
-        pass
+        return SimpleCommand("hostname")
 
     def mac(self):
         '''Return mac address for the adapter'''
-        # ifconfig <adapter> | grep "Link encap" | awk '{print $5}'
-        pass
+        return SimpleCommand("ifconfig %s | grep 'Link encap' | awk '{print $5}'" % self.adapter)
