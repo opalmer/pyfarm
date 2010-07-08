@@ -42,8 +42,28 @@
         <column name="version" type="str" />
         <column name="command" type="str" />
     </table>
+    <table name="frames">
+        <column name="job" type="str" />
+        <column name="job_parent" type="str" />
+        <column name="frame" type="int" />
+        <column name="time_start" type="int" />
+        <column name="time_end" type="int" />
+        <column name="status" type="int" />
+        <column name="software" type="str" />
+        <column name="command" type="str" />
+        <column name="log" type="str" />
+    </table>
     <table name="jobs">
-        <column name="" />
+        <!--
+        The following values will either be calculated or set in
+        the gui upon change for performance sake.
+            Progress
+            Frames Total
+            Frames Complete
+        --->
+        <column name="job" type="str" />
+        <column name="priority" type="int" />
+        <column name="status" type="int" />
     </table>
     <table name="stats">
         <column name="" />

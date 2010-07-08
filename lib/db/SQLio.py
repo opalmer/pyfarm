@@ -19,3 +19,46 @@ PURPOSE: To read, write, and create the initial database entries
     You should have received a copy of the GNU General Public License
     along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 '''
+
+import os
+import os.path
+import sqlite3
+
+def Import(activeDb, dbfile):
+    '''
+    Import a database from disc into the given database
+
+    VARIABLES:
+        activeDb (tbd) -- Currently active database to insert tables into
+        dbfile (string) -- Path to database to import from
+    '''
+    # only if dbfile is actually a file should we continue
+    if os.path.isfile(dbfile):
+        pass
+    else:
+        raise IOError("%s does not exist!" % dbfile)
+
+def Export(activeDb, dbfile):
+    '''
+
+    Export the given database to disc
+
+    VARIABLES:
+        activeDb (tbd) -- Currently active database to export tables from
+        dbfile (string) -- Path to export tables to
+    '''
+    parentDir = os.path.dirname(dbfile)
+
+    # check to make sure the output directory exists
+    #  If it does not create it, then continue
+    if not os.path.isdir(parentDir):
+        os.mkdirs(parentDir)
+
+def Setup(db):
+    '''
+    Setup and prepopulate the given database
+
+    VARIABLES:
+        db (string) -- location of databse to populate
+    '''
+    pass
