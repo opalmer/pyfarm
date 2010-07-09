@@ -71,6 +71,9 @@
         <column name="job" type="str" />
         <column name="priority" type="int" />
         <column name="status" type="int" />
+
+        <!-- Allows for a job to depend on other job(s)-->
+        <column name="dependency" type="str" />
     </table>
     <table name="stats">
         <!--
