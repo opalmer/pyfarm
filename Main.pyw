@@ -750,6 +750,8 @@ if __name__ != '__MAIN__':
                         help="remove all byte-compiled Python files")
     parser.add_option("--test", action="callback", callback=test.run,
                         help="run testing code")
+    parser.add_option("-d", "--db", action="callback", callback=setDatabase,
+                        help="Set the database for PyFarm before starting the ui")
     (options, args) = parser.parse_args()
 
     # main application

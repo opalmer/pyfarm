@@ -48,6 +48,9 @@
         <column name="frame" type="int" />
         <column name="time_start" type="int" />
         <column name="time_end" type="int" />
+        <column name="time_total" type="int" />
+        <column name="time_processing" type="int" />
+        <column name="ram_used" type="int" />
         <column name="status" type="int" />
         <column name="software" type="str" />
         <column name="command" type="str" />
@@ -56,17 +59,33 @@
     <table name="jobs">
         <!--
         The following values will either be calculated or set in
-        the gui upon change for performance sake.
+        the gui upon change for performance reasons
             Progress
             Frames Total
             Frames Complete
+            Extra info avaliable with right-click:
+                Processing hours
+                Runtime
+                Graphs perhaps?
         --->
         <column name="job" type="str" />
         <column name="priority" type="int" />
         <column name="status" type="int" />
     </table>
     <table name="stats">
-        <column name="" />
+        <!--
+        The following values will either be calculated or set in
+        the gui upon change for performance reasons
+            Frames Total
+            Frames Complete
+            Frames Failed (click to view)
+            Render Time Average
+            Total Hosts
+            Total RAM Free
+            Total Processing hours
+            Total time rendering
+            Failure Rate (%)
+        --->
     </table>
     <table name="config">
         <column name="" />
