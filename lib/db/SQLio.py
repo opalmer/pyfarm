@@ -23,13 +23,70 @@ PURPOSE: To read, write, and create the initial database entries
 import os
 import os.path
 import sqlite3
+from xml.dom.minidom import parse
 
-def Import(activeDb, dbfile):
+class DBSetup(object):
+    '''Parse the database xml file and setup the initial database'''
+    def __init__(self, xml, db):
+        self.xml = parse(xml)
+        self.db = sqlite3.connect(db)
+        self.cur = self.db.cursor()
+        self.type = {
+                            'none' : 'NULL',
+                            'int' : 'INTEGER',
+                            'long' : 'INTEGER',
+                            'str' : 'TEXT',
+                            'unicode' : 'TEXT',
+                            'buffer' : 'BLOB',
+                        }
+
+        script = ''
+        createTable = 'CREATE TABLE IF NOT EXISTS '
+        for table in self.tables():
+            name = table.getAttribute("name")
+            statement = createTable
+            statement += name
+            statement += self.columns(table)
+
+            # so long as the table is not 'empty' create it
+            if not statement == '%s%s();' % (createTable,  name):
+                script += statement
+
+            self.cur.executescript(script)
+            self.cur.close()
+
+    def tables(self):
+        '''Iterator function to return the tables'''
+        for table in self.xml.getElementsByTagName("table"):
+            yield table
+
+    def columns(self, table):
+        '''Function to turn xml column information into string'''
+        out = '('
+        for node in table.childNodes:
+            if node.nodeType == 1:
+                name = node.getAttribute("name")
+                type = self.type[node.getAttribute("type")]
+                out += "%s %s," % (name,  type)
+
+        if not out == '(':
+            return out[:len(out)-1] + ');'
+        else:
+            return '();'
+
+def Setup(xml, db=':memory:'):
+    '''
+    Instead of requiring access to .db we will return that
+    individual attribute instead.
+    '''
+    return DBSetup(xml, db).db
+
+def Import(db, dbfile):
     '''
     Import a database from disc into the given database
 
     VARIABLES:
-        activeDb (tbd) -- Currently active database to insert tables into
+        db (sqlite3.Connection) -- Currently active database to insert tables into
         dbfile (string) -- Path to database to import from
     '''
     # only if dbfile is actually a file should we continue
@@ -38,13 +95,13 @@ def Import(activeDb, dbfile):
     else:
         raise IOError("%s does not exist!" % dbfile)
 
-def Export(activeDb, dbfile):
+def Export(db, dbfile):
     '''
 
     Export the given database to disc
 
     VARIABLES:
-        activeDb (tbd) -- Currently active database to export tables from
+        db (sqlite3.Connection) -- Currently active database to export tables from
         dbfile (string) -- Path to export tables to
     '''
     parentDir = os.path.dirname(dbfile)
@@ -54,11 +111,8 @@ def Export(activeDb, dbfile):
     if not os.path.isdir(parentDir):
         os.mkdirs(parentDir)
 
-def Setup(db):
-    '''
-    Setup and prepopulate the given database
-
-    VARIABLES:
-        db (string) -- location of databse to populate
-    '''
-    pass
+    # dump the database
+    dump = os.linesep.join(db.iterdump())
+    f = open(dbfile,  'w')
+    f.writelines(dump)
+    f.close()
