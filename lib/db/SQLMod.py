@@ -19,3 +19,43 @@ PURPOSE: To modify entries in the given database
     You should have received a copy of the GNU General Public License
     along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 '''
+
+class Insert(object):
+    '''
+    Main wrapper class used to insert entries into a database
+
+    VARIABLES:
+        db (sqlite3.Connection) -- Database to operate on
+        table (str) -- table to operate on
+    '''
+    def __init__(self, db,  table):
+        self.action = "INSERT"
+        self.table = table
+
+
+class Update(object):
+    '''
+    Main wrapper class used to replace entries in the database
+
+
+    VARIABLES:
+        db (sqlite3.Connection) -- Database to operate on
+        table (str) -- table to operate on
+    '''
+    def __init__(self,  db, table):
+        self.action = "UPDATE"
+        self.table = table
+
+
+class Delete(object):
+    '''
+    Main wrapper class used to delete entries from a database
+
+
+    VARIABLES:
+        db (sqlite3.Connection) -- Database to operate on
+        table (str) -- table to operate on
+    '''
+    def __init__(self,  db, table):
+        self.action = "DELETE"
+        self.table = table
