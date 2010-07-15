@@ -114,7 +114,7 @@
        </property>
       </column>
      </widget>
-     <widget class="QPushButton" name="findHosts">
+     <widget class="QPushButton" name="hostsFind">
       <property name="geometry">
        <rect>
         <x>440</x>
@@ -137,7 +137,7 @@
        <string>Find Hosts</string>
       </property>
      </widget>
-     <widget class="QPushButton" name="addHost">
+     <widget class="QPushButton" name="hostsAdd">
       <property name="geometry">
        <rect>
         <x>440</x>
@@ -177,7 +177,7 @@
       <property name="title">
        <string>Host Controls</string>
       </property>
-      <widget class="QPushButton" name="removeHost">
+      <widget class="QPushButton" name="hostRemove">
        <property name="geometry">
         <rect>
          <x>310</x>
@@ -200,7 +200,7 @@
         <string>Remove</string>
        </property>
       </widget>
-      <widget class="QPushButton" name="disableHost">
+      <widget class="QPushButton" name="hostDisable">
        <property name="enabled">
         <bool>false</bool>
        </property>
@@ -226,7 +226,7 @@
         <string>Disable</string>
        </property>
       </widget>
-      <widget class="QPushButton" name="editHost">
+      <widget class="QPushButton" name="hostEdit">
        <property name="enabled">
         <bool>false</bool>
        </property>
@@ -252,7 +252,7 @@
         <string>Edit</string>
        </property>
       </widget>
-      <widget class="QPushButton" name="getHostInfo">
+      <widget class="QPushButton" name="hostInfo">
        <property name="geometry">
         <rect>
          <x>10</x>
@@ -286,8 +286,8 @@
        <rect>
         <x>24</x>
         <y>20</y>
-        <width>89</width>
-        <height>31</height>
+        <width>69</width>
+        <height>22</height>
        </rect>
       </property>
       <property name="font">
@@ -3600,23 +3600,23 @@
      <x>0</x>
      <y>0</y>
      <width>908</width>
-     <height>27</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
     <property name="title">
      <string>File</string>
     </property>
-    <addaction name="loadQue"/>
-    <addaction name="saveQue"/>
+    <addaction name="queueLoad"/>
+    <addaction name="queueSave"/>
     <addaction name="separator"/>
-    <addaction name="menuFile_quit"/>
+    <addaction name="quit"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
      <string>Help</string>
     </property>
-    <addaction name="menuHelp_about"/>
+    <addaction name="about"/>
     <addaction name="menuHelp_updates"/>
     <addaction name="separator"/>
     <addaction name="menuHelp_docs"/>
@@ -3628,7 +3628,7 @@
    <addaction name="menuHelp"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
-  <action name="loadQue">
+  <action name="queueLoad">
    <property name="text">
     <string>Load Queue</string>
    </property>
@@ -3639,7 +3639,7 @@
     <string>Load a queue from a file and append it to the current queue</string>
    </property>
   </action>
-  <action name="menuFile_quit">
+  <action name="quit">
    <property name="text">
     <string>Quit</string>
    </property>
@@ -3650,7 +3650,7 @@
     <string>Exit the program and kill active renders</string>
    </property>
   </action>
-  <action name="saveQue">
+  <action name="queueSave">
    <property name="text">
     <string>Save Queue</string>
    </property>
@@ -3688,7 +3688,7 @@
     <string>Stop all renders on the active node pool [ Not implimented yet ]</string>
    </property>
   </action>
-  <action name="menuHelp_about">
+  <action name="about">
    <property name="enabled">
     <bool>false</bool>
    </property>
@@ -3742,12 +3742,12 @@
   </action>
  </widget>
  <tabstops>
-  <tabstop>findHosts</tabstop>
-  <tabstop>addHost</tabstop>
-  <tabstop>getHostInfo</tabstop>
-  <tabstop>disableHost</tabstop>
-  <tabstop>editHost</tabstop>
-  <tabstop>removeHost</tabstop>
+  <tabstop>hostsFind</tabstop>
+  <tabstop>hostsAdd</tabstop>
+  <tabstop>hostInfo</tabstop>
+  <tabstop>hostDisable</tabstop>
+  <tabstop>hostEdit</tabstop>
+  <tabstop>hostRemove</tabstop>
   <tabstop>networkTable</tabstop>
   <tabstop>softwareSelection</tabstop>
   <tabstop>inputJobName</tabstop>
@@ -3776,10 +3776,10 @@
  <resources/>
  <connections>
   <connection>
-   <sender>menuFile_quit</sender>
+   <sender>quit</sender>
    <signal>triggered()</signal>
    <receiver>MainWindow</receiver>
-   <slot>close()</slot>
+   <slot>quit()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -3807,5 +3807,145 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>queueSave</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>queueSave()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>453</x>
+     <y>387</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>queueLoad</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>queueLoad()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>453</x>
+     <y>387</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>hostsFind</sender>
+   <signal>pressed()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>hostsFind()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>517</x>
+     <y>92</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>453</x>
+     <y>387</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>hostsAdd</sender>
+   <signal>pressed()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>hostAdd()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>517</x>
+     <y>132</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>453</x>
+     <y>387</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>hostRemove</sender>
+   <signal>pressed()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>hostRemove()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>407</x>
+     <y>362</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>453</x>
+     <y>387</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>hostEdit</sender>
+   <signal>pressed()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>hostEdit()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>307</x>
+     <y>362</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>453</x>
+     <y>387</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>hostInfo</sender>
+   <signal>pressed()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>hostInfo()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>107</x>
+     <y>362</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>453</x>
+     <y>387</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>about</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>about()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>453</x>
+     <y>387</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
+ <slots>
+  <slot>hostAdd()</slot>
+  <slot>hostsFind()</slot>
+  <slot>hostInfo()</slot>
+  <slot>hostDisable()</slot>
+  <slot>hostEdit()</slot>
+  <slot>hostRemove()</slot>
+  <slot>queueLoad()</slot>
+  <slot>queueSave()</slot>
+  <slot>about()</slot>
+  <slot>quit()</slot>
+ </slots>
 </ui>
