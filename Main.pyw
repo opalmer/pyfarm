@@ -30,56 +30,69 @@ __LOGLEVEL__ = 2
 # From Python
 import os
 import sys
+import os.path
 
 # From PyQt
+from PyQt4 import uic
 from PyQt4.QtGui import QApplication, QMainWindow
 from PyQt4.QtCore import QObject, SIGNAL, SLOT
 
 # From PyFarm
 from lib.Logger import Logger
 from lib.Settings import ReadConfig
-from lib.system.Info import SystemInfo
-from lib.ui.MainWindow import Ui_MainWindow
-from lib.net.udp.Broadcast import BroadcastSender
+#from lib.system.Info import SystemInfo
+#from lib.ui.MainWindow import Ui_MainWindow
+#from lib.net.udp.Broadcast import BroadcastSender
 
 # sestup logging
 log = Logger(__MODULE__, __LOGLEVEL__)
-log.debug("Modules imported")
+#log.debug("Modules imported")
 
-class Main(QMainWindow):
+class MainWindow(QMainWindow):
     '''This is the controlling class for the main gui'''
     def __init__(self):
-        super(Main, self).__init__()
-        self.ui = Ui_MainWindow()
-        self.ui.setupUi(self)
+        super(MainWindow, self).__init__()
+        self.ui = uic.loadUi(
+                                    os.path.join("lib",
+                                                     "ui",
+                                                     "MainWindow.ui"),
+                                                     baseinstance=self
+                                )
         self.setWindowTitle("PyFarm -- Version %s" % __VERSION__)
 
+        # setup layouts
+        self.centralWidget().setLayout(self.ui.layoutRoot)
+        self.ui.toolboxNetwork.setLayout(self.ui.layoutNetwork)
+        self.ui.hostControls.setLayout(self.ui.layoutHostControlButtons)
+
         # system hardware/software settings
-        self.config = ReadConfig("%s/cfg" % os.path.dirname(sys.argv[0]))
-        self.sysinfo = SystemInfo('cfg')
-        self.hardware = self.sysinfo.hardware
-        self.software = self.sysinfo.software
-        self.network = self.sysinfo.network
-        log.debug("Got system information")
+        self.config = ReadConfig("%scfg" % os.path.dirname(sys.argv[0]))
 
-    # setup the backend database
-#        DBSetup(":memory:")
+    # MainWindow slots, actions, and processes
+    # Other actions could include:
+    ## slots.stats
+    ## slots.state (current software, job, crons, etc.)
+    def hostFindPressed(self): pass # self.slots.host.find()
+    def hostAddPressed(self): pass # self.slots.host.add()
+    def hostInfoPressed(self): pass # self.slots.host.info()
+    def hostDisablePressed(self): pass # self.slots.host.disable()
+    def hostEditPressed(self): pass # self.slots.host.edit()
+    def hostRemovePressed(self): pass # self.slots.host.remove()
+    def aboutTriggered(self): pass # self.slots.help.about()
+    def diagnosticsTriggered(self): pass # self.slots.help.diagnostics()
+    def documentationTriggered(self): pass # self.slots.help.about()
+    def bugsTriggered(self): pass # self.slots.help.about()
+    def updatesTriggered(self): pass # self.slots.help.about()
+    def queueLoadTriggered(self): pass # RUN ACTION HERE
+    def queueSaveTriggered(self): pass # RUN ACTION HERE
+    def quitTriggered(self): pass # RUN ACTION HERE
 
-#
-#        # setup the working directory and default log output
-#        self.qdir = QDir()
-#        self.cwd = self.qdir.currentPath()
-#        self.sep = self.qdir.separator().toAscii()
-#        self.logDir = "%s%slogs" % (self.cwd, self.sep)
-#        self.logOutDir = QDir(self.logDir)
-#
-#        # if the directory does not exist, create it
-#        if not self.logOutDir.exists():
-#            print "Log directory does not exist, creating %s" % self.logDir
-#            mkdir(self.logDir)
-#
-#        self.ui.logDir.setText(self.logOutDir.path())
-#        self.connect(self.ui.browseForLogDir, SIGNAL("pressed()"), self.setNewLogDir)
+#        self.sysinfo = SystemInfo('cfg')
+#        self.hardware = self.sysinfo.hardware
+#        self.software = self.sysinfo.software
+#        self.network = self.sysinfo.network
+#        log.debug("Got system information")
+
 #
 #        # update the installed avaliable software list
 #        for software in settings.installedSoftware():
@@ -109,22 +122,7 @@ class Main(QMainWindow):
 #            """ % wd
 #            self.msg.warning("Software Not Installed", msg)
 #
-#        # network server setup
-#        ## status server setup
-#        self.statusServer = StatusServer(self.dataJob, self.dataGeneral)
-#        self.connect(self.statusServer, SIGNAL('INIT'), self.initHost)
-#        self.connect(self.statusServer, SIGNAL('FRAME_COMPLETE'), self.frameComplete)
-#        self.connect(self.statusServer, SIGNAL('FRAME_FAILED'), self.frameFailed)
-#
-#        ## log server setup
-#        self.logServer = UdpLoggerServer()
-#        self.connect(self.logServer, SIGNAL("incoming_line"), self.processLogLine)
-#
-#        # start the servers
-#        if not self.statusServer.listen(QHostAddress('0.0.0.0'), settings.netPort('status')):
-#            log.exception("Could not start StatusServer: %s" % self.statusServer.errorString())
-#        else:
-#            log.netserver("Status server running on port %s" % settings.netPort('status'))
+
 #
 #        # setup some basic colors
 #        self.red = QColor(255, 0, 0)
@@ -137,11 +135,11 @@ class Main(QMainWindow):
 #        self.orange = QColor(255, 165, 0)
 #
 #        # inform the user of their settings
-        self.updateStatus('SETTINGS', 'Got settings from settings.xml', 'purple')
-        self.updateStatus('SETTINGS', 'Server IP: %s' % self.network.ip(), 'purple')
-        self.updateStatus('SETTINGS', 'Broadcast Port: %s' % self.config.servers['broadcast'], 'purple')
-        self.updateStatus('SETTINGS', 'Logging Port: %s' % self.config.servers['logging'], 'purple')
-        self.updateStatus('SETTINGS', 'Queue Port: %s' %self.config.servers['queue'], 'purple')
+        #self.updateStatus('SETTINGS', 'Got settings from ini file', 'purple')
+#        self.updateStatus('SETTINGS', 'Server IP: %s' % self.network.ip(), 'purple')
+#        self.updateStatus('SETTINGS', 'Broadcast Port: %s' % self.config.servers['broadcast'], 'purple')
+#        self.updateStatus('SETTINGS', 'Logging Port: %s' % self.config.servers['logging'], 'purple')
+#        self.updateStatus('SETTINGS', 'Queue Port: %s' %self.config.servers['queue'], 'purple')
 #
 #        for program in settings.installedSoftware():
 #            self.updateStatus('SETTINGS', '%s: %s' % (program, settings.command(program)), 'purple')
@@ -174,32 +172,6 @@ class Main(QMainWindow):
 #        self.connect(self.ui.houdiniOutputPixelAspect, SIGNAL("valueChanged(double)"), self.setHoudiniAspectRatio)
 #        self.connect(self.ui.houdiniBrowseForScene, SIGNAL("pressed()"), self.softwareManager.browseForScene)
 #        self.connect(self.ui.houdiniNodeList, SIGNAL("customContextMenuRequested(const QPoint &)"), self.houdiniNodeListMenu)
-#
-#        # connect ui vars for
-#        ## network section signals
-        self.connect(self.ui.findHosts, SIGNAL("pressed()"), self.findHosts)
-#        self.connect(self.ui.getHostInfo, SIGNAL("pressed()"), self.showHostInfo)
-#        self.connect(self.ui.addHost, SIGNAL("pressed()"), self._customHostDialog)
-#        self.connect(self.ui.removeHost, SIGNAL("pressed()"), self.dataGeneral.removeHost)
-#        ## save/load from XML
-#        self.connect(self.ui.saveQue, SIGNAL("triggered()"), self.xmlSaveJobs)
-#        self.connect(self.ui.loadQue, SIGNAL("triggered()"), self.xmlLoadJobs)
-#
-#    def xmlLoadJobs(self):
-#        '''Load job information from an external XML file'''
-#        xml = LoadQueFromXML(self)
-#
-#        inFile = QFileDialog.getOpenFileName(\
-#            None,
-#            self.trUtf8("Please Select A File To Load The Job From"),
-#            wd,
-#            self.trUtf8("XML Job Data (*.xml)"),
-#            None)
-#
-#        try:
-#            xml.load(inFile)
-#        except IOError:
-#            self.msg.warning("No File Entered", "Sorry, but you did not select a file to write to.  Without a file to write to PyFarm will be unable to save your job data.")
 
     def foundHost(self, host):
         '''When a host is found, run the appropriate actions'''
@@ -218,55 +190,6 @@ class Main(QMainWindow):
         self.connect(self.broadcast, SIGNAL("started()"), self.searchStarted)
         self.broadcast.run()
 
-#    def xmlSaveJobs(self):
-#        '''Save the current to to an external xml file'''
-#        xml = SaveQueToXML(self.dataJob)
-#        outFile = QFileDialog.getSaveFileName(\
-#            None,
-#            self.trUtf8("Please Select A File To Save The Job To"),
-#            wd,
-#            self.trUtf8("XML Job Data (*.xml)"),
-#            None)
-#
-#        try:
-#            if str(outFile).endswith('.xml'):
-#                xml.save(outFile)
-#            else:
-#                if outFile.length() > 5:
-#                    xml.save(outFile+'.xml')
-#                else:
-#                    self.msg.warning("No File Entered", "Sorry, but you did not select a file to write to.  Without a file to write to PyFarm will be unable to save your job data.")
-#        except IOError:
-#            self.msg.warning("No File Entered", "Sorry, but you did not select a file to write to.  Without a file to write to PyFarm will be unable to save your job data.")
-#
-#    def setNewLogDir(self):
-#        '''Set a new output logging directory'''
-#        currentDir = self.logOutDir.path()
-#        outdir = QFileDialog.getExistingDirectory(\
-#            None,
-#            self.trUtf8("Please Select an Output Directory"),
-#            currentDir,
-#            QFileDialog.Options(QFileDialog.ShowDirsOnly))
-#
-#        if outdir != '':
-#            self.ui.logDir.setText(outdir)
-#            self.logOutDir = QDir(outdir)
-#
-#    def processLogLine(self, line):
-#        '''Process an incoming log line'''
-#        l = line[0].split("::")
-#        self.dataJob[l[0]].data.frame.writeLine(l[1], l[2], l[3], l[4])
-#
-#    def frameFailed(self, job):
-#        '''Take action when a frame has failed'''
-#        self.tableManager.frameFailed(job[0])
-#        self.submitJob.distribute.sendFrame(job[1])
-#
-#    def frameComplete(self, job):
-#        '''Take action when a frame is finished'''
-#        self.tableManager.frameComplete(job[0])
-#        self.submitJob.distribute.sendFrame(job[1])
-#
 #################################
 ### BEGIN Context Menus
 #################################
@@ -698,7 +621,12 @@ class Testing(QObject):
     def __init__(self, parent=None):
         super(Testing, self).__init__(parent)
         self.log = Logger("Main.Testing")
-        self.config = ReadConfig("%s/cfg" % os.path.dirname(sys.argv[0]))
+        self.config = ReadConfig(
+                                     os.path.join(
+                                        "%s" % os.path.dirname(sys.argv[0]),
+                                        "cfg"
+                                   )
+                                 )
         self.log.debug("Test code initilized")
 
     def broadIncriment(self):
@@ -733,26 +661,29 @@ if __name__ != '__MAIN__':
     # command line opton parsing
     import lib.InputFlags as flags
     from optparse import OptionParser
+    from lib.db import SQLio
     about = flags.About(__DEVELOPER__, 'GNU-GPL_Header.txt')
-    sysutil = flags.SystemUtilities()
-    sysinfo = flags.SystemInfo()
-    test = Testing()
+#    sysutil = flags.SystemUtilities()
+#    sysinfo = flags.SystemInfo()
+#    test = Testing()
+#    db = SQLio.Setup("pyfarm.sql")
+
 
     # command line option parser
-    parser = OptionParser(version="PyFarm v%s" % __VERSION__)
-    parser.add_option("--author", dest="author", action="callback",
-                        callback=about.author, help="Return the developer's name")
-    parser.add_option("--license", dest="license", action="callback",
-                        callback=about.license, help="Get the GPL license header")
-    parser.add_option("--sysinfo", dest="sysinfo", action="callback",
-                        callback=sysinfo.showinfo, help="Get processor, ram, etc. info")
-    parser.add_option("--clean",  action="callback",  callback=sysutil.clean,
-                        help="remove all byte-compiled Python files")
-    parser.add_option("--test", action="callback", callback=test.run,
-                        help="run testing code")
-    parser.add_option("-d", "--db", action="callback", callback=setDatabase,
-                        help="Set the database for PyFarm before starting the ui")
-    (options, args) = parser.parse_args()
+#    parser = OptionParser(version="PyFarm v%s" % __VERSION__)
+#    parser.add_option("--author", dest="author", action="callback",
+#                        callback=about.author, help="Return the developer's name")
+#    parser.add_option("--license", dest="license", action="callback",
+#                        callback=about.license, help="Get the GPL license header")
+#    parser.add_option("--sysinfo", dest="sysinfo", action="callback",
+#                        callback=sysinfo.showinfo, help="Get processor, ram, etc. info")
+#    parser.add_option("--clean",  action="callback",  callback=sysutil.clean,
+#                        help="remove all byte-compiled Python files")
+#    parser.add_option("--test", action="callback", callback=test.run,
+#                        help="run testing code")
+#    parser.add_option("-d", "--db", action="callback", callback=SQLio.InitDb,
+#                        help="Set the database for PyFarm before starting the ui")
+#    (options, args) = parser.parse_args()
 
     # main application
     app = QApplication(sys.argv)
@@ -761,12 +692,12 @@ if __name__ != '__MAIN__':
         tmp = __TESTING__
         log.warning("Entering testing mode")
     except NameError:
-        main = Main()
-        log.ui("Displaying interfaced")
+        main = MainWindow()
+        #log.ui("Displaying interfaced")
         main.show()
         log.ui("Interface displayed")
-    finally:
         sys.exit(app.exec_())
+
 
 else:
     log.fatal("This program is not meant to be imported!")

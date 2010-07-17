@@ -35,8 +35,15 @@ class ReadConfig(object):
     '''Read in and perform basic operations on configuration files'''
     def __init__(self, configDir, skipSoftware=True):
         # read in configs
-        self.config = "%s/general.ini" % configDir
-        self.softwareConfigs = [ cfg for cfg in os.listdir("%s/software" % configDir) ]
+        self.config = os.path.join("%s" % configDir, "general.ini")
+        self.softwareConfigs = [
+                                            cfg for cfg in os.listdir(
+                                                                            os.path.join(
+                                                                            "%s"  % configDir,
+                                                                            "software"
+                                                                            )
+                                                                        )
+                                        ]
         self.parser = ConfigParser.ConfigParser()
         self.parser.read(self.config)
 

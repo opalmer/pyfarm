@@ -81,6 +81,10 @@ def Setup(xml, db=':memory:'):
     '''
     return DBSetup(xml, db).db
 
+def InitDb(dbFile,  xml='SOME_DEFAULT'):
+    '''Populate the database at the given path, do not return the sqlite3 object'''
+    return None
+
 def Import(db, dbfile):
     '''
     Import a database from disc into the given database
