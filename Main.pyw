@@ -31,11 +31,12 @@ __LOGLEVEL__ = 2
 import os
 import sys
 import os.path
+import cfg.resources_rc
 
 # From PyQt
 from PyQt4 import uic
-from PyQt4.QtGui import QApplication, QMainWindow
-from PyQt4.QtCore import QObject, SIGNAL, SLOT
+from PyQt4.QtGui import QApplication, QMainWindow, QCloseEvent
+from PyQt4.QtCore import QObject
 
 # From PyFarm
 from lib.Logger import Logger
@@ -53,7 +54,8 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super(MainWindow, self).__init__()
         self.ui = uic.loadUi(
-                                    os.path.join("lib",
+                                    os.path.join(os.path.dirname(__file__),
+                                                     "lib",
                                                      "ui",
                                                      "MainWindow.ui"),
                                                      baseinstance=self
@@ -62,11 +64,21 @@ class MainWindow(QMainWindow):
 
         # setup layouts
         self.centralWidget().setLayout(self.ui.layoutRoot)
+        ## toolbox layouts
         self.ui.toolboxNetwork.setLayout(self.ui.layoutNetwork)
+        self.ui.toolboxSubmit.setLayout(self.ui.submitToolboxLayout)
+        self.ui.toolboxJobs.setLayout(self.ui.jobsToolboxLayout)
         self.ui.hostControls.setLayout(self.ui.layoutHostControlButtons)
 
-        # system hardware/software settings
-        self.config = ReadConfig("%scfg" % os.path.dirname(sys.argv[0]))
+        # general setup and variables
+        self.config = ReadConfig(
+                                            os.path.join(
+                                                             "%s" % os.path.dirname(__file__),
+                                                             "cfg"
+
+                                                            )
+                                        )
+        self.isClosing = False
 
     # MainWindow slots, actions, and processes
     # Other actions could include:
@@ -85,7 +97,16 @@ class MainWindow(QMainWindow):
     def updatesTriggered(self): pass # self.slots.help.about()
     def queueLoadTriggered(self): pass # RUN ACTION HERE
     def queueSaveTriggered(self): pass # RUN ACTION HERE
-    def quitTriggered(self): pass # RUN ACTION HERE
+    def quitTriggered(self): self.closeEvent('manual')
+
+    def closeEvent(self, event):
+        '''When the ui is attempting to exit, run this first.  However, make sure we only do this once'''
+        if self.isClosing:
+            self.close()
+        else:
+            self.isClosing = True
+            print "What would you like to do?: Save Job Database, Interface Settings,  Shutdown Remote Client Program"
+            if event is 'manual': self.close()
 
 #        self.sysinfo = SystemInfo('cfg')
 #        self.hardware = self.sysinfo.hardware

@@ -1,0 +1,11 @@
+<RCC>
+  <qresource prefix="cfg">
+    <file alias="aqsis.png">icons/aqsis.png</file>
+    <file alias="blender.png">icons/blender.png</file>
+    <file alias="houdini.png">icons/houdini.png</file>
+    <file alias="maya.png">icons/maya.png</file>
+    <file alias="nuke.png">icons/nuke.png</file>
+    <file alias="shake.png">icons/shake.png</file>
+	<file alias="custom.png">icons/custom.png</file>
+  </qresource>
+</RCC>
