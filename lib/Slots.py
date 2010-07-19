@@ -20,20 +20,32 @@ PURPOSE: Slot library for quick access to small actions
     along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
+from net.udp.Broadcast import BroadcastSender
+from PyQt4.QtCore import SIGNAL
+
 class Help(object):
     '''Slot functions from the help menu'''
-    def __init__(self, ui):
-        self.ui = ui
+    def __init__(self,parent, config):
+        self.parent = parent
+        self.ui = parent.ui
+        self.config = config
 
 
 class Host(object):
     '''Host related slot functions'''
-    def __init__(self, ui):
-        self.ui = ui
+    def __init__(self, parent, config):
+        self.parent = parent
+        self.ui = parent.ui
+        self.config = config
+
+    def find(self):
+        '''Search for hosts running the client program'''
+        self.broadcast = BroadcastSender(65500)
+        self.broadcast.start()
 
 
 class Slots(object):
     '''Main slots object, all other slots are referenced from here'''
-    def __init__(self, ui):
-        self.help = Help(ui)
-        self.host = Host(ui)
+    def __init__(self, parent, config):
+        self.help = Help(parent, config)
+        self.host = Host(parent, config)

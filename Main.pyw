@@ -36,11 +36,15 @@ import cfg.resources_rc
 # From PyQt
 from PyQt4 import uic
 from PyQt4.QtGui import QApplication, QMainWindow, QCloseEvent
-from PyQt4.QtCore import QObject
+from PyQt4.QtCore import QObject, SIGNAL
+from PyQt4.QtNetwork import QHostAddress
 
 # From PyFarm
+from lib.net.udp.Broadcast import BroadcastReceiever
+from lib.net.tcp.Status import StatusServer
 from lib.Logger import Logger
 from lib.Settings import ReadConfig
+from lib.Slots import Slots
 #from lib.system.Info import SystemInfo
 #from lib.ui.MainWindow import Ui_MainWindow
 #from lib.net.udp.Broadcast import BroadcastSender
@@ -64,7 +68,6 @@ class MainWindow(QMainWindow):
 
         # setup layouts
         self.centralWidget().setLayout(self.ui.layoutRoot)
-        ## toolbox layouts
         self.ui.toolboxNetwork.setLayout(self.ui.layoutNetwork)
         self.ui.toolboxSubmit.setLayout(self.ui.submitToolboxLayout)
         self.ui.toolboxJobs.setLayout(self.ui.jobsToolboxLayout)
@@ -79,12 +82,26 @@ class MainWindow(QMainWindow):
                                                             )
                                         )
         self.isClosing = False
+        self.slots = Slots(self, self.config)
+
+    def foundNewClient(self, data):
+        print data
 
     # MainWindow slots, actions, and processes
     # Other actions could include:
     ## slots.stats
     ## slots.state (current software, job, crons, etc.)
-    def hostFindPressed(self): pass # self.slots.host.find()
+    def hostFindPressed(self):
+        self.slots.host.find()
+        self.statusServer = StatusServer()
+        log.fixme("HARDCODED STATUS SERVER PORT")
+
+        if not self.statusServer.listen(QHostAddress.Any, 65501):
+            log.fatal("Could not start the status server: %s" % self.statusServer.errorString())
+
+        print self.statusServer.isListening(), self.statusServer.serverAddress()
+
+
     def hostAddPressed(self): pass # self.slots.host.add()
     def hostInfoPressed(self): pass # self.slots.host.info()
     def hostDisablePressed(self): pass # self.slots.host.disable()
@@ -641,20 +658,20 @@ class Testing(QObject):
     '''Quick testing code'''
     def __init__(self, parent=None):
         super(Testing, self).__init__(parent)
-        self.log = Logger("Main.Testing")
+        log = Logger("Main.Testing")
         self.config = ReadConfig(
                                      os.path.join(
                                         "%s" % os.path.dirname(sys.argv[0]),
                                         "cfg"
                                    )
                                  )
-        self.log.debug("Test code initilized")
+        log.debug("Test code initilized")
 
     def broadIncriment(self):
-        self.log.netclient("Incrimented")
+        log.netclient("Incrimented")
 
     def broadDone(self, signal):
-        self.log.netclient("Broadcast complete")
+        log.netclient("Broadcast complete")
 
     def sendBroadcast(self):
         '''Send out a broadcast to inform clients of the master node'''
@@ -665,18 +682,18 @@ class Testing(QObject):
 
     def runStatusServer(self):
         '''Run the status server and listen for connections'''
-        self.log.netserver("Running status server")
+        log.netserver("Running status server")
 
     def run(self, option=None, opt=None, value=None, parser=None):
         global __TESTING__
         __TESTING__ = 1
-        self.log.debug("Running test code")
+        log.debug("Running test code")
 
         self.runStatusServer()
         self.sendBroadcast()
 
-        self.log.debug("Test run complete")
-        self.log.terminate("Testing Terminated")
+        log.debug("Test run complete")
+        log.terminate("Testing Terminated")
 
 if __name__ != '__MAIN__':
     # command line opton parsing

@@ -23,11 +23,13 @@ PURPOSE: To handle and run all client connections on a remote machine
 # From Python
 import os
 import sys
+import os.path
 
 # From PyFarm
-from lib.Settings import ReadConfig
 from lib.Logger import Logger
+from lib.Settings import ReadConfig
 from lib.net.udp.Broadcast import BroadcastSender, BroadcastReceiever
+from lib.net.tcp.Status import StatusClient
 
 # From PyQt
 from PyQt4.QtCore import QCoreApplication, QObject, SIGNAL, SLOT
@@ -39,7 +41,12 @@ log = Logger(__MODULE__)
 class Main(QObject):
     def __init__(self, parent=None):
         super(Main, self).__init__(parent)
-        self.config = ReadConfig("%s/cfg" % os.path.dirname(sys.argv[0]))
+        self.config = ReadConfig(
+                                            os.path.join(
+                                                "%s" % os.path.dirname(__file__),
+                                                "cfg"
+                                            )
+                                        )
         self.master = ''
 
     def listenForBroadcast(self):
@@ -47,19 +54,26 @@ class Main(QObject):
         Step 1:
         Listen for an incoming broadcast from the master
         '''
-        self.broadcast = BroadcastReceiever(self.config, self)
-        self.connect(self.broadcast, SIGNAL("master-address"), self.setMasterAddress)
+        self.broadcast = BroadcastReceiever(65500, parent=self)
+        self.connect(self.broadcast, SIGNAL("masterAddress"), self.setMasterAddress)
         self.broadcast.run()
-        print "Hello"
 
     def setMasterAddress(self, masterip):
         '''
         Step 2:
         Set self.master to the incoming ip
         '''
-        if masterip != self.master:
-            self.master = masterip
+        if masterip[1] != self.master:
+            self.master = masterip[1]
             log.netserver("Got master: %s" % self.master)
+        #self.broadcast.quit()
+
+        # inform the master of client computer
+        heartbeat = StatusClient(self.master)
+        heartbeat.updateMaster("INIT", 'hello world')
+        #heartbeat.sendPID('main', 'something', '5', '17838', '6')
+        #heartbeat.sendRequest()
+
 
 app = QCoreApplication(sys.argv)
 log.debug("PID: %s" % os.getpid())
