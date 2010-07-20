@@ -36,7 +36,7 @@ import cfg.resources_rc
 # From PyQt
 from PyQt4 import uic
 from PyQt4.QtGui import QApplication, QMainWindow, QCloseEvent
-from PyQt4.QtCore import QObject, SIGNAL
+from PyQt4.QtCore import QObject, SIGNAL, QString
 from PyQt4.QtNetwork import QHostAddress
 
 # From PyFarm
@@ -72,6 +72,8 @@ class MainWindow(QMainWindow):
         self.ui.toolboxSubmit.setLayout(self.ui.submitToolboxLayout)
         self.ui.toolboxJobs.setLayout(self.ui.jobsToolboxLayout)
         self.ui.hostControls.setLayout(self.ui.layoutHostControlButtons)
+        self.ui.statusDock.widget().setLayout(self.ui.rootDockLayout)
+        self.ui.statusDock.setWindowTitle("Status Console")
 
         # general setup and variables
         self.config = ReadConfig(
@@ -100,7 +102,6 @@ class MainWindow(QMainWindow):
             log.fatal("Could not start the status server: %s" % self.statusServer.errorString())
 
         print self.statusServer.isListening(), self.statusServer.serverAddress()
-
 
     def hostAddPressed(self): pass # self.slots.host.add()
     def hostInfoPressed(self): pass # self.slots.host.info()

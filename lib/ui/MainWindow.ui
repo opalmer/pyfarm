@@ -295,7 +295,7 @@
         <attribute name="title">
          <string>Submit</string>
         </attribute>
-        <widget class="QWidget" name="">
+        <widget class="QWidget" name="layoutWidget">
          <property name="geometry">
           <rect>
            <x>0</x>
@@ -877,7 +877,7 @@
         <attribute name="toolTip">
          <string>View curently active jobs</string>
         </attribute>
-        <widget class="QWidget" name="">
+        <widget class="QWidget" name="layoutWidget">
          <property name="geometry">
           <rect>
            <x>20</x>
@@ -975,7 +975,7 @@
                 <property name="title">
                  <string>Job</string>
                 </property>
-                <widget class="QWidget" name="">
+                <widget class="QWidget" name="layoutWidget">
                  <property name="geometry">
                   <rect>
                    <x>11</x>
@@ -1106,7 +1106,7 @@
                 <property name="title">
                  <string>Frames</string>
                 </property>
-                <widget class="QWidget" name="">
+                <widget class="QWidget" name="layoutWidget">
                  <property name="geometry">
                   <rect>
                    <x>10</x>
@@ -3006,16 +3006,6 @@
        </widget>
       </widget>
      </item>
-     <item>
-      <widget class="QTextBrowser" name="status">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-      </widget>
-     </item>
     </layout>
    </widget>
   </widget>
@@ -3049,10 +3039,46 @@
     <addaction name="separator"/>
     <addaction name="diagnostics"/>
    </widget>
+   <widget class="QMenu" name="menuView">
+    <property name="title">
+     <string>View</string>
+    </property>
+    <addaction name="enableConsole"/>
+   </widget>
    <addaction name="menuFile"/>
+   <addaction name="menuView"/>
    <addaction name="menuHelp"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
+  <widget class="QDockWidget" name="statusDock">
+   <attribute name="dockWidgetArea">
+    <number>8</number>
+   </attribute>
+   <widget class="QWidget" name="dockWidgetContents">
+    <widget class="QWidget" name="horizontalLayoutWidget">
+     <property name="geometry">
+      <rect>
+       <x>20</x>
+       <y>10</y>
+       <width>160</width>
+       <height>80</height>
+      </rect>
+     </property>
+     <layout class="QHBoxLayout" name="rootDockLayout">
+      <item>
+       <widget class="QTextBrowser" name="status">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </widget>
+  </widget>
   <action name="queueLoad">
    <property name="text">
     <string>Load Queue</string>
@@ -3153,6 +3179,17 @@
     <string>Utilities used to perform basic checks on PyFarm's health [ Not implimented yet ]</string>
    </property>
   </action>
+  <action name="enableConsole">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Status Console</string>
+   </property>
+  </action>
  </widget>
  <tabstops>
   <tabstop>hostFind</tabstop>
@@ -3170,7 +3207,6 @@
   <tabstop>jobStop</tabstop>
   <tabstop>jobRemove</tabstop>
   <tabstop>currentJobs</tabstop>
-  <tabstop>status</tabstop>
  </tabstops>
  <resources>
   <include location="../../cfg/resources.qrc"/>
@@ -3400,6 +3436,38 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>enableConsole</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>statusDock</receiver>
+   <slot>setVisible(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>487</x>
+     <y>775</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>statusDock</sender>
+   <signal>visibilityChanged(bool)</signal>
+   <receiver>enableConsole</receiver>
+   <slot>setChecked(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>487</x>
+     <y>775</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>hostFindPressed()</slot>
@@ -3416,5 +3484,6 @@
   <slot>bugsTriggered()</slot>
   <slot>diagnosticsTriggered()</slot>
   <slot>updatesTriggered()</slot>
+  <slot>toggleConsole(bool)</slot>
  </slots>
 </ui>
