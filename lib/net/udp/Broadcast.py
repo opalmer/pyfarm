@@ -39,14 +39,13 @@ __LOGLEVEL__ = 4
 
 class BroadcastSender(QThread):
     '''Class to send broadcast signals to client network'''
-    def __init__(self, port, parent=None):
+    def __init__(self, config, parent=None):
         super(BroadcastSender, self).__init__(parent)
         # setup some standard vars, so we dont broadcast forever
-        self.port = port
-        self.count = 0
-        #self.config = config
-        self.interval = 1
-        self.maxCount = 5
+        self.config = config
+        self.port = self.config['servers']['broadcast']
+        self.count = self.config['broadcast']['interval']
+        self.maxCount = self.config['broadcast']['maxcount']
         self.log = Logger("Broadcast.BroadcastSender",__LOGLEVEL__)
 
         # get all IPs
@@ -59,8 +58,6 @@ class BroadcastSender(QThread):
             if not isLocalhost.match(address) and not isSubnet.match(address) and isIP.match(address):
                 self.addresses += ","+address
         self.log.debug(self.addresses)
-
-        self.log.fixme("Hard coded maxval,  interval values.  NOT using config variable")
 
     def run(self):
         '''Start the broadcast thread and setup the outgoing connection'''
@@ -105,8 +102,6 @@ class BroadcastReceiever(QThread):
             datagram.resize(self.socket.pendingDatagramSize())
             sender = QHostAddress()
             data = self.socket.readDatagram(datagram.size())
-            #for ip in data[0].split(",")[1:]:
-            #    self.verifyIP(ip)
             ip = str(data[1].toString())
             msg = str(data[0])
 

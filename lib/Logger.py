@@ -22,6 +22,9 @@ along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
 import sys
 import time
+import os.path
+
+from lib.Settings import Logging
 
 __LOGLEVEL__ = 4
 __GLOBAL_LOGLEVEL__ = 0 # set to None to disable
@@ -43,6 +46,13 @@ class Logger(object):
         else:
             self.level = level
             self.override = 0
+
+#        self.config = Logging(
+#                                        os.path.join(
+#                                                            "cfg",
+#                                                            "loglevels.xml"
+#                                                        )
+#                                    )
 
         self.solo = solo
         self.timeFormat = "%Y-%m-%d %H:%M:%S"
@@ -137,68 +147,23 @@ class Logger(object):
         self.solo = solo
         self.levels = self.levelList[self.solo]
 
-    #def sqlite(self, msg):
-        #'''Print a sqlite message'''
-        #self._out(self.levelList[0], msg)
-
-    #def netpacket(self, msg):
-        #'''Print a netpacket message'''
-        #self._out(self.levelList[1], msg)
-
-    #def queue(self, msg):
-        #'''Print a queue message'''
-        #self._out(self.levelList[2], msg)
-
-    #def conditional(self, msg):
-        #'''Print a conditional message'''
-        #self._out(self.levelList[3], msg)
-
-    #def netserver(self, msg):
-        #'''Print a network server message'''
-        #self._out(self.levelList[4], msg)
-
-    #def netclient(self, msg):
-        #'''Print a network client message'''
-        #self._out(self.levelList[5], msg)
-
-    #def network(self, msg):
-        #'''Print a general network message'''
-        #self._out(self.levelList[6], msg)
-
-    #def ui(self, msg):
-        #'''Print a ui message'''
-        #self._out(self.levelList[7], msg)
-
-    #def fixme(self, msg):
-        #'''Print a Fix Me message'''
-        #self._out(self.levelList[8], msg)
-
-    #def notimplimented(self, msg):
-        #'''Return a Not Implimented message'''
-        #self._out(self.levelList[9], msg)
-
-    #def debug(self, msg):
-        #'''Print a debug message'''
-        #self._out(self.levelList[10], msg)
-
-    #def info(self, msg):
-        #'''Print an info message'''
-        #self._out(self.levelList[11], msg)
-
-    #def warning(self, msg):
-        #'''Print a warning message'''
-        #self._out(self.levelList[12], msg)
-
-    #def error(self, msg):
-        #'''Print an error message'''
-        #self._out(self.levelList[13], msg)
-
-    #def critical(self, msg):
-        #'''Print a critical message'''
-        #self._out(self.levelList[14], msg)
+    def sqlite(self, msg): self._out(self.levelList[0], msg)
+    def netpacket(self, msg): self._out(self.levelList[1], msg)
+    def queue(self, msg): self._out(self.levelList[2], msg)
+    def conditional(self, msg): self._out(self.levelList[3], msg)
+    def netserver(self, msg): self._out(self.levelList[4], msg)
+    def netclient(self, msg): self._out(self.levelList[5], msg)
+    def network(self, msg): self._out(self.levelList[6], msg)
+    def ui(self, msg): self._out(self.levelList[7], msg)
+    def fixme(self, msg): self._out(self.levelList[8], msg)
+    def notimplimented(self, msg): self._out(self.levelList[9], msg)
+    def debug(self, msg): self._out(self.levelList[10], msg)
+    def info(self, msg): self._out(self.levelList[11], msg)
+    def warning(self, msg): self._out(self.levelList[12], msg)
+    def error(self, msg): self._out(self.levelList[13], msg)
+    def critical(self, msg): self._out(self.levelList[14], msg)
 
     def fatal(self, msg, exitCode=0):
-        '''Print a fatal error message and exit'''
         self._out(self.levelList[15], msg)
         sys.exit(exitCode)
 

@@ -40,7 +40,7 @@ class Host(object):
 
     def find(self):
         '''Search for hosts running the client program'''
-        self.broadcast = BroadcastSender(65500)
+        self.broadcast = BroadcastSender(self.config)
         self.broadcast.start()
 
 

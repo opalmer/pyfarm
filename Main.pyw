@@ -40,8 +40,7 @@ from PyQt4.QtCore import QObject, SIGNAL, QString
 from PyQt4.QtNetwork import QHostAddress
 
 # From PyFarm
-from lib.net.udp.Broadcast import BroadcastReceiever
-from lib.net.tcp.Status import StatusServer
+from lib.net.tcp.Queue import QueueServer
 from lib.Logger import Logger
 from lib.Settings import ReadConfig
 from lib.Slots import Slots
@@ -79,12 +78,20 @@ class MainWindow(QMainWindow):
         self.config = ReadConfig(
                                             os.path.join(
                                                              "%s" % os.path.dirname(__file__),
-                                                             "cfg"
-
+                                                             "cfg",
+                                                             "general.ini"
                                                             )
                                         )
+
         self.isClosing = False
+        self.runServers()
         self.slots = Slots(self, self.config)
+
+    def runServers(self):
+        '''Run the background servers required to operate PyFarm'''
+        self.queueServer = QueueServer()
+        if not self.queueServer.listen(QHostAddress.Any, self.config['servers']['queue']):
+            log.fatal("Could not start the queue server: %s" % self.queueServer.errorString())
 
     def foundNewClient(self, data):
         print data
@@ -93,16 +100,7 @@ class MainWindow(QMainWindow):
     # Other actions could include:
     ## slots.stats
     ## slots.state (current software, job, crons, etc.)
-    def hostFindPressed(self):
-        self.slots.host.find()
-        self.statusServer = StatusServer()
-        log.fixme("HARDCODED STATUS SERVER PORT")
-
-        if not self.statusServer.listen(QHostAddress.Any, 65501):
-            log.fatal("Could not start the status server: %s" % self.statusServer.errorString())
-
-        print self.statusServer.isListening(), self.statusServer.serverAddress()
-
+    def hostFindPressed(self): self.slots.host.find()
     def hostAddPressed(self): pass # self.slots.host.add()
     def hostInfoPressed(self): pass # self.slots.host.info()
     def hostDisablePressed(self): pass # self.slots.host.disable()

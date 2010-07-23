@@ -5,6 +5,8 @@
     and setup.  Another reason for creating an xml rather than reading in an sql file is
     to further prevent the possibility over overwriting the 'base' database setup.
 
+    This file should not be changed by the end user.
+
     This file is part of PyFarm.
     Copyright (C) 2008-2010 Oliver Palmer
 

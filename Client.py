@@ -28,8 +28,8 @@ import os.path
 # From PyFarm
 from lib.Logger import Logger
 from lib.Settings import ReadConfig
-from lib.net.udp.Broadcast import BroadcastSender, BroadcastReceiever
-from lib.net.tcp.Status import StatusClient
+from lib.net.udp.Broadcast import BroadcastReceiever
+from lib.net.tcp.Queue import QueueClient
 
 # From PyQt
 from PyQt4.QtCore import QCoreApplication, QObject, SIGNAL, SLOT
@@ -44,7 +44,8 @@ class Main(QObject):
         self.config = ReadConfig(
                                             os.path.join(
                                                 "%s" % os.path.dirname(__file__),
-                                                "cfg"
+                                                "cfg",
+                                                "general.ini"
                                             )
                                         )
         self.master = ''
@@ -54,7 +55,7 @@ class Main(QObject):
         Step 1:
         Listen for an incoming broadcast from the master
         '''
-        self.broadcast = BroadcastReceiever(65500, parent=self)
+        self.broadcast = BroadcastReceiever(self.config['servers']['broadcast'], parent=self)
         self.connect(self.broadcast, SIGNAL("masterAddress"), self.setMasterAddress)
         self.broadcast.run()
 
@@ -69,8 +70,9 @@ class Main(QObject):
         #self.broadcast.quit()
 
         # inform the master of client computer
-        heartbeat = StatusClient(self.master)
-        heartbeat.updateMaster("INIT", 'hello world')
+        queue = QueueClient(self.master, port=self.config['servers']['queue'])
+        log.fixme('HARD CODED NETWORK HOSTNAME AND IP')
+        queue.addClient('octo', '10.56.1.2')
         #heartbeat.sendPID('main', 'something', '5', '17838', '6')
         #heartbeat.sendRequest()
 
