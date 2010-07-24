@@ -21,10 +21,11 @@ along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
 # From Python
+import os.path
 import subprocess
 
 # From PyFarm
-from lib.Logger import Logger
+#from lib.Logger import Logger
 
 __MODULE__ = "lib.system.Utility"
 __LOGLEVEL__ = 4
@@ -45,3 +46,10 @@ def SimpleCommand(cmd):
     #log.debug("Process complete")
 
     return results
+
+def backtrackDirs(path, levels=1):
+    '''Given a path backtrack the number of requested levels'''
+    for i in range(0, levels):
+        path = os.path.dirname(path)
+
+    return path

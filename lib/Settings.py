@@ -61,7 +61,41 @@ class Software(object):
     def __init__(self): pass
 
 
-class Logging(object):
+def ConfigLogger(xml):
     '''Read the logging configuration file and return the required information'''
-    def __init__(self, xml):
-        self.xml = minidom.parse(xml)
+    out = {}
+    xml = minidom.parse(xml)
+
+    for element in xml.getElementsByTagName("level"):
+        if eval(element.getAttribute("enabled")):
+            level = int(element.getAttribute("value"))
+            name = str(element.getAttribute("name"))
+
+            # function name
+            if element.hasAttribute("function"):
+                function = str(element.getAttribute("function"))
+            else:
+                function = name
+
+            # terminal color (linux only)
+            if element.hasAttribute("color") and os.name == 'posix':
+                color = str(element.getAttribute("color"))
+            else:
+                color = ''
+
+            # bold attribute
+            if element.hasAttribute("bold") and os.name == 'posix':
+                bold = 'BOLD_VALUE' # this should really be getting the bold VALUE
+            else:
+                bold = ''
+
+            # place element into output dictionary
+            out[level] = {
+                                'name' : name,
+                                'function' : function,
+                                'color' : color,
+                                'bold' : bold
+                            }
+    return out
+
+

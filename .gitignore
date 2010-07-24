@@ -6,3 +6,4 @@ test.sql
 *.pyc
 *.swp
 tools/depgraph/output/*
+*notes*

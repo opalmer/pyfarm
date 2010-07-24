@@ -24,27 +24,21 @@
 -->
 
 <loglevels>
-    <!--
-        value -- log level value
-        name -- name to see console, will be in caps
-        function -- name of function to call log level with
-        color -- color value to use in linux terminals
-    -->
     <level value="0" name="sqlite" enabled="True" />
     <level value="1" name="netpacket" enabled="True" />
     <level value="2" name="queue" enabled="True" />
-    <level value="3" name="conditional" enabled="True" />
+    <level value="3" name="conditional" enabled="False" />
     <level value="4" name="network.server" function="netserver" enabled="True" />
     <level value="5" name="network.client" function="netclient" enabled="True" />
-    <level value="6" name="network" enabled="True" />
+    <level value="6" name="network" enabled="False" />
     <level value="7" name="ui" enabled="True" />
     <level value="8" name="fixme" enabled="True" />
-    <level value="9" name="not implimented" function="notimplimented" enabled="True" />
+    <level value="9" name="not implimented" function="notimplimented" enabled="False" />
     <level value="10" name="debug" enabled="True" />
     <level value="11" name="info" enabled="True" />
-    <level value="12" name="warning" color="\033[0;36m" enabled="True" />
-    <level value="13" name="error" enabled="True" />
-    <level value="14" name="critical" color="\033[1;33m" enabled="True" />
-    <level value="15" name="fatal"  color="\033[1;41m" enabled="True" />
-    <level value="16" name="terminated" color="\033[0;36m" enabled="True" />
+    <level value="12" name="warning" color="\033[0;36m" bold="True" enabled="True" />
+    <level value="13" name="error" bold="True" enabled="True" />
+    <level value="14" name="critical" color="\033[1;33m" bold="True" enabled="True" />
+    <level value="15" name="fatal"  color="\033[1;41m" bold="True" enabled="True" />
+    <level value="16" name="terminated" color="\033[0;36m" bold="True" enabled="True" />
 </loglevels>

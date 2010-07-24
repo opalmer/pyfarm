@@ -24,7 +24,8 @@ import sys
 import time
 import os.path
 
-from lib.Settings import Logging
+from lib.Settings import ConfigLogger
+from lib.system.Utility import backtrackDirs
 
 __LOGLEVEL__ = 4
 __GLOBAL_LOGLEVEL__ = 0 # set to None to disable
@@ -47,12 +48,15 @@ class Logger(object):
             self.level = level
             self.override = 0
 
-#        self.config = Logging(
-#                                        os.path.join(
-#                                                            "cfg",
-#                                                            "loglevels.xml"
-#                                                        )
-#                                    )
+        self.config = ConfigLogger(
+                                            os.path.join(
+                                                            backtrackDirs(__file__, 2),
+                                                            "cfg",
+                                                            "loglevels.xml"
+                                                            )
+                                            )
+        from pprint import pprint
+        pprint(self.config)
 
         self.solo = solo
         self.timeFormat = "%Y-%m-%d %H:%M:%S"
@@ -84,7 +88,6 @@ class Logger(object):
                                 "TERMINATED" : "\033[0;32m"
                             }
 
-
         self.setName(name)
         self.setLevel(level)
 
@@ -97,15 +100,14 @@ class Logger(object):
         for level, name in self.levelList.items():
             vars(self)[name.lower()] = (lambda msg: self._out(name, msg))
 
-
     def _out(self, level, msg):
         '''Perform final formatting and output the message to the appropriate locations'''
         if level in self.levels:
             if level in self.levelColors.keys():
                 out = "%s - %s%s%s - %s - %s" % (time.strftime(self.timeFormat),
-                self.bold(1, level), level, self.bold(0, level), self.name, msg)
+                self.bold(1, level), level, self.bold(0, level),  self.name, msg)
             else:
-                out = "%s - %s - %s - %s" % (time.strftime(self.timeFormat), level, self.name, msg)
+                out = "%s - %s%-15s - %s - %s" % (time.strftime(self.timeFormat), '', level, self.name, msg)
 
             print out
             if self.logfile:
@@ -114,13 +116,16 @@ class Logger(object):
 
     def bold(self, makeBold, error="\033[0m"):
         '''Return either bold or unbold strings'''
-        if makeBold:
-            if error in self.levelColors.keys():
-                return self.levelColors[error]
+        if os.name == 'posix':
+            if makeBold:
+                if error in self.levelColors.keys():
+                    return self.levelColors[error]
+                else:
+                    return error
             else:
-                return error
+                return "\033[0;0m"
         else:
-            return "\033[0;0m"
+            return ''
 
     def close(self):
         '''Close out the log file'''
