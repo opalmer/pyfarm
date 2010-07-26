@@ -61,33 +61,6 @@ class Logger(object):
         self.solo = solo
         self.timeFormat = "%Y-%m-%d %H:%M:%S"
 
-        self.levelList = {
-                0 : "SQLITE",
-                1 : "NETPACKET",
-                2 : "QUEUE",
-                3 : "CONDITIONAL",
-                4 : "NETWORK.SERVER",
-                5 : "NETWORK.CLIENT",
-                6 : "NETWORK",
-                7 : "UI",
-                8 : "FIXME",
-                9 : "NOT IMPLIMENTED",
-                10 : "DEBUG",
-                11 : "INFO",
-                12 : "WARNING",
-                13 : "ERROR",
-                14 : "CRITICAL",
-                15 : "FATAL",
-                16 : "TERMINATED"
-            }
-
-        self.levelColors = {
-                                "WARNING" : "\033[0;36m",
-                                "CRITICAL" : "\033[1;33m",
-                                "FATAL" : "\033[1;41m",
-                                "TERMINATED" : "\033[0;32m"
-                            }
-
         self.setName(name)
         self.setLevel(level)
 
@@ -107,7 +80,7 @@ class Logger(object):
                 out = "%s - %s%s%s - %s - %s" % (time.strftime(self.timeFormat),
                 self.bold(1, level), level, self.bold(0, level),  self.name, msg)
             else:
-                out = "%s - %s%-15s - %s - %s" % (time.strftime(self.timeFormat), '', level, self.name, msg)
+                out = "%s - %s%s - %s - %s" % (time.strftime(self.timeFormat), level, self.name, msg)
 
             print out
             if self.logfile:

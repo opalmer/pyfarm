@@ -67,35 +67,35 @@ def ConfigLogger(xml):
     xml = minidom.parse(xml)
 
     for element in xml.getElementsByTagName("level"):
-        if eval(element.getAttribute("enabled")):
-            level = int(element.getAttribute("value"))
-            name = str(element.getAttribute("name"))
+        level = int(element.getAttribute("value"))
+        name = str(element.getAttribute("name"))
 
-            # function name
-            if element.hasAttribute("function"):
-                function = str(element.getAttribute("function"))
-            else:
-                function = name
+        # function name
+        if element.hasAttribute("function"):
+            function = str(element.getAttribute("function"))
+        else:
+            function = name
 
-            # terminal color (linux only)
-            if element.hasAttribute("color") and os.name == 'posix':
-                color = str(element.getAttribute("color"))
-            else:
-                color = ''
+        # terminal color (linux only)
+        if element.hasAttribute("color") and os.name == 'posix':
+            color = str(element.getAttribute("color"))
+        else:
+            color = ''
 
-            # bold attribute
-            if element.hasAttribute("bold") and os.name == 'posix':
-                bold = 'BOLD_VALUE' # this should really be getting the bold VALUE
-            else:
-                bold = ''
+        # bold attribute
+        if element.hasAttribute("bold") and os.name == 'posix':
+            bold = 'BOLD_VALUE' # this should really be getting the bold VALUE
+        else:
+            bold = ''
 
-            # place element into output dictionary
-            out[level] = {
-                                'name' : name,
-                                'function' : function,
-                                'color' : color,
-                                'bold' : bold
-                            }
+        # place element into output dictionary
+        out[level] = {
+                            'name' : name,
+                            'function' : function,
+                            'color' : color,
+                            'bold' : bold,
+                            'enabled' : eval(element.getAttribute("enabled"))
+                        }
     return out
 
 
