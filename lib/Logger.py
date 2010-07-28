@@ -31,6 +31,33 @@ __LOGLEVEL__ = 4
 __GLOBAL_LOGLEVEL__ = 0 # set to None to disable
 __MODULE__ = "lib.Logger"
 
+class Level(object):
+    def __init__(self, method, host, method_name=None):
+        self.host = host
+        self.method = method
+        setattr(host, method_name or method.__name__, self)
+
+    def __call__(self, *args, **kwargs):
+        nargs = [self.host]
+        nargs.extend(args)
+        return apply(self.method, nargs, kwargs)
+
+class LevelName(object):
+    def __init__(self, name):
+        self.name = name
+
+class Logger(object):
+    def __init__(self, levels): # change to use xml below
+        self.name = name
+        for level in levels:
+            vars(self)[level] = self._newLevel(level)
+
+    def _newLevel(self, name):
+        return Level(self._out, LevelName(name), name)
+
+    def _out(self, host, msg):
+        return "%s %s %s" % (self.name, host.name, msg)
+
 class Logger(object):
     '''
     Custom logging object for PyFarm
@@ -124,28 +151,3 @@ class Logger(object):
         '''If set to 1 only the logLevel matching solo will be output'''
         self.solo = solo
         self.levels = self.levelList[self.solo]
-
-    def sqlite(self, msg): self._out(self.levelList[0], msg)
-    def netpacket(self, msg): self._out(self.levelList[1], msg)
-    def queue(self, msg): self._out(self.levelList[2], msg)
-    def conditional(self, msg): self._out(self.levelList[3], msg)
-    def netserver(self, msg): self._out(self.levelList[4], msg)
-    def netclient(self, msg): self._out(self.levelList[5], msg)
-    def network(self, msg): self._out(self.levelList[6], msg)
-    def ui(self, msg): self._out(self.levelList[7], msg)
-    def fixme(self, msg): self._out(self.levelList[8], msg)
-    def notimplimented(self, msg): self._out(self.levelList[9], msg)
-    def debug(self, msg): self._out(self.levelList[10], msg)
-    def info(self, msg): self._out(self.levelList[11], msg)
-    def warning(self, msg): self._out(self.levelList[12], msg)
-    def error(self, msg): self._out(self.levelList[13], msg)
-    def critical(self, msg): self._out(self.levelList[14], msg)
-
-    def fatal(self, msg, exitCode=0):
-        self._out(self.levelList[15], msg)
-        sys.exit(exitCode)
-
-    def terminate(self, msg):
-        '''Terminate the running program with a final log message'''
-        self._out(self.levelList[16], msg)
-        sys.exit(0)
