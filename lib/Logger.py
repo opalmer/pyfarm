@@ -47,18 +47,6 @@ class LevelName(object):
         self.name = name
 
 class Logger(object):
-    def __init__(self, levels): # change to use xml below
-        self.name = name
-        for level in levels:
-            vars(self)[level] = self._newLevel(level)
-
-    def _newLevel(self, name):
-        return Level(self._out, LevelName(name), name)
-
-    def _out(self, host, msg):
-        return "%s %s %s" % (self.name, host.name, msg)
-
-class Logger(object):
     '''
     Custom logging object for PyFarm
 
@@ -82,6 +70,7 @@ class Logger(object):
                                                             "loglevels.xml"
                                                             )
                                             )
+
         from pprint import pprint
         pprint(self.config)
 
@@ -91,28 +80,30 @@ class Logger(object):
         self.setName(name)
         self.setLevel(level)
 
+        for level in levels:
+            vars(self)[level] = self._newLevel(level)
+
         if logfile:
             self.logfile = open(logfile, "a")
         else:
             self.logfile = None
 
-        # create log functions on load
-        for level, name in self.levelList.items():
-            vars(self)[name.lower()] = (lambda msg: self._out(name, msg))
+    def _newLevel(self, name):
+        return Level(self._out, LevelName(name), name)
 
-    def _out(self, level, msg):
-        '''Perform final formatting and output the message to the appropriate locations'''
-        if level in self.levels:
-            if level in self.levelColors.keys():
-                out = "%s - %s%s%s - %s - %s" % (time.strftime(self.timeFormat),
-                self.bold(1, level), level, self.bold(0, level),  self.name, msg)
-            else:
-                out = "%s - %s%s - %s - %s" % (time.strftime(self.timeFormat), level, self.name, msg)
-
-            print out
-            if self.logfile:
-                self.logfile.write(out+"\n")
-                self.logfile.flush()
+    def _out(self, host, msg):
+        return "%s %s %s" % (self.name, host.name, msg)
+#        if level in self.levels:
+#            if level in self.levelColors.keys():
+#                out = "%s - %s%s%s - %s - %s" % (time.strftime(self.timeFormat),
+#                self.bold(1, level), level, self.bold(0, level),  self.name, msg)
+#            else:
+#                out = "%s - %s%s - %s - %s" % (time.strftime(self.timeFormat), level, self.name, msg)
+#
+#            print out
+#            if self.logfile:
+#                self.logfile.write(out+"\n")
+#                self.logfile.flush()
 
     def bold(self, makeBold, error="\033[0m"):
         '''Return either bold or unbold strings'''
@@ -126,14 +117,6 @@ class Logger(object):
                 return "\033[0;0m"
         else:
             return ''
-
-    def close(self):
-        '''Close out the log file'''
-        self.logfile.close()
-
-    def setName(self, name):
-        '''Set the name for the logger'''
-        self.name = name
 
     def setLevel(self, level):
         '''Set the level and configure the level list'''
@@ -151,3 +134,11 @@ class Logger(object):
         '''If set to 1 only the logLevel matching solo will be output'''
         self.solo = solo
         self.levels = self.levelList[self.solo]
+
+    def close(self):
+        '''Close out the log file'''
+        self.logfile.close()
+
+    def setName(self, name):
+        '''Set the name for the logger'''
+        self.name = name
