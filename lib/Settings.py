@@ -24,6 +24,7 @@ along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 import os
 import sys
 import os.path
+import string
 import ConfigParser
 from xml.dom import minidom
 
@@ -78,23 +79,31 @@ def ConfigLogger(xml):
 
         # terminal color (linux only)
         if element.hasAttribute("color") and os.name == 'posix':
-            color = str(element.getAttribute("color"))
+            coloron = str(element.getAttribute("color"))
+            coloroff = str(element.getAttribute("color"))+'OFF'
         else:
-            color = ''
+            coloron = ''
+            coloroff = ''
 
         # bold attribute
         if element.hasAttribute("bold") and os.name == 'posix':
-            bold = 'BOLD_VALUE' # this should really be getting the bold VALUE
+            boldon = 'BOLD' # this should really be getting the bold VALUE
+            boldoff = 'UNBOLD'
         else:
-            bold = ''
+            boldon = ''
+            boldoff = ''
 
         # place element into output dictionary
-        out[level] = {
+        out[name] = {
+                            'level' : level,
                             'name' : name,
                             'function' : function,
-                            'color' : color,
-                            'bold' : bold,
-                            'enabled' : eval(element.getAttribute("enabled"))
+                            'coloron' : coloron,
+                            'coloroff' : coloroff,
+                            'boldon' : boldon,
+                            'boldoff' : boldoff,
+                            'enabled' : eval(element.getAttribute("enabled")),
+                            'template' : string.Template('%s$time - %s%s%s - $logger - $message%s' % (coloron,  boldon, name, boldoff, coloroff))
                         }
     return out
 
