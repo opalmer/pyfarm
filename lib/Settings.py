@@ -103,8 +103,9 @@ def ConfigLogger(xml):
                             'boldon' : boldon,
                             'boldoff' : boldoff,
                             'enabled' : eval(element.getAttribute("enabled")),
-                            'template' : string.Template('%s$time - %s%s%s - $logger - $message%s' % (coloron,  boldon, name, boldoff, coloroff))
+                            'template' : string.Template('%s$time - $logger - %s%s%s - $message%s' % (coloron,  boldon, name.upper(), boldoff, coloroff))
                         }
+
     return out
 
 

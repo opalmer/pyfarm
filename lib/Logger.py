@@ -20,6 +20,7 @@ You should have received a copy of the GNU General Public License
 along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
+import os
 import sys
 import time
 import os.path
@@ -30,7 +31,6 @@ from lib.system.Utility import backtrackDirs
 __LOGLEVEL__ = 4
 __GLOBAL_LOGLEVEL__ = 0 # set to None to disable
 __MODULE__ = "lib.Logger"
-
 
 class LevelName(object):
     def __init__(self, name):
@@ -73,17 +73,15 @@ class Logger(object):
                                                             "loglevels.xml"
                                                             )
                                             )
-        print self.config.keys()
 
         self.solo = solo
         self.timeFormat = "%Y-%m-%d %H:%M:%S"
 
         self.setName(name)
-        #self.setLevel(level)
 
         self.levels = []
         for function, levelDict in self.config.items():
-            vars(self)[function] = self.newLevel(levelDict['name'], function)
+            vars(self)[levelDict['function']] = self.newLevel(levelDict['name'], function)
             if levelDict['enabled']:
                 self.levels.append(levelDict['name'])
 
@@ -97,50 +95,18 @@ class Logger(object):
         return Level(self._out, LevelName(name), function)
 
     def _out(self, level, msg):
-        if level.name in self.levels: #pass
-            #out = "%s" % (time.strftime(self.timeFormat),  - )
-            print self.config[level.name]
-            #print out
-            #out = "%s - %s%s%s - %s - %s" % (time.strftime(self.timeFormat),
-#                #self.bold(1, level), level, self.bold(0, level),  self.name, msg)
-                #print level.name
-#            if level in self.levelColors.keys():
-#                #out = "%s - %s%s%s - %s - %s" % (time.strftime(self.timeFormat),
-#                #self.bold(1, level), level, self.bold(0, level),  self.name, msg)
-#                out = "%s %s %s" % (self.name, level.name, msg)
-#            else:
-#                #out = "%s - %s%s - %s - %s" % (time.strftime(self.timeFormat), level, self.name, msg)
-#                out = "%s %s %s" % (self.name, level.name, msg)
+        if level.name in self.levels:
+            cfg = self.config[level.name]
 
-            #print out
+            print cfg['template'].substitute(
+                time=time.strftime(self.timeFormat),
+                logger=self.name,
+                message=msg
+            )
+
             if self.logfile:
-                self.logfile.write(out+"\n")
+                self.logfile.write(out+os.linesep)
                 self.logfile.flush()
-
-    def bold(self, makeBold, error="\033[0m"):
-        '''Return either bold or unbold strings'''
-        if os.name == 'posix':
-            if makeBold:
-                if error in self.levelColors.keys():
-                    return self.levelColors[error]
-                else:
-                    return error
-            else:
-                return "\033[0;0m"
-        else:
-            return ''
-
-    def setLevel(self, level):
-        '''Set the level and configure the level list'''
-        if __GLOBAL_LOGLEVEL__ != None and not self.solo:
-            levelKeys = self.levelList.keys()[__GLOBAL_LOGLEVEL__:]
-            self.levels = [ self.levelList[level] for level in levelKeys ]
-        elif self.solo and type(solo) == str:
-            print "SELF.SOLO STRING NOT IMPLIMENTED!"
-        elif self.solo and type(solo) == list:
-            print "SELF.SOLO LIST NOT IMPLIMENTED!"
-        else:
-            self.levels = self.levelList[self.level]
 
     def setSolo(self, solo):
         '''If set to 1 only the logLevel matching solo will be output'''
