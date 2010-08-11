@@ -52,7 +52,6 @@ def ReadConfig(cfgInput):
                     if option == "enable": cfg.getboolean(section, option)
                     else: out[section][option] = cfg.get(section, option)
 
-        #log.debug("Read configuration file")
         return out
     else:
         raise IOError("%s is not a valid config file" % cfgInput)
@@ -70,6 +69,7 @@ def ConfigLogger(xml):
     for element in xml.getElementsByTagName("level"):
         level = int(element.getAttribute("value"))
         name = str(element.getAttribute("name"))
+        enabled = str(element.getAttribute("enabled"))
 
         # function name
         if element.hasAttribute("function"):
@@ -102,7 +102,7 @@ def ConfigLogger(xml):
                             'coloroff' : coloroff,
                             'boldon' : boldon,
                             'boldoff' : boldoff,
-                            'enabled' : eval(element.getAttribute("enabled")),
+                            'enabled' : enabled,
                             'template' : string.Template('%s$time - $logger - %s%s%s - $message%s' % (coloron,  boldon, name.upper(), boldoff, coloroff))
                         }
 

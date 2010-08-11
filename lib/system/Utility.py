@@ -35,21 +35,21 @@ def SimpleCommand(cmd):
     Run the given command and return the resulting string. Please
      note this function is for SINGLE COMMANDS only.
     '''
-    #log = Logger("Utility.RunCommand")
-    #log.debug("Starting process")
+    log = Logger("Utility.RunCommand")
+    log.debug("Starting process")
 
     proc = subprocess.Popen(cmd, shell=True,
         stdin=subprocess.PIPE, stdout=subprocess.PIPE  )
 
-    #log.debug("Running command: %s" % cmd)
+    log.debug("Running command: %s" % cmd)
     results = proc.stdout.readline().split()[0]
-    #log.debug("Process complete")
+    log.debug("Process complete")
 
     return results
 
 def backtrackDirs(path, levels=1):
     '''Given a path backtrack the number of requested levels'''
     for i in range(0, levels):
-        path = os.path.dirname(path)
+        path = os.path.dirname(os.path.abspath(path))
 
     return path

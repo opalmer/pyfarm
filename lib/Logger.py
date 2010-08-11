@@ -66,13 +66,13 @@ class Logger(object):
             self.level = level
             self.override = 0
 
-        self.config = ConfigLogger(
-                                            os.path.join(
-                                                            backtrackDirs(__file__, 2),
-                                                            "cfg",
-                                                            "loglevels.xml"
-                                                            )
-                                            )
+        self.xml = os.path.join(
+                                        backtrackDirs(__file__, 2),
+                                        "cfg",
+                                        "loglevels.xml"
+                                    )
+
+        self.config = ConfigLogger(self.xml)
 
         self.solo = solo
         self.timeFormat = "%Y-%m-%d %H:%M:%S"

@@ -40,5 +40,5 @@
     <level value="13" name="error" bold="True" enabled="True" />
     <level value="14" name="critical" color="\033[1;33m" bold="True" enabled="True" />
     <level value="15" name="fatal"  color="\033[1;41m" bold="True" enabled="True" />
-    <level value="16" name="terminated" color="\033[0;36m" bold="True" enabled="True" />
+    <level value="16" name="terminate" color="\033[0;36m" bold="True" enabled="True" />
 </loglevels>

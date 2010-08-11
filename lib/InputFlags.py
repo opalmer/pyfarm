@@ -62,7 +62,7 @@ class SystemInfo(object):
     def software(self, option=None, opt=None, value=None, parser=None):
         '''Echo only installed software information to the command line'''
         self.log.debug("Getting software info")
-        out = "\nInstalled Software: "+log.bold(0)
+        out = "\nInstalled Software: "
         count = 0
 
         # find the software and add it to the output
@@ -109,7 +109,7 @@ class About(object):
 
     def author(self, option=None, opt=None, value=None, parser=None):
         '''Return the author's name'''
-        print "%sDeveloped By:%s %s" % (log.bold(1), log.bold(0), self.dev)
+        log.info("Developed By: %s" % self.dev)
         log.terminate("Program terminated by command line flag")
 
     def license(self, option=None, opt=None, value=None, parser=None):
