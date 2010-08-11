@@ -12,7 +12,7 @@ if rootDir not in sys.path: sys.path.append(rootDir)
 
 from lib.Logger import Logger
 
-class Levels(unittest.TestCase):
+class Validate(unittest.TestCase):
     def setUp(self):
         self.log = Logger('LevelTest')
         self.xml = minidom.parse(self.log.xml)
@@ -22,7 +22,7 @@ class Levels(unittest.TestCase):
         self.assertTrue(self.log.levels,  "Log levels do not exist")
 
     def testValidFunctionNames(self):
-        '''Make sure all function names are valid'''
+        '''Assure function names are valid'''
         containsSpaces = re.compile(r'''(.+\s.+)''')
         containsDot = re.compile(r'''(.+[.].+)''')
         for name,  data in self.log.config.items():
@@ -51,7 +51,7 @@ class Levels(unittest.TestCase):
                             )
 
     def testLevalValueRepeated(self):
-        '''Test for repeat level values'''
+        '''Search for repeat level values'''
         levels = []
         for element in self.xml.getElementsByTagName("level"):
             level = int(element.getAttribute("value"))
@@ -62,7 +62,7 @@ class Levels(unittest.TestCase):
             levels.append(level)
 
     def testLevelNameRepeated(self):
-        '''Fail on repeated names'''
+        '''Search for repeat level names'''
         levelNames = []
         for element in self.xml.getElementsByTagName("level"):
             name = str(element.getAttribute("name"))
@@ -73,7 +73,7 @@ class Levels(unittest.TestCase):
             levelNames.append(name)
 
     def testLevelFunctionRepeated(self):
-        '''Fail on repeated functions'''
+        '''Search for repeat funtion names'''
         functions = []
         for element in self.xml.getElementsByTagName("level"):
             if element.hasAttribute("function"):
@@ -88,7 +88,7 @@ class Levels(unittest.TestCase):
             functions.append(function)
 
     def testMissingLogLevels(self):
-        '''Search for missing log information'''
+        '''Verify all log levels are present in xml'''
         functions = []
         reLog = re.compile(r"""(?:log|logger|logging)[.](\w+)(?:[(])""")
 

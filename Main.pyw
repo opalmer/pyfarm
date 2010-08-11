@@ -31,15 +31,17 @@ __LOGLEVEL__ = 2
 import os
 import sys
 import os.path
-import cfg.resources_rc
+import unittest
 
 # From PyQt
 from PyQt4 import uic
-from PyQt4.QtGui import QApplication, QMainWindow, QCloseEvent
+from PyQt4.Qt import Qt
+from PyQt4.QtGui import QApplication, QMainWindow, QCloseEvent, QSplashScreen, QPixmap
 from PyQt4.QtCore import QObject, SIGNAL, QString
 from PyQt4.QtNetwork import QHostAddress
 
 # From PyFarm
+import cfg.resources_rc
 from lib.net.tcp.Queue import QueueServer
 from lib.Logger import Logger
 from lib.Settings import ReadConfig
@@ -723,8 +725,30 @@ if __name__ != '__MAIN__':
 #    (options, args) = parser.parse_args()
 
     # main application
-    app = QApplication(sys.argv)
     log.debug("PID: %s" % os.getpid())
+    app = QApplication(sys.argv)
+
+    align = Qt.AlignBottom
+    pixmap = QPixmap(
+                                os.path.join(
+                                    os.path.dirname(os.path.abspath(__file__)),
+                                    "cfg",
+                                    "icons",
+                                    "splash.png"
+                                )
+                            )
+    splash = QSplashScreen(pixmap)
+    splash.show()
+
+    # unit testing (for safety!)
+    splash.showMessage("Running Unit Test: Logging", align)
+
+    from lib.test import ValidateLogging
+    test = unittest.TestLoader().loadTestsFromTestCase(ValidateLogging.Validate)
+    unittest.TextTestRunner(verbosity=2).run(test)
+
+    splash.close()
+
     try:
         tmp = __TESTING__
         log.warning("Entering testing mode")
