@@ -35,6 +35,10 @@ import lib.net
 
 class Validate(unittest.TestCase):
     def setUp(self):
+        self.serverOptions =  (
+            "broadcast", "status", "queue", "logging",
+            "admin", "hostinfo"
+        )
         self.cfg = ConfigParser.ConfigParser()
         self.cfg.read(
                             os.path.join(
@@ -51,12 +55,36 @@ class Validate(unittest.TestCase):
                         "Your configuration is missing the servers section"
                     )
 
+
     def testConfigHasServerCount(self):
         '''Ensure configuration has required option'''
         self.failIf(
                         self.cfg.has_option("servers", "count") == False,
                         "Your configuration is missing the server count"
                     )
+
+    def testCheckForPortOptions(self):
+        '''Test for custom port values'''
+        for value in self.serverOptions:
+            self.failIf(
+                            self.cfg.has_option("servers", value) == False,
+                            "Server configuration is missing the %s option" % value
+                        )
+
+    def testVerifyPortOptions(self):
+        '''Verify custom port values'''
+        portRange = range(1025, 65536)
+
+        for value in self.serverOptions:
+            try:
+                port = self.cfg.getint("servers",  value)
+                self.failIf(
+                                port not in portRange,
+                                "Invalid port for %s, must be in range: 1025-65535" % value
+                            )
+
+            except ValueError:
+                self.fail("Port option %s does not contain a valid entry.  Entries must either be int or None" % value)
 
     def testDNSHostname(self):
         '''Compare hostname to DNS'''

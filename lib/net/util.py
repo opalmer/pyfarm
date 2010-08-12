@@ -44,6 +44,17 @@ def getPort():
     s.close()
     return port
 
+def isOpenPort(openPort):
+    '''Return an open port to use'''
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.bind(('localhost', openPort))
+        addr, port = s.getsockname()
+        s.close()
+        return True
+    except:
+        return False
+
 def lookupAddress(hostname):
     '''
     Given a hostname return an ip address
