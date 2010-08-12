@@ -741,25 +741,29 @@ if __name__ != '__MAIN__':
     splash.show()
 
     # unit testing (for safety!)
+    testVerbosity = 2
+
     from lib.test import ValidateLogging
     msg = "Running Unit Test: Logging"
     splash.showMessage(msg, align)
     log.info(msg)
     test = unittest.TestLoader().loadTestsFromTestCase(ValidateLogging.Validate)
-    unittest.TextTestRunner(verbosity=2).run(test)
+    unittest.TextTestRunner(verbosity=testVerbosity).run(test)
 
-    #from lib.test import ValidateDBConfig
-    msg = "Running Unit Test: SQLite Database"
-    splash.showMessage(msg, align)
-    log.info(msg)
-
-    #from lib.test import ValidateNetConfig
+    from lib.test import ValidateNetConfig
     msg = "Running Unit Test: Network Config"
     splash.showMessage(msg, align)
     log.info(msg)
+    test = unittest.TestLoader().loadTestsFromTestCase(ValidateNetConfig.Validate)
+    unittest.TextTestRunner(verbosity=testVerbosity).run(test)
 
     #from lib.test import ValidateOpenPorts
     msg = "Running Unit Test: Port Connectivity"
+    splash.showMessage(msg, align)
+    log.info(msg)
+
+    #from lib.test import ValidateDBConfig
+    msg = "Running Unit Test: SQLite Database"
     splash.showMessage(msg, align)
     log.info(msg)
 
