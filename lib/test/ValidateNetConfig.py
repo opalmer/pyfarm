@@ -29,57 +29,70 @@ import ConfigParser
 rollback = 2
 path = os.path.dirname(os.path.abspath(__file__))
 for i in range(rollback): path = os.path.dirname(path)
-cfg = os.path.join(
-                    path,
-                    "cfg",
-                    "general.ini"
-                  )
+sys.path.append(path)
+
+import lib.net
 
 class Validate(unittest.TestCase):
     def setUp(self):
         self.cfg = ConfigParser.ConfigParser()
-        self.cfg.read(cfg)
-        self.section = "servers"
-        self.pStart = 1025
-        self.pEnd = 65535
-        self.options = (
-                            "broadcast",
-                            "status",
-                            "queue",
-                            "logging",
-                            "admin",
-                            "hostinfo"
+        self.cfg.read(
+                            os.path.join(
+                                                path,
+                                                "cfg",
+                                                "general.ini"
+                                            )
                         )
 
-    def testHasSectionServers(self):
-        '''Verify server section exists'''
+    def testConfigHasSection(self):
+        '''Ensure configuration has required section'''
         self.failIf(
-                    not self.cfg.has_section(self.section),
-                    "Section '%s' does not exist in cfg" % self.section
-                   )
-
-    def testHasAllOptions(self):
-        '''Ensure all required options are present'''
-        for option in self.options:
-            self.failIf(
-                            not self.cfg.has_option(self.section, option),
-                            "Option '%s' was not present in %s" % (option, self.section)
-                        )
-
-    def testValidPortRange(self):
-        '''Check for valid port range'''
-        for option in self.options:
-            value = self.cfg.getint(self.section, option)
-            msg = "Port %i is out of range.  Please make sure all ports fall within: %i-%i" % (
-                    value,
-                    self.pStart,
-                    self.pEnd
+                        self.cfg.has_section("servers") == False,
+                        "Your configuration is missing the servers section"
                     )
 
-            self.failIf(
-                            value not in range(self.pStart, self.pEnd+1),
-                            msg
-                        )
+    def testConfigHasServerCount(self):
+        '''Ensure configuration has required option'''
+        self.failIf(
+                        self.cfg.has_option("servers", "count") == False,
+                        "Your configuration is missing the server count"
+                    )
+
+    def testDNSHostname(self):
+        '''Compare hostname to DNS'''
+        ip = lib.net.ip()
+        hostname = lib.net.hostname()
+        dnsHostname = lib.net.lookupHostname(ip)
+        self.failIf(
+                        hostname != dnsHostname,
+                        "DNS Hostname does not match local hostname"
+                    )
+
+    def testDNSIp(self):
+        '''Compare ip address to DNS'''
+        ip = lib.net.ip()
+        hostname = lib.net.hostname()
+        dnsIp = lib.net.lookupAddress(hostname)
+        self.failIf(
+                        ip != dnsIp,
+                        "DNS Address does not match local address"
+                    )
+
+    def testOpenPorts(self):
+        '''Check for open ports'''
+        ports = []
+        count = self.cfg.getint("servers", "count")
+        for i in range(count):
+            port = lib.net.getPort()
+            if port not in ports:
+                ports.append(port)
+            else:
+                self.fail("Attempted to add port %i twice" % ports)
+
+        self.failIf(
+                        len(ports) != count,
+                        "Only found %i open ports, %i is required" % (len(ports),  count)
+                    )
 
 if __name__ == "__main__":
     unittest.main()
