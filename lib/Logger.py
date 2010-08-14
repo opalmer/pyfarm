@@ -3,21 +3,21 @@ HOMEPAGE: www.pyfarm.net
 INITIAL: May 22 2010
 PURPOSE: To provide a standard logging facility for PyFarm
 
-This file is part of PyFarm.
-Copyright (C) 2008-2010 Oliver Palmer
+    This file is part of PyFarm.
+    Copyright (C) 2008-2010 Oliver Palmer
 
-PyFarm is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
+    PyFarm is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-PyFarm is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
+    PyFarm is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
 
-You should have received a copy of the GNU General Public License
-along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
+    You should have received a copy of the GNU General Public License
+    along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
 import os
@@ -58,7 +58,7 @@ class Logger(object):
         solo (bool) -- If set the true only requests matching level will be served
         logfile (str) -- file to log to
     '''
-    def __init__(self, name, level=5, logfile=None, solo=False):
+    def __init__(self, name, level=5, logfile=None, solo=False, writeOnly=False):
         if __GLOBAL_LOGLEVEL__ != None:
             self.level = __GLOBAL_LOGLEVEL__
             self.override = 1
@@ -73,10 +73,8 @@ class Logger(object):
                                     )
 
         self.config = ConfigLogger(self.xml)
-
         self.solo = solo
         self.timeFormat = "%Y-%m-%d %H:%M:%S"
-
         self.setName(name)
 
         self.levels = []
@@ -90,6 +88,10 @@ class Logger(object):
         else:
             self.logfile = None
 
+        self.writeOnly = writeOnly
+        if writeOnly and not logfile:
+            raise RuntimeError("You declare writeOnly without a logfile")
+
     def newLevel(self, name,  function):
         '''Create a new log level'''
         return Level(self._out, LevelName(name), function)
@@ -98,11 +100,12 @@ class Logger(object):
         if level.name in self.levels:
             cfg = self.config[level.name]
 
-            print cfg['template'].substitute(
-                time=time.strftime(self.timeFormat),
-                logger=self.name,
-                message=msg
-            )
+            if not self.writeOnly:
+                print cfg['template'].substitute(
+                    time=time.strftime(self.timeFormat),
+                    logger=self.name,
+                    message=msg
+                )
 
             if self.logfile:
                 self.logfile.write(out+os.linesep)
