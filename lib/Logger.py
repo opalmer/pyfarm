@@ -23,9 +23,10 @@ PURPOSE: To provide a standard logging facility for PyFarm
 import os
 import sys
 import time
+import string
 import os.path
+from xml.dom import minidom
 
-from lib.Settings import ConfigLogger
 from lib.system.Utility import backtrackDirs
 
 __LOGLEVEL__ = 4
@@ -67,12 +68,12 @@ class Logger(object):
             self.override = 0
 
         self.xml = os.path.join(
-                                        backtrackDirs(__file__, 2),
-                                        "cfg",
-                                        "loglevels.xml"
-                                    )
+                                    backtrackDirs(__file__, 2),
+                                    "cfg",
+                                    "loglevels.xml"
+                                )
 
-        self.config = ConfigLogger(self.xml)
+        self.config = self.readConfig(self.xml)
         self.solo = solo
         self.timeFormat = "%Y-%m-%d %H:%M:%S"
         self.setName(name)
@@ -123,3 +124,54 @@ class Logger(object):
     def setName(self, name):
         '''Set the name for the logger'''
         self.name = name
+
+    def readConfig(self, xml):
+        '''Read the logging configuration xml file and return a dictionary'''
+        out = {}
+        xml = minidom.parse(xml)
+
+        for element in xml.getElementsByTagName("level"):
+            level   = int(element.getAttribute("value"))
+            name    = str(element.getAttribute("name"))
+            enabled = str(element.getAttribute("enabled"))
+
+            # function name
+            if element.hasAttribute("function"):
+                function = str(element.getAttribute("function"))
+            else:
+                function = name
+
+            # terminal color (linux only)
+            if element.hasAttribute("color") and os.name == 'posix':
+                coloron  = str(element.getAttribute("color"))
+                coloroff = str(element.getAttribute("color")) + 'OFF'
+            else:
+                coloron = ''
+                coloroff = ''
+
+            # bold attribute
+            if element.hasAttribute("bold") and os.name == 'posix':
+                boldon  = 'BOLD' # this should really be getting the bold VALUE
+                boldoff = 'UNBOLD'
+            else:
+                boldon  = ''
+                boldoff = ''
+
+            # place element into output dictionary
+            out[name] = {
+                            'level'    : level,
+                            'name'     : name,
+                            'function' : function,
+                            'coloron'  : coloron,
+                            'coloroff' : coloroff,
+                            'boldon'   : boldon,
+                            'boldoff'  : boldoff,
+                            'enabled'  : enabled,
+                            'template' : string.Template(
+                                         '%s$time - $logger - %s%s%s - $message%s' % (
+                                                    coloron,  boldon,
+                                                    name.upper(), boldoff,
+                                                    coloroff)
+                                                )
+                         }
+        return out
