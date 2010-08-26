@@ -7,3 +7,5 @@ test.sql
 *.swp
 tools/depgraph/output/*
 *notes*
+*.timings
+*.profile
