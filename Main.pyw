@@ -22,10 +22,10 @@ PURPOSE: Main program to run and manage PyFarm
 '''
 
 __DEVELOPER__ = 'Oliver Palmer'
-__HOMEPAGE__ = 'http://www.pyfarm.net'
-__VERSION__ = '0.5.0'
-__MODULE__ = 'Main.pyw'
-__LOGLEVEL__ = 2
+__HOMEPAGE__  = 'http://www.pyfarm.net'
+__VERSION__   = '0.5.0'
+__MODULE__    = 'Main.pyw'
+__LOGLEVEL__  = 2
 
 # From Python
 import os

@@ -29,7 +29,7 @@ from PyQt4.QtNetwork import QTcpServer, QTcpSocket, QAbstractSocket, QHostInfo
 
 UNIT16 = 8
 
-class NewRequest(QObject):
+class Request(QObject):
     '''
     Wrapper object to store basic request information
 
@@ -37,9 +37,9 @@ class NewRequest(QObject):
         request (string) -- Name of request to send
         values (list|tuple) -- Values to send with request
     '''
-    def __init__(self, request, values, parent=None):
-        super(NewRequest, self).__init__(parent)
-        self.log = Logger("Queue.NewRequest")
+    def __init__(self, request, values, logName="Base.Request", parent=None):
+        super(Request, self).__init__(parent)
+        self.log = Logger(logName)
         self.socket = QTcpSocket()
 
         self.connect(self.socket, SIGNAL("connected()"), self.sendRequest)
@@ -132,7 +132,11 @@ class QueueClient(QObject):
         '''Add the given client to the master'''
         hostname = str(QHostInfo.localHostName())
         self.log.fixme("Software, system, and network specs not implimented")
-        request = NewRequest("CLIENT_NEW", ("octo", "10.56.1.2", "4096"))
+        request = Request(
+                            "CLIENT_NEW",
+                            ("octo", "10.56.1.2", "4096"),
+                            logName="QueueClient.Request"
+                          )
         self.connect(request, SIGNAL("RESPONSE"), self.readResponse)
         request.send(self.master, self.port)
 

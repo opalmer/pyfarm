@@ -9,3 +9,6 @@ tools/depgraph/output/*
 *notes*
 *.timings
 *.profile
+.metadata
+.project
+.pydevproject
