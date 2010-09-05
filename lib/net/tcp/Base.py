@@ -22,7 +22,10 @@ PURPOSE: Template servers, threads, and packet construction
 from lib.Logger import Logger
 from PyQt4 import QtNetwork, QtCore
 
-class Request(QObject):
+UNIT16  = 8
+STREAM_VERSION = QtCore.QDataStream.Qt_4_6
+
+class Request(QtCore.QObject):
     '''
     Wrapper object to store basic request information
 
@@ -60,12 +63,13 @@ class Request(QObject):
                          self.serverHasError
                      )
 
+        # initial data stream configuration
         self.data = QtCore.QByteArray()
-        self.stream = QtCore.QDataStream(self.data, QIODevice.WriteOnly)
-        self.stream.setVersion(QtCore.QDataStream.Qt_4_2)
+        self.stream = QtCore.QDataStream(self.data, QtCore.QIODevice.WriteOnly)
+        self.stream.setVersion(STREAM_VERSION)
         self.stream.writeUInt16(0)
 
-        # pack the values
+        # pack all values into the data stream
         self.stream << QtCore.QString(request.upper())
         for value in values:
             self.stream << QtCore.QString(value)
@@ -95,7 +99,7 @@ class Request(QObject):
         '''Read the response from the server'''
         self.log.debug("Reading response")
         stream = QtCore.QDataStream(self.socket)
-        stream.setVersion(QtCore.QDataStream.Qt_4_2)
+        stream.setVersion(STREAM_VERSION)
 
         while True:
             if self.nextBlockSize == 0:
@@ -126,8 +130,8 @@ class Request(QObject):
 
 class ServerThread(QtCore.QThread):
     '''
-    Queue server thread spawned upon every incoming connection to
-    prevent collisions.
+    Server thread spawned upon every incoming connection to
+    prevent blocking.
     '''
     def __init__(self, socketId, parent=None):
         super(ServerThread, self).__init__(parent)
@@ -150,7 +154,7 @@ class ServerThread(QtCore.QThread):
         while socket.state() == QtNetwork.QAbstractSocket.ConnectedState:
             nextBlockSize = 0
             stream = QtCore.QDataStream(socket) # create a data stream
-            stream.setVersion(QtCore.QDataStream.Qt_4_2)
+            stream.setVersion(STREAM_VERSION)
 
             while True:
                 # wait for the stream to be ready to read
@@ -179,14 +183,16 @@ class ServerThread(QtCore.QThread):
 #
             stream >> action
             self.log.netclient("Receieved signal: %s" % action)
-            if action == "CLIENT_NEW":
-                hostname = QtCore.QString()
-                address = QtCore.QString()
-                ram = QtCore.QString()
-                stream >> hostname >> address >> ram
-                self.log.netclient("Hostname: %s" % hostname)
-                self.log.netclient("Addrss: %s" % address)
-                self.log.netclient("Ram: %s" % ram)
+
+# TODO: Port below action to subclass
+#            if action == "CLIENT_NEW":
+#                hostname = QtCore.QString()
+#                address = QtCore.QString()
+#                ram = QtCore.QString()
+#                stream >> hostname >> address >> ram
+#                self.log.netclient("Hostname: %s" % hostname)
+#                self.log.netclient("Addrss: %s" % address)
+#                self.log.netclient("Ram: %s" % ram)
 #            if action in ("INIT", "newPID", "renderComplete", "renderFailed"):
 #                if action == "INIT":
 #                    stream >> options
@@ -217,8 +223,9 @@ class ServerThread(QtCore.QThread):
     def sendReply(self, socket, action, options):
         reply = QtCore.QByteArray()
         stream = QtCore.QDataStream(reply, QtCore.QIODevice.WriteOnly)
-        stream.setVersion(QtCore.QDataStream.Qt_4_2)
+        stream.setVersion(STREAM_VERSION)
         stream.writeUInt16(0)
+# TODO: Port below action to subclass
         stream << action << options
         stream.device().seek(0)
         stream.writeUInt16(reply.size() - UNIT16)
