@@ -20,8 +20,8 @@ providing as much functionality as possible.
     You should have received a copy of the GNU General Public License
     along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 '''
-import os
-
+import fnmatch
+import difflib
 from PyQt4 import QtCore
 
 class Tail(QtCore.QObject):
@@ -37,96 +37,49 @@ class Tail(QtCore.QObject):
     '''
     def __init__(self, filePath, interval=1, parent=None):
         super(Tail, self).__init__(parent)
-        self.filePath  = filePath
-        self.lastSize  = os.stat(filePath).st_size
         self.parent    = parent
+        self.filePath  = filePath
         self.interval  = int(float(interval) * 1000.00)
+        self.changes   = 0
+        self.linecount = 0
+        self.lines     = []
 
-        # create the inital line cache
-        f = open(filePath, 'r')
-        self.lineCache = []
-        for line in f.readlines():
-            formatted = self.formatLine(line)
-            self.lineCache.append(formatted)
-        f.close()
-
-        # setup and start the timer
-        self.timer = QtCore.QTimer()
-        self.timer.setInterval(self.interval)
-        self.timer.start(self.interval)
+        # monitor setup
+        self.monitor   = QtCore.QFileSystemWatcher(self.parent)
+        self.monitor.addPath(self.filePath)
         self.connect(
-                        self.timer,
-                        QtCore.SIGNAL("timeout()"),
-                        self.timeout
+                         self.monitor,
+                         QtCore.SIGNAL("fileChanged(QString)"),
+                         self.fileChanged
                      )
 
-
-    def cache(self):
-        '''Return the current line cache'''
-        return self.lineCache
-
-    def formatLine(self, line):
-        '''Return a properly formatted line as a string'''
-        if line.split() == "":
-            return ""
+    def _getString(self, line):
+        '''Given a line of text return the proper string'''
+        if fnmatch.fnmatch(line, "+ *"):
+            return line.split("+ ")[1]
         else:
-            return line.rstrip('\r\n')
+            return False
 
-    def updateInterval(self, newInterval):
-        '''
-        Change the iterval to newInterval and
-        update internal variables
-        '''
-        self.interval = newInterval * 1000
-        self.timer.setInterval(self.interval)
+    def fileChanged(self, fileString):
+        '''When a file is changed, show the difference'''
+        f = open(fileString, 'r')
 
-    def timeout(self):
-        '''
-        Check for newlies, emit a signal if
-        newline is found
-        '''
-        stat = os.stat(self.filePath)
-        newSize = stat.st_size
+        # determine if we have a new line count
+        lines = f.readlines()
+        if len(lines) > self.linecount:
+            for line in difflib.Differ().compare(self.lines, lines):
+                string = self._getString(line)
+                if string:
+                    self.emit(
+                                  QtCore.SIGNAL("newline"),
+                                  string
+                              )
+            # reset variables
+            self.lines     = lines
+            self.linecount = len(lines)
 
-        if newSize != self.lastSize:
-            self.lastSize = newSize
+        f.close()
 
-            # open the file and get all lines
-            f = open(self.filePath, 'r')
-            lines = [ self.formatLine(line) for line in f.readlines() ]
-            f.close()
-
-            # FIXME: Slice Range
-            lineDiff = len(lines)-len(self.lineCache)
-            position = len(self.lineCache)-lineDiff
-            print self.lineCache[position:]
-            self.lineCache = lines
-
-
-
-#            # get the difference between old and new lists
-#            newLines = []
-#            for line in lines:
-#                if self.lineCache:
-#                    print "here"
-#                    print len(self.lineCache)
-#                    if self.lineCache[lineNo] != line:
-#                        print line
-#                    lineNo += 1
-#                else:
-#                    lineNo = 0
-#                    self.lineCache.insert(
-#                                          lineNo,
-#                                          line
-#                                          )
-#                    print self.lineCache
-#                    newLines.append(line)
-#
-#            if newLines:
-#                self.emit(
-#                          QtCore.SIGNAL("newLines"),
-#                          newLines
-#                          )
 
 if __name__ == "__main__":
     import sys
@@ -134,18 +87,19 @@ if __name__ == "__main__":
     class Monitor(QtCore.QObject):
         def __init__(self, parent=None):
             super(Monitor, self).__init__(parent)
+            self.linecount = 1
 
         def runMonitor(self):
             tail = Tail(FILE_PATH,  parent=self)
-            print tail.cache() # get initial cache
             self.connect(
                          tail,
-                         QtCore.SIGNAL("newLines"),
-                         self.newLines
+                         QtCore.SIGNAL("newline"),
+                         self.newLine
                          )
 
-        def newLines(self, lines):
-            print lines
+        def newLine(self, line):
+            print "%03i: %s" % (self.linecount, line.strip("\r\n"))
+            self.linecount += 1
 
     app = QtCore.QCoreApplication(sys.argv)
     main = Monitor()

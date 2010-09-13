@@ -12,3 +12,4 @@ tools/depgraph/output/*
 .metadata
 .project
 .pydevproject
+*~
