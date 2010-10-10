@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 '''
 HOMEPAGE: www.pyfarm.net
 INITIAL: May 26 2010
@@ -23,12 +23,11 @@ PURPOSE: To handle and run all client connections on a remote machine
 # From Python
 import os
 import sys
-import os.path
 
 # From PyFarm
 from lib.Logger import Logger
 from lib.Settings import ReadConfig
-from lib.net.udp.Broadcast import BroadcastReceiever
+#from lib.net.udp.Broadcast import BroadcastReceiever
 from lib.net.tcp.Queue import QueueClient
 
 # From PyQt

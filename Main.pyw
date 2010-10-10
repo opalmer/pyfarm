@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 '''
 HOMEPAGE: www.pyfarm.net
 INITIAL: Jan 12 2009
@@ -30,7 +30,6 @@ __LOGLEVEL__  = 2
 # From Python
 import os
 import sys
-import os.path
 import unittest
 
 # From PyQt

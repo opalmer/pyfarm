@@ -21,7 +21,6 @@ PURPOSE: To read, write, and create the initial database entries
 '''
 
 import os
-import os.path
 import sqlite3
 from xml.dom.minidom import parse
 

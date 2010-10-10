@@ -19,14 +19,40 @@
 # You should have received a copy of the GNU General Public License
 # along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
-SHELL    = /bin/bash
-BUILDDIR = build
+SHELL      = /bin/bash
+BUILDDIR   = "build"
+FROZENDIR  = $(BUILDDIR)/frozen
+RELEASEDIR = $(BUILDDIR)/release
+
+all: frozen release
 
 clean:
 	find . -name "*~" | xargs rm -fv
 	find . -name "*.pyc" | xargs rm -fv
+
+mkbuilddir:
+	if test -d $(BUILDDIR); \
+	then echo directory exists: $(BUILDDIR); \
+	else mkdir $(BUILDDIR); \
+	fi
+
+frozen: clean mkbuilddir
+	if test -d $(FROZENDIR); \
+	then echo directory exists: $(FROZENDIR); \
+	else mkdir $(FROZENDIR); \
+	fi
 	
-build: clean
-	test -d $(BUILDDIR) || mkdir $(BUIILDDIR)
+	# setup:
+	# mkdir freeze dir with naming: timestamp-repocheckout-pyfarm
+	# tar directory into name above
+	# gzip tar
+	# delete dir
+
+release: clean mkbuilddir
+	if test -d $(RELEASEDIR); \
+	then echo directory exists: $(RELEASEDIR); \
+	else mkdir $(RELEASEDIR); \
+	fi
 	
-all: build
+	# setup:
+	# TBD

@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 '''
 HOMEPAGE: www.pyfarm.net
 INITIAL: Oct 07 2010
@@ -22,9 +22,10 @@ PURPOSE: Ensure all modules will import properly and are included in the current
 '''
 import os
 import sys
+import fnmatch
 import unittest
 import modulefinder
-import ReadConfig
+import ConfigParser
 
 rootDir = os.path.abspath(__file__)
 for i in range(3): rootDir = os.path.dirname(rootDir)
@@ -33,40 +34,136 @@ if rootDir not in sys.path: sys.path.append(rootDir)
 class ModuleTests(unittest.TestCase):
     '''Various tests and checks for module imports and their versions'''
     def setUp(self):
-        self.finder = modulefinder.ModuleFinder()
-        self.cfg = ReadConfig.RawConfigReader()
+        self.pyExtensions = ("py", "pyw")
+        self.pyExclusions = ("*__init__*", "*tools*", "*test*")
+        self.cfg          = ConfigParser.RawConfigParser()
         self.cfg.read(os.path.join(rootDir, 'cfg', 'versions.ini'))
+        
+    def _isExcluded(self, filename):
+        '''Ensure the given filename is not part the the excluded list'''
+        for exclusion in self.pyExclusions:
+            if fnmatch.fnmatch(filename, exclusion):
+                return True
+        return False
+
+    def _validPyFile(self, filename):
+        '''Return true if the file is a valid python file'''
+        for ext in self.pyExtensions:
+            if filename.endswith(ext):
+                return True
+            else:
+                return False
 
     def _pyFiles(self, root):
         '''Find all valid python files given a root directory'''
         for root, dirs, files in os.walk(root):
-            pass
-
-    def _validModule(self, module):
-        '''Return true of the module is valid'''
-        for pyFile in self._pyFiles(rootDir):
-            #for missingModule in self.finder:
-            pass
-
-    def _minVersion(self, key):
-        '''Retrieve the min version for the given key'''
-        pass
-
-    def _maxVersion(self, key):
-        '''Retrieve the max version for the given key'''
-        pass
-
+            for filename in files:
+                filename = os.path.join(root, filename)
+                if self._validPyFile(filename) and not self._isExcluded(filename):
+                    yield filename
+                    
+    def _getVersionConfig(self, key, level, asString=False):
+        '''
+        Retrieve a key, version, and convert that information to string format
+        if requested.
+        '''
+        version = self.cfg.get(level, key)
+        if not str(version).upper() in ("NONE", "FALSE", "0"):
+            if not asString:
+                return tuple([ int(i) for i in version.split('.') ])
+            else:
+                return version
+        else:
+            return False
+            
+    def _pyVersion(self, asString=False):
+        '''Return the installed python version'''
+        version = sys.version_info
+        if not asString:
+            return version[:2]
+        else:
+            return '.'.join([str(i) for i in version[:2]])
+            
+    def _pyqtVersion(self, asString=False):
+        '''Return the installed pyqt version'''
+        from PyQt4 import QtCore
+        version = QtCore.PYQT_VERSION_STR
+        if not asString:
+            return tuple([int(i) for i in version.split('.')][:2])
+        else:
+            return version
+            
+    def _badModules(self, moduleSearch):
+        '''
+        Return a list of modules that had trouble importing then remove then
+        from the dictionary
+        '''
+        output = []
+        for module, namespace in moduleSearch.badmodules.items():
+            if "__main__" in namespace.keys():
+                output.append(module)
+                del moduleSearch.badmodules[module]
+                
+        return output
+        
     def testModuleImports(self):
         '''Ensure all modules that are in use can be imported'''
-        pass
+        badDict = {}
+        moduleSearch = modulefinder.ModuleFinder()
+        for filename in self._pyFiles(rootDir):
+            moduleSearch.run_script(filename)
+            badModules = self._badModules(moduleSearch)
+            if badModules: badDict[filename] = badModules
+                
+        self.failIf(
+                    len(badDict.keys()),
+                    "Failed to import one or more modules: %s" % badDict
+                   )
+
 
     def testPythonVersion(self):
         """Ensure the Python version meets PyFarm's requirements"""
-        pass
+        module           = "python"
+        version          = self._pyVersion()
+        versionStr       = self._pyVersion(asString=True)
+        iniMinVersionStr = self._getVersionConfig(module, 'min', asString=True)
+        iniMinVersion    = self._getVersionConfig(module, 'min')
+        iniMaxVersionStr = self._getVersionConfig(module, 'max', asString=True)
+        iniMaxVersion    = self._getVersionConfig(module, 'max')
+        
+        self.failIf(
+                    version < iniMinVersion,
+                    "Python %s Does Not Meet Minimum Version: %s" % 
+                    (versionStr, iniMinVersionStr)
+                   )
+                   
+        self.failIf(
+                    version > iniMaxVersion,
+                    "Python %s Exceeds Maximum Version: %s" % 
+                    (versionStr, iniMaxVersionStr)
+                   )
 
     def testPyQtVersion(self):
         """Ensure the PyQt version meets PyFarm's requirements"""
-        pass
+        module           = "pyqt"
+        version          = self._pyqtVersion()
+        versionStr       = self._pyqtVersion(asString=True)
+        iniMinVersionStr = self._getVersionConfig(module, 'min', asString=True)
+        iniMinVersion    = self._getVersionConfig(module, 'min')
+        iniMaxVersionStr = self._getVersionConfig(module, 'max', asString=True)
+        iniMaxVersion    = self._getVersionConfig(module, 'max')
+
+        self.failIf(
+                    version < iniMinVersion,
+                    "PyQt %s Does Not Meet Minimum Version: %s" % 
+                    (versionStr, iniMinVersionStr)
+                   )
+                   
+        self.failIf(
+                    version > iniMaxVersion,
+                    "PyQt %s Exceeds Maximum Version: %s" % 
+                    (versionStr, iniMaxVersionStr)
+                   )
 
 
 if __name__ == "__main__":

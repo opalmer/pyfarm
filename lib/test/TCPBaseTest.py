@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 '''
 HOMEPAGE: www.pyfarm.net
 INITIAL: Sept 04 2010
@@ -66,7 +66,7 @@ if __name__ == "__main__":
     if len(sys.argv) == 2 and sys.argv[1].lower() in ("client",  "server"):
         app = QtCore.QCoreApplication(sys.argv)
 
-        # select the proper test
+        select the proper test
         if sys.argv[1].lower() == "client":
             test = unittest.TestLoader().loadTestsFromTestCase(TCPClientTest)
         elif sys.argv[1].lower() == "server":

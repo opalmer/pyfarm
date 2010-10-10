@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 '''
 HOMEPAGE: www.pyfarm.net
 INITIAL: Aug 11 2010
@@ -23,7 +23,6 @@ setup properly
 '''
 import os
 import sys
-import os.path
 import unittest
 import ConfigParser
 

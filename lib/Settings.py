@@ -23,7 +23,6 @@ along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 # From Python
 import os
 import sys
-import os.path
 import string
 import ConfigParser
 from xml.dom import minidom

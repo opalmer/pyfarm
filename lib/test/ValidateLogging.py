@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 '''
 HOMEPAGE: www.pyfarm.net
 INITIAL: Aug 10 2010
@@ -24,7 +24,6 @@ setup properly
 import re
 import os
 import sys
-import os.path
 import unittest
 import fnmatch
 from xml.dom import minidom

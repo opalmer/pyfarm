@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 '''
 HOMEPAGE: www.pyfarm.net
 INITIAL: Aug 30 2010
@@ -20,13 +20,13 @@ PURPOSE: Runs a brief test to ensure basic TCP communications are working
     You should have received a copy of the GNU General Public License
     along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 '''
+import os
+import sys
 import unittest
 
 rootDir = os.path.abspath(__file__)
 for i in range(3): rootDir = os.path.dirname(rootDir)
 if rootDir not in sys.path: sys.path.append(rootDir)
-
-from lib.Logger import Logger
 
 class Validate(unittest.TestCase):
     def setUp(self):

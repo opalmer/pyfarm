@@ -21,7 +21,7 @@ along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
 # From Python
-import os.path
+import os
 import subprocess
 
 # From PyFarm

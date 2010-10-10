@@ -19,12 +19,9 @@ PURPOSE: To provide a standard logging facility for PyFarm
     You should have received a copy of the GNU General Public License
     along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 '''
-
-import os
 import sys
 import time
 import string
-import os.path
 from xml.dom import minidom
 
 from lib.system.Utility import backtrackDirs

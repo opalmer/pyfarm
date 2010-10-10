@@ -13,3 +13,4 @@ tools/depgraph/output/*
 .project
 .pydevproject
 *~
+build
