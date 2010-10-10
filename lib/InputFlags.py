@@ -7,16 +7,16 @@ PURPOSE: Small library for discovering system info and installed software
     Copyright (C) 2008-2010 Oliver Palmer
 
     PyFarm is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
+    it under the terms of the GNU Lesser General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
 
     PyFarm is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+    GNU Lesser General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
+    You should have received a copy of the GNU Lesser General Public License
     along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 '''
 # From Python
@@ -99,13 +99,13 @@ class SystemUtilities(object):
 
 class About(object):
     '''Store and return information about PyFarm itself'''
-    def __init__(self, dev, gpl):
+    def __init__(self, dev, lgpl):
         self.dev = dev
 
         try:
-            self.gpl = open(gpl, 'r')
+            self.lgpl = open(lgpl, 'r')
         except IOError:
-            self.gpl = 'Could not find license: %s' % gpl
+            self.lgpl = 'Could not find license: %s' % lgpl
 
     def author(self, option=None, opt=None, value=None, parser=None):
         '''Return the author's name'''
@@ -113,7 +113,7 @@ class About(object):
         log.terminate("Program terminated by command line flag")
 
     def license(self, option=None, opt=None, value=None, parser=None):
-        '''Return the gpl header'''
-        for line in self.gpl:
+        '''Return the lgpl header'''
+        for line in self.lgpl:
             print line.strip()
         log.terminate("Program terminated by command line flag")

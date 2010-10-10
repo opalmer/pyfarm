@@ -9,16 +9,16 @@ setup properly
     Copyright (C) 2008-2010 Oliver Palmer
 
     PyFarm is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
+    it under the terms of the GNU Lesser General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
 
     PyFarm is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+    GNU Lesser General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
+    You should have received a copy of the GNU Lesser General Public License
     along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 '''
 import os
@@ -66,7 +66,7 @@ if __name__ == "__main__":
     if len(sys.argv) == 2 and sys.argv[1].lower() in ("client",  "server"):
         app = QtCore.QCoreApplication(sys.argv)
 
-        select the proper test
+        # select the proper test
         if sys.argv[1].lower() == "client":
             test = unittest.TestLoader().loadTestsFromTestCase(TCPClientTest)
         elif sys.argv[1].lower() == "server":
