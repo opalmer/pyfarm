@@ -1,4 +1,27 @@
 #!/usr/bin/env python
+'''
+HOMEPAGE: www.pyfarm.net
+INITIAL: Oct 09 2010
+PURPOSE: To edit a large number of text files starting at ROOT and replace
+strings matching SEARCH using the replace() function.
+NOTE: This script does NOT make backups of your files!!!
+
+This file is part of PyFarm.
+Copyright (C) 2008-2010 Oliver Palmer
+
+PyFarm is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+PyFarm is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
+'''
 
 import re
 import os
@@ -12,10 +35,10 @@ ROOT       = os.path.join(os.getenv('HOME'), 'pyfarm') # directory to start in
 PYEXTS     = ("*.py", "*.pyw")                         # edit files with these extensions ONLY
 EXCLUSIONS = ("*.git*", "*.eric*", "*.pyc", "*~")      # DO NOT enter paths matching this
 SEARCH     = re.compile(r'''__(.+)__''')               # Search for __*__ but only capture what is inside ()
+###################################
+# See the replace function for the replacement method
+###################################
 
-###################################
-# See the replace function for the line replacement
-###################################
 def isExcluded(root):
     '''Check to see if the path should be excluded'''
     for excluded in EXCLUSIONS:
@@ -34,9 +57,10 @@ def replace(regexMatch, line):
     '''Replace method replacing line with items from regexMatch'''
     return re.sub(regexMatch.group(0), regexMatch.group(1), line)
 
-# make replacements
-lines = 0
+lines        = 0
 replacements = 0
+
+# make replacements
 for root, dirs, files in os.walk(ROOT):
         if not isExcluded(root):
             for filename in files:
