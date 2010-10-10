@@ -33,8 +33,8 @@ from lib.net.tcp.Queue import QueueClient
 # From PyQt
 from PyQt4.QtCore import QCoreApplication, QObject, SIGNAL, SLOT
 
-__LOGLEVEL__ = 4
-__MODULE__ = "Client.py"
+LOGLEVEL = 4
+MODULE = "Client.py"
 log = Logger(__MODULE__)
 
 class Main(QObject):

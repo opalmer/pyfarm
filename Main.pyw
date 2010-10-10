@@ -21,11 +21,12 @@ PURPOSE: Main program to run and manage PyFarm
     along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
-__DEVELOPER__ = 'Oliver Palmer'
-__HOMEPAGE__  = 'http://www.pyfarm.net'
-__VERSION__   = '0.5.0'
-__MODULE__    = 'Main.pyw'
-__LOGLEVEL__  = 2
+DEVELOPER = 'Oliver Palmer'
+HOMEPAGE  = 'http://www.pyfarm.net'
+VERSION   = '0.5.0'
+MODULE    = 'Main.pyw'
+LOGLEVEL  = 2
+TESTMODE  = False
 
 # From Python
 import os
@@ -45,12 +46,12 @@ from lib.net.tcp.Queue import QueueServer
 from lib.Logger import Logger
 from lib.Settings import ReadConfig
 from lib.Slots import Slots
-#from lib.system.Info import SystemInfo
+from lib.system.Info import SystemInfo
 #from lib.ui.MainWindow import Ui_MainWindow
 #from lib.net.udp.Broadcast import BroadcastSender
 
 # sestup logging
-log = Logger(__MODULE__, __LOGLEVEL__)
+log = Logger(MODULE, LOGLEVEL)
 #log.debug("Modules imported")
 
 class MainWindow(QMainWindow):
@@ -64,7 +65,7 @@ class MainWindow(QMainWindow):
                                                      "MainWindow.ui"),
                                                      baseinstance=self
                                 )
-        self.setWindowTitle("PyFarm -- Version %s" % __VERSION__)
+        self.setWindowTitle("PyFarm -- Version %s" % VERSION)
 
         # setup layouts
         self.centralWidget().setLayout(self.ui.layoutRoot)
@@ -138,7 +139,7 @@ class MainWindow(QMainWindow):
 #
 #        # setup data management
 #        self.dataJob = {}
-#        self.dataGeneral = GeneralManager(self.ui, __VERSION__)
+#        self.dataGeneral = GeneralManager(self.ui, VERSION)
 #        self.hostname = str(QHostInfo.localHostName())
 #        self.tableManager = JobTableManager(self)
 #        self.softwareManager = SoftwareContextManager(self)
@@ -685,8 +686,7 @@ class Testing(QObject):
         log.netserver("Running status server")
 
     def run(self, option=None, opt=None, value=None, parser=None):
-        global __TESTING__
-        __TESTING__ = 1
+        TESTMODE = True
         log.debug("Running test code")
 
         self.runStatusServer()
@@ -699,48 +699,58 @@ if __name__ != '__MAIN__':
     # command line opton parsing
     import lib.InputFlags as flags
     from optparse import OptionParser
-    from lib.db import SQLio
-    about = flags.About(__DEVELOPER__, 'GNU-GPL_Header.txt')
-#    sysutil = flags.SystemUtilities()
-#    sysinfo = flags.SystemInfo()
-#    test = Testing()
-#    db = SQLio.Setup("pyfarm.sql")
+    about = flags.About(DEVELOPER, 'GNU-GPL_Header.txt')
+    
+    ###############################
+    # Command Line Options
+    ###############################
+    
+    parser = OptionParser(version="PyFarm v%s" % VERSION)
+    parser.add_option("--author", dest="author", action="callback",
+                        callback=about.author, help="Return the developer's name")
+    parser.add_option("--license", dest="license", action="callback",
+                        callback=about.license, help="Get the GPL license header")
+    parser.add_option("--sysinfo", dest="sysinfo", action="callback",
+                        callback=sysinfo.showinfo, help="Get processor, ram, etc. info")
+    parser.add_option("--clean",  action="callback",  callback=sysutil.clean,
+                        help="remove all byte-compiled Python files")
+    parser.add_option("--test", action="callback", callback=test.run,
+                        help="run testing code")
+    parser.add_option("-d", "--db", action="callback", callback=SQLio.InitDb,
+                        help="Set the database for PyFarm before starting the ui")
+    (options, args) = parser.parse_args()
+    
+    
 
-
-    # command line option parser
-#    parser = OptionParser(version="PyFarm v%s" % __VERSION__)
-#    parser.add_option("--author", dest="author", action="callback",
-#                        callback=about.author, help="Return the developer's name")
-#    parser.add_option("--license", dest="license", action="callback",
-#                        callback=about.license, help="Get the GPL license header")
-#    parser.add_option("--sysinfo", dest="sysinfo", action="callback",
-#                        callback=sysinfo.showinfo, help="Get processor, ram, etc. info")
-#    parser.add_option("--clean",  action="callback",  callback=sysutil.clean,
-#                        help="remove all byte-compiled Python files")
-#    parser.add_option("--test", action="callback", callback=test.run,
-#                        help="run testing code")
-#    parser.add_option("-d", "--db", action="callback", callback=SQLio.InitDb,
-#                        help="Set the database for PyFarm before starting the ui")
-#    (options, args) = parser.parse_args()
-
-    # main application
+    ###############################
+    # Event Loop Start
+    ###############################
     log.debug("PID: %s" % os.getpid())
     app = QApplication(sys.argv)
 
     align = Qt.AlignBottom
     pixmap = QPixmap(
-                                os.path.join(
-                                    os.path.dirname(os.path.abspath(__file__)),
-                                    "cfg",
-                                    "icons",
-                                    "splash.png"
-                                )
-                            )
+                        os.path.join(
+                            os.path.dirname(os.path.abspath(__file__)),
+                            "cfg",
+                            "icons",
+                            "splash.png"
+                        )
+                    )
     splash = QSplashScreen(pixmap)
     splash.show()
 
-    # unit testing (for safety!)
+    ###############################
+    # Unit Test, for safety!
+    ###############################
     testVerbosity = 2
+
+    from lib.test import ModuleImports
+    msg = "Running Unit Test: Version and Module Check"
+    splash.showMessage(msg, align)
+    log.info(msg)
+    test = unittest.TestLoader().loadTestsFromTestCase(ModuleImports.ModuleTests)
+    unittest.TextTestRunner(verbosity=testVerbosity).run(test)
 
     from lib.test import ValidateLogging
     msg = "Running Unit Test: Logging"
@@ -772,10 +782,13 @@ if __name__ != '__MAIN__':
     log.info(msg)
 
     splash.close()
+    
+    
 
     try:
-        tmp = __TESTING__
+        tmp = TESTMODE
         log.warning("Entering testing mode")
+        
     except NameError:
         main = MainWindow()
         #log.ui("Displaying interfaced")

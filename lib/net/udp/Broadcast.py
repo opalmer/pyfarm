@@ -34,8 +34,8 @@ from PyQt4.QtCore import QThread, SIGNAL, QByteArray, QTimer, QString
 from lib.Logger import Logger
 from lib.Settings import ReadConfig
 
-__MODULE__ = "lib.net.udp.Broadcast"
-__LOGLEVEL__ = 4
+MODULE = "lib.net.udp.Broadcast"
+LOGLEVEL = 4
 
 class BroadcastSender(QThread):
     '''Class to send broadcast signals to client network'''

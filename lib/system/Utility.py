@@ -27,8 +27,8 @@ import subprocess
 # From PyFarm
 #from lib.Logger import Logger
 
-__MODULE__ = "lib.system.Utility"
-__LOGLEVEL__ = 4
+MODULE   = "lib.system.Utility"
+LOGLEVEL = 4
 
 def SimpleCommand(cmd):
     '''

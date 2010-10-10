@@ -19,6 +19,7 @@ PURPOSE: To provide a standard logging facility for PyFarm
     You should have received a copy of the GNU General Public License
     along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 '''
+import os
 import sys
 import time
 import string
@@ -26,9 +27,9 @@ from xml.dom import minidom
 
 from lib.system.Utility import backtrackDirs
 
-__LOGLEVEL__ = 4
-__GLOBAL_LOGLEVEL__ = 0 # set to None to disable
-__MODULE__ = "lib.Logger"
+LOGLEVEL = 4
+GLOBAL_LOGLEVEL = 0 # set to None to disable
+MODULE = "lib.Logger"
 
 class LevelName(object):
     def __init__(self, name):

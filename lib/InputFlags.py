@@ -27,8 +27,8 @@ import sys
 from lib.Logger import Logger
 from lib.system.Info import Hardware
 
-__MODULE__ = "lib.InputFlags"
-__LOGLEVEL__ = 4
+MODULE = "lib.InputFlags"
+LOGLEVEL = 4
 
 log = Logger(__MODULE__, __LOGLEVEL__)
 

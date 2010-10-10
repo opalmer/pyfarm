@@ -30,7 +30,7 @@ from xml.dom import minidom
 # From PyFarm
 #from lib.Logger import Logger
 
-__MODULE__ = "ParseConfig.py"
+MODULE = "ParseConfig.py"
 
 def ReadConfig(cfgInput):
     '''Parse a config file and return a data dictionary'''

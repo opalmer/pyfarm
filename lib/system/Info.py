@@ -29,8 +29,8 @@ import multiprocessing
 from lib.Settings import ReadConfig
 from lib.system.Utility import SimpleCommand
 
-__MODULE__ = 'lib.sys.SysInfo'
-__LOGLEVEL__ = 6
+MODULE   = 'lib.sys.SysInfo'
+LOGLEVEL = 6
 
 class SystemInfo(object):
     '''Default system information object to query and store info about hardware and software'''
@@ -53,6 +53,7 @@ class OperatingSystem(object):
 
         try:
             return types[os.name()]
+            
         except KeyError:
             log.fatal("%s is not an UNSUPPORTED operating system" % os.name())
 
@@ -120,6 +121,7 @@ class Hardware(object):
     def idletime(self):
         '''Return total idle time'''
         return float(open('/proc/uptime').readlines()[0].split()[1])
+
 
 class Software(object):
     '''Query and return information about the software on the local system'''
