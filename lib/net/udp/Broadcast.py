@@ -46,7 +46,7 @@ class BroadcastSender(QThread):
         self.port = self.config['servers']['broadcast']
         self.count = self.config['broadcast']['interval']
         self.maxCount = self.config['broadcast']['maxcount']
-        self.log = Logger("Broadcast.BroadcastSender",__LOGLEVEL__)
+        self.log = Logger("Broadcast.BroadcastSender",LOGLEVEL)
 
         # get all IPs
         self.addresses = ''
@@ -90,7 +90,7 @@ class BroadcastReceiever(QThread):
     '''Class to receieve broadcast signal from master'''
     def __init__(self, port, parent=None):
         super(BroadcastReceiever, self).__init__(parent)
-        self.log = Logger("Broadcast.BroadcastReceiever",__LOGLEVEL__)
+        self.log = Logger("Broadcast.BroadcastReceiever",LOGLEVEL)
         self.log.netserver("Running")
         self.port =port
 

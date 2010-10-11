@@ -58,8 +58,8 @@ class Logger(object):
         logfile (str) -- file to log to
     '''
     def __init__(self, name, level=5, logfile=None, solo=False, writeOnly=False):
-        if __GLOBAL_LOGLEVEL__ != None:
-            self.level = __GLOBAL_LOGLEVEL__
+        if GLOBAL_LOGLEVEL != None:
+            self.level = GLOBAL_LOGLEVEL
             self.override = 1
         else:
             self.level = level

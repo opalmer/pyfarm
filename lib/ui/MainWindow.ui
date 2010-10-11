@@ -146,8 +146,8 @@
                 <rect>
                  <x>10</x>
                  <y>20</y>
-                 <width>320</width>
-                 <height>26</height>
+                 <width>360</width>
+                 <height>29</height>
                 </rect>
                </property>
                <layout class="QHBoxLayout" name="layoutHostControlButtons">
@@ -300,80 +300,13 @@
           <rect>
            <x>0</x>
            <y>0</y>
-           <width>921</width>
+           <width>925</width>
            <height>611</height>
           </rect>
          </property>
          <layout class="QVBoxLayout" name="submitToolboxLayout">
           <item>
            <layout class="QGridLayout" name="commonJobSettingsLayout">
-            <item row="0" column="8">
-             <widget class="QLabel" name="priorityLabel">
-              <property name="enabled">
-               <bool>true</bool>
-              </property>
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="font">
-               <font>
-                <pointsize>10</pointsize>
-                <weight>50</weight>
-                <bold>false</bold>
-               </font>
-              </property>
-              <property name="layoutDirection">
-               <enum>Qt::RightToLeft</enum>
-              </property>
-              <property name="text">
-               <string>Priority</string>
-              </property>
-             </widget>
-            </item>
-            <item row="0" column="9">
-             <widget class="QSpinBox" name="priority">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="minimumSize">
-               <size>
-                <width>0</width>
-                <height>22</height>
-               </size>
-              </property>
-              <property name="font">
-               <font>
-                <pointsize>10</pointsize>
-                <weight>50</weight>
-                <bold>false</bold>
-               </font>
-              </property>
-              <property name="statusTip">
-               <string>Priority of submitted job (1 is low)</string>
-              </property>
-              <property name="layoutDirection">
-               <enum>Qt::RightToLeft</enum>
-              </property>
-              <property name="correctionMode">
-               <enum>QAbstractSpinBox::CorrectToNearestValue</enum>
-              </property>
-              <property name="minimum">
-               <number>1</number>
-              </property>
-              <property name="maximum">
-               <number>999999999</number>
-              </property>
-              <property name="value">
-               <number>10</number>
-              </property>
-             </widget>
-            </item>
             <item row="1" column="0">
              <widget class="QLabel" name="sceneLabel">
               <property name="sizePolicy">
@@ -397,7 +330,7 @@
               </property>
              </widget>
             </item>
-            <item row="1" column="1" colspan="8">
+            <item row="1" column="1" colspan="7">
              <widget class="QLineEdit" name="scene">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Expanding" vsizetype="Minimum">
@@ -436,7 +369,7 @@
               </property>
              </widget>
             </item>
-            <item row="2" column="1" colspan="8">
+            <item row="2" column="1" colspan="7">
              <widget class="QLineEdit" name="jobName">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Expanding" vsizetype="Minimum">
@@ -462,7 +395,7 @@
               </property>
              </widget>
             </item>
-            <item row="1" column="9">
+            <item row="1" column="8">
              <widget class="QPushButton" name="browseForScene">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
@@ -485,7 +418,7 @@
               </property>
              </widget>
             </item>
-            <item row="2" column="9">
+            <item row="2" column="8">
              <widget class="QPushButton" name="autoNameJob">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
@@ -514,199 +447,7 @@
               </property>
              </widget>
             </item>
-            <item row="0" column="7">
-             <widget class="QSpinBox" name="byFrame">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="minimumSize">
-               <size>
-                <width>0</width>
-                <height>22</height>
-               </size>
-              </property>
-              <property name="font">
-               <font>
-                <pointsize>10</pointsize>
-                <weight>50</weight>
-                <bold>false</bold>
-               </font>
-              </property>
-              <property name="statusTip">
-               <string>By frame or step frame of job</string>
-              </property>
-              <property name="layoutDirection">
-               <enum>Qt::RightToLeft</enum>
-              </property>
-              <property name="correctionMode">
-               <enum>QAbstractSpinBox::CorrectToNearestValue</enum>
-              </property>
-              <property name="minimum">
-               <number>1</number>
-              </property>
-              <property name="maximum">
-               <number>999999999</number>
-              </property>
-             </widget>
-            </item>
-            <item row="0" column="6">
-             <widget class="QLabel" name="byFrameLabel">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="font">
-               <font>
-                <pointsize>10</pointsize>
-                <weight>50</weight>
-                <bold>false</bold>
-               </font>
-              </property>
-              <property name="layoutDirection">
-               <enum>Qt::RightToLeft</enum>
-              </property>
-              <property name="text">
-               <string>By Frame</string>
-              </property>
-             </widget>
-            </item>
-            <item row="0" column="5">
-             <widget class="QSpinBox" name="endFrame">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="minimumSize">
-               <size>
-                <width>0</width>
-                <height>22</height>
-               </size>
-              </property>
-              <property name="font">
-               <font>
-                <pointsize>10</pointsize>
-                <weight>50</weight>
-                <bold>false</bold>
-               </font>
-              </property>
-              <property name="statusTip">
-               <string>End frame of job</string>
-              </property>
-              <property name="layoutDirection">
-               <enum>Qt::RightToLeft</enum>
-              </property>
-              <property name="correctionMode">
-               <enum>QAbstractSpinBox::CorrectToNearestValue</enum>
-              </property>
-              <property name="minimum">
-               <number>1</number>
-              </property>
-              <property name="maximum">
-               <number>999999999</number>
-              </property>
-             </widget>
-            </item>
-            <item row="0" column="4">
-             <widget class="QLabel" name="endFrameLabel">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="font">
-               <font>
-                <pointsize>10</pointsize>
-                <weight>50</weight>
-                <bold>false</bold>
-               </font>
-              </property>
-              <property name="layoutDirection">
-               <enum>Qt::RightToLeft</enum>
-              </property>
-              <property name="text">
-               <string>End Frame</string>
-              </property>
-             </widget>
-            </item>
-            <item row="0" column="3">
-             <widget class="QSpinBox" name="startFrame">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="minimumSize">
-               <size>
-                <width>0</width>
-                <height>22</height>
-               </size>
-              </property>
-              <property name="font">
-               <font>
-                <pointsize>10</pointsize>
-                <weight>50</weight>
-                <bold>false</bold>
-               </font>
-              </property>
-              <property name="statusTip">
-               <string>Start frame of job</string>
-              </property>
-              <property name="layoutDirection">
-               <enum>Qt::RightToLeft</enum>
-              </property>
-              <property name="correctionMode">
-               <enum>QAbstractSpinBox::CorrectToNearestValue</enum>
-              </property>
-              <property name="prefix">
-               <string/>
-              </property>
-              <property name="minimum">
-               <number>1</number>
-              </property>
-              <property name="maximum">
-               <number>999999999</number>
-              </property>
-              <property name="value">
-               <number>1</number>
-              </property>
-             </widget>
-            </item>
-            <item row="0" column="2">
-             <widget class="QLabel" name="startFrameLabel">
-              <property name="enabled">
-               <bool>true</bool>
-              </property>
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="font">
-               <font>
-                <pointsize>10</pointsize>
-                <weight>50</weight>
-                <bold>false</bold>
-               </font>
-              </property>
-              <property name="layoutDirection">
-               <enum>Qt::RightToLeft</enum>
-              </property>
-              <property name="text">
-               <string>Start Frame</string>
-              </property>
-             </widget>
-            </item>
-            <item row="3" column="9">
+            <item row="3" column="8">
              <widget class="QPushButton" name="submit">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
@@ -739,12 +480,18 @@
               <property name="text">
                <string>Submit</string>
               </property>
+              <property name="checked">
+               <bool>false</bool>
+              </property>
              </widget>
             </item>
-            <item row="3" column="8">
-             <widget class="QCheckBox" name="setRunning">
+            <item row="0" column="0">
+             <widget class="QLabel" name="startFrameLabel">
+              <property name="enabled">
+               <bool>true</bool>
+              </property>
               <property name="sizePolicy">
-               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+               <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
                 <horstretch>0</horstretch>
                 <verstretch>0</verstretch>
                </sizepolicy>
@@ -756,20 +503,275 @@
                 <bold>false</bold>
                </font>
               </property>
-              <property name="focusPolicy">
-               <enum>Qt::NoFocus</enum>
+              <property name="layoutDirection">
+               <enum>Qt::RightToLeft</enum>
+              </property>
+              <property name="text">
+               <string>Start Frame</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="1">
+             <widget class="QSpinBox" name="startFrame">
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>22</height>
+               </size>
+              </property>
+              <property name="font">
+               <font>
+                <pointsize>10</pointsize>
+                <weight>50</weight>
+                <bold>false</bold>
+               </font>
               </property>
               <property name="statusTip">
-               <string>If checked job will begin rendering as soon as resources are available</string>
+               <string>Start frame of job</string>
+              </property>
+              <property name="layoutDirection">
+               <enum>Qt::LeftToRight</enum>
+              </property>
+              <property name="correctionMode">
+               <enum>QAbstractSpinBox::CorrectToNearestValue</enum>
+              </property>
+              <property name="prefix">
+               <string/>
+              </property>
+              <property name="minimum">
+               <number>1</number>
+              </property>
+              <property name="maximum">
+               <number>999999999</number>
+              </property>
+              <property name="value">
+               <number>1</number>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="2">
+             <widget class="QLabel" name="endFrameLabel">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="font">
+               <font>
+                <pointsize>10</pointsize>
+                <weight>50</weight>
+                <bold>false</bold>
+               </font>
               </property>
               <property name="layoutDirection">
                <enum>Qt::RightToLeft</enum>
               </property>
               <property name="text">
-               <string>Mark as Active</string>
+               <string>End Frame</string>
               </property>
-              <property name="checked">
+             </widget>
+            </item>
+            <item row="0" column="3">
+             <widget class="QSpinBox" name="endFrame">
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>22</height>
+               </size>
+              </property>
+              <property name="font">
+               <font>
+                <pointsize>10</pointsize>
+                <weight>50</weight>
+                <bold>false</bold>
+               </font>
+              </property>
+              <property name="statusTip">
+               <string>End frame of job</string>
+              </property>
+              <property name="layoutDirection">
+               <enum>Qt::LeftToRight</enum>
+              </property>
+              <property name="correctionMode">
+               <enum>QAbstractSpinBox::CorrectToNearestValue</enum>
+              </property>
+              <property name="minimum">
+               <number>1</number>
+              </property>
+              <property name="maximum">
+               <number>999999999</number>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="4">
+             <widget class="QLabel" name="byFrameLabel">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="font">
+               <font>
+                <pointsize>10</pointsize>
+                <weight>50</weight>
+                <bold>false</bold>
+               </font>
+              </property>
+              <property name="layoutDirection">
+               <enum>Qt::RightToLeft</enum>
+              </property>
+              <property name="text">
+               <string>By Frame</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="5">
+             <widget class="QSpinBox" name="byFrame">
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>22</height>
+               </size>
+              </property>
+              <property name="font">
+               <font>
+                <pointsize>10</pointsize>
+                <weight>50</weight>
+                <bold>false</bold>
+               </font>
+              </property>
+              <property name="statusTip">
+               <string>By frame or step frame of job</string>
+              </property>
+              <property name="layoutDirection">
+               <enum>Qt::LeftToRight</enum>
+              </property>
+              <property name="correctionMode">
+               <enum>QAbstractSpinBox::CorrectToNearestValue</enum>
+              </property>
+              <property name="minimum">
+               <number>1</number>
+              </property>
+              <property name="maximum">
+               <number>999999999</number>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="6">
+             <widget class="QLabel" name="batchLabel">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="font">
+               <font>
+                <pointsize>10</pointsize>
+                <weight>50</weight>
+                <bold>false</bold>
+               </font>
+              </property>
+              <property name="layoutDirection">
+               <enum>Qt::RightToLeft</enum>
+              </property>
+              <property name="text">
+               <string>Batch</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="7">
+             <widget class="QSpinBox" name="batch">
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>22</height>
+               </size>
+              </property>
+              <property name="font">
+               <font>
+                <pointsize>10</pointsize>
+                <weight>50</weight>
+                <bold>false</bold>
+               </font>
+              </property>
+              <property name="statusTip">
+               <string>By frame or step frame of job</string>
+              </property>
+              <property name="layoutDirection">
+               <enum>Qt::LeftToRight</enum>
+              </property>
+              <property name="correctionMode">
+               <enum>QAbstractSpinBox::CorrectToNearestValue</enum>
+              </property>
+              <property name="minimum">
+               <number>1</number>
+              </property>
+              <property name="maximum">
+               <number>999999999</number>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="7">
+             <widget class="QSpinBox" name="priority">
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>22</height>
+               </size>
+              </property>
+              <property name="font">
+               <font>
+                <pointsize>10</pointsize>
+                <weight>50</weight>
+                <bold>false</bold>
+               </font>
+              </property>
+              <property name="statusTip">
+               <string>Priority of submitted job (1 is low)</string>
+              </property>
+              <property name="layoutDirection">
+               <enum>Qt::LeftToRight</enum>
+              </property>
+              <property name="correctionMode">
+               <enum>QAbstractSpinBox::CorrectToNearestValue</enum>
+              </property>
+              <property name="minimum">
+               <number>1</number>
+              </property>
+              <property name="maximum">
+               <number>999999999</number>
+              </property>
+              <property name="value">
+               <number>10</number>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="6">
+             <widget class="QLabel" name="priorityLabel">
+              <property name="enabled">
                <bool>true</bool>
+              </property>
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="font">
+               <font>
+                <pointsize>10</pointsize>
+                <weight>50</weight>
+                <bold>false</bold>
+               </font>
+              </property>
+              <property name="layoutDirection">
+               <enum>Qt::RightToLeft</enum>
+              </property>
+              <property name="text">
+               <string>Priority</string>
               </property>
              </widget>
             </item>
@@ -796,16 +798,10 @@
             <property name="currentIndex">
              <number>0</number>
             </property>
-            <property name="iconSize">
-             <size>
-              <width>16</width>
-              <height>16</height>
-             </size>
-            </property>
             <widget class="QWidget" name="maya">
              <attribute name="icon">
               <iconset resource="../../cfg/resources.qrc">
-               <normaloff>:/cfg/maya.png</normaloff>:/cfg/maya.png</iconset>
+               <normaloff>:/software/maya.png</normaloff>:/software/maya.png</iconset>
              </attribute>
              <attribute name="title">
               <string>Maya</string>
@@ -814,7 +810,7 @@
             <widget class="QWidget" name="houdini">
              <attribute name="icon">
               <iconset resource="../../cfg/resources.qrc">
-               <normaloff>:/cfg/houdini.png</normaloff>:/cfg/houdini.png</iconset>
+               <normaloff>:/software/houdini.png</normaloff>:/software/houdini.png</iconset>
              </attribute>
              <attribute name="title">
               <string>Houdini</string>
@@ -823,7 +819,7 @@
             <widget class="QWidget" name="nuke">
              <attribute name="icon">
               <iconset resource="../../cfg/resources.qrc">
-               <normaloff>:/cfg/nuke.png</normaloff>:/cfg/nuke.png</iconset>
+               <normaloff>:/software/nuke.png</normaloff>:/software/nuke.png</iconset>
              </attribute>
              <attribute name="title">
               <string>Nuke</string>
@@ -832,7 +828,7 @@
             <widget class="QWidget" name="shake">
              <attribute name="icon">
               <iconset resource="../../cfg/resources.qrc">
-               <normaloff>:/cfg/shake.png</normaloff>:/cfg/shake.png</iconset>
+               <normaloff>:/software/shake.png</normaloff>:/software/shake.png</iconset>
              </attribute>
              <attribute name="title">
               <string>Shake</string>
@@ -841,7 +837,7 @@
             <widget class="QWidget" name="blender">
              <attribute name="icon">
               <iconset resource="../../cfg/resources.qrc">
-               <normaloff>:/cfg/blender.png</normaloff>:/cfg/blender.png</iconset>
+               <normaloff>:/software/blender.png</normaloff>:/software/blender.png</iconset>
              </attribute>
              <attribute name="title">
               <string>Blender</string>
@@ -850,7 +846,7 @@
             <widget class="QWidget" name="aqsis">
              <attribute name="icon">
               <iconset resource="../../cfg/resources.qrc">
-               <normaloff>:/cfg/aqsis.png</normaloff>:/cfg/aqsis.png</iconset>
+               <normaloff>:/software/aqsis.png</normaloff>:/software/aqsis.png</iconset>
              </attribute>
              <attribute name="title">
               <string>Aqsis</string>
@@ -859,7 +855,7 @@
             <widget class="QWidget" name="custom">
              <attribute name="icon">
               <iconset resource="../../cfg/resources.qrc">
-               <normaloff>:/cfg/custom.png</normaloff>:/cfg/custom.png</iconset>
+               <normaloff>:/software/custom.png</normaloff>:/software/custom.png</iconset>
              </attribute>
              <attribute name="title">
               <string>Custom</string>
@@ -981,7 +977,7 @@
                    <x>11</x>
                    <y>21</y>
                    <width>151</width>
-                   <height>62</height>
+                   <height>65</height>
                   </rect>
                  </property>
                  <layout class="QGridLayout" name="gridLayout">
@@ -1112,7 +1108,7 @@
                    <x>10</x>
                    <y>24</y>
                    <width>111</width>
-                   <height>84</height>
+                   <height>88</height>
                   </rect>
                  </property>
                  <layout class="QGridLayout" name="gridLayout_2">
@@ -3015,7 +3011,7 @@
      <x>0</x>
      <y>0</y>
      <width>975</width>
-     <height>21</height>
+     <height>23</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -3051,6 +3047,18 @@
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <widget class="QDockWidget" name="statusDock">
+   <property name="sizePolicy">
+    <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
+   </property>
+   <property name="minimumSize">
+    <size>
+     <width>79</width>
+     <height>120</height>
+    </size>
+   </property>
    <attribute name="dockWidgetArea">
     <number>8</number>
    </attribute>
@@ -3061,7 +3069,7 @@
        <x>20</x>
        <y>10</y>
        <width>160</width>
-       <height>80</height>
+       <height>86</height>
       </rect>
      </property>
      <layout class="QHBoxLayout" name="rootDockLayout">

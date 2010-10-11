@@ -21,24 +21,24 @@ PURPOSE: Main program to run and manage PyFarm
     along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
+import os
+import sys
+import unittest
+
 DEVELOPER = 'Oliver Palmer'
 HOMEPAGE  = 'http://www.pyfarm.net'
 VERSION   = '0.5.0'
 MODULE    = 'Main.pyw'
 LOGLEVEL  = 2
-TESTMODE  = False
-
-# From Python
-import os
-import sys
-import unittest
+ROOT      = os.path.dirname(os.path.abspath(__file__))
+CFG_ROOT  = os.path.join(ROOT, "cfg")
+ICN_ROOT  = os.path.join(ROOT, "icons")
+QUE_ICN   = os.path.join(ICN_ROOT, "queue")
+CFG_GEN   = os.path.join(CFG_ROOT, "general.ini")
 
 # From PyQt
-from PyQt4 import uic
 from PyQt4.Qt import Qt
-from PyQt4.QtGui import QApplication, QMainWindow, QCloseEvent, QSplashScreen, QPixmap
-from PyQt4.QtCore import QObject, SIGNAL, QString
-from PyQt4.QtNetwork import QHostAddress
+from PyQt4 import QtCore, QtGui, QtNetwork, uic
 
 # From PyFarm
 import cfg.resources_rc
@@ -47,27 +47,27 @@ from lib.Logger import Logger
 from lib.Settings import ReadConfig
 from lib.Slots import Slots
 from lib.system.Info import SystemInfo
-#from lib.ui.MainWindow import Ui_MainWindow
-#from lib.net.udp.Broadcast import BroadcastSender
+from lib.net.udp.Broadcast import BroadcastSender
 
 # sestup logging
 log = Logger(MODULE, LOGLEVEL)
-#log.debug("Modules imported")
 
-class MainWindow(QMainWindow):
+class MainWindow(QtGui.QMainWindow):
     '''This is the controlling class for the main gui'''
     def __init__(self):
         super(MainWindow, self).__init__()
         self.ui = uic.loadUi(
-                                    os.path.join(os.path.dirname(__file__),
-                                                     "lib",
-                                                     "ui",
-                                                     "MainWindow.ui"),
-                                                     baseinstance=self
-                                )
-        self.setWindowTitle("PyFarm -- Version %s" % VERSION)
+                                os.path.join(
+                                                ROOT,
+                                                "lib",
+                                                "ui",
+                                                "MainWindow.ui"
+                                            ),
+                                            baseinstance=self
+                            )
 
         # setup layouts
+        self.setWindowTitle("PyFarm -- Version %s" % VERSION)
         self.centralWidget().setLayout(self.ui.layoutRoot)
         self.ui.toolboxNetwork.setLayout(self.ui.layoutNetwork)
         self.ui.toolboxSubmit.setLayout(self.ui.submitToolboxLayout)
@@ -75,24 +75,31 @@ class MainWindow(QMainWindow):
         self.ui.hostControls.setLayout(self.ui.layoutHostControlButtons)
         self.ui.statusDock.widget().setLayout(self.ui.rootDockLayout)
         self.ui.statusDock.setWindowTitle("Status Console")
+        
+        # add menu to submit button
+        self.submitMenu = QtGui.QMenu()
+        self.submitMenu.addAction("Run")
+        self.submitMenu.addAction("On Hold")
+        self.submit.setMenu(self.submitMenu)
+        self.connect(
+                        self.submitMenu, 
+                        QtCore.SIGNAL("triggered(QAction *)"), 
+                        self.submitAction
+                    )
+        # END submit menu
 
         # general setup and variables
-        self.config = ReadConfig(
-                                            os.path.join(
-                                                             "%s" % os.path.dirname(__file__),
-                                                             "cfg",
-                                                             "general.ini"
-                                                            )
-                                        )
-
         self.isClosing = False
+        self.config    = ReadConfig(CFG_GEN)
+        self.slots     = Slots(self, self.config)
         self.runServers()
-        self.slots = Slots(self, self.config)
+        
+
 
     def runServers(self):
         '''Run the background servers required to operate PyFarm'''
         self.queueServer = QueueServer()
-        if not self.queueServer.listen(QHostAddress.Any, self.config['servers']['queue']):
+        if not self.queueServer.listen(QtNetwork.QHostAddress.Any, self.config['servers']['queue']):
             log.fatal("Could not start the queue server: %s" % self.queueServer.errorString())
 
     def foundNewClient(self, data):
@@ -102,6 +109,10 @@ class MainWindow(QMainWindow):
     # Other actions could include:
     ## slots.stats
     ## slots.state (current software, job, crons, etc.)
+    def submitAction(self, action):
+        '''Return a QIcon object with icon preloaded'''
+        log.ui("Submitted With: %s" % action.text())
+        
     def hostFindPressed(self): self.slots.host.find()
     def hostAddPressed(self): pass # self.slots.host.add()
     def hostInfoPressed(self): pass # self.slots.host.info()
@@ -126,10 +137,11 @@ class MainWindow(QMainWindow):
             print "What would you like to do?: Save Job Database, Interface Settings,  Shutdown Remote Client Program"
             if event is 'manual': self.close()
 
-#        self.sysinfo = SystemInfo('cfg')
-#        self.hardware = self.sysinfo.hardware
-#        self.software = self.sysinfo.software
+        self.sysinfo = SystemInfo(CFG_GEN)
+        self.hardware = self.sysinfo.hardware
+        self.software = self.sysinfo.software
 #        self.network = self.sysinfo.network
+        log.notimplimented("Network info not implimented!")
 #        log.debug("Got system information")
 
 #
@@ -655,17 +667,12 @@ class MainWindow(QMainWindow):
 ### END General Utilities
 #################################
 
-class Testing(QObject):
+class Testing(QtCore.QObject):
     '''Quick testing code'''
     def __init__(self, parent=None):
         super(Testing, self).__init__(parent)
         log = Logger("Main.Testing")
-        self.config = ReadConfig(
-                                     os.path.join(
-                                        "%s" % os.path.dirname(sys.argv[0]),
-                                        "cfg"
-                                   )
-                                 )
+        self.config = ReadConfig(CFG_ROOT)
         log.debug("Test code initilized")
 
     def broadIncriment(self):
@@ -686,7 +693,6 @@ class Testing(QObject):
         log.netserver("Running status server")
 
     def run(self, option=None, opt=None, value=None, parser=None):
-        TESTMODE = True
         log.debug("Running test code")
 
         self.runStatusServer()
@@ -699,25 +705,31 @@ if __name__ != '__MAIN__':
     # command line opton parsing
     import lib.InputFlags as flags
     from optparse import OptionParser
-    about = flags.About(DEVELOPER, 'GNU-LGPL_Header.txt')
+    about   = flags.About(DEVELOPER, 'GNU-LGPL_Header.txt')
+    sysinfo = SystemInfo(os.path.join(CFG_ROOT, "general.ini"))
     
     ###############################
     # Command Line Options
     ###############################
     
     parser = OptionParser(version="PyFarm v%s" % VERSION)
+    parser.add_option(
+                        "--testing", dest="testing", 
+                        default=False, action="store_true",
+                        help="Instead of running the ui, run a small set of tests"
+                     )
     parser.add_option("--author", dest="author", action="callback",
                         callback=about.author, help="Return the developer's name")
     parser.add_option("--license", dest="license", action="callback",
                         callback=about.license, help="Get the LGPL license header")
-    parser.add_option("--sysinfo", dest="sysinfo", action="callback",
-                        callback=sysinfo.showinfo, help="Get processor, ram, etc. info")
-    parser.add_option("--clean",  action="callback",  callback=sysutil.clean,
-                        help="remove all byte-compiled Python files")
-    parser.add_option("--test", action="callback", callback=test.run,
-                        help="run testing code")
-    parser.add_option("-d", "--db", action="callback", callback=SQLio.InitDb,
-                        help="Set the database for PyFarm before starting the ui")
+    #parser.add_option("--sysinfo", dest="sysinfo", action="callback",
+                        #callback=sysinfo.hardware, help="Get processor, ram, etc. info")
+    #parser.add_option("--clean", action="callback",  callback=sysutil.clean,
+                        #help="remove all byte-compiled Python files")
+    #parser.add_option("--test", action="callback", callback=test.run,
+                        #help="run testing code")
+    #parser.add_option("-d", "--db", action="callback", callback=SQLio.InitDb,
+                        #help="Set the database for PyFarm before starting the ui")
     (options, args) = parser.parse_args()
     
     
@@ -726,18 +738,11 @@ if __name__ != '__MAIN__':
     # Event Loop Start
     ###############################
     log.debug("PID: %s" % os.getpid())
-    app = QApplication(sys.argv)
+    app    = QtGui.QApplication(sys.argv)
 
-    align = Qt.AlignBottom
-    pixmap = QPixmap(
-                        os.path.join(
-                            os.path.dirname(os.path.abspath(__file__)),
-                            "cfg",
-                            "icons",
-                            "splash.png"
-                        )
-                    )
-    splash = QSplashScreen(pixmap)
+    align  = Qt.AlignBottom
+    pixmap = QtGui.QPixmap(os.path.join(ICN_ROOT, "splash.png"))
+    splash = QtGui.QSplashScreen(pixmap)
     splash.show()
 
     ###############################
@@ -766,36 +771,17 @@ if __name__ != '__MAIN__':
     test = unittest.TestLoader().loadTestsFromTestCase(ValidateNetConfig.Validate)
     unittest.TextTestRunner(verbosity=testVerbosity).run(test)
 
-    #from lib.test import ValidateDBConfig
-    msg = "Running Unit Test: SQLite Database"
-    splash.showMessage(msg, align)
-    log.info(msg)
-
-    #from lib.test import DiscoverHostname
-    msg = "Discovering: Hostname"
-    splash.showMessage(msg, align)
-    log.info(msg)
-
-    #from lib.test import DiscoverSoftware
-    msg = "Discovering: Software"
-    splash.showMessage(msg, align)
-    log.info(msg)
-
     splash.close()
     
-    
-
-    try:
-        tmp = TESTMODE
+    if options.testing:
+        print "============================"
         log.warning("Entering testing mode")
-        
-    except NameError:
+        test = Testing()
+        test.run()
+    else:
         main = MainWindow()
-        #log.ui("Displaying interfaced")
         main.show()
-        log.ui("Interface displayed")
         sys.exit(app.exec_())
-
 
 else:
     log.fatal("This program is not meant to be imported!")

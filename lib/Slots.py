@@ -20,8 +20,7 @@ PURPOSE: Slot library for quick access to small actions
     along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
-#from net.udp.Broadcast import BroadcastSender
-from PyQt4.QtCore import SIGNAL
+from lib.net.udp.Broadcast import BroadcastSender
 
 class Help(object):
     '''Slot functions from the help menu'''

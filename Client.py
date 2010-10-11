@@ -27,7 +27,7 @@ import sys
 # From PyFarm
 from lib.Logger import Logger
 from lib.Settings import ReadConfig
-#from lib.net.udp.Broadcast import BroadcastReceiever
+from lib.net.udp.Broadcast import BroadcastReceiever
 from lib.net.tcp.Queue import QueueClient
 
 # From PyQt
@@ -35,7 +35,7 @@ from PyQt4.QtCore import QCoreApplication, QObject, SIGNAL, SLOT
 
 LOGLEVEL = 4
 MODULE = "Client.py"
-log = Logger(__MODULE__)
+log = Logger(MODULE)
 
 class Main(QObject):
     def __init__(self, parent=None):

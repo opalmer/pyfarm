@@ -26,6 +26,7 @@ import sys
 import multiprocessing
 
 # From PyFarm
+#from lib.Logger import Logger
 from lib.Settings import ReadConfig
 from lib.system.Utility import SimpleCommand
 
@@ -38,7 +39,7 @@ class SystemInfo(object):
         self.config = ReadConfig(configDir)
         self.hardware = Hardware()
         self.software = Software(self.config)
-        self.network = Network(self.config.netadapter)
+        #self.network = Network(self.config.netadapter)
 
 class OperatingSystem(object):
     '''Query and return information about the operating system'''

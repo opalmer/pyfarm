@@ -30,13 +30,13 @@ from lib.system.Info import Hardware
 MODULE = "lib.InputFlags"
 LOGLEVEL = 4
 
-log = Logger(__MODULE__, __LOGLEVEL__)
+log = Logger(MODULE, LOGLEVEL)
 
 class SystemInfo(object):
     '''Gather and prepare to return info about the system'''
     def __init__(self):
         self.cwd = os.getcwd()
-        self.log = Logger("InputFlags.SystemInfo", __LOGLEVEL__)
+        self.log = Logger("InputFlags.SystemInfo", LOGLEVEL)
 
     def showinfo(self, option=None, opt=None, value=None, parser=None):
         '''Return all information about the system'''
@@ -86,7 +86,7 @@ class SystemUtilities(object):
     '''General system utilities to run from the command line'''
     def __init__(self):
         self.cwd = os.getcwd()
-        self.log = Logger("InputFlags.SystemUtilities", __LOGLEVEL__)
+        self.log = Logger("InputFlags.SystemUtilities", LOGLEVEL)
 
     def clean(self, option=None, opt=None, value=None, parser=None):
         '''Cleanup any extra or byte-compiled files'''
