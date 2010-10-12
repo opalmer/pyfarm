@@ -75,15 +75,15 @@ class MainWindow(QtGui.QMainWindow):
         self.ui.hostControls.setLayout(self.ui.layoutHostControlButtons)
         self.ui.statusDock.widget().setLayout(self.ui.rootDockLayout)
         self.ui.statusDock.setWindowTitle("Status Console")
-        
+
         # add menu to submit button
         self.submitMenu = QtGui.QMenu()
         self.submitMenu.addAction("Run")
         self.submitMenu.addAction("On Hold")
         self.submit.setMenu(self.submitMenu)
         self.connect(
-                        self.submitMenu, 
-                        QtCore.SIGNAL("triggered(QAction *)"), 
+                        self.submitMenu,
+                        QtCore.SIGNAL("triggered(QAction *)"),
                         self.submitAction
                     )
         # END submit menu
@@ -93,7 +93,7 @@ class MainWindow(QtGui.QMainWindow):
         self.config    = ReadConfig(CFG_GEN)
         self.slots     = Slots(self, self.config)
         self.runServers()
-        
+
 
 
     def runServers(self):
@@ -112,7 +112,7 @@ class MainWindow(QtGui.QMainWindow):
     def submitAction(self, action):
         '''Return a QIcon object with icon preloaded'''
         log.ui("Submitted With: %s" % action.text())
-        
+
     def hostFindPressed(self): self.slots.host.find()
     def hostAddPressed(self): pass # self.slots.host.add()
     def hostInfoPressed(self): pass # self.slots.host.info()
@@ -707,21 +707,29 @@ if __name__ != '__MAIN__':
     from optparse import OptionParser
     about   = flags.About(DEVELOPER, 'GNU-LGPL_Header.txt')
     sysinfo = SystemInfo(os.path.join(CFG_ROOT, "general.ini"))
-    
+
     ###############################
     # Command Line Options
     ###############################
-    
+
     parser = OptionParser(version="PyFarm v%s" % VERSION)
     parser.add_option(
-                        "--testing", dest="testing", 
+                        "--testing", dest="testing",
                         default=False, action="store_true",
                         help="Instead of running the ui, run a small set of tests"
                      )
-    parser.add_option("--author", dest="author", action="callback",
-                        callback=about.author, help="Return the developer's name")
-    parser.add_option("--license", dest="license", action="callback",
-                        callback=about.license, help="Get the LGPL license header")
+    parser.add_option(
+                        "--author", dest="author", action="callback",
+                        callback=about.author, help="Return the developer's name"
+                     )
+    parser.add_option(
+                        "--license", dest="license", action="callback",
+                        callback=about.license, help="Get the LGPL license header"
+                      )
+    parser.add_option(
+                        "--no-version-check", dest="versionCheck", action="store_false",
+                        default=True, help="Bypass software unittesting for Python and PyQt"
+                      )
     #parser.add_option("--sysinfo", dest="sysinfo", action="callback",
                         #callback=sysinfo.hardware, help="Get processor, ram, etc. info")
     #parser.add_option("--clean", action="callback",  callback=sysutil.clean,
@@ -731,8 +739,6 @@ if __name__ != '__MAIN__':
     #parser.add_option("-d", "--db", action="callback", callback=SQLio.InitDb,
                         #help="Set the database for PyFarm before starting the ui")
     (options, args) = parser.parse_args()
-    
-    
 
     ###############################
     # Event Loop Start
@@ -750,12 +756,13 @@ if __name__ != '__MAIN__':
     ###############################
     testVerbosity = 2
 
-    from lib.test import ModuleImports
-    msg = "Running Unit Test: Version and Module Check"
-    splash.showMessage(msg, align)
-    log.info(msg)
-    test = unittest.TestLoader().loadTestsFromTestCase(ModuleImports.ModuleTests)
-    unittest.TextTestRunner(verbosity=testVerbosity).run(test)
+    if options.versionCheck:
+        from lib.test import ModuleImports
+        msg = "Running Unit Test: Version and Module Check"
+        splash.showMessage(msg, align)
+        log.info(msg)
+        test = unittest.TestLoader().loadTestsFromTestCase(ModuleImports.ModuleTests)
+        unittest.TextTestRunner(verbosity=testVerbosity).run(test)
 
     from lib.test import ValidateLogging
     msg = "Running Unit Test: Logging"
@@ -772,7 +779,7 @@ if __name__ != '__MAIN__':
     unittest.TextTestRunner(verbosity=testVerbosity).run(test)
 
     splash.close()
-    
+
     if options.testing:
         print "============================"
         log.warning("Entering testing mode")
