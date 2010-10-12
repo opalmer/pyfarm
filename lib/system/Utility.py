@@ -22,28 +22,36 @@ PURPOSE: To query and return information about the local system
 
 # From Python
 import os
-import subprocess
+from PyQt4 import QtCore
 
 MODULE   = "lib.system.Utility"
 LOGLEVEL = 4
 
-def SimpleCommand(cmd):
+def SimpleCommand(cmd, all=False):
     '''
-    Run the given command and return the resulting string. Please
-     note this function is for SINGLE COMMANDS only.
+    By default this function will return the first results only
+    from the request command.  Enabling all however will return
+    a complete list.
     '''
-    from lib.Logger import Logger # This must remain here, path issues
-    log = Logger("Utility.RunCommand")
-    log.debug("Starting process")
+    # Logger must be imported here due to path issues with
+    #  concurrency.
+    from lib.Logger import Logger
 
-    proc = subprocess.Popen(cmd, shell=True,
-        stdin=subprocess.PIPE, stdout=subprocess.PIPE  )
+    process = QtCore.QProcess()
+    log = Logger("Utility.RunCommand", LOGLEVEL)
 
-    log.debug("Running command: %s" % cmd)
-    results = proc.stdout.readline().split()[0]
-    log.debug("Process complete")
+    # start process and wait for it complete
+    process.start(cmd)
+    log.debug("Starting process PID: %i" % process.pid())
+    if not process.waitForStarted(): return False
+    if not process.waitForFinished(): return False
+    log.debug("Process Complete")
+    return process
+    #results = process.readAll().data()
 
-    return results
+    # return results
+    #if all: return results
+    #else:   return results.split(os.linesep)[0]
 
 def backtrackDirs(path, levels=1):
     '''Given a path backtrack the number of requested levels'''

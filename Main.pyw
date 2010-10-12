@@ -137,13 +137,6 @@ class MainWindow(QtGui.QMainWindow):
             print "What would you like to do?: Save Job Database, Interface Settings,  Shutdown Remote Client Program"
             if event is 'manual': self.close()
 
-        self.sysinfo = SystemInfo(CFG_GEN)
-        self.hardware = self.sysinfo.hardware
-        self.software = self.sysinfo.software
-#        self.network = self.sysinfo.network
-        log.notimplimented("Network info not implimented!")
-#        log.debug("Got system information")
-
 #
 #        # update the installed avaliable software list
 #        for software in settings.installedSoftware():

@@ -26,12 +26,14 @@ import sys
 import multiprocessing
 
 # From PyFarm
-#from lib.Logger import Logger
+from lib.Logger import Logger
 from lib.Settings import ReadConfig
 from lib.system.Utility import SimpleCommand
 
 MODULE   = 'lib.sys.SysInfo'
 LOGLEVEL = 6
+
+log = Logger(MODULE, LOGLEVEL)
 
 class SystemInfo(object):
     '''Default system information object to query and store info about hardware and software'''
@@ -48,15 +50,17 @@ class OperatingSystem(object):
 
     def os(self):
         '''Return the type of os'''
-        types = {'posix': 'linux',
+        types = {
+                 'posix': 'linux',
                  'nt' : 'windows',
-                 'mac' : 'mac'}
+                 'mac' : 'mac'
+                }
 
         try:
-            return types[os.name()]
-            
+            return types[os.name]
+
         except KeyError:
-            log.fatal("%s is not an UNSUPPORTED operating system" % os.name())
+            log.fatal("%s is not an UNSUPPORTED operating system" % os.name)
 
     def version(self):
         '''Return the version of the given os'''
@@ -64,15 +68,21 @@ class OperatingSystem(object):
 
     def architecture(self):
         '''Return the architecure type of the given os'''
-        return
+        pass
 
 
 class Hardware(object):
     '''Used to query information about the local hardware'''
     def __init__(self):
         # since these are constant values. store them for later use
-        self.rammax = float(SimpleCommand("free | grep Mem | awk '{print $2}'"))/1024
-        self.swapmax = float(SimpleCommand("free | grep Swap | awk '{print $2}'"))/1024
+        if os.name == "posix":
+            self.rammax = float(SimpleCommand("free | grep Mem | awk '{print $2}'"))/1024
+            self.swapmax = float(SimpleCommand("free | grep Swap | awk '{print $2}'"))/1024
+
+        elif os.name == "nt":
+            process = SimpleCommand("cmd.exe /C systeminfo /FO CSV", all=False)
+            for i in process.readAll().split(","):
+                print i
 
     def _toGigabyte(self, value, toGigabyte):
         '''If requested, convert to gigabytes'''
