@@ -22,8 +22,9 @@ PURPOSE: Template servers, threads, and packet construction
 from lib.Logger import Logger
 from PyQt4 import QtNetwork, QtCore
 
-UNIT16  = 8
-STREAM_VERSION = QtCore.QDataStream.Qt_4_6
+UNIT16         = 8
+QT_VERSION     = QtCore.QT_VERSION_STR.split('.')
+STREAM_VERSION = eval('QtCore.QDataStream.Qt_%s_%s' %(QT_VERSION[0], QT_VERSION[1]))
 
 class Request(QtCore.QObject):
     '''

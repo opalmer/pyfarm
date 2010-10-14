@@ -23,7 +23,6 @@ PURPOSE: To query and return information about the local system
 # From Python
 import os
 import sys
-import multiprocessing
 
 # From PyFarm
 from lib.Logger import Logger
@@ -76,8 +75,14 @@ class Hardware(object):
     def __init__(self):
         # since these are constant values. store them for later use
         if os.name == "posix":
-            self.rammax = float(SimpleCommand("free | grep Mem | awk '{print $2}'"))/1024
-            self.swapmax = float(SimpleCommand("free | grep Swap | awk '{print $2}'"))/1024
+            try:
+                self.rammax = float(SimpleCommand("free | grep Mem | awk '{print $2}'"))/1024
+                self.swapmax = float(SimpleCommand("free | grep Swap | awk '{print $2}'"))/1024
+
+            except TypeError:
+                log.fixme("Hardware information (linux) not implimented for new SimpleCommand")
+                self.rammax  = -1
+                self.swapmax = -1
 
         elif os.name == "nt":
             process = SimpleCommand("cmd.exe /C systeminfo /FO CSV", all=False)
@@ -119,7 +124,15 @@ class Hardware(object):
 
     def cpucount(self):
         '''Return the cpu count'''
-        return multiprocessing.cpu_count()
+        try:
+            import multiprocessing
+            cpuCount = multiprocessing.cpu_count()
+
+        except ImportError:
+            log.implemented("The multiprocessing module cannot be imported without python2.6+")
+
+        finally:
+            return cpuCount
 
     def cpuload(self):
         '''Return cpu load averages for 1,5,15 mins'''
