@@ -42,11 +42,12 @@ from PyQt4 import QtCore, QtGui, QtNetwork, uic
 
 # From PyFarm
 import cfg.resources_rc
-from lib.net.tcp.Queue import QueueServer
+from lib.ui import Dialogs
+from lib.Slots import Slots
 from lib.Logger import Logger
 from lib.Settings import ReadConfig
-from lib.Slots import Slots
 from lib.system.Info import SystemInfo
+from lib.net.tcp.Queue import QueueServer
 from lib.net.udp.Broadcast import BroadcastSender
 
 # sestup logging
@@ -80,6 +81,7 @@ class MainWindow(QtGui.QMainWindow):
         self.submitMenu = QtGui.QMenu()
         self.submitMenu.addAction("Run")
         self.submitMenu.addAction("On Hold")
+        self.submitMenu.addAction("Waiting On Job")
         self.submit.setMenu(self.submitMenu)
         self.connect(
                         self.submitMenu,
@@ -128,8 +130,23 @@ class MainWindow(QtGui.QMainWindow):
     def queueSaveTriggered(self): pass # RUN ACTION HERE
     def quitTriggered(self): self.closeEvent('manual')
 
+    def closeEventHandler(self, exitAnswers):
+        '''
+        Used to handle the final user choices reguarding
+        database, clients, etc.
+        '''
+        for key, value in exitAnswers.items():
+            log.ui("Exit State Choice: %s -> %s" % (key, str(value)))
+
+        log.critical("Closing!")
+        sys.exit()
+
     def closeEvent(self, event):
         '''When the ui is attempting to exit, run this first.  However, make sure we only do this once'''
+        exit = Dialogs.CloseEvent()
+        self.connect(exit, QtCore.SIGNAL("state"), self.closeEventHandler)
+        exit.exec_()
+
         if self.isClosing:
             self.close()
         else:
