@@ -749,53 +749,58 @@ if __name__ != '__MAIN__':
     #parser.add_option("-d", "--db", action="callback", callback=SQLio.InitDb,
                         #help="Set the database for PyFarm before starting the ui")
     (options, args) = parser.parse_args()
-
-    ###############################
-    # Event Loop Start
-    ###############################
-    log.debug("PID: %s" % os.getpid())
-    app    = QtGui.QApplication(sys.argv)
-
-    align  = Qt.AlignBottom
-    pixmap = QtGui.QPixmap(os.path.join(ICN_ROOT, "splash.png"))
-    splash = QtGui.QSplashScreen(pixmap)
-    splash.show()
-
-    ###############################
-    # Unit Test, for safety!
-    ###############################
-    testVerbosity = 2
-
-    if options.versionCheck:
-        from lib.test import ModuleImports
-        msg = "Running Unit Test: Version and Module Check"
-        splash.showMessage(msg, align)
-        log.info(msg)
-        test = unittest.TestLoader().loadTestsFromTestCase(ModuleImports.ModuleTests)
-        unittest.TextTestRunner(verbosity=testVerbosity).run(test)
-
-    from lib.test import ValidateLogging
-    msg = "Running Unit Test: Logging"
-    splash.showMessage(msg, align)
-    log.info(msg)
-    test = unittest.TestLoader().loadTestsFromTestCase(ValidateLogging.Validate)
-    unittest.TextTestRunner(verbosity=testVerbosity).run(test)
-
-    from lib.test import ValidateNetConfig
-    msg = "Running Unit Test: Network Configuration"
-    splash.showMessage(msg, align)
-    log.info(msg)
-    test = unittest.TestLoader().loadTestsFromTestCase(ValidateNetConfig.Validate)
-    unittest.TextTestRunner(verbosity=testVerbosity).run(test)
-
-    splash.close()
+    sys.exit("FATAL: Testing Mode")
 
     if options.testing:
         print "============================"
         log.warning("Entering testing mode")
         test = Testing()
         test.run()
+
     else:
+        ###############################
+        # Event Loop Start
+        ###############################
+        log.debug("PID: %s" % os.getpid())
+        app    = QtGui.QApplication(sys.argv)
+
+        align  = Qt.AlignBottom
+        pixmap = QtGui.QPixmap(os.path.join(ICN_ROOT, "splash.png"))
+        splash = QtGui.QSplashScreen(pixmap)
+        splash.show()
+
+        ###############################
+        # Unit Tests, for safety!
+        ###############################
+        testVerbosity = 2
+
+        if options.versionCheck:
+            from lib.test import ModuleImports
+            msg = "Running Unit Test: Version and Module Check"
+            splash.showMessage(msg, align)
+            log.info(msg)
+            test = unittest.TestLoader().loadTestsFromTestCase(ModuleImports.ModuleTests)
+            unittest.TextTestRunner(verbosity=testVerbosity).run(test)
+
+        from lib.test import ValidateLogging
+        msg = "Running Unit Test: Logging"
+        splash.showMessage(msg, align)
+        log.info(msg)
+        test = unittest.TestLoader().loadTestsFromTestCase(ValidateLogging.Validate)
+        unittest.TextTestRunner(verbosity=testVerbosity).run(test)
+
+        from lib.test import ValidateNetConfig
+        msg = "Running Unit Test: Network Configuration"
+        splash.showMessage(msg, align)
+        log.info(msg)
+        test = unittest.TestLoader().loadTestsFromTestCase(ValidateNetConfig.Validate)
+        unittest.TextTestRunner(verbosity=testVerbosity).run(test)
+
+        splash.close()
+
+        ###############################
+        # Run UI
+        ###############################
         main = MainWindow()
         main.show()
         sys.exit(app.exec_())

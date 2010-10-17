@@ -33,7 +33,7 @@
     <level value="6" name="network" enabled="False" />
     <level value="7" name="ui" enabled="True" />
     <level value="8" name="fixme" enabled="True" />
-    <level value="9" name="not implemented" function="notimplemented" enabled="False" />
+    <level value="9" name="not implemented" function="notimplemented" enabled="True" />
     <level value="10" name="debug" enabled="True" />
     <level value="11" name="info" enabled="True" />
     <level value="12" name="not compatible" function="notcompatible" enabled="True" />

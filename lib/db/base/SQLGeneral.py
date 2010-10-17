@@ -58,7 +58,7 @@ def DBSetup(host, db=":memory:"):
             """)
 
     elif self.host == 'client':
-        log.notimplimented("Client database not yet implimented")
+        log.notimplemented("Client database not yet implimented")
 
     else:
         log.fatal("%s is not a valid option for DBSetup!" % self.host)

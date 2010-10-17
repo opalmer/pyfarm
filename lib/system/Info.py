@@ -23,6 +23,8 @@ PURPOSE: To query and return information about the local system
 # From Python
 import os
 import sys
+import fnmatch
+import platform
 
 # From PyFarm
 from lib.Logger import Logger
@@ -37,29 +39,23 @@ log = Logger(MODULE, LOGLEVEL)
 class SystemInfo(object):
     '''Default system information object to query and store info about hardware and software'''
     def __init__(self, configDir, skipSoftware=True):
+        if os.name == "nt":
+            process = SimpleCommand("cmd.exe /C systeminfo", all=False)
+            cache   = str(process.readAll())
+
+        else:
+            cache = None
+
         self.config = ReadConfig(configDir)
-        self.hardware = Hardware()
-        self.software = Software(self.config)
-        #self.network = Network(self.config.netadapter)
+        self.hardware = Hardware(cache)
+        self.software = Software(self.config, cache)
+        #self.network = Network(self.config.netadapter, cache)
 
 class OperatingSystem(object):
     '''Query and return information about the operating system'''
-    def __init__(self):
-        pass
-
-    def os(self):
-        '''Return the type of os'''
-        types = {
-                 'posix': 'linux',
-                 'nt' : 'windows',
-                 'mac' : 'mac'
-                }
-
-        try:
-            return types[os.name]
-
-        except KeyError:
-            log.fatal("%s is not an UNSUPPORTED operating system" % os.name)
+    def __init__(self, cache):
+        self.type  = os.name
+        self.cache = cache
 
     def version(self):
         '''Return the version of the given os'''
@@ -72,8 +68,8 @@ class OperatingSystem(object):
 
 class Hardware(object):
     '''Used to query information about the local hardware'''
-    def __init__(self):
-        # since these are constant values. store them for later use
+    def __init__(self, cache):
+        self.cache = cache
         if os.name == "posix":
             try:
                 self.rammax = float(SimpleCommand("free | grep Mem | awk '{print $2}'"))/1024
@@ -81,20 +77,17 @@ class Hardware(object):
 
             except TypeError:
                 log.fixme("Hardware information (linux) not implimented for new SimpleCommand")
-                self.rammax  = -1
-                self.swapmax = -1
+                self.rammax  = None
+                self.swapmax = None
 
         elif os.name == "nt":
-            process = SimpleCommand("cmd.exe /C systeminfo /FO CSV", all=False)
-            for i in process.readAll().split(","):
-                print i
+            print self.cache
 
     def _toGigabyte(self, value, toGigabyte):
         '''If requested, convert to gigabytes'''
-        if toGigabyte:
-            return value/1024
-        else:
-            return int(value)
+        if value and toGigabyte:       return value/1024
+        elif value and not toGigabyte: return int(value)
+        else:                          return None
 
     def ramtotal(self, toGigabyte=False):
         '''Return the total amout of installed ram'''
@@ -102,8 +95,11 @@ class Hardware(object):
 
     def ramused(self, toGigabyte=False):
         '''Return the amout of ram used'''
-        mb = float(SimpleCommand("free | grep 'buffers/cache' | awk '{print $3}'"))/1024
-        return self._toGigabyte(mb, toGigabyte)
+        results = None
+        if os.name == "posix":
+            results = float(SimpleCommand("free | grep 'buffers/cache' | awk '{print $3}'"))/1024
+
+        return self._toGigabyte(results, toGigabyte)
 
     def ramfree(self, toGigabyte=False):
         '''Return the amount of free ram'''
@@ -115,8 +111,11 @@ class Hardware(object):
 
     def swapused(self, toGigabyte=False):
         '''Return the total amout of swap used'''
-        mb = float(SimpleCommand("free | grep Swap | awk '{print $3}'"))/1024
-        return self._toGigabyte(mb, toGigabyte)
+        results = None
+        if os.name == "posix":
+            results = float(SimpleCommand("free | grep Swap | awk '{print $3}'"))/1024
+
+        return self._toGigabyte(results, toGigabyte)
 
     def swapfree(self, toGigabyte=False):
         '''Return amout of swap free'''
@@ -124,54 +123,87 @@ class Hardware(object):
 
     def cpucount(self):
         '''Return the cpu count'''
+        results = None
         try:
             import multiprocessing
-            cpuCount = multiprocessing.cpu_count()
+            results = str(multiprocessing.cpu_count())
 
         except ImportError:
-            log.implemented("The multiprocessing module cannot be imported without python2.6+")
+            # alternative means of cpu detection
+            pass
 
-        finally:
-            return cpuCount
+        return results
 
     def cpuload(self):
         '''Return cpu load averages for 1,5,15 mins'''
-        return open('/proc/loadavg').readlines()[0].split()[:3]
+        results = None
+        if os.name == "posix":
+            results = open('/proc/loadavg').readlines()[0].split()[:3]
+
+        return results
 
     def uptime(self):
         '''Return uptime information'''
-        return float(open('/proc/uptime').readlines()[0].split()[0])
+        results = None
+        if os.name == "posix":
+            results = float(open('/proc/uptime').readlines()[0].split()[0])
+
+        return results
 
     def idletime(self):
         '''Return total idle time'''
-        return float(open('/proc/uptime').readlines()[0].split()[1])
+        results = None
+        if os.name == "posix":
+            results = float(open('/proc/uptime').readlines()[0].split()[1])
+
+        return results
 
 
 class Software(object):
     '''Query and return information about the software on the local system'''
-    def __init__(self, config):
-       pass
+    def __init__(self, config, cache):
+       self.cache = cache
 
 
 class Network(object):
     '''Query and return information about the local network'''
-    def __init__(self, adapter):
+    def __init__(self, adapter, cache):
         self.adapter = adapter
+        self.cache   = cache
 
     def ip(self):
         '''Return the ip address'''
-        query = "ifconfig %s | grep 'inet addr' | gawk -F: '{print $2}' | gawk '{print $1}'" % self.adapter
-        return SimpleCommand(query)
+        results = None
+        if os.name == "posix":
+            query = "ifconfig %s | grep 'inet addr' | gawk -F: '{print $2}' | gawk '{print $1}'" % self.adapter
+            results = SimpleCommand(query)
+
+        return results
 
     def subnet(self):
         '''Return subnet information for the adapter'''
-        query = "ifconfig %s | grep 'inet addr' | gawk -F: '{print $4}' | gawk '{print $1}'" % self.adapter
-        return SimpleCommand(query)
+        results = None
+        if os.name == "posix":
+            query = "ifconfig %s | grep 'inet addr' | gawk -F: '{print $4}' | gawk '{print $1}'" % self.adapter
+            results = SimpleCommand(query)
+
+        return results
 
     def hostname(self):
         '''Return the hostname'''
-        return SimpleCommand("hostname")
+        results = None
+        if os.name == "posix" or os.name == "nt":
+            results = SimpleCommand("hostname")
+
+        if not results or fnmatch.fnmatch(results, "*localhost*"):
+            results = platform.node()
+
+        return results
 
     def mac(self):
         '''Return mac address for the adapter'''
-        return SimpleCommand("ifconfig %s | grep 'Link encap' | awk '{print $5}'" % self.adapter)
+        results = None
+        if os.name == "posix":
+            results = SimpleCommand("ifconfig %s | grep 'Link encap' | awk '{print $5}'" % self.adapter)
+
+        return results
