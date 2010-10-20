@@ -154,102 +154,22 @@ class MainWindow(QtGui.QMainWindow):
             print "What would you like to do?: Save Job Database, Interface Settings,  Shutdown Remote Client Program"
             if event is 'manual': self.close()
 
-#
-#        # update the installed avaliable software list
-#        for software in settings.installedSoftware():
-#            self.ui.softwareSelection.addItem(str(software))
-#
-#        # setup data management
-#        self.dataJob = {}
-#        self.dataGeneral = GeneralManager(self.ui, VERSION)
-#        self.hostname = str(QHostInfo.localHostName())
-#        self.tableManager = JobTableManager(self)
-#        self.softwareManager = SoftwareContextManager(self)
-#        self.submitJob = SubmitManager(self)
-#        self.ip = str(QHostInfo.fromName(self.hostname).addresses()[0].toString())
-#        self.msg = MessageBox(self)
-#        setSoftware = self.softwareManager.setSoftware(self.ui.softwareSelection.currentText())
-#
-#        # if we cannot find any software installed
-#        if not setSoftware:
-#            msg = """<p>Could not find any software installed on system.
-#            This will not prevent you from launching PyFarm however you
-#            will be unable to render.<br><br><b>Options:</b>
-#            <ol>1.) Add remote hosts and use their installed software (not implimented yet)</ol>
-#            <ol>2.) Edit %s/settings.xml and add custom search paths</ol>
-#            <br><br>
-#            See the <a href="http://www.google.com">wiki</a> for more information.
-#            </p>
-#            """ % wd
-#            self.msg.warning("Software Not Installed", msg)
-#
-
-#
-#        # setup some basic colors
-#        self.red = QColor(255, 0, 0)
-#        self.green = QColor(0, 128, 0)
-#        self.blue = QColor(0, 0, 255)
-#        self.purple = QColor(128, 0, 128)
-#        self.white = QColor(255, 255, 255)
-#        self.yellow = QColor(255, 255, 0)
-#        self.black = QColor(0, 0, 0)
-#        self.orange = QColor(255, 165, 0)
-#
-#        # inform the user of their settings
-        #self.updateStatus('SETTINGS', 'Got settings from ini file', 'purple')
-#        self.updateStatus('SETTINGS', 'Server IP: %s' % self.network.ip(), 'purple')
-#        self.updateStatus('SETTINGS', 'Broadcast Port: %s' % self.config.servers['broadcast'], 'purple')
-#        self.updateStatus('SETTINGS', 'Logging Port: %s' % self.config.servers['logging'], 'purple')
-#        self.updateStatus('SETTINGS', 'Queue Port: %s' %self.config.servers['queue'], 'purple')
-#
-#        for program in settings.installedSoftware():
-#            self.updateStatus('SETTINGS', '%s: %s' % (program, settings.command(program)), 'purple')
-#
-#        # populate the avaliable list of renderers
-#        self.softwareManager.setSoftware(self.ui.softwareSelection.currentText())
-#        self.ui.softwareSelection.currentText()
-#
-#        # setup ui vars
-#        self.ui.currentJobs.horizontalHeader().setStretchLastSection(True)
-#
-#        # make signal connections
-#        ## ui signals
-#        self.connect(self.ui.enque, SIGNAL("pressed()"), self.submitJob.submitJob)
-#        self.connect(self.ui.render, SIGNAL("pressed()"), self.submitJob.startRender)
-#        self.connect(self.ui.softwareSelection, SIGNAL("currentIndexChanged(const QString&)"), self.softwareManager.setSoftware)
-#
-#        # connect specific render option vars
-#        ## maya
-#        self.connect(self.ui.mayaBrowseForScene, SIGNAL("pressed()"),  self.softwareManager.browseForScene)
-#        self.connect(self.ui.mayaBrowseForOutputDir, SIGNAL("pressed()"), self.softwareManager.browseForMayaOutDir)
-#        self.connect(self.ui.mayaBrowseForProject, SIGNAL("pressed()"), self.softwareManager.browseForMayaProjectFile)
-#        self.connect(self.ui.mayaRenderLayers, SIGNAL("customContextMenuRequested(const QPoint &)"), self.mayaRenderLayersListMenu)
-#        self.connect(self.ui.mayaAddCamera, SIGNAL("clicked()"), self.mayaCameraEditMenu)
-#
-#        ## houdini
-#        self.connect(self.ui.houdiniOutputCustomImageRes, SIGNAL("stateChanged(int)"), self.setHoudiniCustomResState)
-#        self.connect(self.ui.houdiniOutputKeepAspect, SIGNAL("stateChanged(int)"), self.setHoudiniKeepAspectRatio)
-#        self.connect(self.ui.houdiniOutputWidth, SIGNAL("valueChanged(int)"), self.setHoudiniWidth)
-#        self.connect(self.ui.houdiniOutputPixelAspect, SIGNAL("valueChanged(double)"), self.setHoudiniAspectRatio)
-#        self.connect(self.ui.houdiniBrowseForScene, SIGNAL("pressed()"), self.softwareManager.browseForScene)
-#        self.connect(self.ui.houdiniNodeList, SIGNAL("customContextMenuRequested(const QPoint &)"), self.houdiniNodeListMenu)
-
-    def foundHost(self, host):
-        '''When a host is found, run the appropriate actions'''
-        log.netclient("Found host: %s" % host)
-
-    def searchStarted(self):
-        print "Running"
-
     def findHosts(self):
         '''Get hosts via broadcast packet, add them to self.hosts'''
         # 1) Start timer
         # 2) Run broadcast
         # 3) Kill broadcast after timer expires
         self.broadcast = BroadcastSender(self.config)
-        self.connect(self.broadcast, SIGNAL("client-address"), self.foundHost)
-        self.connect(self.broadcast, SIGNAL("started()"), self.searchStarted)
+        self.connect(self.broadcast, SIGNAL("client-address"), self.hostFound)
+        self.connect(self.broadcast, SIGNAL("started()"), self.hostSearchStarted)
         self.broadcast.run()
+
+    def hostFound(self, host):
+        '''When a host is found, run the appropriate actions'''
+        log.netclient("Found host: %s" % host)
+
+    def hostSearchStarted(self):
+        print "Running"
 
 #################################
 ### BEGIN Context Menus
@@ -307,193 +227,6 @@ class MainWindow(QtGui.QMainWindow):
 #
 ##############################
 ### END Context Menu
-### BEGIN Maya Settings
-#################################
-#    def mayaRemoveCamera(self):
-#        '''
-#        Remove the currently selected camera
-#        '''
-#        widget = self.ui.mayaCamera
-#        widget.removeItem(widget.currentIndex())
-#
-#    def mayaAddCamera(self):
-#        '''
-#        Add a custom camera to maya
-#        '''
-#        dialog = CustomObjectDialog(self)
-#        self.connect(dialog, SIGNAL("objectName"), self.ui.mayaCamera.addItem)
-#        dialog.exec_()
-#
-#    def mayaAddLayer(self):
-#        '''
-#        Add a custom layer to maya
-#        '''
-#        dialog = CustomObjectDialog(self)
-#        self.connect(dialog, SIGNAL("objectName"), self.ui.mayaRenderLayers.addItem)
-#        dialog.exec_()
-#
-#    def mayaEmptyLayersAndCameras(self):
-#        '''
-#        Empty render layer list and the camera list
-#        '''
-#        self.ui.mayaRenderLayers.clear()
-#        self.ui.mayaCamera.clear()
-#
-#    def mayaRenderLayerRemove(self):
-#        '''
-#        Remove the currently selected layer(s) from
-#        the node list.
-#        '''
-#        for item in self.ui.mayaRenderLayers.selectedItems():
-#            item.setHidden(1)
-#
-#    def mayaRenderLayerEmpty(self):
-#        '''
-#        Clear all nodes from the node list
-#        '''
-#        self.ui.mayaRenderLayers.clear()
-#
-#################################
-### END Maya Settings
-#################################
-### BEGIN Houdini Settings
-#################################
-#    def houdiniAddOutputNode(self):
-#        '''
-#        Add an output node too the node list
-#        '''
-#        dialog = CustomObjectDialog(self)
-#        self.connect(dialog, SIGNAL("objectName"), self.ui.houdiniNodeList.addItem)
-#        dialog.exec_()
-#
-#    def houdiniNodeListRemoveSelected(self):
-#        '''
-#        Remove the currently selected node(s) from
-#        the node list.
-#        '''
-#        for item in self.ui.houdiniNodeList.selectedItems():
-#            item.setHidden(1)
-#
-#    def houdiniNodeListEmpty(self):
-#        '''
-#        Clear all nodes from the node list
-#        '''
-#        self.ui.houdiniNodeList.clear()
-#
-#    def setHoudiniScene(self):
-#        '''
-#        Display a search gui then set the houdini scene.
-#        Lastly, gather all of the output nodes from the file.
-#        '''
-#        projectFile = QFileDialog.getOpenFileName(\
-#            None,
-#            self.trUtf8("Select Your Houdini Scene"),
-#            QString(),
-#            self.trUtf8(self.fileGrep),
-#            None,
-#            QFileDialog.Options(QFileDialog.DontResolveSymlinks))
-#
-#        if projectFile != '':
-#            self.ui.houdiniFile.setText(projectFile)
-#            self.houdiniFindOutputNodes(projectFile)
-#
-#    def houdiniFindOutputNodes(self, inFile):
-#        '''
-#        Given an input file, find all of the output nodes and
-#        display them in the node table.
-#        '''
-#        hou = open(inFile)
-#        exp = QRegExp(r"""[0-9]+out/[0-9a-zA-Z]+[.]parm""")
-#
-#        for line in hou.readlines():
-#            if not exp.indexIn(line):
-#                self.ui.houdiniNodeList.addItem(QString(line.split('/')[1].split('.')[0]))
-#
-#    def setHoudiniCustomResState(self, newState):
-#        '''
-#        Based on user pref, setup the ui for custom image resolution
-#        '''
-#        widgets = [\
-#                    self.ui.houdiniOutputKeepAspect,
-#                    self.ui.houdiniOutputWidth,
-#                    self.ui.houdiniOutputWidthLabel,
-#                    self.ui.houdiniOutputPixelAspect,
-#                    self.ui.houdiniOutputPixelAspectLabel]
-#
-#        if newState:
-#            for widget in widgets:
-#                widget.setEnabled(0)
-#
-#            self.ui.houdiniOutputHeight.setEnabled(0)
-#            self.ui.houdiniOutputHeightLabel.setEnabled(0)
-#
-#        else:
-#            for widget in widgets:
-#                widget.setEnabbeginProcessingled(1)
-#
-#            if self.houdiniKeepAspectRatio():
-#                self.ui.houdiniOutputHeight.setEnabled(0)
-#                self.ui.houdiniOutputHeightLabel.setEnabled(0)
-#            else:
-#                self.ui.houdiniOutputHeight.setEnabled(1)
-#                self.ui.houdiniOutputHeightLabel.setEnabled(1)
-#
-#    def setHoudiniKeepAspectRatio(self, newState):
-#        '''
-#        Given newState set the global var accordingly and
-#        enable/disable the appropriate combo box.
-#        '''
-#        # if the box is checked, keep the aspect ratio
-#        if newState:
-#            self.ui.houdiniOutputHeight.setEnabled(0)
-#            self.ui.houdiniOutputHeightLabel.setEnabled(0)
-#        else:
-#            self.ui.houdiniOutputHeight.setEnabled(1)
-#            self.ui.houdiniOutputHeightLabel.setEnabled(1)
-#
-#    def setHoudiniWidth(self, width):
-#        '''
-#        Set the width of the output image
-#        '''
-#        if not self.houdiniKeepAspectRatio():
-#            pass
-#        else:
-#            a = float(width)
-#            b = float(self.houdiniAspectRatio())
-#            self.ui.houdiniOutputHeight.setValue(a//b)
-#
-#    def setHoudiniHeight(self, height):
-#        '''
-#        Set the height of the output image
-#        '''
-#        try:
-#            if not self.houdiniKeepAspect:
-#                pass
-#        except AttributeError:
-#            self.houdiniKeepAspect = 1
-#
-#    def setHoudiniAspectRatio(self, aspectRatio):
-#        '''
-#        Set the aspect ratio of the render
-#        '''
-#        self.setHoudiniWidth(self.ui.houdiniOutputWidth.value())
-#
-#    def houdiniAspectRatio(self):
-#        '''
-#        Return the current aspect ratio from
-#        the interface.
-#        '''
-#        return self.ui.houdiniOutputPixelAspect.value()
-#
-#    def houdiniKeepAspectRatio(self):
-#        '''
-#        Return the state of the keep aspect ratio check
-#        box.
-#        '''
-#        return self.ui.houdiniOutputKeepAspect.isChecked()
-#
-#################################
-### END Houdini Settings
 ### BEGIN Host Management
 #################################
 #    def _getHostSelection(self):
@@ -650,29 +383,7 @@ class MainWindow(QtGui.QMainWindow):
             color (string) - The color name or hex value to set the section
         '''
         self.ui.status.append('<font color=%s><b>%s</b></font> - %s' % (color, section, msg))
-#
-#    def closeEvent(self, event):
-#        '''Run when closing the main gui, used to "cleanup" the program state'''
-#        # if we have connected hosts
-#        hostCount = len(self.dataGeneral.network.hostList())
-#        if hostCount:
-#            closeEventManager = CloseEventManager(self.dataGeneral, self)
-#            exit_dialog = closeEventManager.hostExitDialog()
-#
-#            if exit_dialog == QMessageBox.Yes:
-#                log.info("Shuttdown down clients!")
-#                closeEventManager.shutdownHosts()
-#
-#            elif exit_dialog == QMessageBox.No:
-#                log.info("Restarting clients!")
-#                closeEventManager.restartHosts()
-#
-#            elif exit_dialog == QMessageBox.Help:
-#                log.ui("closeEvent() - Presenting host help")
-#                closeEventManager.exitHelp()
-#                self.closeEvent(self)
-#        else:
-#            log.network("closeEvent() - No hosts to shutdown")
+
 #################################
 ### END General Utilities
 #################################
@@ -749,7 +460,6 @@ if __name__ != '__MAIN__':
     #parser.add_option("-d", "--db", action="callback", callback=SQLio.InitDb,
                         #help="Set the database for PyFarm before starting the ui")
     (options, args) = parser.parse_args()
-    sys.exit("FATAL: Testing Mode")
 
     if options.testing:
         print "============================"

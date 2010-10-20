@@ -40,8 +40,10 @@ class SystemInfo(object):
     '''Default system information object to query and store info about hardware and software'''
     def __init__(self, configDir, skipSoftware=True):
         if os.name == "nt":
-            process = SimpleCommand("cmd.exe /C systeminfo", all=False)
-            cache   = str(process.readAll())
+            #process = SimpleCommand("cmd.exe /C systeminfo", all=False)
+            #cache   = str(process.readAll())
+            log.notimplemented("SystemInfo not implemented for %s" % os.name)
+            cache = None
 
         else:
             cache = None
@@ -98,6 +100,8 @@ class Hardware(object):
         results = None
         if os.name == "posix":
             results = float(SimpleCommand("free | grep 'buffers/cache' | awk '{print $3}'"))/1024
+        else:
+            log.notimplemented("Ram used not implemented for %s" % os.name)
 
         return self._toGigabyte(results, toGigabyte)
 
@@ -114,6 +118,8 @@ class Hardware(object):
         results = None
         if os.name == "posix":
             results = float(SimpleCommand("free | grep Swap | awk '{print $3}'"))/1024
+        else:
+            log.notimplemented("swap used not implemented for %s" % os.name)
 
         return self._toGigabyte(results, toGigabyte)
 
@@ -129,8 +135,7 @@ class Hardware(object):
             results = str(multiprocessing.cpu_count())
 
         except ImportError:
-            # alternative means of cpu detection
-            pass
+            log.notimplemented("CPU Count not implemented without multiprocessing")
 
         return results
 
@@ -139,6 +144,8 @@ class Hardware(object):
         results = None
         if os.name == "posix":
             results = open('/proc/loadavg').readlines()[0].split()[:3]
+        else:
+            log.notimplemented("cpuload not implemented for %s" % os.name)
 
         return results
 
@@ -147,6 +154,8 @@ class Hardware(object):
         results = None
         if os.name == "posix":
             results = float(open('/proc/uptime').readlines()[0].split()[0])
+        else:
+            log.notimplemented("uptime not implemented for %s" % os.name)
 
         return results
 
@@ -155,6 +164,8 @@ class Hardware(object):
         results = None
         if os.name == "posix":
             results = float(open('/proc/uptime').readlines()[0].split()[1])
+        else:
+            log.notimplemented("idletime not implemented for %s" % os.name)
 
         return results
 
@@ -177,6 +188,8 @@ class Network(object):
         if os.name == "posix":
             query = "ifconfig %s | grep 'inet addr' | gawk -F: '{print $2}' | gawk '{print $1}'" % self.adapter
             results = SimpleCommand(query)
+        else:
+            log.notimplemented("ip not implemented for %s" % os.name)
 
         return results
 
@@ -186,6 +199,8 @@ class Network(object):
         if os.name == "posix":
             query = "ifconfig %s | grep 'inet addr' | gawk -F: '{print $4}' | gawk '{print $1}'" % self.adapter
             results = SimpleCommand(query)
+        else:
+            log.notimplemented("subnet not implemented for %s" % os.name)
 
         return results
 
@@ -194,6 +209,8 @@ class Network(object):
         results = None
         if os.name == "posix" or os.name == "nt":
             results = SimpleCommand("hostname")
+        else:
+            log.notimplemented("hostname not implemented for %s" % os.name)
 
         if not results or fnmatch.fnmatch(results, "*localhost*"):
             results = platform.node()
@@ -205,5 +222,7 @@ class Network(object):
         results = None
         if os.name == "posix":
             results = SimpleCommand("ifconfig %s | grep 'Link encap' | awk '{print $5}'" % self.adapter)
+        else:
+            log.notimplemented("mac not implemented for %s" % os.name)
 
         return results
