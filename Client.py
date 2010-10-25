@@ -41,12 +41,12 @@ class Main(QObject):
     def __init__(self, parent=None):
         super(Main, self).__init__(parent)
         self.config = ReadConfig(
-                                            os.path.join(
-                                                "%s" % os.path.dirname(__file__),
-                                                "cfg",
-                                                "general.ini"
-                                            )
-                                        )
+                                    os.path.join(
+                                        "%s" % os.path.dirname(__file__),
+                                        "cfg",
+                                        "general.ini"
+                                    )
+                                )
         self.master = ''
 
     def listenForBroadcast(self):
@@ -72,12 +72,11 @@ class Main(QObject):
         queue = QueueClient(self.master, port=self.config['servers']['queue'])
         log.fixme('HARD CODED NETWORK HOSTNAME AND IP')
         queue.addClient('octo', '10.56.1.2')
-        #heartbeat.sendPID('main', 'something', '5', '17838', '6')
-        #heartbeat.sendRequest()
 
 
-app = QCoreApplication(sys.argv)
-log.debug("PID: %s" % os.getpid())
-main = Main(app)
-main.listenForBroadcast()
-app.exec_()
+if __name__ == '__main__':
+    app = QCoreApplication(sys.argv)
+    log.debug("PID: %s" % os.getpid())
+    main = Main(app)
+    main.listenForBroadcast()
+    app.exec_()

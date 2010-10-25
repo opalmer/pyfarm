@@ -27,8 +27,7 @@ import socket
 import traceback
 
 # From PyQt
-from PyQt4.QtNetwork import QUdpSocket, QHostAddress, QHostInfo
-from PyQt4.QtCore import QThread, SIGNAL, QByteArray, QTimer, QString
+from PyQt4 import QtCore, QtNetwork
 
 # From PyFarm
 from lib.Logger import Logger
@@ -37,24 +36,24 @@ from lib.Settings import ReadConfig
 MODULE = "lib.net.udp.Broadcast"
 LOGLEVEL = 4
 
-class BroadcastSender(QThread):
+class BroadcastSender(QtCore.QThread):
     '''Class to send broadcast signals to client network'''
     def __init__(self, config, parent=None):
         super(BroadcastSender, self).__init__(parent)
         # setup some standard vars, so we dont broadcast forever
-        self.config = config
-        self.port = self.config['servers']['broadcast']
-        self.count = self.config['broadcast']['interval']
+        self.config   = config
+        self.port     = self.config['servers']['broadcast']
+        self.count    = self.config['broadcast']['interval']
         self.maxCount = self.config['broadcast']['maxcount']
-        self.log = Logger("Broadcast.BroadcastSender",LOGLEVEL)
+        self.log      = Logger("Broadcast.BroadcastSender", LOGLEVEL)
 
         # get all IPs
         self.addresses = ''
-        self.hostname = str(QHostInfo.localHostName())
+        self.hostname = str(QtNetwork.QHostInfo.localHostName())
         isLocalhost = re.compile(r"""(127[.]0[.](?:0|1)[.]1)""")
         isIP = re.compile(r"""(\d{1,3}[.]\d{1,3}[.]\d{1,3}[.]\d{1,3})""")
         isSubnet = re.compile(r"""((?:255|0)[.](?:255|0)[.](?:255|0)[.](?:255|0))""")
-        for address in [ str(addr.toString()) for addr in QHostInfo.fromName(self.hostname).addresses() ]:
+        for address in [ str(addr.toString()) for addr in QtNetwork.QHostInfo.fromName(self.hostname).addresses() ]:
             if not isLocalhost.match(address) and not isSubnet.match(address) and isIP.match(address):
                 self.addresses += ","+address
         self.log.debug(self.addresses)
@@ -62,8 +61,8 @@ class BroadcastSender(QThread):
     def run(self):
         '''Start the broadcast thread and setup the outgoing connection'''
         self.log.netclient("Broadcasting")
-        self.socket = QUdpSocket()
-        self.datagram = QByteArray()
+        self.socket   = QtNetwork.QUdpSocket()
+        self.datagram = QtCore.QByteArray()
         self.send()
 
     def send(self):
@@ -76,8 +75,9 @@ class BroadcastSender(QThread):
             self.log.debug("Sending broadcast")
             self.datagram.clear()
             self.datagram.insert(0, self.addresses)
-            self.socket.writeDatagram(self.datagram.data(), QHostAddress.Broadcast, self.port)
+            self.socket.writeDatagram(self.datagram.data(), QtNetwork.QHostAddress.Broadcast, self.port)
             count += 1
+
         self.quit()
 
     def quit(self):
@@ -86,33 +86,36 @@ class BroadcastSender(QThread):
         self.exit(0)
 
 
-class BroadcastReceiever(QThread):
+class BroadcastReceiever(QtCore.QThread):
     '''Class to receieve broadcast signal from master'''
     def __init__(self, port, parent=None):
         super(BroadcastReceiever, self).__init__(parent)
-        self.log = Logger("Broadcast.BroadcastReceiever",LOGLEVEL)
+        self.log  = Logger("Broadcast.BroadcastReceiever", LOGLEVEL)
+        self.port = port
         self.log.netserver("Running")
-        self.port =port
 
     def readIncomingBroadcast(self):
         '''Read the incoming host ip and emit it to the client'''
         self.log.netserver("Incoming broadcast")
-        while self.socket.hasPendingDatagrams():
-            datagram = QByteArray()
-            datagram.resize(self.socket.pendingDatagramSize())
-            sender = QHostAddress()
-            data = self.socket.readDatagram(datagram.size())
-            ip = str(data[1].toString())
-            msg = str(data[0])
 
-        self.log.debug("Master: %s" % ip)
-        self.emit(SIGNAL("masterAddress"), (msg, ip))
+        while self.socket.hasPendingDatagrams():
+            datagram = QtCore.QByteArray()
+            datagram.resize(self.socket.pendingDatagramSize())
+
+            sender = QtNetwork.QHostAddress()
+            data   = self.socket.readDatagram(datagram.size())
+            ip     = str(data[1].toString())
+            msg    = str(data[0])
+
+        self.log.debug("Broadcast Master: %s" % ip)
+        self.log.debug("Broadcast Message: %s" % msg)
+        self.emit(QtCore.SIGNAL("masterAddress"), (msg, ip))
 
     def run(self):
         '''Run the main thread and listen for connections'''
-        self.socket = QUdpSocket()
-        self.connect(self.socket, SIGNAL("readyRead()"), self.readIncomingBroadcast)
-        self.socket.bind(QHostAddress.Any, self.port)
+        self.socket = QtNetwork.QUdpSocket()
+        self.connect(self.socket, QtCore.SIGNAL("readyRead()"), self.readIncomingBroadcast)
+        self.socket.bind(QtNetwork.QHostAddress.Any, self.port)
         self.log.netserver("Running")
 
     def quit(self):

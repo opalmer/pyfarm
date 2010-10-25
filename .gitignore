@@ -1,3 +1,4 @@
+*.cmd
 *.e4p
 *_eric*
 .eric4project
