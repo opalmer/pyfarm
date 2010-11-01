@@ -24,17 +24,16 @@ first.
 '''
 
 import socket
+#import Exception
 
-def hostname():
-    '''Return the hostname in use by the local system'''
-    return socket.gethostname()
+class ServerFault(Exception):
+    '''Raised when a service experiences a serious error'''
+    def __init__(self, value):
+        self.value = value
 
-def ip():
-    '''
-    Return the ip address of the local system
-    NOTE: Requires DNS
-    '''
-    return lookupAddress(hostname())
+    def __str__(self):
+        return repr(self.value)
+
 
 def getPort():
     '''Return an open port to use'''

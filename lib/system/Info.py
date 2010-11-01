@@ -23,6 +23,7 @@ PURPOSE: To query and return information about the local system
 # From Python
 import os
 import sys
+import socket
 import fnmatch
 import platform
 
@@ -71,7 +72,10 @@ class OperatingSystem(object):
 class Hardware(object):
     '''Used to query information about the local hardware'''
     def __init__(self, cache):
-        self.cache = cache
+        self.cache   = cache
+        self.rammax  = 0
+        self.swapmax = 0
+
         if os.name == "posix":
             try:
                 self.rammax = float(SimpleCommand("free | grep Mem | awk '{print $2}'"))/1024
@@ -172,13 +176,14 @@ class Hardware(object):
 
 class Software(object):
     '''Query and return information about the software on the local system'''
-    def __init__(self, config, cache):
-       self.cache = cache
+    def __init__(self, config=None, cache=None):
+        self.config = config
+        self.cache  = cache
 
 
 class Network(object):
     '''Query and return information about the local network'''
-    def __init__(self, adapter, cache):
+    def __init__(self, adapter=None, cache=None):
         self.adapter = adapter
         self.cache   = cache
 
@@ -189,7 +194,7 @@ class Network(object):
             query = "ifconfig %s | grep 'inet addr' | gawk -F: '{print $2}' | gawk '{print $1}'" % self.adapter
             results = SimpleCommand(query)
         else:
-            log.notimplemented("ip not implemented for %s" % os.name)
+            results = socket.gethostbyname(self.hostname())
 
         return results
 
@@ -204,18 +209,31 @@ class Network(object):
 
         return results
 
+    def _validateHostname(self, name):
+        '''
+        Ensure that the given name is a proper hostname
+        if not attempt to return a more valid entry
+        '''
+        if not name or fnmatch.fnmatch(name, "*localhost*"):
+            name = platform.node()
+
+        if not name or fnmatch.fnmatch(name, "*localhost*"):
+            try:    name = socket.getfqdn()
+            except: name = None
+
+        return name
+
     def hostname(self):
         '''Return the hostname'''
         results = None
         if os.name == "posix" or os.name == "nt":
             results = SimpleCommand("hostname")
+
         else:
-            log.notimplemented("hostname not implemented for %s" % os.name)
+            try:    results = socket.getfqdn()
+            except: results = None
 
-        if not results or fnmatch.fnmatch(results, "*localhost*"):
-            results = platform.node()
-
-        return results
+        return self._validateHostname(results)
 
     def mac(self):
         '''Return mac address for the adapter'''

@@ -30,10 +30,10 @@ import traceback
 from PyQt4 import QtCore, QtNetwork
 
 # From PyFarm
+from lib.system import Info
 from lib.Logger import Logger
 from lib.Settings import ReadConfig
 
-MODULE = "lib.net.udp.Broadcast"
 LOGLEVEL = 4
 
 class BroadcastSender(QtCore.QThread):
@@ -41,22 +41,30 @@ class BroadcastSender(QtCore.QThread):
     def __init__(self, config, parent=None):
         super(BroadcastSender, self).__init__(parent)
         # setup some standard vars, so we dont broadcast forever
+        addresses     = []
         self.config   = config
         self.port     = self.config['servers']['broadcast']
         self.count    = self.config['broadcast']['interval']
         self.maxCount = self.config['broadcast']['maxcount']
+        self.netinfo  = Info.Network()
         self.log      = Logger("Broadcast.BroadcastSender", LOGLEVEL)
 
-        # get all IPs
-        self.addresses = ''
-        self.hostname = str(QtNetwork.QHostInfo.localHostName())
-        isLocalhost = re.compile(r"""(127[.]0[.](?:0|1)[.]1)""")
-        isIP = re.compile(r"""(\d{1,3}[.]\d{1,3}[.]\d{1,3}[.]\d{1,3})""")
-        isSubnet = re.compile(r"""((?:255|0)[.](?:255|0)[.](?:255|0)[.](?:255|0))""")
-        for address in [ str(addr.toString()) for addr in QtNetwork.QHostInfo.fromName(self.hostname).addresses() ]:
-            if not isLocalhost.match(address) and not isSubnet.match(address) and isIP.match(address):
-                self.addresses += ","+address
-        self.log.debug(self.addresses)
+        # network information
+        #self.address  = netinfo.ip()
+
+        # regular expression ip matching
+#        isLocalhost = re.compile(r"""(127[.]0[.](?:0|1)[.]1)""")
+#        isIP = re.compile(r"""(\d{1,3}[.]\d{1,3}[.]\d{1,3}[.]\d{1,3})""")
+#        isSubnet = re.compile(r"""((?:255|0)[.](?:255|0)[.](?:255|0)[.](?:255|0))""")
+#
+#        # for each found address, add it to our addr. list
+#        for address in [ str(addr.toString()) for addr in QtNetwork.QHostInfo.fromName(self.hostname).addresses() ]:
+#            if not isLocalhost.match(address) and not isSubnet.match(address) and isIP.match(address):
+#                addresses.append(address)
+#
+#        # reformat address list and print debug info
+#        self.addresses = ','.join(addresses)
+#        self.log.debug(self.addresses)
 
     def run(self):
         '''Start the broadcast thread and setup the outgoing connection'''
@@ -71,13 +79,15 @@ class BroadcastSender(QtCore.QThread):
         the above specs.
         '''
         count = 0
+
+        # send a broadcast so long as we don't
+        #  exceed the set max.
         while count < self.maxCount:
             self.log.debug("Sending broadcast")
             self.datagram.clear()
-            self.datagram.insert(0, self.addresses)
+            self.datagram.insert(0, self.netinfo.hostname())
             self.socket.writeDatagram(self.datagram.data(), QtNetwork.QHostAddress.Broadcast, self.port)
             count += 1
-
         self.quit()
 
     def quit(self):
@@ -92,6 +102,13 @@ class BroadcastReceiever(QtCore.QThread):
         super(BroadcastReceiever, self).__init__(parent)
         self.log  = Logger("Broadcast.BroadcastReceiever", LOGLEVEL)
         self.port = port
+        self.log.netserver("Running")
+
+    def run(self):
+        '''Run the main thread and listen for connections'''
+        self.socket = QtNetwork.QUdpSocket()
+        self.connect(self.socket, QtCore.SIGNAL("readyRead()"), self.readIncomingBroadcast)
+        self.socket.bind(QtNetwork.QHostAddress.Any, self.port)
         self.log.netserver("Running")
 
     def readIncomingBroadcast(self):
@@ -109,14 +126,7 @@ class BroadcastReceiever(QtCore.QThread):
 
         self.log.debug("Broadcast Master: %s" % ip)
         self.log.debug("Broadcast Message: %s" % msg)
-        self.emit(QtCore.SIGNAL("masterAddress"), (msg, ip))
-
-    def run(self):
-        '''Run the main thread and listen for connections'''
-        self.socket = QtNetwork.QUdpSocket()
-        self.connect(self.socket, QtCore.SIGNAL("readyRead()"), self.readIncomingBroadcast)
-        self.socket.bind(QtNetwork.QHostAddress.Any, self.port)
-        self.log.netserver("Running")
+        self.emit(QtCore.SIGNAL("masterFound"), (msg, ip))
 
     def quit(self):
         '''Stop the broadcast receiever'''

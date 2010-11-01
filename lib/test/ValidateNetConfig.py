@@ -32,9 +32,11 @@ for i in range(rollback): path = os.path.dirname(path)
 sys.path.append(path)
 
 import lib.net
+from lib.system import Info
 
 class Validate(unittest.TestCase):
     def setUp(self):
+        self.netinfo       = Info.Network()
         self.serverOptions =  (
             "broadcast", "status", "queue", "logging",
             "admin", "hostinfo"
@@ -88,8 +90,8 @@ class Validate(unittest.TestCase):
 
     def testDNSHostname(self):
         '''Compare hostname to DNS'''
-        ip = lib.net.ip()
-        hostname = lib.net.hostname()
+        ip = self.netinfo.ip()
+        hostname = self.netinfo.hostname()
         dnsHostname = lib.net.lookupHostname(ip)
         self.failIf(
                         hostname != dnsHostname,
@@ -98,8 +100,8 @@ class Validate(unittest.TestCase):
 
     def testDNSIp(self):
         '''Compare ip address to DNS'''
-        ip = lib.net.ip()
-        hostname = lib.net.hostname()
+        ip = self.netinfo.ip()
+        hostname = self.netinfo.hostname()
         dnsIp = lib.net.lookupAddress(hostname)
         self.failIf(
                         ip != dnsIp,

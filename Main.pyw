@@ -35,12 +35,14 @@ CFG_ROOT  = os.path.join(ROOT, "cfg")
 ICN_ROOT  = os.path.join(ROOT, "icons")
 QUE_ICN   = os.path.join(ICN_ROOT, "queue")
 CFG_GEN   = os.path.join(CFG_ROOT, "general.ini")
+DEBUG     = True
 
 # From PyQt
 from PyQt4.Qt import Qt
 from PyQt4 import QtCore, QtGui, QtNetwork, uic
 
 # From PyFarm
+import lib.net
 import cfg.resources_rc
 from lib.ui import Dialogs
 from lib.Slots import Slots
@@ -76,6 +78,7 @@ class MainWindow(QtGui.QMainWindow):
         self.ui.hostControls.setLayout(self.ui.layoutHostControlButtons)
         self.ui.statusDock.widget().setLayout(self.ui.rootDockLayout)
         self.ui.statusDock.setWindowTitle("Status Console")
+        # END layout
 
         # add menu to submit button
         self.submitMenu = QtGui.QMenu()
@@ -96,13 +99,16 @@ class MainWindow(QtGui.QMainWindow):
         self.slots     = Slots(self, self.config)
         self.runServers()
 
-
-
     def runServers(self):
         '''Run the background servers required to operate PyFarm'''
-        self.queueServer = QueueServer()
+        self.queueServer = QueueServer(main=self)
+
         if not self.queueServer.listen(QtNetwork.QHostAddress.Any, self.config['servers']['queue']):
-            log.fatal("Could not start the queue server: %s" % self.queueServer.errorString())
+            error = "Could not start the queue server: %s" % self.queueServer.errorString()
+            log.fatal(error)
+
+            if not DEBUG: raise lib.net.ServerFault(error)
+            else: log.warning("Bypassing exception!!!")
 
     def foundNewClient(self, data):
         print data
@@ -339,24 +345,24 @@ class MainWindow(QtGui.QMainWindow):
 #################################
 #    def workSent(self, work):
 #        '''Inform the user that a job is being sent'''
-#        self.updateStatus('NETWORK', 'Sending frame %s from job %s to %s' % (work[2], work[1], work[0]), 'green')
+#        self.updateConsole('NETWORK', 'Sending frame %s from job %s to %s' % (work[2], work[1], work[0]), 'green')
 #
 #    def workComplete(self, worker):
 #        '''Inform the user of done frames'''
 #        ip = worker[0]
 #        job = worker[1]
 #        frame = worker[2]
-#        self.updateStatus('QUEUE', '%s completed frame %s of job %s' % (ip, frame, job), 'brown')
+#        self.updateConsole('QUEUE', '%s completed frame %s of job %s' % (ip, frame, job), 'brown')
 #
 #    def killRender(self):
 #        '''Kill the current job'''
 #        self.ui.cancelRender.setEnabled(False)
 #        self.que.emptyQue()
 #        # send the kill job to clients !
-#        self.updateStatus('QUEUE', '%s frames waiting to render' % self.que.size(), 'brown')
+#        self.updateConsole('QUEUE', '%s frames waiting to render' % self.que.size(), 'brown')
 #        self.ui.render.setEnabled(True)
 #
-#        self.updateStatus('NETWORK', 'Searching for hosts...', 'green')
+#        self.updateConsole('NETWORK', 'Searching for hosts...', 'green')
 #        findHosts = BroadcastSender(__UUID__, self)
 #        progress = ProgressDialog(QString("Network Broadcast Progress"), \
 #                                                            QString("Cancel Broadcast"), \
@@ -373,7 +379,7 @@ class MainWindow(QtGui.QMainWindow):
 #################################
 ### END Job/Que System
 #################################
-    def updateStatus(self, section, msg, color='black'):
+    def updateConsole(self, section, msg, color='black'):
         '''
         Update the ui's status window
 
@@ -382,7 +388,8 @@ class MainWindow(QtGui.QMainWindow):
             msg (string) - The message to post
             color (string) - The color name or hex value to set the section
         '''
-        self.ui.status.append('<font color=%s><b>%s</b></font> - %s' % (color, section, msg))
+        status = '<font color=%s><b>%s</b></font> - %s' % (color, section.upper(), msg)
+        self.ui.status.append(status)
 
 #################################
 ### END General Utilities

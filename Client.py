@@ -31,13 +31,13 @@ from lib.net.udp.Broadcast import BroadcastReceiever
 from lib.net.tcp.Queue import QueueClient
 
 # From PyQt
-from PyQt4.QtCore import QCoreApplication, QObject, SIGNAL, SLOT
+from PyQt4 import QtCore
 
 LOGLEVEL = 4
 MODULE = "Client.py"
 log = Logger(MODULE)
 
-class Main(QObject):
+class Main(QtCore.QObject):
     def __init__(self, parent=None):
         super(Main, self).__init__(parent)
         self.config = ReadConfig(
@@ -47,7 +47,9 @@ class Main(QObject):
                                         "general.ini"
                                     )
                                 )
-        self.master = ''
+
+        self.masterHostname = ''
+        self.masterAddress  = ''
 
     def listenForBroadcast(self):
         '''
@@ -55,27 +57,45 @@ class Main(QObject):
         Listen for an incoming broadcast from the master
         '''
         self.broadcast = BroadcastReceiever(self.config['servers']['broadcast'], parent=self)
-        self.connect(self.broadcast, SIGNAL("masterAddress"), self.setMasterAddress)
+        self.connect(self.broadcast, QtCore.SIGNAL("masterFound"), self.setMasterAddress)
         self.broadcast.run()
 
-    def setMasterAddress(self, masterip):
+    def setMasterAddress(self, response):
         '''
         Step 2:
         Set self.master to the incoming ip
         '''
-        if masterip[1] != self.master:
-            self.master = masterip[1]
-            log.netserver("Got master: %s" % self.master)
-        #self.broadcast.quit()
+        newName = False
+        newAddr = False
 
-        # inform the master of client computer
-        queue = QueueClient(self.master, port=self.config['servers']['queue'])
-        log.fixme('HARD CODED NETWORK HOSTNAME AND IP')
-        queue.addClient('octo', '10.56.1.2')
+        # check for new hostname
+        if response[0] != self.masterHostname:
+            self.masterHostname  = response[0]
+            newName              = True
+
+        # check for new address
+        if response[1] != self.masterAddress:
+            self.masterAddress = response[1]
+            newName            = True
+
+        # if new hostname OR address, update log and
+        #  refresh services
+        if newName or newAddr:
+            log.netserver(
+                            "Got master: %s (%s)"
+                            % (self.masterHostname, self.masterAddress)
+                         )
+
+            # inform the master of client computer
+            queue = QueueClient(
+                                    self.masterAddress,
+                                    port=self.config['servers']['queue']
+                                )
+            queue.addClient(self.masterHostname, self.masterAddress)
 
 
 if __name__ == '__main__':
-    app = QCoreApplication(sys.argv)
+    app = QtCore.QCoreApplication(sys.argv)
     log.debug("PID: %s" % os.getpid())
     main = Main(app)
     main.listenForBroadcast()
