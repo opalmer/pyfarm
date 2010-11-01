@@ -86,6 +86,9 @@ class Hardware(object):
                 self.rammax  = None
                 self.swapmax = None
 
+            except ValueError, e:
+                log.fixme("Invalid output from SimpleCommand")
+
         elif os.name == "nt":
             print self.cache
 
