@@ -185,11 +185,9 @@ class QueueServerThread(QtCore.QThread):
             if action == "CLIENT_NEW":
                 hostname = QtCore.QString()
                 address = QtCore.QString()
-                ram = QtCore.QString()
-                stream >> hostname >> address >> ram
+                stream >> hostname >> address
                 self.log.netclient("Hostname: %s" % hostname)
                 self.log.netclient("Addrss: %s" % address)
-                self.log.netclient("Ram: %s" % ram)
                 self.main.updateConsole(
                                             "new client", "Hostname: %s, IP: %s" %
                                             (hostname, address),
