@@ -28,8 +28,8 @@ import time
 if os.name == "nt":
     SSH_KEY = "/home/opalmer/.ssh/id_rsa_insecure"
 
-for i in range(4):
-    host = "pynode%s" % str(i+1).zfill(2)
+for i in range(6):
+    host = '10.56.2.%i' % (i+1)
     print "Turning off %s..." % host
     os.system('ssh -i %s render@%s "sudo shutdown -h now"' % (SSH_KEY, host))
 

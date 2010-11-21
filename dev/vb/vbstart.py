@@ -32,7 +32,7 @@ if os.name == "nt":
 print "Waiting 15 seconds for pyroot to come up..."
 time.sleep(15)
 
-for i in range(4):
+for i in range(6):
     host = "pynode%s" % str(i+1).zfill(2)
     print "Brining up %s..." % host
 

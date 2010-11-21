@@ -1,0 +1,11 @@
+#!/bin/bash
+
+ID_RSA="/home/opalmer/.ssh/id_rsa_insecure"
+
+ssh -i $ID_RSA render@10.56.2.1 "sudo aptitude update"
+ssh -i $ID_RSA render@10.56.2.1 "sudo aptitude -y safe-upgrade"
+
+for host in $(`cat hostlist`); do
+	ssh -i $ID_RSA render@$host "sudo aptitude update"
+	ssh -i $ID_RSA render@$host "sudo aptitude -y safe-upgrade"
+done
