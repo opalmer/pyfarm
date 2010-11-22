@@ -1,9 +1,9 @@
-#!/usr/bin/env python
 '''
 HOMEPAGE: www.pyfarm.net
-INITIAL: Nov 17 2010
+INITIAL: Nov 21 2010
 PURPOSE [FOR DEVELOPMENT PURPOSES ONLY]:
-    Script to stop virtual hosts
+    Query, start, stop, and restart the client
+    application
 
     This file is part of PyFarm.
     Copyright (C) 2008-2010 Oliver Palmer
@@ -23,20 +23,28 @@ PURPOSE [FOR DEVELOPMENT PURPOSES ONLY]:
 '''
 
 import os
-import time
+import fnmatch
+import Screen as screen
 
-print "Bringing up pyroot..."
-if os.name == "nt":
-    os.system("start /B VBoxHeadless -s pyroot")
+######################
+# NOTICE NOTICE NOTICE
+# NOTE: In addition to asking for the screen id
+#       this should should also find out if the
+#       process itself is running.
+# NOTICE NOTICE NOTICE
+######################
+def query():
+    '''Return the status of the client'''
+    pass
 
-print "Waiting 15 seconds for pyroot to come up..."
-time.sleep(60)
+def start():
+    '''Start the client process'''
+    pass
 
-for i in range(6):
-    host = "pynode%s" % str(i+1).zfill(2)
-    print "Brining up %s..." % host
+def stop():
+    '''Find and stop the running client'''
+    pass
 
-    if os.name == "nt":
-        os.system("start /B VBoxHeadless -s %s" % host)
-
-print "CLOSING THIS WINDOW WILL FORCE TERMINATE ALL RUNNING VMs!"
+def restart():
+    '''Restart the client process'''
+    pass

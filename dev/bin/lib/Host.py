@@ -1,9 +1,8 @@
-#!/usr/bin/env python
 '''
 HOMEPAGE: www.pyfarm.net
-INITIAL: Nov 17 2010
+INITIAL: Nov 21 2010
 PURPOSE [FOR DEVELOPMENT PURPOSES ONLY]:
-    Script to stop virtual hosts
+    Read and return host information.
 
     This file is part of PyFarm.
     Copyright (C) 2008-2010 Oliver Palmer
@@ -23,20 +22,11 @@ PURPOSE [FOR DEVELOPMENT PURPOSES ONLY]:
 '''
 
 import os
-import time
+import socket
+import linecache
 
-print "Bringing up pyroot..."
-if os.name == "nt":
-    os.system("start /B VBoxHeadless -s pyroot")
+def hostname():
+    return socket.hostname
 
-print "Waiting 15 seconds for pyroot to come up..."
-time.sleep(60)
-
-for i in range(6):
-    host = "pynode%s" % str(i+1).zfill(2)
-    print "Brining up %s..." % host
-
-    if os.name == "nt":
-        os.system("start /B VBoxHeadless -s %s" % host)
-
-print "CLOSING THIS WINDOW WILL FORCE TERMINATE ALL RUNNING VMs!"
+def ip():
+    raise NotImplementedError('Cannot return ip, not implemented')

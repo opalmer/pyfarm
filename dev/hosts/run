@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ID_RSA="/home/opalmer/.ssh/id_rsa_insecure"
-HOSTS="10.56.2.2 10.56.2.3 10.56.2.4 10.56.2.5 10.56.2.6"
+HOSTS="10.56.2.2 10.56.2.3 10.56.2.4 10.56.2.5 10.56.2.6 10.56.2.7"
 
 for host in $HOSTS; do
 	ssh -i $ID_RSA render@$host $@
