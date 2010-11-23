@@ -24,30 +24,44 @@ PURPOSE [FOR DEVELOPMENT PURPOSES ONLY]:
 '''
 
 import os
+import logging
 import lib.Screen as screen
 import lib.Host as host
 import lib.ClientProcess as client
-
 from optparse import OptionParser
 
-def main():
-    hostname = host.hostname()
+logging.basicConfig(format='%(name)s - %(levelname)s - %(message)s')
+logger = logging.getLogger('ClientProcess')
+logger.setLevel(logging.DEBUG)
+
+def query():
+    logger.info("Querying client process")
+
+def start():
+    logger.info("Attempting to start client")
+
+def restart():
+    logger.info("Restarting client")
+
+def stop():
+    logger.info("Attempting to stop client")
 
 if __name__ == '__main__':
-    parser = OptionParser()
-    parser.add_option(
-                        "--stop", dest="stop", action="callback",
-                        callback=stop, help="stop the client"
-                     )
-    parser.add_option(
-                        "--start", dest="start", action="callback",
-                        callback=start, help="start the client"
-                     )
-    parser.add_option(
-                        "--restart", dest="restart", action="callback",
-                        callback=restart, help="restart the client"
-                     )
-    parser.add_option(
-                        "--query", dest="query", action="callback",
-                        callback=query, help="query the client"
-                     )
+    # command line options
+    options = ('start', 'stop', 'restart', 'query')
+    parser  = OptionParser()
+
+    for option in options:
+        parser.add_option(
+                            "--%s" % option, dest="%s" % option,
+                            default=False, action='store_true',
+                            help="%s the client" % option
+                         )
+
+    (opt, args) = parser.parse_args()
+
+    for option in options:
+        if eval('opt.%s' % option):
+            eval('%s()' % option)
+    #for key, value in parser.values.items():
+        #print key, value
