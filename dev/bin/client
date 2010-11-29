@@ -22,32 +22,82 @@ PURPOSE [FOR DEVELOPMENT PURPOSES ONLY]:
     You should have received a copy of the GNU Lesser General Public License
     along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 '''
-
 import os
+import time
 import logging
 import lib.Screen as screen
 import lib.Host as host
-import lib.ClientProcess as client
 from optparse import OptionParser
 
 logging.basicConfig(format='%(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger('ClientProcess')
 logger.setLevel(logging.DEBUG)
 
+def findClient():
+    '''Navigate up the directory and return the path to the client script'''
+    logger.debug("Searching for client")
+    path = os.path.abspath(__file__)
+    for i in range(3):
+        path = os.path.dirname(path)
+
+    client = os.path.join(path, "Client.py")
+
+    if os.path.isfile(client):
+        logger.debug("Client Script: %s" % client)
+        return client
+
+    else:
+        return False
+
 def query():
-    logger.info("Querying client process")
+    '''Query the status of the client program'''
+    isRunning = screen.isRunning()
+
+    if isRunning:
+        logger.info("Client is running, %i session(s)" % isRunning)
+        for session in screen.sessions():
+            logger.info("PID: %s" % session.pid)
+
+    else:
+        logger.info("Client is not running")
+
 
 def start():
-    logger.info("Attempting to start client")
+    '''Start the client program'''
+    client = findClient()
+
+    if not screen.isRunning():
+        logger.info("Starting client")
+        screen.start(client)
+
+    else:
+        logger.info("Client is running, not starting")
 
 def restart():
+    '''Restart the client program'''
+    client = findClient()
     logger.info("Restarting client")
 
 def stop():
-    logger.info("Attempting to stop client")
+    logger.info("Attempting to stop client(s)")
+    for session in screen.sessions():
+        logger.info("Stopping Process: %s" % session.pid)
+
+        if os.name == "posix":
+            os.kill(int(session.pid), 3)
+        else:
+            logger.error("Cannot kill a screen process on this os!")
+
+    logger.info("Searching for processes to cleanup")
+    time.sleep(2)
+    if not screen.isRunning():
+        logger.info("Client is not running")
+    else:
+        for session in screen.sessions():
+            logger.error("Failed to stop process: %s" % session.pid)
+            sys.exit(1)
 
 if __name__ == '__main__':
-    # command line options
     options = ('start', 'stop', 'restart', 'query')
     parser  = OptionParser()
 
@@ -60,8 +110,12 @@ if __name__ == '__main__':
 
     (opt, args) = parser.parse_args()
 
+    entered = False
     for option in options:
         if eval('opt.%s' % option):
             eval('%s()' % option)
-    #for key, value in parser.values.items():
-        #print key, value
+            entered = True
+
+    if not entered:
+        logger.error("Run --help for usage information")
+        sys.exit(1)
