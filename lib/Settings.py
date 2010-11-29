@@ -43,18 +43,56 @@ def ReadConfig(cfgInput):
         for section in cfg.sections():
             out[section] = {}
             for option in cfg.options(section):
-                if section == "servers": out[section][option] = cfg.getint(section, option)
-                elif section == "network-adapter": out[section][option] = cfg.get(section, option)
-                elif section == "broadcast": out[section][option] = cfg.getint(section, option)
-                elif section == "database": out[section][option] = cfg.get(section, option)
-                elif section == "logging":
-                    if option == "enable": cfg.getboolean(section, option)
-                    else: out[section][option] = cfg.get(section, option)
+                if section == "servers":
+                    out[section][option] = cfg.getint(section, option)
 
+                elif section == "network-adapter":
+                    out[section][option] = cfg.get(section, option)
+
+                elif section == "broadcast":
+                    out[section][option] = cfg.getint(section, option)
+
+                elif section == "database":
+                    out[section][option] = cfg.get(section, option)
+
+                elif section == "logging":
+                    if option == "enable":
+                        cfg.getboolean(section, option)
+                    else:
+                        out[section][option] = cfg.get(section, option)
         return out
+
     else:
         raise IOError("%s is not a valid config file" % cfgInput)
+
 
 class Software(object):
     '''Find and return information about software installed on the system'''
     def __init__(self): pass
+
+
+class Storage(object):
+    '''
+    Create a direcectory and/or ensure that session
+    information for PyFarm can be stored locally for
+    use by PyFarm.
+
+    >>> storage = Storage()
+    >>> storate.createDirs()
+    >>> storate
+    '''
+    def __init__(self):
+       self.prefsRoot = os.path.join(os.getenv("HOME"), ".pyfarm")
+
+    def createDirs(self):
+        '''Create preference directories'''
+        if not os.path.isdir(self.prefsRoot):
+            os.mkdirs(self.prefsRoot)
+
+        for dirname in ("pids", ):
+            os.mkdir(os.path.join(self.prefsRoot, dirname))
+
+if __name__ == '__main__':
+    import doctest
+    print "Doc Testing: %s" % os.path.abspath(__file__)
+    doctest.testmod()

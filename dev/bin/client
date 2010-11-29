@@ -4,7 +4,7 @@ HOMEPAGE: www.pyfarm.net
 INITIAL: Nov 21 2010
 PURPOSE [FOR DEVELOPMENT PURPOSES ONLY]:
     Script meant to run and manage Client.py on
-    a remote host using a screen session
+    a remote Host using a Screen session
 
     This file is part of PyFarm.
     Copyright (C) 2008-2010 Oliver Palmer
@@ -25,8 +25,8 @@ PURPOSE [FOR DEVELOPMENT PURPOSES ONLY]:
 import os
 import time
 import logging
-import lib.Screen as screen
-import lib.Host as host
+import lib.Screen as Screen
+import lib.Host as Host
 from optparse import OptionParser
 
 logging.basicConfig(format='%(name)s - %(levelname)s - %(message)s')
@@ -51,11 +51,11 @@ def findClient():
 
 def query():
     '''Query the status of the client program'''
-    isRunning = screen.isRunning()
+    isRunning = Screen.isRunning()
 
     if isRunning:
         logger.info("Client is running, %i session(s)" % isRunning)
-        for session in screen.sessions():
+        for session in Screen.sessions():
             logger.info("PID: %s" % session.pid)
 
     else:
@@ -66,9 +66,9 @@ def start():
     '''Start the client program'''
     client = findClient()
 
-    if not screen.isRunning():
+    if not Screen.isRunning():
         logger.info("Starting client")
-        screen.start(client)
+        Screen.start(client)
 
     else:
         logger.info("Client is running, not starting")
@@ -80,20 +80,20 @@ def restart():
 
 def stop():
     logger.info("Attempting to stop client(s)")
-    for session in screen.sessions():
+    for session in Screen.sessions():
         logger.info("Stopping Process: %s" % session.pid)
 
         if os.name == "posix":
             os.kill(int(session.pid), 3)
         else:
-            logger.error("Cannot kill a screen process on this os!")
+            logger.error("Cannot kill a Screen process on this os!")
 
     logger.info("Searching for processes to cleanup")
     time.sleep(2)
-    if not screen.isRunning():
+    if not Screen.isRunning():
         logger.info("Client is not running")
     else:
-        for session in screen.sessions():
+        for session in Screen.sessions():
             logger.error("Failed to stop process: %s" % session.pid)
             sys.exit(1)
 
