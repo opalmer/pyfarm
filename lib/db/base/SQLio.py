@@ -19,10 +19,14 @@ PURPOSE: To read, write, and create the initial database entries
     You should have received a copy of the GNU Lesser General Public License
     along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 '''
-
 import os
-import sqlite3
+import sys
 from xml.dom.minidom import parse
+
+CWD    = os.path.dirname(os.path.abspath(__file__))
+PYFARM = os.path.abspath(os.path.join(CWD, "..", "..", ".."))
+MODULE = os.path.basename(__file__)
+if PYFARM not in sys.path: sys.path.append(PYFARM)
 
 class DBSetup(object):
     '''Parse the database xml file and setup the initial database'''

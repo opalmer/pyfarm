@@ -1,4 +1,5 @@
 '''
+
 HOMEPAGE: www.pyfarm.net
 INITIAL: May 26 2010
 PURPOSE: To provide a means for configuration parsing and easy integration of
@@ -20,21 +21,23 @@ GNU Lesser General Public License for more details.
 You should have received a copy of the GNU Lesser General Public License
 along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 '''
-# From Python
 import os
 import sys
 import string
 import ConfigParser
 from xml.dom import minidom
 
-# From PyFarm
-#from lib.Logger import Logger
+CWD    = os.path.dirname(os.path.abspath(__file__))
+PYFARM = os.path.abspath(os.path.join(CWD, ".."))
+MODULE = os.path.basename(__file__)
+if PYFARM not in sys.path: sys.path.append(PYFARM)
 
-MODULE = "ParseConfig.py"
+import lib
+Logger = lib.importFile("%s/lib/Logger.py" % PYFARM)
 
 def ReadConfig(cfgInput):
     '''Parse a config file and return a data dictionary'''
-    #log = Logger("Settings.ReadConfig")
+    #log = Logger.Logger("Settings.ReadConfig")
     if os.path.isfile(cfgInput):
         out = {}
         cfg = ConfigParser.ConfigParser()
@@ -77,9 +80,8 @@ class Storage(object):
     information for PyFarm can be stored locally for
     use by PyFarm.
 
-    >>> storage = Storage()
-    >>> storate.createDirs()
-    >>> storate
+    >>> store = Storage()
+    >>> store.createDirs()
     '''
     def __init__(self):
        self.prefsRoot = os.path.join(os.getenv("HOME"), ".pyfarm")

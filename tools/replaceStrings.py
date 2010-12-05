@@ -30,6 +30,9 @@ import shutil
 import fnmatch
 import tempfile
 
+CWD        = os.path.dirname(os.path.abspath(__file__))
+PYFARM     = os.path.abspath(os.path.join(CWD, ".."))
+MODULE     = os.path.basename(__file__)
 START      = time.time()
 ROOT       = os.path.join(os.getenv('HOME'), 'pyfarm') # directory to start in
 PYEXTS     = ("*.py", "*.pyw")                         # edit files with these extensions ONLY
@@ -45,14 +48,14 @@ def isExcluded(root):
         if fnmatch.fnmatch(root, excluded):
             return True
     return False
-    
+
 def isPyFile(filename):
     '''Check to see if the given file is a python file'''
     for extension in PYEXTS:
         if fnmatch.fnmatch(filename, extension):
             return True
     return False
-    
+
 def replace(regexMatch, line):
     '''Replace method replacing line with items from regexMatch'''
     return re.sub(regexMatch.group(0), regexMatch.group(1), line)
@@ -68,16 +71,16 @@ for root, dirs, files in os.walk(ROOT):
                     sourcePath  = os.path.join(root, filename)
                     source      = open(sourcePath, 'r').readlines()
                     tmpFile     = tempfile.NamedTemporaryFile(delete=False)
-                    
+
                     # begin processing
                     print "Reading: %s" % sourcePath
-                    
+
                     # iterate over each line, search matches
                     matches = 0
                     for line in source:
                         lines += 1
                         match = SEARCH.match(line)
-                        
+
                         # if the line matches our regular expression in SEARCH
                         # get the whole match (group 0) and replace it with
                         # the captured (group 0) text
@@ -85,13 +88,13 @@ for root, dirs, files in os.walk(ROOT):
                         if match:
                             tmpFile.write(replace(match, line))
                             matches += 1
-                            
+
                         # if nothing matched, write out the original line
                         else:
                             tmpFile.write(line)
 
                     tmpFile.close()
-                            
+
                     # if we found matches inform the user and move the tmp file
                     #  over the original
                     if matches:
@@ -100,9 +103,9 @@ for root, dirs, files in os.walk(ROOT):
                         print "Moving: %s -> %s" % (tmpFile.name, sourcePath)
                         shutil.move(tmpFile.name, sourcePath)
                         print "Done: %s" % sourcePath
-                        
+
                     # remove the tmp file, always
                     else:
                         os.remove(tmpFile.name)
-                        
+
 print "Made %i replacement(s) in %i lines in %f seconds" % (replacements, lines, time.time()-START)

@@ -19,29 +19,33 @@ PURPOSE: To query and return information about the local system
     You should have received a copy of the GNU Lesser General Public License
     along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 '''
-
-# From Python
 import os
 import sys
 import socket
 import fnmatch
 import platform
 
-# From PyFarm
-from lib.Logger import Logger
-from lib.Settings import ReadConfig
-from lib.system.Utility import SimpleCommand
+CWD    = os.path.dirname(os.path.abspath(__file__))
+PYFARM = os.path.abspath(os.path.join(CWD, "..", ".."))
+MODULE = os.path.basename(__file__)
+if PYFARM not in sys.path: sys.path.append(PYFARM)
 
-MODULE   = 'lib.sys.SysInfo'
+import lib
+Settings = lib.importFile("%s/lib/Settings.py" % PYFARM)
+Logger   = lib.importFile("%s/lib/Logger.py" % PYFARM)
+system   = lib.importFile("%s/lib/system/__init__.py" % PYFARM)
+
+print system.SimpleCommand
+
 LOGLEVEL = 6
 
-log = Logger(MODULE, LOGLEVEL)
+log = Logger.Logger(MODULE, LOGLEVEL)
 
 class SystemInfo(object):
     '''Default system information object to query and store info about hardware and software'''
     def __init__(self, configDir, skipSoftware=True):
         if os.name == "nt":
-            #process = SimpleCommand("cmd.exe /C systeminfo", all=False)
+            #process = system.Utility.SimpleCommand("cmd.exe /C systeminfo", all=False)
             #cache   = str(process.readAll())
             log.notimplemented("SystemInfo not implemented for %s" % os.name)
             cache = None
@@ -49,7 +53,7 @@ class SystemInfo(object):
         else:
             cache = None
 
-        self.config = ReadConfig(configDir)
+        self.config   = Settings.ReadConfig(configDir)
         self.hardware = Hardware(cache)
         self.software = Software(self.config, cache)
         #self.network = Network(self.config.netadapter, cache)

@@ -25,11 +25,15 @@ import time
 import string
 from xml.dom import minidom
 
+CWD    = os.path.dirname(os.path.abspath(__file__))
+PYFARM = os.path.abspath(os.path.join(CWD, ".."))
+MODULE = os.path.basename(__file__)
+if PYFARM not in sys.path: sys.path.append(PYFARM)
+
 from lib.system.Utility import backtrackDirs
 
-LOGLEVEL = 4
+LOGLEVEL        = 4
 GLOBAL_LOGLEVEL = 0 # set to None to disable
-MODULE = "lib.Logger"
 
 class LevelName(object):
     def __init__(self, name):
@@ -100,11 +104,11 @@ class Logger(object):
             cfg = self.config[level.name]
 
             if not self.writeOnly:
-                print cfg['template'].substitute(
+                print (cfg['template'].substitute(
                     time=time.strftime(self.timeFormat),
                     logger=self.name,
                     message=msg
-                )
+                ))
 
             if self.logfile:
                 self.logfile.write(out+os.linesep)

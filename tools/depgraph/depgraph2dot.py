@@ -18,13 +18,20 @@
 # CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
 # TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 # SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+import os
+import md5
+import imp
+import sys
+import getopt
+import colorsys
 
-
-import sys, getopt, colorsys, imp, md5
+CWD        = os.path.dirname(os.path.abspath(__file__))
+PYFARM     = os.path.abspath(os.path.join(CWD, "..",  ".."))
+MODULE     = os.path.basename(__file__)
 
 class pydepgraphdot:
 
-    def main(self,argv):    
+    def main(self,argv):
         opts,args = getopt.getopt(argv,'',['mono'])
         self.colored = 1
         for o,v in opts:
@@ -35,7 +42,7 @@ class pydepgraphdot:
     def fix(self,s):
         # Convert a module name to a syntactically correct node name
         return s.replace('.','_')
-    
+
     def render(self):
         p,t = self.get_data()
 
@@ -44,9 +51,9 @@ class pydepgraphdot:
             for v in d.keys():
                 if not p.has_key(v):
                     p[v] = {}
-                    
-        f = self.get_output_file()                    
-                    
+
+        f = self.get_output_file()
+
         f.write('digraph G {\n')
         #f.write('concentrate = true;\n')
         #f.write('ordering = out;\n')
@@ -86,7 +93,7 @@ class pydepgraphdot:
         if self.toocommon(k,type):
             a.append('peripheries=2')
         return a
-                
+
     def edge_attributes(self,k,v):
         a = []
         weight = self.weight(k,v)
@@ -96,11 +103,11 @@ class pydepgraphdot:
         if length:
             a.append('minlen=%d' % length)
         return a
-            
+
     def get_data(self):
         t = eval(sys.stdin.read())
         return t['depgraph'],t['types']
-    
+
     def get_output_file(self):
         return sys.stdout
 
@@ -133,11 +140,11 @@ class pydepgraphdot:
             # dont draw references to packages.
             return 1
         return 0
-        
+
     def weight(self,a,b):
         # Return the weight of the dependency from a to b. Higher weights
         # usually have shorter straighter edges. Return 1 if it has normal weight.
-        # A value of 4 is usually good for ensuring that a related pair of modules 
+        # A value of 4 is usually good for ensuring that a related pair of modules
         # are drawn next to each other. This is a default policy - please override.
         #
         if b.split('.')[-1].startswith('_'):
@@ -146,7 +153,7 @@ class pydepgraphdot:
             # together
             return 4
         return 1
-    
+
     def alien(self,a,b):
         # Return non-zero if references to this module are strange, and should be drawn
         # extra-long. the value defines the length, in rank. This is also good for putting some
@@ -166,7 +173,7 @@ class pydepgraphdot:
         # same package have the same color. Unpackaged modules are grey
         t = self.normalise_module_name_for_hash_coloring(s,type)
         return self.color_from_name(t)
-        
+
     def normalise_module_name_for_hash_coloring(self,s,type):
         if type==imp.PKG_DIRECTORY:
             return s
@@ -176,7 +183,7 @@ class pydepgraphdot:
                 return ''
             else:
                 return s[:i]
-        
+
     def color_from_name(self,name):
         n = md5.md5(name).digest()
         hf = float(ord(n[0])+ord(n[1])*0xff)/0xffff

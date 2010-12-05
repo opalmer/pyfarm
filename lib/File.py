@@ -20,9 +20,16 @@ providing as much functionality as possible.
     You should have received a copy of the GNU Lesser General Public License
     along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 '''
+import os
+import sys
 import fnmatch
 import difflib
 from PyQt4 import QtCore
+
+CWD    = os.path.dirname(os.path.abspath(__file__))
+PYFARM = os.path.abspath(os.path.join(CWD, ".."))
+MODULE = os.path.basename(__file__)
+if PYFARM not in sys.path: sys.path.append(PYFARM)
 
 class Tail(QtCore.QObject):
     '''
@@ -80,28 +87,21 @@ class Tail(QtCore.QObject):
 
         f.close()
 
+class Monitor(QtCore.QObject):
+    '''Given a filepath, monitor it for changes.'''
+    def __init__(self, filepath, parent=None):
+        super(Monitor, self).__init__(parent)
+        self.linecount = 1
+        self.filepath  = filepath
 
-if __name__ == "__main__":
-    import sys
-    FILE_PATH = sys.argv[1]
-    class Monitor(QtCore.QObject):
-        def __init__(self, parent=None):
-            super(Monitor, self).__init__(parent)
-            self.linecount = 1
-
-        def runMonitor(self):
-            tail = Tail(FILE_PATH,  parent=self)
-            self.connect(
+    def runMonitor(self):
+        tail = Tail(self.filepath,  parent=self)
+        self.connect(
                          tail,
                          QtCore.SIGNAL("newline"),
                          self.newLine
-                         )
+                     )
 
-        def newLine(self, line):
-            print "%03i: %s" % (self.linecount, line.strip("\r\n"))
-            self.linecount += 1
-
-    app = QtCore.QCoreApplication(sys.argv)
-    main = Monitor()
-    main.runMonitor()
-    app.exec_()
+    def newLine(self, line):
+        print "%03i: %s" % (self.linecount, line.strip("\r\n"))
+        self.linecount += 1

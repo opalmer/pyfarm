@@ -20,22 +20,21 @@ PURPOSE: To handle and run all client connections on a remote machine
     You should have received a copy of the GNU Lesser General Public License
     along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 '''
-# From Python
 import os
 import sys
 
-# From PyFarm
+from PyQt4 import QtCore
+
+CWD      = os.path.dirname(os.path.abspath(__file__))
+PYFARM   = CWD
+MODULE   = os.path.basename(__file__)
+
 from lib.Logger import Logger
 from lib.Settings import ReadConfig
 from lib.net.udp.Broadcast import BroadcastReceiever
 from lib.net.tcp.Queue import QueueClient
 
-# From PyQt
-from PyQt4 import QtCore
-
-LOGLEVEL = 4
-MODULE = "Client.py"
-log = Logger(MODULE)
+log      = Logger(MODULE)
 
 class Main(QtCore.QObject):
     def __init__(self, parent=None):

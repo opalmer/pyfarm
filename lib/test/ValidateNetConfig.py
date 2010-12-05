@@ -26,10 +26,10 @@ import sys
 import unittest
 import ConfigParser
 
-rollback = 2
-path = os.path.dirname(os.path.abspath(__file__))
-for i in range(rollback): path = os.path.dirname(path)
-sys.path.append(path)
+CWD    = os.path.dirname(os.path.abspath(__file__))
+PYFARM = os.path.abspath(os.path.join(CWD, "..", ".."))
+MODULE = os.path.basename(__file__)
+if PYFARM not in sys.path: sys.path.append(PYFARM)
 
 import lib.net
 from lib.system import Info
@@ -44,7 +44,7 @@ class Validate(unittest.TestCase):
         self.cfg = ConfigParser.ConfigParser()
         self.cfg.read(
                             os.path.join(
-                                                path,
+                                                PYFARM,
                                                 "cfg",
                                                 "general.ini"
                                             )

@@ -20,16 +20,21 @@ as proper shutdown procedures, service restarts, etc.
     You should have received a copy of the GNU Lesser General Public License
     along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 '''
-from lib.Logger import Logger
+import os
+import sys
 
-# From PyQt
-from PyQt4.QtCore import QThread, QObject, SIGNAL, SLOT, QString
-from PyQt4.QtCore import QByteArray, QDataStream, QIODevice
-from PyQt4.QtNetwork import QTcpServer, QTcpSocket, QAbstractSocket, QHostInfo
+from PyQt4 import QtCore, QtNetwork
+
+CWD    = os.path.dirname(os.path.abspath(__file__))
+PYFARM = os.path.abspath(os.path.join(CWD, "..", "..", ".."))
+MODULE = os.path.basename(__file__)
+if PYFARM not in sys.path: sys.path.append(PYFARM)
+
+from lib import Logger
 
 UNIT16 = 8
 
-class NewRequest(QObject):
+class NewRequest(QtCore.QObject):
     '''
     Wrapper object to store basic request information
 
@@ -39,23 +44,23 @@ class NewRequest(QObject):
     '''
     def __init__(self, request, values, parent=None):
         super(NewRequest, self).__init__(parent)
-        self.log = Logger("Admin.NewRequest")
-        self.socket = QTcpSocket()
+        self.log    = Logger.Logger("Admin.NewRequest")
+        self.socket = QtNetwork.QtNetwork.QAbstractSocket()
 
-        self.connect(self.socket, SIGNAL("connected()"), self.sendRequest)
-        self.connect(self.socket, SIGNAL("readyRead()"), self.readResponse)
-        self.connect(self.socket, SIGNAL("disconnected()"), self.serverHasStopped)
-        self.connect(self.socket, SIGNAL("error(QAbstractSocket::SocketError)"), self.serverHasError)
+        self.connect(self.socket, QtCore.SIGNAL("connected()"), self.sendRequest)
+        self.connect(self.socket, QtCore.SIGNAL("readyRead()"), self.readResponse)
+        self.connect(self.socket, QtCore.SIGNAL("disconnected()"), self.serverHasStopped)
+        self.connect(self.socket, QtCore.SIGNAL("error(QtNetwork.QAbstractSocket::SocketError)"), self.serverHasError)
 
-        self.data = QByteArray()
-        self.stream = QDataStream(self.data, QIODevice.WriteOnly)
-        self.stream.setVersion(QDataStream.Qt_4_2)
+        self.data = QtCore.QByteArray()
+        self.stream = QtCore.QDataStream(self.data, QtCore.QIODevice.WriteOnly)
+        self.stream.setVersion(QtCore.QDataStream.Qt_4_2)
         self.stream.writeUInt16(0)
 
         # pack the values
-        self.stream << QString(request.upper())
+        self.stream << QtCore.QString(request.upper())
         for value in values:
-            self.stream << QString(value)
+            self.stream << QtCore.QString(value)
 
         # prepare stream for transmission
         self.stream.device().seek(0)
@@ -78,8 +83,8 @@ class NewRequest(QObject):
 
     def readResponse(self):
         self.log.debug("Reading response")
-        stream = QDataStream(self.socket)
-        stream.setVersion(QDataStream.Qt_4_2)
+        stream = QtCore.QDataStream(self.socket)
+        stream.setVersion(QtCore.QDataStream.Qt_4_2)
 
         while True:
             if self.nextBlockSize == 0:
@@ -88,13 +93,13 @@ class NewRequest(QObject):
                 self.nextBlockSize = stream.readUInt16()
             if self.socket.bytesAvailable() < self.nextBlockSize:
                 break
-            action = QString()
-            options = QString()
+            action = QtCore.QString()
+            options = QtCore.QString()
             stream >> action
             self.nextBlockSize = 0
 
             self.log.netclient("Response action from master: %s" % action)
-            self.emit(SIGNAL("RESPONSE"), action)
+            self.emit(QtCore.SIGNAL("RESPONSE"), action)
             self.socket.close()
 
     def serverHasStopped(self):
@@ -106,7 +111,7 @@ class NewRequest(QObject):
         self.socket.close()
 
 
-class AdminClient(QObject):
+class AdminClient(QtCore.QObject):
     '''
     Client to interface with remove administration server.
 
@@ -116,8 +121,8 @@ class AdminClient(QObject):
     def __init__(self, master, port=65504, parent=None):
         super(AdminClient, self).__init__(parent)
         self.master = master
-        self.port = port
-        self.log = Logger("Admin.Client")
+        self.port   = port
+        self.log    = Logger.Logger("Admin.Client")
 
 #####################
 # NEW REQUEST FORMAT
@@ -129,14 +134,14 @@ class AdminClient(QObject):
 
     def addClient(self, hostname, ip):
         '''Add the given client to the master'''
-        hostname = str(QHostInfo.localHostName())
+        hostname = str(QtNetwork.QHostInfo.localHostName())
         self.log.fixme("Software, system, and network specs not implimented")
         request = NewRequest("CLIENT_NEW", ("octo", "10.56.1.2", "4096"))
-        self.connect(request, SIGNAL("RESPONSE"), self.readResponse)
+        self.connect(request, QtCore.SIGNAL("RESPONSE"), self.readResponse)
         request.send(self.master, self.port)
 
 
-class AdminServerThread(QThread):
+class AdminServerThread(QtCore.QThread):
     '''
     Admin server thread spawned upon every incoming connection to
     prevent collisions.
@@ -144,22 +149,22 @@ class AdminServerThread(QThread):
     def __init__(self, socketId, parent=None):
         super(AdminServerThread, self).__init__(parent)
         self.socketId = socketId
-        self.parent  = parent
-        self.log = Logger("Admin.ServerThread")
+        self.parent   = parent
+        self.log      = Logger.Logger("Admin.ServerThread")
 
     def run(self):
         self.log.debug("Thread started")
-        socket = QTcpSocket()
+        socket = QtNetwork.QtNetwork.QAbstractSocket()
 
         if not socket.setSocketDescriptor(self.socketId):
-            self.emit(SIGNAL("error(int)"), socket.error())
+            self.emit(QtCore.SIGNAL("error(int)"), socket.error())
             return
 
         # while we are connected
-        while socket.state() == QAbstractSocket.ConnectedState:
+        while socket.state() == QtNetwork.QAbstractSocket.ConnectedState:
             nextBlockSize = 0
-            stream = QDataStream(socket) # create a data stream
-            stream.setVersion(QDataStream.Qt_4_2)
+            stream = QtCore.QDataStream(socket) # create a data stream
+            stream.setVersion(QtCore.QDataStream.Qt_4_2)
 
             while True:
                 # wait for the stream to be ready to read
@@ -177,14 +182,14 @@ class AdminServerThread(QThread):
                         break
 
 #            # prepare vars for input stream
-            action = QString()
+            action = QtCore.QString()
             stream >> action
 
-            self.log.netclient("Receieved signal: %s" % action)
+            self.log.netclient("Receieved QtCore.SIGNAL: %s" % action)
             if action == "CLIENT_NEW":
-                hostname = QString()
-                address = QString()
-                ram = QString()
+                hostname = QtCore.QString()
+                address = QtCore.QString()
+                ram = QtCore.QString()
                 stream >> hostname >> address >> ram
                 self.log.netclient("Hostname: %s" % hostname)
                 self.log.netclient("Addrss: %s" % address)
@@ -196,9 +201,9 @@ class AdminServerThread(QThread):
             socket.waitForDisconnected()
 
     def sendReply(self, socket, action, options):
-        reply = QByteArray()
-        stream = QDataStream(reply, QIODevice.WriteOnly)
-        stream.setVersion(QDataStream.Qt_4_2)
+        reply = QtCore.QByteArray()
+        stream = QtCore.QDataStream(reply, QtCore.QIODevice.WriteOnly)
+        stream.setVersion(QtCore.QDataStream.Qt_4_2)
         stream.writeUInt16(0)
         stream << action << options
         stream.device().seek(0)
@@ -206,18 +211,18 @@ class AdminServerThread(QThread):
         socket.write(reply)
 
 
-class AdminServer(QTcpServer):
+class AdminServer(QtNetwork.QTcpServer):
     '''
     Main admin server used to control each individual client.  Controls include client
     restart, service/software discovery, etc.
     '''
     def __init__(self, parent=None):
         super(AdminServer, self).__init__(parent)
-        self.log = Logger("Admin.Server")
+        self.log = Logger.Logger("Admin.Server")
         self.log.netserver("Server Running")
 
     def incomingConnection(self, socketId):
         self.log.netserver("Incoming Connection")
         self.thread = AdminServerThread(socketId, self)
-        self.connect(self.thread, SIGNAL("finished()"), self.thread, SLOT("deleteLater()"))
+        self.connect(self.thread, QtCore.SIGNAL("finished()"), self.thread, QtCore.SLOT("deleteLater()"))
         self.thread.start()

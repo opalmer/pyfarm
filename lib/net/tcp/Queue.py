@@ -20,11 +20,17 @@ of queue information.
     You should have received a copy of the GNU Lesser General Public License
     along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 '''
-from lib.system import Info
-from lib.Logger import Logger
+import os
+import sys
 
-# From PyQt
 from PyQt4 import QtCore, QtNetwork
+
+CWD    = os.path.dirname(os.path.abspath(__file__))
+PYFARM = os.path.abspath(os.path.join(CWD, "..", "..", ".."))
+MODULE = os.path.basename(__file__)
+if PYFARM not in sys.path: sys.path.append(PYFARM)
+
+from lib import Logger, system
 
 UNIT16         = 8
 STREAM_VERSION = QtCore.QDataStream.Qt_4_2
@@ -37,9 +43,9 @@ class Request(QtCore.QObject):
         request (string) -- Name of request to send
         values (list|tuple) -- Values to send with request
     '''
-    def __init__(self, request, values, logName="Base.Request", parent=None):
+    def __init__(self, request, values, logName="tcp.Request", parent=None):
         super(Request, self).__init__(parent)
-        self.log = Logger(logName)
+        self.log = Logger.Logger(logName)
         self.socket = QtNetwork.QTcpSocket()
 
         self.connect(self.socket, QtCore.SIGNAL("connected()"), self.sendRequest)
@@ -122,7 +128,7 @@ class QueueClient(QtCore.QObject):
 
     def addClient(self, hostname, ip):
         '''Add the given client to the master'''
-        netinfo = Info.Network()
+        netinfo = system.Info.Network()
         request = Request(
                             "CLIENT_NEW",
                             (netinfo.hostname(), netinfo.ip()),
@@ -209,7 +215,6 @@ class QueueServerThread(QtCore.QThread):
         stream.writeUInt16(reply.size() - UNIT16)
         socket.write(reply)
 
-
 class QueueServer(QtNetwork.QTcpServer):
     '''
     Main queue server used to hold, gather, and update queue
@@ -220,7 +225,7 @@ class QueueServer(QtNetwork.QTcpServer):
     def __init__(self, main=None, parent=None):
         super(QueueServer, self).__init__(parent)
         self.main = main
-        self.log  = Logger("Queue.Server")
+        self.log  = Logger.Logger("Queue.Server")
 
         # server is running
         self.log.netserver("Server Running")

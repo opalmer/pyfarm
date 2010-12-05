@@ -28,10 +28,10 @@ import unittest
 from PyQt4 import QtCore
 from PyQt4.Qt import Qt
 
-rollback = 2
-path = os.path.dirname(os.path.abspath(__file__))
-for i in range(rollback): path = os.path.dirname(path)
-sys.path.append(path)
+CWD    = os.path.dirname(os.path.abspath(__file__))
+PYFARM = os.path.abspath(os.path.join(CWD, "..", ".."))
+MODULE = os.path.basename(__file__)
+if PYFARM not in sys.path: sys.path.append(PYFARM)
 
 from lib.net.tcp import Request, Server
 

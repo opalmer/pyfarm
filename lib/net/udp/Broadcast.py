@@ -20,19 +20,20 @@ of remote hosts
     You should have received a copy of the GNU Lesser General Public License
     along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 '''
-# From Python
+import os
 import re
 import sys
 import socket
 import traceback
 
-# From PyQt
 from PyQt4 import QtCore, QtNetwork
 
-# From PyFarm
-from lib.system import Info
-from lib.Logger import Logger
-from lib.Settings import ReadConfig
+CWD    = os.path.dirname(os.path.abspath(__file__))
+PYFARM = os.path.abspath(os.path.join(CWD, "..", "..", ".."))
+MODULE = os.path.basename(__file__)
+if PYFARM not in sys.path: sys.path.append(PYFARM)
+
+from lib import Logger, Settings, system
 
 LOGLEVEL = 4
 
@@ -46,8 +47,8 @@ class BroadcastSender(QtCore.QThread):
         self.port     = self.config['servers']['broadcast']
         self.count    = self.config['broadcast']['interval']
         self.maxCount = self.config['broadcast']['maxcount']
-        self.netinfo  = Info.Network()
-        self.log      = Logger("Broadcast.BroadcastSender", LOGLEVEL)
+        self.netinfo  = system.Info.Network()
+        self.log      = Logger.Logger("Broadcast.BroadcastSender", LOGLEVEL)
 
         # network information
         #self.address  = netinfo.ip()

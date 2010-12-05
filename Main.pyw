@@ -25,35 +25,29 @@ import os
 import sys
 import unittest
 
-DEVELOPER = 'Oliver Palmer'
-HOMEPAGE  = 'http://www.pyfarm.net'
-VERSION   = '0.5.0'
-MODULE    = 'Main.pyw'
-LOGLEVEL  = 2
-ROOT      = os.path.dirname(os.path.abspath(__file__))
-CFG_ROOT  = os.path.join(ROOT, "cfg")
-ICN_ROOT  = os.path.join(ROOT, "icons")
-QUE_ICN   = os.path.join(ICN_ROOT, "queue")
-CFG_GEN   = os.path.join(CFG_ROOT, "general.ini")
-DEBUG     = True
-
-# From PyQt
 from PyQt4.Qt import Qt
 from PyQt4 import QtCore, QtGui, QtNetwork, uic
 
-# From PyFarm
+CWD       = os.path.dirname(os.path.abspath(__file__))
+PYFARM    = CWD
+MODULE    = os.path.basename(__file__)
+CFG_ROOT  = os.path.join(PYFARM, "cfg")
+ICN_ROOT  = os.path.join(PYFARM, "icons")
+QUE_ICN   = os.path.join(ICN_ROOT, "queue")
+CFG_GEN   = os.path.join(CFG_ROOT, "general.ini")
+DEVELOPER = 'Oliver Palmer'
+HOMEPAGE  = 'http://www.pyfarm.net'
+VERSION   = '0.5.0'
+LOGLEVEL  = 2
+DEBUG     = True
+
 import lib.net
 import cfg.resources_rc
-from lib.ui import Dialogs
-from lib.Slots import Slots
-from lib.Logger import Logger
-from lib.Settings import ReadConfig
-from lib.system.Info import SystemInfo
-from lib.net.tcp.Queue import QueueServer
-from lib.net.udp.Broadcast import BroadcastSender
+from lib.net import tcp, udp
+from lib import Logger, ui, Slots, Settings, system
 
 # sestup logging
-log = Logger(MODULE, LOGLEVEL)
+log = Logger.Logger(MODULE, LOGLEVEL)
 
 class MainWindow(QtGui.QMainWindow):
     '''This is the controlling class for the main gui'''
@@ -61,7 +55,7 @@ class MainWindow(QtGui.QMainWindow):
         super(MainWindow, self).__init__()
         self.ui = uic.loadUi(
                                 os.path.join(
-                                                ROOT,
+                                                PYFARM,
                                                 "lib",
                                                 "ui",
                                                 "MainWindow.ui"
@@ -95,13 +89,13 @@ class MainWindow(QtGui.QMainWindow):
 
         # general setup and variables
         self.isClosing = False
-        self.config    = ReadConfig(CFG_GEN)
-        self.slots     = Slots(self, self.config)
+        self.config    = Settings.ReadConfig(CFG_GEN)
+        self.slots     = Slots.Slots(self, self.config)
         self.runServers()
 
     def runServers(self):
         '''Run the background servers required to operate PyFarm'''
-        self.queueServer = QueueServer(main=self)
+        self.queueServer = tcp.Queue.QueueServer(main=self)
 
         if not self.queueServer.listen(QtNetwork.QHostAddress.Any, self.config['servers']['queue']):
             error = "Could not start the queue server: %s" % self.queueServer.errorString()
@@ -149,7 +143,7 @@ class MainWindow(QtGui.QMainWindow):
 
     def closeEvent(self, event):
         '''When the ui is attempting to exit, run this first.  However, make sure we only do this once'''
-        exit = Dialogs.CloseEvent()
+        exit = ui.Dialogs.CloseEvent()
         self.connect(exit, QtCore.SIGNAL("state"), self.closeEventHandler)
         exit.exec_()
 
@@ -165,7 +159,7 @@ class MainWindow(QtGui.QMainWindow):
         # 1) Start timer
         # 2) Run broadcast
         # 3) Kill broadcast after timer expires
-        self.broadcast = BroadcastSender(self.config)
+        self.broadcast = udp.Broadcast.BroadcastSender(self.config)
         self.connect(self.broadcast, SIGNAL("client-address"), self.hostFound)
         self.connect(self.broadcast, SIGNAL("started()"), self.hostSearchStarted)
         self.broadcast.run()
@@ -363,7 +357,7 @@ class MainWindow(QtGui.QMainWindow):
 #        self.ui.render.setEnabled(True)
 #
 #        self.updateConsole('NETWORK', 'Searching for hosts...', 'green')
-#        findHosts = BroadcastSender(__UUID__, self)
+#        findHosts = udp.Broadcast.BroadcastSender(__UUID__, self)
 #        progress = ProgressDialog(QString("Network Broadcast Progress"), \
 #                                                            QString("Cancel Broadcast"), \
 #                                                            0, settings.broadcastValue('maxCount'), self)
@@ -399,7 +393,7 @@ class Testing(QtCore.QObject):
     '''Quick testing code'''
     def __init__(self, parent=None):
         super(Testing, self).__init__(parent)
-        log = Logger("Main.Testing")
+        log = Logger.Logger("Main.Testing")
         self.config = ReadConfig(CFG_ROOT)
         log.debug("Test code initilized")
 
@@ -411,7 +405,7 @@ class Testing(QtCore.QObject):
 
     def sendBroadcast(self):
         '''Send out a broadcast to inform clients of the master node'''
-        broadcast = BroadcastSender(self.config, self)
+        broadcast = udp.Broadcast.BroadcastSender(self.config, self)
         #self.connect(broadcast, SIGNAL("next"), self.broadIncriment)
         #self.connect(broadcast, SIGNAL("done"), self.broadDone)
         broadcast.run()
@@ -434,7 +428,7 @@ if __name__ != '__MAIN__':
     import lib.InputFlags as flags
     from optparse import OptionParser
     about   = flags.About(DEVELOPER, 'GNU-LGPL_Header.txt')
-    sysinfo = SystemInfo(os.path.join(CFG_ROOT, "general.ini"))
+    sysinfo = system.Info.SystemInfo(os.path.join(CFG_ROOT, "general.ini"))
 
     ###############################
     # Command Line Options

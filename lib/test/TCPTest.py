@@ -24,13 +24,17 @@ import os
 import sys
 import unittest
 
-rootDir = os.path.abspath(__file__)
-for i in range(3): rootDir = os.path.dirname(rootDir)
-if rootDir not in sys.path: sys.path.append(rootDir)
+CWD    = os.path.dirname(os.path.abspath(__file__))
+PYFARM = os.path.abspath(os.path.join(CWD, "..", ".."))
+MODULE = os.path.basename(__file__)
+if PYFARM not in sys.path: sys.path.append(PYFARM)
 
 class Validate(unittest.TestCase):
     def setUp(self):
        pass
+
+    def testNull(self):
+        pass
 
 if __name__ == "__main__":
     unittest.main()

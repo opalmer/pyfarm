@@ -28,15 +28,16 @@ import unittest
 import fnmatch
 from xml.dom import minidom
 
-rootDir = os.path.abspath(__file__)
-for i in range(3): rootDir = os.path.dirname(rootDir)
-if rootDir not in sys.path: sys.path.append(rootDir)
+CWD    = os.path.dirname(os.path.abspath(__file__))
+PYFARM = os.path.abspath(os.path.join(CWD, "..", ".."))
+MODULE = os.path.basename(__file__)
+if PYFARM not in sys.path: sys.path.append(PYFARM)
 
-from lib.Logger import Logger
+from lib import Logger
 
 class Validate(unittest.TestCase):
     def setUp(self):
-        self.log = Logger('LevelTest')
+        self.log = Logger.Logger('LevelTest')
         self.xml = minidom.parse(self.log.xml)
 
     def testLevelsExist(self):
@@ -120,7 +121,7 @@ class Validate(unittest.TestCase):
             else:
                 functions.append(str(element.getAttribute("name")))
 
-        for path, dirs, files in os.walk(rootDir):
+        for path, dirs, files in os.walk(PYFARM):
             for filename in fnmatch.filter(files, "*.py"):
                 if not fnmatch.fnmatch(path,  "*tools*") and not fnmatch.fnmatch(filename,  "*__init__*"):
                     for line in open(os.path.join(path,  filename),  'r'):

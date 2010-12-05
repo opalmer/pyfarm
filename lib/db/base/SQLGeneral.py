@@ -19,8 +19,16 @@ PURPOSE: To perform general operations such as setup on a sqlite database
     You should have received a copy of the GNU Lesser General Public License
     along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 '''
-
+import os
+import sys
 import sqlite3
+
+CWD    = os.path.dirname(os.path.abspath(__file__))
+PYFARM = os.path.abspath(os.path.join(CWD, "..", "..", ".."))
+MODULE = os.path.basename(__file__)
+if PYFARM not in sys.path: sys.path.append(PYFARM)
+
+from lib import Logger
 
 def DBSetup(host, db=":memory:"):
     '''Setup the database and the default tables'''
@@ -71,7 +79,7 @@ def DBDump(db, location):
     pass
 
 if __name__ != "__MAIN__":
-    log = Logger("DBGeneral.Test")
+    log = Logger.Logger("DBGeneral.Test")
     log.debug("Running DBGeneral Demo.")
     log.debug("Creating database")
     db = DBSetup()

@@ -19,28 +19,29 @@ PURPOSE: Small library for discovering system info and installed software
     You should have received a copy of the GNU Lesser General Public License
     along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 '''
-# From Python
 import os
 import sys
 
-# From PyFarm
-from lib.Logger import Logger
-from lib.system.Info import Hardware
+CWD    = os.path.dirname(os.path.abspath(__file__))
+PYFARM = os.path.abspath(os.path.join(CWD, ".."))
+MODULE = os.path.basename(__file__)
+if PYFARM not in sys.path: sys.path.append(PYFARM)
 
-MODULE = "lib.InputFlags"
+from lib import Logger, system
+
 LOGLEVEL = 4
 
-log = Logger(MODULE, LOGLEVEL)
+log = Logger.Logger(MODULE, LOGLEVEL)
 
 class SystemInfo(object):
     '''Gather and prepare to return info about the system'''
     def __init__(self):
         self.cwd = os.getcwd()
-        self.log = Logger("InputFlags.SystemInfo", LOGLEVEL)
+        self.log = Logger.Logger("InputFlags.SystemInfo", LOGLEVEL)
 
     def showinfo(self, option=None, opt=None, value=None, parser=None):
         '''Return all information about the system'''
-        hardware = Hardware()
+        hardware = system.Info.Hardware()
         load = hardware.cpuload()
         print "Hardware Information:"
         print "\tCPU Count: %i" % hardware.cpucount()
@@ -86,7 +87,7 @@ class SystemUtilities(object):
     '''General system utilities to run from the command line'''
     def __init__(self):
         self.cwd = os.getcwd()
-        self.log = Logger("InputFlags.SystemUtilities", LOGLEVEL)
+        self.log = Logger.Logger("InputFlags.SystemUtilities", LOGLEVEL)
 
     def clean(self, option=None, opt=None, value=None, parser=None):
         '''Cleanup any extra or byte-compiled files'''

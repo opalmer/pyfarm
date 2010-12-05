@@ -18,9 +18,14 @@
 # CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
 # TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 # SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-import sys, pprint
+import os
+import sys
+import pprint
 import modulefinder
+
+CWD    = os.path.dirname(os.path.abspath(__file__))
+PYFARM = os.path.abspath(os.path.join(CWD, "..",  ".."))
+MODULE = os.path.basename(__file__)
 
 class mymf(modulefinder.ModuleFinder):
     def __init__(self,*args,**kwargs):
@@ -28,7 +33,7 @@ class mymf(modulefinder.ModuleFinder):
         self._types = {}
         self._last_caller = None
         modulefinder.ModuleFinder.__init__(self,*args,**kwargs)
-        
+
     def import_hook(self, name, caller=None, fromlist=None, level=None):
         old_last_caller = self._last_caller
         try:
@@ -36,27 +41,27 @@ class mymf(modulefinder.ModuleFinder):
             return modulefinder.ModuleFinder.import_hook(self,name,caller,fromlist)
         finally:
             self._last_caller = old_last_caller
-            
+
     def import_module(self,partnam,fqname,parent):
         r = modulefinder.ModuleFinder.import_module(self,partnam,fqname,parent)
         if r is not None:
             self._depgraph.setdefault(self._last_caller.__name__,{})[r.__name__] = 1
         return r
-    
+
     def load_module(self, fqname, fp, pathname, (suffix, mode, type)):
         r = modulefinder.ModuleFinder.load_module(self, fqname, fp, pathname, (suffix, mode, type))
         if r is not None:
             self._types[r.__name__] = type
         return r
-        
-        
-def main(argv):    
+
+
+def main(argv):
     path = sys.path[:]
     debug = 0
     exclude = []
     mf = mymf(path,debug,exclude)
     mf.run_script(argv[0])
     pprint.pprint({'depgraph':mf._depgraph,'types':mf._types})
-    
+
 if __name__=='__main__':
     main(sys.argv[1:])

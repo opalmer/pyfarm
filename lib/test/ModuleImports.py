@@ -27,9 +27,10 @@ import unittest
 import modulefinder
 import ConfigParser
 
-rootDir = os.path.abspath(__file__)
-for i in range(3): rootDir = os.path.dirname(rootDir)
-if rootDir not in sys.path: sys.path.append(rootDir)
+CWD    = os.path.dirname(os.path.abspath(__file__))
+PYFARM = os.path.abspath(os.path.join(CWD, "..", ".."))
+MODULE = os.path.basename(__file__)
+if PYFARM not in sys.path: sys.path.append(PYFARM)
 
 class ModuleTests(unittest.TestCase):
     '''Various tests and checks for module imports and their versions'''
@@ -37,8 +38,8 @@ class ModuleTests(unittest.TestCase):
         self.pyExtensions = ("py", "pyw")
         self.pyExclusions = ("*__init__*", "*tools*", "*test*")
         self.cfg          = ConfigParser.RawConfigParser()
-        self.cfg.read(os.path.join(rootDir, 'cfg', 'versions.ini'))
-        
+        self.cfg.read(os.path.join(PYFARM, 'cfg', 'versions.ini'))
+
     def _isExcluded(self, filename):
         '''Ensure the given filename is not part the the excluded list'''
         for exclusion in self.pyExclusions:
@@ -61,7 +62,7 @@ class ModuleTests(unittest.TestCase):
                 filename = os.path.join(root, filename)
                 if self._validPyFile(filename) and not self._isExcluded(filename):
                     yield filename
-                    
+
     def _getVersionConfig(self, key, level, asString=False):
         '''
         Retrieve a key, version, and convert that information to string format
@@ -75,7 +76,7 @@ class ModuleTests(unittest.TestCase):
                 return version
         else:
             return False
-            
+
     def _pyVersion(self, asString=False):
         '''Return the installed python version'''
         version = sys.version_info
@@ -83,7 +84,7 @@ class ModuleTests(unittest.TestCase):
             return version[:2]
         else:
             return '.'.join([str(i) for i in version[:2]])
-            
+
     def _pyqtVersion(self, asString=False):
         '''Return the installed pyqt version'''
         from PyQt4 import QtCore
@@ -92,7 +93,7 @@ class ModuleTests(unittest.TestCase):
             return tuple([int(i) for i in version.split('.')][:2])
         else:
             return version
-            
+
     def _badModules(self, moduleSearch):
         '''
         Return a list of modules that had trouble importing then remove then
@@ -103,18 +104,18 @@ class ModuleTests(unittest.TestCase):
             if "__main__" in namespace.keys():
                 output.append(module)
                 del moduleSearch.badmodules[module]
-                
+
         return output
-        
+
     def testModuleImports(self):
         '''Ensure all modules that are in use can be imported'''
         badDict = {}
         moduleSearch = modulefinder.ModuleFinder()
-        for filename in self._pyFiles(rootDir):
+        for filename in self._pyFiles(CWD):
             moduleSearch.run_script(filename)
             badModules = self._badModules(moduleSearch)
             if badModules: badDict[filename] = badModules
-                
+
         self.failIf(
                     len(badDict.keys()),
                     "Failed to import one or more modules: %s" % badDict
@@ -130,16 +131,16 @@ class ModuleTests(unittest.TestCase):
         iniMinVersion    = self._getVersionConfig(module, 'min')
         iniMaxVersionStr = self._getVersionConfig(module, 'max', asString=True)
         iniMaxVersion    = self._getVersionConfig(module, 'max')
-        
+
         self.failIf(
                     version < iniMinVersion,
-                    "Python %s Does Not Meet Minimum Version: %s" % 
+                    "Python %s Does Not Meet Minimum Version: %s" %
                     (versionStr, iniMinVersionStr)
                    )
-                   
+
         self.failIf(
                     version > iniMaxVersion,
-                    "Python %s Exceeds Maximum Version: %s" % 
+                    "Python %s Exceeds Maximum Version: %s" %
                     (versionStr, iniMaxVersionStr)
                    )
 
@@ -155,13 +156,13 @@ class ModuleTests(unittest.TestCase):
 
         self.failIf(
                     version < iniMinVersion,
-                    "PyQt %s Does Not Meet Minimum Version: %s" % 
+                    "PyQt %s Does Not Meet Minimum Version: %s" %
                     (versionStr, iniMinVersionStr)
                    )
-                   
+
         self.failIf(
                     version > iniMaxVersion,
-                    "PyQt %s Exceeds Maximum Version: %s" % 
+                    "PyQt %s Exceeds Maximum Version: %s" %
                     (versionStr, iniMaxVersionStr)
                    )
 
