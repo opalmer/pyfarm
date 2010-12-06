@@ -1,5 +1,4 @@
 '''
-
 HOMEPAGE: www.pyfarm.net
 INITIAL: May 26 2010
 PURPOSE: To provide a means for configuration parsing and easy integration of
@@ -33,15 +32,22 @@ MODULE = os.path.basename(__file__)
 if PYFARM not in sys.path: sys.path.append(PYFARM)
 
 import lib
-Logger = lib.importFile("%s/lib/Logger.py" % PYFARM)
 
-def ReadConfig(cfgInput):
-    '''Parse a config file and return a data dictionary'''
-    #log = Logger.Logger("Settings.ReadConfig")
-    if os.path.isfile(cfgInput):
+class ReadConfig(object):
+    '''Parse various configuration files'''
+    @staticmethod
+    def test(filepath):
+        if os.path.isfile(filepath):
+            return filepath
+        else:
+            raise IOError("%s is not a valid config file" % cfgInput)
+
+    @staticmethod
+    def general(filepath):
+        '''Return the general configuration file after reading'''
         out = {}
         cfg = ConfigParser.ConfigParser()
-        cfg.read(cfgInput)
+        cfg.read(ReadConfig.test(filepath))
 
         for section in cfg.sections():
             out[section] = {}
@@ -65,8 +71,60 @@ def ReadConfig(cfgInput):
                         out[section][option] = cfg.get(section, option)
         return out
 
-    else:
-        raise IOError("%s is not a valid config file" % cfgInput)
+    @staticmethod
+    def logger(filepath):
+        '''
+        Given an xml file, return a dictionary with the configuration
+        for the Logger object
+        '''
+        out = {}
+        xml = minidom.parse(ReadConfig.test(filepath))
+
+        for element in xml.getElementsByTagName("level"):
+            level   = int(element.getAttribute("value"))
+            name    = str(element.getAttribute("name"))
+            enabled = str(element.getAttribute("enabled"))
+
+            # function name
+            if element.hasAttribute("function"):
+                function = str(element.getAttribute("function"))
+            else:
+                function = name
+
+            # terminal color (linux only)
+            if element.hasAttribute("color") and os.name == 'posix':
+                coloron  = str(element.getAttribute("color"))
+                coloroff = str(element.getAttribute("color")) + 'OFF'
+            else:
+                coloron = ''
+                coloroff = ''
+
+            # bold attribute
+            if element.hasAttribute("bold") and os.name == 'posix':
+                boldon  = 'BOLD' # this should really be getting the bold VALUE
+                boldoff = 'UNBOLD'
+            else:
+                boldon  = ''
+                boldoff = ''
+
+            # place element into output dictionary
+            out[name] = {
+                            'level'    : level,
+                            'name'     : name,
+                            'function' : function,
+                            'coloron'  : coloron,
+                            'coloroff' : coloroff,
+                            'boldon'   : boldon,
+                            'boldoff'  : boldoff,
+                            'enabled'  : enabled,
+                            'template' : string.Template(
+                                         '%s$time - $logger - %s%s%s - $message%s' % (
+                                                    coloron,  boldon,
+                                                    name.upper(), boldoff,
+                                                    coloroff)
+                                                )
+                         }
+        return out
 
 
 class Software(object):
@@ -93,8 +151,3 @@ class Storage(object):
 
         for dirname in ("pids", ):
             os.mkdir(os.path.join(self.prefsRoot, dirname))
-
-if __name__ == '__main__':
-    import doctest
-    print "Doc Testing: %s" % os.path.abspath(__file__)
-    doctest.testmod()

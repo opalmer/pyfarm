@@ -30,12 +30,8 @@ PYFARM = os.path.abspath(os.path.join(CWD, "..", ".."))
 MODULE = os.path.basename(__file__)
 if PYFARM not in sys.path: sys.path.append(PYFARM)
 
-import lib
-Settings = lib.importFile("%s/lib/Settings.py" % PYFARM)
-Logger   = lib.importFile("%s/lib/Logger.py" % PYFARM)
-system   = lib.importFile("%s/lib/system/__init__.py" % PYFARM)
-
-print system.SimpleCommand
+from lib.system import includes
+from lib import Logger, Settings
 
 LOGLEVEL = 6
 
@@ -45,7 +41,7 @@ class SystemInfo(object):
     '''Default system information object to query and store info about hardware and software'''
     def __init__(self, configDir, skipSoftware=True):
         if os.name == "nt":
-            #process = system.Utility.SimpleCommand("cmd.exe /C systeminfo", all=False)
+            #process = includes.SimpleCommand("cmd.exe /C systeminfo", all=False)
             #cache   = str(process.readAll())
             log.notimplemented("SystemInfo not implemented for %s" % os.name)
             cache = None
@@ -53,7 +49,7 @@ class SystemInfo(object):
         else:
             cache = None
 
-        self.config   = Settings.ReadConfig(configDir)
+        self.config   = Settings.ReadConfig.general(configDir)
         self.hardware = Hardware(cache)
         self.software = Software(self.config, cache)
         #self.network = Network(self.config.netadapter, cache)
@@ -82,8 +78,8 @@ class Hardware(object):
 
         if os.name == "posix":
             try:
-                self.rammax = float(SimpleCommand("free | grep Mem | awk '{print $2}'"))/1024
-                self.swapmax = float(SimpleCommand("free | grep Swap | awk '{print $2}'"))/1024
+                self.rammax = float(includes.SimpleCommand("free | grep Mem | awk '{print $2}'"))/1024
+                self.swapmax = float(includes.SimpleCommand("free | grep Swap | awk '{print $2}'"))/1024
 
             except TypeError:
                 log.fixme("Hardware information (linux) not implimented for new SimpleCommand")
@@ -110,7 +106,7 @@ class Hardware(object):
         '''Return the amout of ram used'''
         results = None
         if os.name == "posix":
-            results = float(SimpleCommand("free | grep 'buffers/cache' | awk '{print $3}'"))/1024
+            results = float(includes.SimpleCommand("free | grep 'buffers/cache' | awk '{print $3}'"))/1024
         else:
             log.notimplemented("Ram used not implemented for %s" % os.name)
 
@@ -128,7 +124,7 @@ class Hardware(object):
         '''Return the total amout of swap used'''
         results = None
         if os.name == "posix":
-            results = float(SimpleCommand("free | grep Swap | awk '{print $3}'"))/1024
+            results = float(includes.SimpleCommand("free | grep Swap | awk '{print $3}'"))/1024
         else:
             log.notimplemented("swap used not implemented for %s" % os.name)
 
@@ -199,7 +195,7 @@ class Network(object):
         results = None
         if os.name == "posix":
             query = "ifconfig %s | grep 'inet addr' | gawk -F: '{print $2}' | gawk '{print $1}'" % self.adapter
-            results = SimpleCommand(query)
+            results = includes.SimpleCommand(query)
         else:
             results = socket.gethostbyname(self.hostname())
 
@@ -210,7 +206,7 @@ class Network(object):
         results = None
         if os.name == "posix":
             query = "ifconfig %s | grep 'inet addr' | gawk -F: '{print $4}' | gawk '{print $1}'" % self.adapter
-            results = SimpleCommand(query)
+            results = includes.SimpleCommand(query)
         else:
             log.notimplemented("subnet not implemented for %s" % os.name)
 
@@ -234,7 +230,7 @@ class Network(object):
         '''Return the hostname'''
         results = None
         if os.name == "posix" or os.name == "nt":
-            results = SimpleCommand("hostname")
+            results = includes.SimpleCommand("hostname")
 
         else:
             try:    results = socket.getfqdn()
@@ -246,7 +242,7 @@ class Network(object):
         '''Return mac address for the adapter'''
         results = None
         if os.name == "posix":
-            results = SimpleCommand("ifconfig %s | grep 'Link encap' | awk '{print $5}'" % self.adapter)
+            results = includes.SimpleCommand("ifconfig %s | grep 'Link encap' | awk '{print $5}'" % self.adapter)
         else:
             log.notimplemented("mac not implemented for %s" % os.name)
 

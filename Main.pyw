@@ -89,7 +89,7 @@ class MainWindow(QtGui.QMainWindow):
 
         # general setup and variables
         self.isClosing = False
-        self.config    = Settings.ReadConfig(CFG_GEN)
+        self.config    = Settings.ReadConfig.general(CFG_GEN)
         self.slots     = Slots.Slots(self, self.config)
         self.runServers()
 
@@ -149,6 +149,7 @@ class MainWindow(QtGui.QMainWindow):
 
         if self.isClosing:
             self.close()
+
         else:
             self.isClosing = True
             print "What would you like to do?: Save Job Database, Interface Settings,  Shutdown Remote Client Program"

@@ -38,7 +38,7 @@ from lib import Logger
 class Validate(unittest.TestCase):
     def setUp(self):
         self.log = Logger.Logger('LevelTest')
-        self.xml = minidom.parse(self.log.xml)
+        self.xml = minidom.parse(Logger.XML_CONFIG)
 
     def testLevelsExist(self):
         '''Make sure levels exist'''

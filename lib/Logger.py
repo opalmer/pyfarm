@@ -30,14 +30,22 @@ PYFARM = os.path.abspath(os.path.join(CWD, ".."))
 MODULE = os.path.basename(__file__)
 if PYFARM not in sys.path: sys.path.append(PYFARM)
 
-from lib.system.Utility import backtrackDirs
+from lib import Settings
 
-LOGLEVEL        = 4
-GLOBAL_LOGLEVEL = 0 # set to None to disable
+# default values for all loggers
+DEFAULT_LEVEL   = 4
+DEFAULT_SOLO    = False
+
+# overrides and global settings
+GLOBAL_LEVEL    = False
+GLOBAL_OVERRIDE = False
+GLOBAL_SOLO     = False
+XML_CONFIG      = os.path.join(PYFARM, "cfg", "loglevels.xml")
 
 class LevelName(object):
-    def __init__(self, name):
-        self.name = name
+    def __init__(self, name, enabled):
+        self.name    = name
+        self.enabled = eval(enabled)
 
 
 class Level(object):
@@ -51,40 +59,33 @@ class Level(object):
         nargs.extend(args)
         return apply(self.method, nargs, kwargs)
 
-
 class Logger(object):
     '''
     Custom logging object for PyFarm
 
     VARS:
         level (int) -- minimum level to log
-        solo (bool) -- If set the true only requests matching level will be served
+        enableSolo (bool) -- If enabed, solo values will be respected for
+        this logger
         logfile (str) -- file to log to
     '''
-    def __init__(self, name, level=5, logfile=None, solo=False, writeOnly=False):
-        if GLOBAL_LOGLEVEL != None:
-            self.level = GLOBAL_LOGLEVEL
-            self.override = 1
-        else:
-            self.level = level
-            self.override = 0
+    def __init__(self, name, level=DEFAULT_LEVEL, logfile=None, enableSolo=DEFAULT_SOLO, writeOnly=False):
+        self.enableSolo = enableSolo
+        self.level      = level
+        self.config     = Settings.ReadConfig.logger(XML_CONFIG)
 
-        self.xml = os.path.join(
-                                    backtrackDirs(__file__, 2),
-                                    "cfg",
-                                    "loglevels.xml"
-                                )
+        # check for global overrides
+        if GLOBAL_LEVEL: self.level = DEFAULT_LEVEL
+        if GLOBAL_SOLO:  self.solo  = DEFAULT_SOLO
 
-        self.config = self.readConfig(self.xml)
-        self.solo = solo
         self.timeFormat = "%Y-%m-%d %H:%M:%S"
         self.setName(name)
 
         self.levels = []
         for function, levelDict in self.config.items():
-            vars(self)[levelDict['function']] = self.newLevel(levelDict['name'], function)
-            if levelDict['enabled']:
-                self.levels.append(levelDict['name'])
+            newLevel = self.newLevel(levelDict['name'], levelDict['enabled'], function)
+            vars(self)[levelDict['function']] = newLevel
+            self.levels.append(levelDict['name'])
 
         if logfile:
             self.logfile = open(logfile, "a")
@@ -95,15 +96,15 @@ class Logger(object):
         if writeOnly and not logfile:
             raise RuntimeError("You declare writeOnly without a logfile")
 
-    def newLevel(self, name,  function):
+    def newLevel(self, name, enabled, function):
         '''Create a new log level'''
-        return Level(self._out, LevelName(name), function)
+        return Level(self._out, LevelName(name, enabled), function)
 
     def _out(self, level, msg):
         if level.name in self.levels:
             cfg = self.config[level.name]
 
-            if not self.writeOnly:
+            if not self.writeOnly and level.enabled:
                 print (cfg['template'].substitute(
                     time=time.strftime(self.timeFormat),
                     logger=self.name,
@@ -126,54 +127,3 @@ class Logger(object):
     def setName(self, name):
         '''Set the name for the logger'''
         self.name = name
-
-    def readConfig(self, xml):
-        '''Read the logging configuration xml file and return a dictionary'''
-        out = {}
-        xml = minidom.parse(xml)
-
-        for element in xml.getElementsByTagName("level"):
-            level   = int(element.getAttribute("value"))
-            name    = str(element.getAttribute("name"))
-            enabled = str(element.getAttribute("enabled"))
-
-            # function name
-            if element.hasAttribute("function"):
-                function = str(element.getAttribute("function"))
-            else:
-                function = name
-
-            # terminal color (linux only)
-            if element.hasAttribute("color") and os.name == 'posix':
-                coloron  = str(element.getAttribute("color"))
-                coloroff = str(element.getAttribute("color")) + 'OFF'
-            else:
-                coloron = ''
-                coloroff = ''
-
-            # bold attribute
-            if element.hasAttribute("bold") and os.name == 'posix':
-                boldon  = 'BOLD' # this should really be getting the bold VALUE
-                boldoff = 'UNBOLD'
-            else:
-                boldon  = ''
-                boldoff = ''
-
-            # place element into output dictionary
-            out[name] = {
-                            'level'    : level,
-                            'name'     : name,
-                            'function' : function,
-                            'coloron'  : coloron,
-                            'coloroff' : coloroff,
-                            'boldon'   : boldon,
-                            'boldoff'  : boldoff,
-                            'enabled'  : enabled,
-                            'template' : string.Template(
-                                         '%s$time - $logger - %s%s%s - $message%s' % (
-                                                    coloron,  boldon,
-                                                    name.upper(), boldoff,
-                                                    coloroff)
-                                                )
-                         }
-        return out
