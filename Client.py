@@ -25,37 +25,33 @@ import sys
 
 from PyQt4 import QtCore
 
-CWD      = os.path.dirname(os.path.abspath(__file__))
-PYFARM   = CWD
-MODULE   = os.path.basename(__file__)
+CWD       = os.path.dirname(os.path.abspath(__file__))
+PYFARM    = CWD
+MODULE    = os.path.basename(__file__)
+CFG_ROOT  = os.path.join(PYFARM, "cfg")
+CFG_GEN   = os.path.join(CFG_ROOT, "general.ini")
 
-from lib.Logger import Logger
-from lib.Settings import ReadConfig
-from lib.net.udp.Broadcast import BroadcastReceiever
 from lib.net.tcp.Queue import QueueClient
 
-log      = Logger(MODULE)
+from lib.net import tcp, udp
+from lib import Logger, Settings
+
+log = Logger.Logger(MODULE)
 
 class Main(QtCore.QObject):
     def __init__(self, parent=None):
         super(Main, self).__init__(parent)
-        self.config = ReadConfig(
-                                    os.path.join(
-                                        "%s" % os.path.dirname(__file__),
-                                        "cfg",
-                                        "general.ini"
-                                    )
-                                )
-
         self.masterHostname = ''
         self.masterAddress  = ''
+        self.config         = Settings.ReadConfig.general(CFG_GEN)
 
     def listenForBroadcast(self):
         '''
         Step 1:
         Listen for an incoming broadcast from the master
         '''
-        self.broadcast = BroadcastReceiever(self.config['servers']['broadcast'], parent=self)
+        portNum        = self.config['servers']['broadcast']
+        self.broadcast = udp.Broadcast.BroadcastReceiever(portNum, parent=self)
         self.connect(self.broadcast, QtCore.SIGNAL("masterFound"), self.setMasterAddress)
         self.broadcast.run()
 
@@ -86,10 +82,8 @@ class Main(QtCore.QObject):
                          )
 
             # inform the master of client computer
-            queue = QueueClient(
-                                    self.masterAddress,
-                                    port=self.config['servers']['queue']
-                                )
+            portNum = self.config['servers']['queue']
+            queue   = tcp.Queue.QueueClient(self.masterAddress, port=portNum)
             queue.addClient(self.masterHostname, self.masterAddress)
 
 

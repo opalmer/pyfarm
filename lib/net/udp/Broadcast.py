@@ -101,7 +101,7 @@ class BroadcastReceiever(QtCore.QThread):
     '''Class to receieve broadcast signal from master'''
     def __init__(self, port, parent=None):
         super(BroadcastReceiever, self).__init__(parent)
-        self.log  = Logger("Broadcast.BroadcastReceiever", LOGLEVEL)
+        self.log  = Logger.Logger("Broadcast.BroadcastReceiever", LOGLEVEL)
         self.port = port
         self.log.netserver("Running")
 
