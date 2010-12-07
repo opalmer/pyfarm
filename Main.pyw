@@ -20,7 +20,6 @@ PURPOSE: Main program to run and manage PyFarm
     You should have received a copy of the GNU Lesser General Public License
     along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 '''
-
 import os
 import sys
 import unittest
@@ -31,6 +30,7 @@ from PyQt4 import QtCore, QtGui, QtNetwork, uic
 CWD       = os.path.dirname(os.path.abspath(__file__))
 PYFARM    = CWD
 MODULE    = os.path.basename(__file__)
+CONTEXT   = MODULE.split(".")[0]
 CFG_ROOT  = os.path.join(PYFARM, "cfg")
 ICN_ROOT  = os.path.join(PYFARM, "icons")
 QUE_ICN   = os.path.join(ICN_ROOT, "queue")
@@ -40,11 +40,12 @@ HOMEPAGE  = 'http://www.pyfarm.net'
 VERSION   = '0.5.0'
 LOGLEVEL  = 2
 DEBUG     = True
+UNITTESTS = False
 
 import lib.net
 import cfg.resources_rc
 from lib.net import tcp, udp
-from lib import Logger, ui, Slots, Settings, system
+from lib import Logger, ui, Slots, Settings, File, system
 
 # sestup logging
 log = Logger.Logger(MODULE, LOGLEVEL)
@@ -53,6 +54,36 @@ class MainWindow(QtGui.QMainWindow):
     '''This is the controlling class for the main gui'''
     def __init__(self):
         super(MainWindow, self).__init__()
+        # set and read execution state first
+        self.executionState = File.StateDirectory(context=CONTEXT)
+        if not self.executionState.writePID():
+            title  = "%s Is Already Running" % CONTEXT
+            msg    = "PyFarm already seems to be open, terminate the running"
+            msg   += " process if needed and continue?"
+            log.warning("%s: User input required" % title)
+            yes = QtGui.QMessageBox.Yes
+            no  = QtGui.QMessageBox.No
+            msgBox = QtGui.QMessageBox.warning(
+                                                self, title, msg,
+                                                yes|no
+                                              )
+            if msgBox == yes:
+                overwritePID = True
+            else:
+                overwritePID = False
+
+        # if we overwrite the pid file, continue on as normal
+        if overwritePID:
+            self.executionState.writePID(force=True)
+            self.closeForced = False
+
+        # otherwise we continue as normal
+        else:
+            self.closeForced = True
+            self.isClosing   = True
+            self.close()
+
+        # load the ui file
         self.ui = uic.loadUi(
                                 os.path.join(
                                                 PYFARM,
@@ -135,22 +166,23 @@ class MainWindow(QtGui.QMainWindow):
         Used to handle the final user choices reguarding
         database, clients, etc.
         '''
-        for key, value in exitAnswers.items():
-            log.ui("Exit State Choice: %s -> %s" % (key, str(value)))
+        if not self.closeForced:
+            for key, value in exitAnswers.items():
+                log.ui("Exit State Choice: %s -> %s" % (key, str(value)))
 
         log.critical("Closing!")
         sys.exit()
 
     def closeEvent(self, event):
         '''When the ui is attempting to exit, run this first.  However, make sure we only do this once'''
-        exit = ui.Dialogs.CloseEvent()
-        self.connect(exit, QtCore.SIGNAL("state"), self.closeEventHandler)
-        exit.exec_()
-
-        if self.isClosing:
+        if self.isClosing or self.closeForced:
             self.close()
+            sys.exit()
 
         else:
+            exit = ui.Dialogs.CloseEvent()
+            self.connect(exit, QtCore.SIGNAL("state"), self.closeEventHandler)
+            exit.exec_()
             self.isClosing = True
             print "What would you like to do?: Save Job Database, Interface Settings,  Shutdown Remote Client Program"
             if event is 'manual': self.close()
@@ -481,38 +513,47 @@ if __name__ != '__MAIN__':
         splash = QtGui.QSplashScreen(pixmap)
         splash.show()
 
-        ###############################
-        # Unit Tests, for safety!
-        ###############################
-        testVerbosity = 2
+        if not UNITTESTS:
+            ###############################
+            # Unit Tests, for safety!
+            ###############################
+            testVerbosity = 0
 
-        if options.versionCheck:
-            from lib.test import ModuleImports
-            msg = "Running Unit Test: Version and Module Check"
+            if options.versionCheck:
+                # prepare test
+                from lib.test import ModuleImports
+                msg = "Running Unit Test: Version and Module Check"
+                splash.showMessage(msg, align)
+                log.info(msg)
+
+                # run test
+                test = unittest.TestLoader().loadTestsFromTestCase(ModuleImports.ModuleTests)
+                unittest.TextTestRunner(verbosity=testVerbosity).run(test)
+
+            # prepare test
+            from lib.test import ValidateLogging
+            msg = "Running Unit Test: Logging"
             splash.showMessage(msg, align)
             log.info(msg)
-            test = unittest.TestLoader().loadTestsFromTestCase(ModuleImports.ModuleTests)
+
+            # run test
+            test = unittest.TestLoader().loadTestsFromTestCase(ValidateLogging.Validate)
             unittest.TextTestRunner(verbosity=testVerbosity).run(test)
 
-        from lib.test import ValidateLogging
-        msg = "Running Unit Test: Logging"
-        splash.showMessage(msg, align)
-        log.info(msg)
-        test = unittest.TestLoader().loadTestsFromTestCase(ValidateLogging.Validate)
-        unittest.TextTestRunner(verbosity=testVerbosity).run(test)
+            # prepare test
+            from lib.test import ValidateNetConfig
+            msg = "Running Unit Test: Network Configuration"
+            splash.showMessage(msg, align)
+            log.info(msg)
 
-        from lib.test import ValidateNetConfig
-        msg = "Running Unit Test: Network Configuration"
-        splash.showMessage(msg, align)
-        log.info(msg)
-        test = unittest.TestLoader().loadTestsFromTestCase(ValidateNetConfig.Validate)
-        unittest.TextTestRunner(verbosity=testVerbosity).run(test)
-
-        splash.close()
+            # run test
+            test = unittest.TestLoader().loadTestsFromTestCase(ValidateNetConfig.Validate)
+            unittest.TextTestRunner(verbosity=testVerbosity).run(test)
 
         ###############################
         # Run UI
         ###############################
+        splash.close()
         main = MainWindow()
         main.show()
         sys.exit(app.exec_())

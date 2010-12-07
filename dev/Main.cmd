@@ -1,2 +1,2 @@
 @echo off
-python "..\Main.pyw"
+C:\Python26\python.exe "../Main.pyw"

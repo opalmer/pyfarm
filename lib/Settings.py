@@ -31,8 +31,6 @@ PYFARM = os.path.abspath(os.path.join(CWD, ".."))
 MODULE = os.path.basename(__file__)
 if PYFARM not in sys.path: sys.path.append(PYFARM)
 
-import lib
-
 class ReadConfig(object):
     '''Parse various configuration files'''
     @staticmethod
@@ -132,22 +130,11 @@ class Software(object):
     def __init__(self): pass
 
 
-class Storage(object):
-    '''
-    Create a direcectory and/or ensure that session
-    information for PyFarm can be stored locally for
-    use by PyFarm.
-
-    >>> store = Storage()
-    >>> store.createDirs()
-    '''
+class Export(object):
+    '''Used to export settings to an external file'''
     def __init__(self):
-       self.prefsRoot = os.path.join(os.getenv("HOME"), ".pyfarm")
+       pass
 
-    def createDirs(self):
-        '''Create preference directories'''
-        if not os.path.isdir(self.prefsRoot):
-            os.mkdirs(self.prefsRoot)
-
-        for dirname in ("pids", ):
-            os.mkdir(os.path.join(self.prefsRoot, dirname))
+    def write(self):
+        '''Out the current settings'''
+        pass

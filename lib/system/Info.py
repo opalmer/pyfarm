@@ -24,6 +24,7 @@ import sys
 import socket
 import fnmatch
 import platform
+import tempfile
 
 CWD    = os.path.dirname(os.path.abspath(__file__))
 PYFARM = os.path.abspath(os.path.join(CWD, "..", ".."))
@@ -34,8 +35,19 @@ from lib.system import includes
 from lib import Logger, Settings
 
 LOGLEVEL = 6
+log      = Logger.Logger(MODULE, LOGLEVEL)
 
-log = Logger.Logger(MODULE, LOGLEVEL)
+if os.name == "nt":
+    USER     = os.getenv('USERNAME')
+    HOME     = os.getenv('USERPROFILE', tempfile.gettempdir())
+    HOSTNAME = os.getenv('COMPUTERNAME', socket.gethostname())
+
+else:
+    USER     = os.getenv('USER')
+    HOME     = os.getenv('HOME', tempfile.gettempdir())
+    HOSTNAME = os.getenv('HOSTNAME', socket.gethostname())
+
+PYFARMHOME = os.path.join(HOME, '.pyfarm')
 
 class SystemInfo(object):
     '''Default system information object to query and store info about hardware and software'''
@@ -45,7 +57,6 @@ class SystemInfo(object):
             #cache   = str(process.readAll())
             log.notimplemented("SystemInfo not implemented for %s" % os.name)
             cache = None
-
         else:
             cache = None
 
@@ -53,6 +64,15 @@ class SystemInfo(object):
         self.hardware = Hardware(cache)
         self.software = Software(self.config, cache)
         #self.network = Network(self.config.netadapter, cache)
+
+    @staticmethod
+    def tmpdir(children=[]):
+        '''Given a list of children, return a full temporary path'''
+        path = TMPDIR
+        for child in children:
+            path = os.path.join(path, child)
+        return path
+
 
 class OperatingSystem(object):
     '''Query and return information about the operating system'''

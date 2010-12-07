@@ -21,6 +21,7 @@ PURPOSE: To query and return information about the local system
 '''
 import os
 import sys
+import signal
 
 from PyQt4 import QtCore
 
@@ -59,3 +60,11 @@ def SimpleCommand(cmd, all=False, debug=False):
 
     if all: return results
     else:   return results.split(os.linesep)[0]
+
+def killProcess(pid):
+    '''Kill process by id'''
+    if os.name == "nt":
+        SimpleCommand("taskkill /PID %i /F" % pid)
+
+    else:
+        os.kill(pid, 9)
