@@ -45,7 +45,7 @@ UNITTESTS = False
 import lib.net
 import cfg.resources_rc
 from lib.net import tcp, udp
-from lib import Logger, ui, Slots, Settings, File, system
+from lib import Logger, ui, Slots, Settings, Session, system
 
 # sestup logging
 log = Logger.Logger(MODULE, LOGLEVEL)
@@ -55,8 +55,11 @@ class MainWindow(QtGui.QMainWindow):
     def __init__(self):
         super(MainWindow, self).__init__()
         # set and read execution state first
-        self.executionState = File.StateDirectory(context=CONTEXT)
-        if not self.executionState.writePID():
+        self.pidFile = Session.State(context=CONTEXT)
+
+
+        overwritePID = False
+        if not self.pidFile.writePID():
             title  = "%s Is Already Running" % CONTEXT
             msg    = "PyFarm already seems to be open, terminate the running"
             msg   += " process if needed and continue?"
@@ -69,12 +72,10 @@ class MainWindow(QtGui.QMainWindow):
                                               )
             if msgBox == yes:
                 overwritePID = True
-            else:
-                overwritePID = False
 
         # if we overwrite the pid file, continue on as normal
         if overwritePID:
-            self.executionState.writePID(force=True)
+            self.pidFile.writePID(force=True)
             self.closeForced = False
 
         # otherwise we continue as normal
@@ -177,6 +178,7 @@ class MainWindow(QtGui.QMainWindow):
         '''When the ui is attempting to exit, run this first.  However, make sure we only do this once'''
         if self.isClosing or self.closeForced:
             self.close()
+            self.pidFile.close()
             sys.exit()
 
         else:

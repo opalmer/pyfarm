@@ -32,6 +32,10 @@ if PYFARM not in sys.path: sys.path.append(PYFARM)
 
 LOGLEVEL = 4
 
+from lib import Logger
+
+log = Logger.Logger(MODULE)
+
 def SimpleCommand(cmd, all=False, debug=False):
     '''
     By default this function will return the first results only
@@ -67,4 +71,7 @@ def killProcess(pid):
         SimpleCommand("taskkill /PID %i /F" % pid)
 
     else:
-        os.kill(pid, 9)
+        try:
+            os.kill(pid, 9)
+        except OSError:
+            log.error("Cannot kill a process that does not actually exist")

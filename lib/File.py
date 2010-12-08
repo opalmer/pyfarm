@@ -45,56 +45,6 @@ def mkdir(path):
         else:
             log.info("Created Directory: %s" % path)
 
-
-class StateDirectory(object):
-    '''
-    Read and write state information about the current
-    process.  Information such as process ids and minor settings will
-    be included.
-    '''
-    def __init__(self, context):
-        self.context  = "%s.%s" % (context, system.Info.HOSTNAME)
-        self.stateDir = os.path.join(system.Info.PYFARMHOME, 'state')
-        self.pidDir   = os.path.join(system.Info.PYFARMHOME, 'pid')
-        self.pidFile  = os.path.join(self.pidDir, '%s.pid' % self.context)
-
-        # create directories
-        mkdir(self.stateDir)
-        mkdir(self.pidDir)
-
-    def writePID(self, force=False):
-        '''Write the process ID to the directory'''
-        if os.path.isfile(self.pidFile) and not force:
-            log.warning("PID file found for %s, user input required" % os.getpid())
-            return False
-
-        elif os.path.isfile(self.pidFile) and force:
-            log.debug("Attempting to kill the process and remove the pid file")
-            if not self.pidExists(): pass # log warning of missing process
-            self._writePIDFile()
-
-        else:
-            log.info("Writing to PID %i File: %s" % (os.getpid(), self.pidFile))
-            self._writePIDFile()
-
-
-        return True
-
-    def pidExists(self):
-        '''Checks to see if the process list in the file is actually running'''
-        pidFile = open(self.pidFile, 'r')
-        lines   = pidFile.readlines()
-        pidFile.close()
-
-        pid = int(lines[0])
-        system.killProcess(pid)
-
-    def _writePIDFile(self):
-        '''Wrote the contents of the pid file'''
-        pidFile = open(self.pidFile, 'w')
-        pidFile.write(str(os.getpid()))
-        pidFile.close()
-
 class Tail(QtCore.QObject):
     '''
     Async file tail object, searches for and returns
