@@ -54,12 +54,11 @@ class MainWindow(QtGui.QMainWindow):
     '''This is the controlling class for the main gui'''
     def __init__(self):
         super(MainWindow, self).__init__()
-        # set and read execution state first
-        self.pidFile = Session.State(context=CONTEXT)
-
+        self.pidFile     = Session.State(context=CONTEXT)
+        self.closeForced = False
 
         overwritePID = False
-        if not self.pidFile.writePID():
+        if not self.pidFile.write():
             title  = "%s Is Already Running" % CONTEXT
             msg    = "PyFarm already seems to be open, terminate the running"
             msg   += " process if needed and continue?"
@@ -75,14 +74,8 @@ class MainWindow(QtGui.QMainWindow):
 
         # if we overwrite the pid file, continue on as normal
         if overwritePID:
-            self.pidFile.writePID(force=True)
+            self.pidFile.write(force=True)
             self.closeForced = False
-
-        # otherwise we continue as normal
-        else:
-            self.closeForced = True
-            self.isClosing   = True
-            self.close()
 
         # load the ui file
         self.ui = uic.loadUi(
@@ -171,23 +164,28 @@ class MainWindow(QtGui.QMainWindow):
             for key, value in exitAnswers.items():
                 log.ui("Exit State Choice: %s -> %s" % (key, str(value)))
 
+            log.info("Removing lock file")
+            self.pidFile.close()
+        else:
+            print "Force closed!"
+
         log.critical("Closing!")
         sys.exit()
 
     def closeEvent(self, event):
         '''When the ui is attempting to exit, run this first.  However, make sure we only do this once'''
         if self.isClosing or self.closeForced:
-            self.close()
             self.pidFile.close()
-            sys.exit()
 
         else:
             exit = ui.Dialogs.CloseEvent()
             self.connect(exit, QtCore.SIGNAL("state"), self.closeEventHandler)
             exit.exec_()
             self.isClosing = True
-            print "What would you like to do?: Save Job Database, Interface Settings,  Shutdown Remote Client Program"
-            if event is 'manual': self.close()
+
+            if event is 'manual':
+                log.debug("Manually closing")
+                self.close()
 
     def findHosts(self):
         '''Get hosts via broadcast packet, add them to self.hosts'''
@@ -526,31 +524,31 @@ if __name__ != '__MAIN__':
                 from lib.test import ModuleImports
                 msg = "Running Unit Test: Version and Module Check"
                 splash.showMessage(msg, align)
-                log.info(msg)
+                #log.info(msg)
 
                 # run test
-                test = unittest.TestLoader().loadTestsFromTestCase(ModuleImports.ModuleTests)
-                unittest.TextTestRunner(verbosity=testVerbosity).run(test)
+                #test = unittest.TestLoader().loadTestsFromTestCase(ModuleImports.ModuleTests)
+                #unittest.TextTestRunner(verbosity=testVerbosity).run(test)
 
             # prepare test
             from lib.test import ValidateLogging
             msg = "Running Unit Test: Logging"
             splash.showMessage(msg, align)
-            log.info(msg)
+            #log.info(msg)
 
             # run test
-            test = unittest.TestLoader().loadTestsFromTestCase(ValidateLogging.Validate)
-            unittest.TextTestRunner(verbosity=testVerbosity).run(test)
+            #test = unittest.TestLoader().loadTestsFromTestCase(ValidateLogging.Validate)
+            #unittest.TextTestRunner(verbosity=testVerbosity).run(test)
 
             # prepare test
             from lib.test import ValidateNetConfig
             msg = "Running Unit Test: Network Configuration"
             splash.showMessage(msg, align)
-            log.info(msg)
+            #log.info(msg)
 
             # run test
-            test = unittest.TestLoader().loadTestsFromTestCase(ValidateNetConfig.Validate)
-            unittest.TextTestRunner(verbosity=testVerbosity).run(test)
+            #test = unittest.TestLoader().loadTestsFromTestCase(ValidateNetConfig.Validate)
+            #unittest.TextTestRunner(verbosity=testVerbosity).run(test)
 
         ###############################
         # Run UI

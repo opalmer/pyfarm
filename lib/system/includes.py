@@ -75,3 +75,24 @@ def killProcess(pid):
             os.kill(pid, 9)
         except OSError:
             log.error("Cannot kill a process that does not actually exist")
+
+def processRunning(pid):
+    '''Return true if the requested process is running'''
+    pid = int(pid)
+    log.debug("Searching for proces state: %i" % pid)
+    if os.name == "nt":
+        log.notimplemented("Cannot retrieve process status on NT systems")
+
+    else:
+        try:
+            os.getpgid(pid)
+
+        except OSError:
+            log.debug("Process Is Stopped: %i" % pid)
+            return False
+
+        else:
+            log.debug("Process is Running: %i" % pid)
+            return True
+
+    log.debug("Finished search for process state")
