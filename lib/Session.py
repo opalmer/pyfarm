@@ -22,13 +22,12 @@ along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 '''
 import os
 import sys
-import linecache
 
 CWD    = os.path.dirname(os.path.abspath(__file__))
 PYFARM = os.path.abspath(os.path.join(CWD, ".."))
 MODULE = os.path.basename(__file__)
-if PYFARM not in sys.path: sys.path.append(PYFARM)
 
+if PYFARM not in sys.path: sys.path.append(PYFARM)
 from lib import Logger, File, system
 
 log = Logger.Logger(MODULE)
@@ -40,42 +39,24 @@ class State(object):
     be included in this file.
     '''
     def __init__(self, context):
-        self.context   = "%s.%s" % (context, system.Info.HOSTNAME)
-        self.stateDir  = os.path.join(system.Info.PYFARMHOME, 'state')
-        self.pidDir    = os.path.join(system.Info.PYFARMHOME, 'pid')
-        self.pidFile   = os.path.join(self.pidDir, '%s.pid' % self.context)
+        self.context  = "%s.%s" % (context, system.Info.HOSTNAME)
+        self.stateDir = os.path.join(system.Info.PYFARMHOME, 'state')
+        self.pidDir   = os.path.join(system.Info.PYFARMHOME, 'pid')
+        self.pidFile  = os.path.join(self.pidDir, '%s.pid' % self.context)
 
         # create directories
         File.mkdir(self.stateDir)
         File.mkdir(self.pidDir)
 
-    def write(self, force=False):
-        '''Write the process ID to the directory'''
-        if self.exists() and not force and not self.running():
-            log.warning("PID file found for %s, user input required" % os.getpid())
-            return False
+    def _writePIDFile(self):
+        '''Wrote the contents of the pid file'''
+        pidFile = open(self.pidFile, 'w')
+        pidFile.write(str(self.pid(live=True)))
+        pidFile.close()
 
-        elif self.exists() and force:
-            log.debug("Attempting to kill the process and remove the pid file")
-            if not self.running():
-                log.warning("Failed to find process, it must not be running")
-
-            self._writePIDFile()
-
-        else:
-            log.info("Writing to PID %i File: %s" % (os.getpid(), self.pidFile))
-            self._writePIDFile()
-
-        return True
-
-    def exists(self):
-        '''
-        Return true of the process id file exists
-        '''
-        if os.path.isfile(self.pidFile):
-            return True
-        else:
-            return False
+        if self.exists():
+            pid = self.pid()
+            log.debug("Success! Wrote pid %s to file" % pid)
 
     def running(self):
         '''
@@ -83,28 +64,58 @@ class State(object):
         is currently running
         '''
         if self.exists():
-            pid = open(self.pidFile, 'r').readlines()[0]
-            log.debug("Got pid from file: %s" % pid)
-            system.killProcess(pid)
+            pid = self.pid()
+            if system.processRunning(pid):
+                return True
 
         else:
             return False
 
-    def _writePIDFile(self):
-        '''Wrote the contents of the pid file'''
-        pidFile = open(self.pidFile, 'w')
-        pidFile.write(str(os.getpid()))
-        pidFile.close()
+    def write(self, force=False):
+        '''Write the process ID to the directory'''
+        if self.exists() and not force and not self.running():
+            log.warning("PID file found for %s, user input required" % self.pid(live=True))
 
+        elif self.exists() and force:
+            log.debug("Attempting to kill the process and remove the pid file")
+            self.kill()
+            self._writePIDFile()
+
+        else:
+            log.info("Writing to PID %i File: %s" % (self.pid(live=True), self.pidFile))
+            self._writePIDFile()
+
+    def exists(self):
+        '''Return true of the process id file exists'''
+        if os.path.isfile(self.pidFile):
+            return True
+        else:
+            return False
+
+    def kill(self):
+        '''Kill the currently running process'''
+        if self.running():
+            system.killProcess(self.pid())
+
+        else:
+            log.warning("Cannot kill a process that is not running")
+
+    def pid(self, live=False):
+        '''Get and return the process id'''
+        if not live:
+            return int(open(self.pidFile, 'r').readlines()[0])
+        else:
+            return os.getpid()
+
+    def remove(self):
+        '''Remove the default pid file'''
         if self.exists():
-            pid = open(self.pidFile, 'r').readlines()[0]
-            log.debug("Success! Wrote pid %s to file" % pid)
+            os.remove(self.pidFile)
 
     def close(self):
         '''Close out the state file(s) and remove them'''
         try:
-            if self.exists():
-                os.remove(self.pidFile)
+           self.remove()
 
         except:
             log.error("Failed to remove process state file!")

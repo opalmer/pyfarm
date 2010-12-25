@@ -57,25 +57,12 @@ class MainWindow(QtGui.QMainWindow):
         self.pidFile     = Session.State(context=CONTEXT)
         self.closeForced = False
 
-        overwritePID = False
-        if not self.pidFile.write():
-            title  = "%s Is Already Running" % CONTEXT
-            msg    = "PyFarm already seems to be open, terminate the running"
-            msg   += " process if needed and continue?"
-            log.warning("%s: User input required" % title)
-            yes = QtGui.QMessageBox.Yes
-            no  = QtGui.QMessageBox.No
-            msgBox = QtGui.QMessageBox.warning(
-                                                self, title, msg,
-                                                yes|no
-                                              )
-            if msgBox == yes:
-                overwritePID = True
+        #overwritePID = False
+        if self.pidFile.running() or self.pidFile.exists():
+            self.handlePid()
 
-        # if we overwrite the pid file, continue on as normal
-        if overwritePID:
-            self.pidFile.write(force=True)
-            self.closeForced = False
+        else:
+            self.pidFile.write()
 
         # load the ui file
         self.ui = uic.loadUi(
@@ -117,6 +104,25 @@ class MainWindow(QtGui.QMainWindow):
         self.config    = Settings.ReadConfig.general(CFG_GEN)
         self.slots     = Slots.Slots(self, self.config)
         self.runServers()
+
+    def handlePid(self):
+        '''Handle actions relating to the process id file'''
+        title  = "%s Is Already Running" % CONTEXT
+        msg    = "PyFarm already seems to be open, terminate the running"
+        msg   += " process if needed and continue?"
+        log.warning("%s: User input required" % title)
+        yes    = QtGui.QMessageBox.Yes
+        no     = QtGui.QMessageBox.No
+        msgBox = QtGui.QMessageBox.warning(
+                                            self, title, msg,
+                                            yes|no
+                                          )
+
+        if msgBox == yes:
+            self.pidFile.write(force=True)
+
+        else:
+            log.warning("Not overwriting PID file")
 
     def runServers(self):
         '''Run the background servers required to operate PyFarm'''
