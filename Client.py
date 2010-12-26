@@ -30,11 +30,12 @@ PYFARM    = CWD
 MODULE    = os.path.basename(__file__)
 CFG_ROOT  = os.path.join(PYFARM, "cfg")
 CFG_GEN   = os.path.join(CFG_ROOT, "general.ini")
+CONTEXT   = MODULE.split(".")[0]
 
 from lib.net.tcp.Queue import QueueClient
 
 from lib.net import tcp, udp
-from lib import Logger, Settings
+from lib import Logger, Settings, Session
 
 log = Logger.Logger(MODULE)
 
@@ -44,6 +45,25 @@ class Main(QtCore.QObject):
         self.masterHostname = ''
         self.masterAddress  = ''
         self.config         = Settings.ReadConfig.general(CFG_GEN)
+        self.pidFile        = Session.State(context=CONTEXT)
+
+        if self.pidFile.running() or self.pidFile.exists():
+            self.handlePid()
+
+        else:
+            self.pidFile.write()
+
+    def handlePid(self):
+        '''Handle actions relating to the process id file'''
+        msg = "You cannot run more than one client at once.  %s" % os.linesep
+        msg += "Would you like to shutdown the other client process? ([r]/n)"
+        response = raw_input(msg)
+
+        if response.lower == "y":
+            self.pidFile.write(force=True)
+        else:
+            log.critical("You can only run one client at a time")
+            sys.exit(1)
 
     def listenForBroadcast(self):
         '''

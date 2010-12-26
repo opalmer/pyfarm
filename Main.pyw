@@ -57,7 +57,6 @@ class MainWindow(QtGui.QMainWindow):
         self.pidFile     = Session.State(context=CONTEXT)
         self.closeForced = False
 
-        #overwritePID = False
         if self.pidFile.running() or self.pidFile.exists():
             self.handlePid()
 
