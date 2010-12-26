@@ -47,23 +47,33 @@ class Main(QtCore.QObject):
         self.config         = Settings.ReadConfig.general(CFG_GEN)
         self.pidFile        = Session.State(context=CONTEXT)
 
+    def handlePid(self):
+        '''Handle actions relating to the process id file'''
         if self.pidFile.running() or self.pidFile.exists():
-            self.handlePid()
+            msg = "You cannot run more than one client at once.  %s" % os.linesep
+            msg += "Would you like to shutdown the other client process? ([y]/n) "
+            response = raw_input(msg)
+
+            if response.strip().lower() == "y":
+                self.pidFile.write(force=True)
+                self.listenForBroadcast()
+
+            else:
+                log.critical("You can only run one client at a time")
+                sys.exit(1)
 
         else:
             self.pidFile.write()
+            self.listenForBroadcast()
 
-    def handlePid(self):
-        '''Handle actions relating to the process id file'''
-        msg = "You cannot run more than one client at once.  %s" % os.linesep
-        msg += "Would you like to shutdown the other client process? ([r]/n)"
-        response = raw_input(msg)
+    def stop(self):
+        '''Stop any currently running clients'''
+        log.info("Attempting to stop client process")
+        if self.pidFile.exists():
+            self.pidFile.kill()
 
-        if response.lower == "y":
-            self.pidFile.write(force=True)
-        else:
-            log.critical("You can only run one client at a time")
-            sys.exit(1)
+        log.info("Exiting")
+        sys.exit(0)
 
     def listenForBroadcast(self):
         '''
@@ -108,8 +118,23 @@ class Main(QtCore.QObject):
 
 
 if __name__ == '__main__':
-    app = QtCore.QCoreApplication(sys.argv)
-    log.debug("PID: %s" % os.getpid())
+    from optparse import OptionParser
+
+    parser = OptionParser()
+    parser.add_option(
+                        "--stop", dest="stop",
+                        default=False, action="store_true",
+                        help="Stop any currently running clients"
+                    )
+
+    (options, args) = parser.parse_args()
+    app  = QtCore.QCoreApplication(sys.argv)
     main = Main(app)
-    main.listenForBroadcast()
-    app.exec_()
+
+    if options.stop:
+        main.stop()
+
+    else:
+        main.handlePid()
+
+    sys.exit(app.exec_())

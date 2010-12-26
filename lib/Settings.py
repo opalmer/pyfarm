@@ -116,11 +116,8 @@ class ReadConfig(object):
                             'boldoff'  : boldoff,
                             'enabled'  : enabled,
                             'template' : string.Template(
-                                         '%s$time - $logger - %s%s%s - $message%s' % (
-                                                    coloron,  boldon,
-                                                    name.upper(), boldoff,
-                                                    coloroff)
-                                                )
+                                '$time - $logger - %s - $message' % name.upper()
+                            )
                          }
         return out
 

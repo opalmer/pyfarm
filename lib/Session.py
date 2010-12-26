@@ -90,6 +90,7 @@ class State(object):
         if os.path.isfile(self.pidFile):
             return True
         else:
+            log.warning("PID file does not exist")
             return False
 
     def kill(self):
@@ -99,6 +100,8 @@ class State(object):
 
         else:
             log.warning("Cannot kill a process that is not running")
+
+        self.remove()
 
     def pid(self, live=False):
         '''Get and return the process id'''
