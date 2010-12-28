@@ -64,7 +64,7 @@
           <item>
            <layout class="QVBoxLayout" name="layoutHostControls">
             <item>
-             <widget class="QTableWidget" name="networkTable">
+             <widget class="QTableView" name="networkTable">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
                 <horstretch>0</horstretch>
@@ -96,21 +96,6 @@
               <property name="selectionBehavior">
                <enum>QAbstractItemView::SelectRows</enum>
               </property>
-              <column>
-               <property name="text">
-                <string>IP Address</string>
-               </property>
-              </column>
-              <column>
-               <property name="text">
-                <string>Hostname</string>
-               </property>
-              </column>
-              <column>
-               <property name="text">
-                <string>Status</string>
-               </property>
-              </column>
              </widget>
             </item>
             <item>
@@ -270,6 +255,23 @@
               </property>
               <property name="text">
                <string>Add Host</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="hostRefresh">
+              <property name="font">
+               <font>
+                <pointsize>10</pointsize>
+                <weight>50</weight>
+                <bold>false</bold>
+               </font>
+              </property>
+              <property name="statusTip">
+               <string>Manually add a host</string>
+              </property>
+              <property name="text">
+               <string>Refresh</string>
               </property>
              </widget>
             </item>

@@ -2,7 +2,7 @@
 *.e4p
 *_eric*
 .eric4project
-test.sql
+*sql*
 *.log*
 *.pyc
 *.swp

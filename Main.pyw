@@ -35,6 +35,7 @@ CFG_ROOT  = os.path.join(PYFARM, "cfg")
 ICN_ROOT  = os.path.join(PYFARM, "icons")
 QUE_ICN   = os.path.join(ICN_ROOT, "queue")
 CFG_GEN   = os.path.join(CFG_ROOT, "general.ini")
+SQL_DB    = os.path.join(PYFARM, "PyFarmDB.sql")
 DEVELOPER = 'Oliver Palmer'
 HOMEPAGE  = 'http://www.pyfarm.net'
 VERSION   = '0.5.0'
@@ -85,6 +86,13 @@ class MainWindow(QtGui.QMainWindow):
         self.ui.statusDock.setWindowTitle("Status Console")
         # END layout
 
+        # setup sqllite tables
+        netTable        = self.ui.networkTable
+        SqlTable        = ui.SqlTables
+        columns         = ("hostname", "ip", "status")
+        sortCol         = "hostname"
+        self.hostTable  = SqlTable.Manager(netTable, "hosts", SQL_DB, columns, sort=sortCol)
+
         # add menu to submit button
         self.submitMenu = QtGui.QMenu()
         self.submitMenu.addAction("Run")
@@ -98,11 +106,20 @@ class MainWindow(QtGui.QMainWindow):
                     )
         # END submit menu
 
+        self.connect(
+                        self.ui.hostRefresh,
+                        QtCore.SIGNAL("pressed()"),
+                        self.refreshHosts
+                    )
+
         # general setup and variables
         self.isClosing = False
         self.config    = Settings.ReadConfig.general(CFG_GEN)
         self.slots     = Slots.Slots(self, self.config)
         self.runServers()
+
+    def refreshHosts(self):
+        self.hostTable.refresh()
 
     def handlePid(self):
         '''Handle actions relating to the process id file'''

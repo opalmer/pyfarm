@@ -50,7 +50,7 @@ class Main(QtCore.QObject):
     def handlePid(self):
         '''Handle actions relating to the process id file'''
         if self.pidFile.running() or self.pidFile.exists():
-            msg = "You cannot run more than one client at once.  %s" % os.linesep
+            msg = "%s You cannot run more than one client at once.%s" % (os.linesep, os.linesep)
             msg += "Would you like to shutdown the other client process? ([y]/n) "
             response = raw_input(msg)
 
@@ -71,6 +71,7 @@ class Main(QtCore.QObject):
         log.info("Attempting to stop client process")
         if self.pidFile.exists():
             self.pidFile.kill()
+            self.pidFile.remove()
 
         log.info("Exiting")
         sys.exit(0)
