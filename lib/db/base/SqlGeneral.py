@@ -31,9 +31,10 @@ DB_XML   = os.path.join(PYFARM, "cfg", "dbbase.xml")
 LOGLEVEL = 2
 if PYFARM not in sys.path: sys.path.append(PYFARM)
 
-from lib import Logger, db
+from lib import Logger
 
 log = Logger.Logger(MODULE, LOGLEVEL)
+log.deprecated("Outdated module")
 
 def DBDump(db, location):
     '''Dump the given database to a location'''
@@ -41,4 +42,4 @@ def DBDump(db, location):
 
 if __name__ != "__MAIN__":
     sql = os.path.join(PYFARM, "PyFarmDB.sql")
-    print db.connect(sql, clean=False)
+    db.connect(sql, clean=False)

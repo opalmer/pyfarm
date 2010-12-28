@@ -25,4 +25,10 @@ import sys
 CWD    = os.path.dirname(os.path.abspath(__file__))
 PYFARM = os.path.abspath(os.path.join(CWD, "..", "..", ".."))
 MODULE = os.path.basename(__file__)
+LOGLEVEL = 2
 if PYFARM not in sys.path: sys.path.append(PYFARM)
+
+from lib import Logger
+
+log = Logger.Logger(MODULE, LOGLEVEL)
+log.deprecated("Outdated module")

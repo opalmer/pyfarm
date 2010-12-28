@@ -54,7 +54,6 @@ class Manager(object):
         self.columns   = columns
         self.sqlModel  = QtSql.QSqlTableModel()
         self.sqlTable  = QtSql.QSqlDatabase.addDatabase("QSQLITE")
-
         query = "SELECT %s FROM %s" % (','.join(columns), self.tableName)
 
         # create global column variables

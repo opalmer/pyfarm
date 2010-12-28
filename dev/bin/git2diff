@@ -1,0 +1,15 @@
+#!/usr/bin/env python
+
+import os
+import sys
+
+# diff is called by git with 7 parameters:
+# path old-file old-hex old-mode new-file new-hex new-mode
+
+if os.name == "posix":
+    cmd = "xxdiff %s %s" % (sys.argv[2], sys.argv[5])
+    print "Running: %s" % cmd
+    os.system(cmd)
+
+else:
+    print "git2diff not wrapped for %s" % os.name

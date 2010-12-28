@@ -36,7 +36,7 @@ from lib import Logger
 
 log = Logger.Logger("db.includes.py", LOGLEVEL)
 
-def connect(dbFile, clean=False):
+def connect(dbFile=DB_XML, clean=False):
     '''
     Connect to the given database file and ensure all initial
     conditions and required tables are met.
@@ -74,7 +74,7 @@ def connect(dbFile, clean=False):
                 result = query.exec_(QtCore.QString(script))
                 if result:
                     log.info("Creating table %s" % tableName)
-        return True
+        return db
 
     else:
         return db.lastError()
