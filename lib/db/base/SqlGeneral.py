@@ -31,46 +31,9 @@ DB_XML   = os.path.join(PYFARM, "cfg", "dbbase.xml")
 LOGLEVEL = 2
 if PYFARM not in sys.path: sys.path.append(PYFARM)
 
-from lib import Logger
+from lib import Logger, db
 
 log = Logger.Logger(MODULE, LOGLEVEL)
-
-def DBSetup(dbFile=":memory:", new=False):
-    '''Setup the database and the default tables'''
-    if new and os.path.isfile(dbFile):
-        log.info("Removing old database: %s" % dbFile)
-        os.remove(dbFile)
-
-    log.info("Parsing DB XML: %s" % DB_XML)
-    xml = minidom.parse(DB_XML)
-    sql = sqlite3.connect(dbFile)
-    db  = sql.cursor()
-
-    for element in xml.getElementsByTagName("table"):
-        script    = ""
-        tableName = element.getAttribute("name")
-        script += "CREATE TABLE IF NOT EXISTS %s (" % tableName
-
-        # iterate over each columns
-        columns = []
-        for column in element.getElementsByTagName("column"):
-            colName = column.getAttribute("name")
-            colType = column.getAttribute("type")
-            columns.append("%s %s" % (colName, colType))
-
-        # create the table, if we have added columns
-        if len(columns):
-            log.info("Creating table %s" % tableName)
-            script += ",".join(columns)
-            script += ");"
-
-            # execute the generated script
-            db.executescript(script)
-            sql.commit()
-
-    # close the table
-    db.close()
-    return dbFile
 
 def DBDump(db, location):
     '''Dump the given database to a location'''
@@ -78,4 +41,4 @@ def DBDump(db, location):
 
 if __name__ != "__MAIN__":
     sql = os.path.join(PYFARM, "PyFarmDB.sql")
-    DBSetup(sql, new=True)
+    print db.connect(sql, clean=False)
