@@ -122,11 +122,6 @@ class ReadConfig(object):
         return out
 
 
-class Software(object):
-    '''Find and return information about software installed on the system'''
-    def __init__(self): pass
-
-
 class Export(object):
     '''Used to export settings to an external file'''
     def __init__(self):
@@ -135,3 +130,36 @@ class Export(object):
     def write(self):
         '''Out the current settings'''
         pass
+
+
+class StatusLevel(object):
+    '''
+    Individual status level containing specific
+    information pretaining to a status level
+    '''
+    def __init__(self, dom):
+        self.id   = int(dom.getAttribute("id"))
+        self.name = dom.getAttribute("string")
+        self.fg   = dom.getAttribute("colorFG")
+        self.bg   = dom.getAttribute("colorBG")
+
+
+class Status(object):
+    '''Given the status xml, read and return individual status levels'''
+    def __init__(self, config):
+        self.levels = {}
+        self.config = minidom.parse(config)
+
+        for lvl in self.config.getElementsByTagName("level"):
+            level = StatusLevel(lvl)
+            self.levels[level.id] = level
+
+    def level(self, levelId):
+        '''Return a status level'''
+        if type(levelId) == int:
+            return self.levels[levelId]
+
+        elif type(levelId) == str:
+            for level in self.levels:
+                if levelId.upper() == level.name.upper():
+                    return level

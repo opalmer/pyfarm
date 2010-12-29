@@ -29,6 +29,7 @@ CWD      = os.path.dirname(os.path.abspath(__file__))
 PYFARM   = os.path.abspath(os.path.join(CWD, "..", ".."))
 MODULE   = os.path.basename(__file__)
 DB_XML   = os.path.join(PYFARM, "cfg", "dbbase.xml")
+DB_SQL   = os.path.join(PYFARM, "PyFarmDB.sql")
 LOGLEVEL = 2
 if PYFARM not in sys.path: sys.path.append(PYFARM)
 
@@ -36,19 +37,24 @@ from lib import Logger
 
 log = Logger.Logger("db.includes.py", LOGLEVEL)
 
-def connect(dbFile=DB_XML, clean=False):
+def connect(dbFile=DB_SQL, clean=False):
     '''
     Connect to the given database file and ensure all initial
     conditions and required tables are met.
     '''
+    createdDB = False
     if clean and os.path.isfile(dbFile):
         log.warning("Removing File: %s" % dbFile)
         os.remove(dbFile)
+
+    elif not os.path.isfile(dbFile):
+        createdDB = True
 
     db = QtSql.QSqlDatabase.addDatabase("QSQLITE")
     db.setDatabaseName(dbFile)
 
     if db.open():
+        log.info("Connected to DB: %s" % dbFile)
         xml   = minidom.parse(DB_XML)
         query = QtSql.QSqlQuery(db)
 
@@ -71,9 +77,9 @@ def connect(dbFile=DB_XML, clean=False):
                 script += ");"
 
                 # execute the generated script
-                result = query.exec_(QtCore.QString(script))
-                if result:
-                    log.info("Creating table %s" % tableName)
+                results = query.exec_(QtCore.QString(script))
+                if createdDB:
+                    log.info("Created table: %s" % tableName)
         return db
 
     else:

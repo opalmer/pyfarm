@@ -29,13 +29,9 @@
         <column name="ip" type="str" />
         <column name="mac" type="str" />
         <column name="status" type="int" />
-        <column name="uptime" type="int" />
         <column name="frames_complete" type="int" />
         <column name="frames_failed" type="int" />
         <column name="frames_rendering" type="int" />
-        <column name="cpus" type="int" />
-        <column name="ram_total" type="int" />
-        <column name="ram_used" type="int" />
     </table>
     <table name="software">
         <column name="ip" type="str" />
