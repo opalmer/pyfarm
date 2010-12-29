@@ -80,6 +80,11 @@ def connect(dbFile=DB_SQL, clean=False):
                 results = query.exec_(QtCore.QString(script))
                 if createdDB:
                     log.info("Created table: %s" % tableName)
+
+        # performance updates
+        query.exec_("PRAGMA synchronous=OFF")
+        query.exec_("PRAGMA count_changes=OFF")
+
         return db
 
     else:

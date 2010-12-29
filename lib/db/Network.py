@@ -23,6 +23,8 @@ along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 import os
 import sys
 
+from PyQt4 import QtSql
+
 CWD      = os.path.dirname(os.path.abspath(__file__))
 PYFARM   = os.path.abspath(os.path.join(CWD, "..", ".."))
 MODULE   = os.path.basename(__file__)
@@ -32,15 +34,33 @@ if PYFARM not in sys.path: sys.path.append(PYFARM)
 
 import includes as db
 
-def addHost(host, ip, mac):
+SQL = db.connect()
+
+def addHost(host, ip, mac, status=0, fComplete=0, fFailed=0, fRendering=0):
     '''
     Add a host to the database and ensure it
     is only created once.  This function assumes
     the host you are adding is a "new" host.
     '''
-    sqlite = db.connect()
+    i     = 0
+    hosts = []
+    query = QtSql.QSqlQuery(SQL)
+    query.exec_("SELECT hostname FROM hosts")
 
-    # IF host not in database, add it
-    # OTHERWISE, complain!
+    while query.next():
+        hosts.append(query.value(i).toString())
 
-addHost()
+    # if the new host is not in hosts, add it
+    if host not in hosts:
+        s = "('%s', '%s', '%s', %i, %i, %i, %i)" % (host, ip, mac, status, fComplete, fFailed, fRendering)
+        query.exec_("INSERT INTO hosts VALUES %s" % s)
+
+
+if __name__ == '__main__':
+    import time
+    s = time.time()
+    for i in range(50):
+        q = time.time()
+        addHost("hostx%i" % i, "0.0.0.0", "a")
+        print "Query: %f" % (time.time()-q)
+    print "Elapsed: %f" % (time.time()-s)
