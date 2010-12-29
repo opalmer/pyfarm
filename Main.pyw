@@ -46,10 +46,11 @@ UNITTESTS = False
 import lib.net
 import cfg.resources_rc
 from lib.net import tcp, udp
-from lib import Logger, ui, Slots, Settings, Session, system
+from lib import db, Logger, ui, Slots, Settings, Session, system
 
 # sestup logging
 log = Logger.Logger(MODULE, LOGLEVEL)
+DB  = db.connect()
 
 class MainWindow(QtGui.QMainWindow):
     '''This is the controlling class for the main gui'''
@@ -91,7 +92,7 @@ class MainWindow(QtGui.QMainWindow):
         SqlTable        = ui.SqlTables
         columns         = ("hostname", "ip", "status")
         sortCol         = "hostname"
-        self.hostTable  = SqlTable.Manager(netTable, "hosts", SQL_DB, columns, sort=sortCol)
+        self.hostTable  = SqlTable.Manager(DB, netTable, "hosts", columns, sort=sortCol)
 
         # add menu to submit button
         self.submitMenu = QtGui.QMenu()
@@ -518,7 +519,6 @@ if __name__ != '__MAIN__':
     (options, args) = parser.parse_args()
 
     if options.testing:
-        print "============================"
         log.warning("Entering testing mode")
         test = Testing()
         test.run()
@@ -527,13 +527,7 @@ if __name__ != '__MAIN__':
         ###############################
         # Event Loop Start
         ###############################
-        log.debug("PID: %s" % os.getpid())
         app    = QtGui.QApplication(sys.argv)
-
-        align  = Qt.AlignBottom
-        pixmap = QtGui.QPixmap(os.path.join(ICN_ROOT, "splash.png"))
-        splash = QtGui.QSplashScreen(pixmap)
-        splash.show()
 
         if not UNITTESTS:
             ###############################
@@ -545,7 +539,6 @@ if __name__ != '__MAIN__':
                 # prepare test
                 from lib.test import ModuleImports
                 msg = "Running Unit Test: Version and Module Check"
-                splash.showMessage(msg, align)
                 #log.info(msg)
 
                 # run test
@@ -555,7 +548,6 @@ if __name__ != '__MAIN__':
             # prepare test
             from lib.test import ValidateLogging
             msg = "Running Unit Test: Logging"
-            splash.showMessage(msg, align)
             #log.info(msg)
 
             # run test
@@ -565,7 +557,6 @@ if __name__ != '__MAIN__':
             # prepare test
             from lib.test import ValidateNetConfig
             msg = "Running Unit Test: Network Configuration"
-            splash.showMessage(msg, align)
             #log.info(msg)
 
             # run test
@@ -575,7 +566,6 @@ if __name__ != '__MAIN__':
         ###############################
         # Run UI
         ###############################
-        splash.close()
         main = MainWindow()
         main.show()
         sys.exit(app.exec_())
