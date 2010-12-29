@@ -50,23 +50,6 @@ class BroadcastSender(QtCore.QThread):
         self.netinfo  = system.Info.Network()
         self.log      = Logger.Logger("Broadcast.BroadcastSender", LOGLEVEL)
 
-        # network information
-        #self.address  = netinfo.ip()
-
-        # regular expression ip matching
-#        isLocalhost = re.compile(r"""(127[.]0[.](?:0|1)[.]1)""")
-#        isIP = re.compile(r"""(\d{1,3}[.]\d{1,3}[.]\d{1,3}[.]\d{1,3})""")
-#        isSubnet = re.compile(r"""((?:255|0)[.](?:255|0)[.](?:255|0)[.](?:255|0))""")
-#
-#        # for each found address, add it to our addr. list
-#        for address in [ str(addr.toString()) for addr in QtNetwork.QHostInfo.fromName(self.hostname).addresses() ]:
-#            if not isLocalhost.match(address) and not isSubnet.match(address) and isIP.match(address):
-#                addresses.append(address)
-#
-#        # reformat address list and print debug info
-#        self.addresses = ','.join(addresses)
-#        self.log.debug(self.addresses)
-
     def run(self):
         '''Start the broadcast thread and setup the outgoing connection'''
         self.log.netclient("Broadcasting")
@@ -125,8 +108,7 @@ class BroadcastReceiever(QtCore.QThread):
             ip     = str(data[1].toString())
             msg    = str(data[0])
 
-        self.log.debug("Broadcast Master: %s" % ip)
-        self.log.debug("Broadcast Message: %s" % msg)
+        self.log.netclient("Host: %s IP: %s" % (msg, ip))
         self.emit(QtCore.SIGNAL("masterFound"), (msg, ip))
 
     def quit(self):

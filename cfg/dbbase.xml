@@ -27,7 +27,6 @@
     <table name="hosts">
         <column name="hostname" type="str" />
         <column name="ip" type="str" />
-        <column name="mac" type="str" />
         <column name="status" type="int" />
         <column name="frames_complete" type="int" />
         <column name="frames_failed" type="int" />

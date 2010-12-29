@@ -35,7 +35,6 @@ CFG_ROOT  = os.path.join(PYFARM, "cfg")
 ICN_ROOT  = os.path.join(PYFARM, "icons")
 QUE_ICN   = os.path.join(ICN_ROOT, "queue")
 CFG_GEN   = os.path.join(CFG_ROOT, "general.ini")
-SQL_DB    = os.path.join(PYFARM, "PyFarmDB.sql")
 DEVELOPER = 'Oliver Palmer'
 HOMEPAGE  = 'http://www.pyfarm.net'
 VERSION   = '0.5.0'
@@ -50,7 +49,7 @@ from lib import db, Logger, ui, Slots, Settings, Session, system
 
 # sestup logging
 log = Logger.Logger(MODULE, LOGLEVEL)
-DB  = db.connect()
+SQL = db.connect()
 
 class MainWindow(QtGui.QMainWindow):
     '''This is the controlling class for the main gui'''
@@ -92,7 +91,7 @@ class MainWindow(QtGui.QMainWindow):
         SqlTable        = ui.SqlTables
         columns         = ("hostname", "ip", "status")
         sortCol         = "hostname"
-        self.hostTable  = SqlTable.Manager(DB, netTable, "hosts", columns, sort=sortCol)
+        self.hostTable  = SqlTable.Manager(SQL, netTable, "hosts", columns, sort=sortCol)
 
         # add menu to submit button
         self.submitMenu = QtGui.QMenu()
@@ -184,8 +183,8 @@ class MainWindow(QtGui.QMainWindow):
         database, clients, etc.
         '''
         if not self.closeForced:
-            for key, value in exitAnswers.items():
-                log.ui("Exit State Choice: %s -> %s" % (key, str(value)))
+        #    for key, value in exitAnswers.items():
+         #       log.ui("Exit State Choice: %s -> %s" % (key, str(value)))
 
             log.info("Removing lock file")
             self.pidFile.close()
@@ -201,9 +200,9 @@ class MainWindow(QtGui.QMainWindow):
             self.pidFile.close()
 
         else:
-            exit = ui.Dialogs.CloseEvent()
-            self.connect(exit, QtCore.SIGNAL("state"), self.closeEventHandler)
-            exit.exec_()
+            #exit = ui.Dialogs.CloseEvent()
+            #self.connect(exit, QtCore.SIGNAL("state"), self.closeEventHandler)
+            #exit.exec_()
             self.isClosing = True
 
             if event is 'manual':
@@ -212,27 +211,30 @@ class MainWindow(QtGui.QMainWindow):
 
     def findHosts(self):
         '''Get hosts via broadcast packet, add them to self.hosts'''
-        # 1) Start timer
-        # 2) Run broadcast
-        # 3) Kill broadcast after timer expires
         self.broadcast = udp.Broadcast.BroadcastSender(self.config)
-        self.connect(self.broadcast, SIGNAL("client-address"), self.hostFound)
-        self.connect(self.broadcast, SIGNAL("started()"), self.hostSearchStarted)
         self.broadcast.run()
 
-    def hostFound(self, host):
-        '''When a host is found, run the appropriate actions'''
-        log.netclient("Found host: %s" % host)
+    def addHost(self, hostname, ip):
+        '''Add a host to the database and refresh the ui'''
+        log.debug("Attempting to add %s (%s) to database" % (hostname, ip))
+        if not db.Network.hostExists(SQL, hostname):
+            log.info("Added Client: %s" % hostname)
+            msg = "Added Host: %s" % hostname
+            self.updateConsole("client", msg, color='green')
+            db.Network.addHost(SQL, hostname, ip)
+            self.refreshHosts()
+        else:
+            msg = "Host Already In Database: %s" % hostname
+            self.updateConsole("client", msg, color='red')
+            log.warning(msg)
 
-    def hostSearchStarted(self):
-        print "Running"
 
+    def globalPoint(self, widget, point):
+        '''Return the global position for a given point on a widget'''
+        return widget.mapToGlobal(point)
 #################################
 ### BEGIN Context Menus
 #################################
-#    def globalPoint(self, widget, point):
-#        '''Return the global position for a given point'''
-#        return widget.mapToGlobal(point)
 #
 #    def CreateContextMenus(self):
 #        '''

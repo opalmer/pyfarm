@@ -22,6 +22,7 @@ of queue information.
 '''
 import os
 import sys
+import fnmatch
 
 from PyQt4 import QtCore, QtNetwork
 
@@ -45,7 +46,7 @@ class Request(QtCore.QObject):
     '''
     def __init__(self, request, values, logName="tcp.Request", parent=None):
         super(Request, self).__init__(parent)
-        self.log = Logger.Logger(logName)
+        self.log    = Logger.Logger(logName)
         self.socket = QtNetwork.QTcpSocket()
 
         self.connect(self.socket, QtCore.SIGNAL("connected()"), self.sendRequest)
@@ -123,24 +124,30 @@ class QueueClient(QtCore.QObject):
     def __init__(self, master, port=65501, parent=None):
         super(QueueClient, self).__init__(parent)
         self.master = master
-        self.port = port
-        self.log = Logger("Queue.Client")
+        self.port   = port
+        self.log    = Logger.Logger("Queue.Client")
 
-    def addClient(self, hostname, ip):
+    def addClient(self, new=True):
         '''Add the given client to the master'''
         netinfo = system.Info.Network()
-        request = Request(
-                            "CLIENT_NEW",
-                            (netinfo.hostname(), netinfo.ip()),
-                            logName="QueueClient.Request"
-                          )
+        if new:
+            request = Request(
+                                "CLIENT_NEW",
+                                (netinfo.hostname(), netinfo.ip()),
+                                logName="QueueClient.Request"
+                            )
+        else:
+            request = Request(
+                                "CLIENT_CONNECTED",
+                                (netinfo.hostname(), netinfo.ip()),
+                                logName="QueueClient.Request"
+                             )
         self.connect(request, QtCore.SIGNAL("RESPONSE"), self.readResponse)
         request.send(self.master, self.port)
 
     def readResponse(self, response):
         '''Process the response from the server'''
         self.log.netclient("Master responded: %s" % response)
-
 
 class QueueServerThread(QtCore.QThread):
     '''
@@ -152,7 +159,7 @@ class QueueServerThread(QtCore.QThread):
         self.socketId = socketId
         self.parent   = parent
         self.main     = main
-        self.log      = Logger("Queue.ServerThread")
+        self.log      = Logger.Logger("Queue.ServerThread")
 
     def run(self):
         self.log.debug("Thread started")
@@ -188,32 +195,33 @@ class QueueServerThread(QtCore.QThread):
             stream >> action
             self.log.netclient("Receieved Signal: %s" % action)
 
-            if action == "CLIENT_NEW":
+            if fnmatch.fnmatch(action, "CLIENT_*"):
                 hostname = QtCore.QString()
                 address = QtCore.QString()
                 stream >> hostname >> address
-                self.log.netclient("Hostname: %s" % hostname)
-                self.log.netclient("Addrss: %s" % address)
-                self.main.updateConsole(
-                                            "new client", "Hostname: %s, IP: %s" %
-                                            (hostname, address),
-                                            "green"
-                                        )
 
-            # final send a back the original host
-            self.log.fixme("NOT SENDING REPLY!")
-            self.sendReply(socket, action, options)
+                if action == "CLIENT_NEW":
+                    self.log.netclient("Host: %s IP: %s" % (hostname, address))
+                    self.main.addHost(hostname, address)
+
+                elif action == "CLIENT_CONNECTED":
+                    msg = "%s's master is already %s" % (hostname, system.Info.HOSTNAME)
+                    self.main.updateConsole("client", msg, color='orange')
+                    self.main.addHost(hostname, address)
+
+            self.sendReply(socket, action)
             socket.waitForDisconnected()
 
-    def sendReply(self, socket, action, options):
+    def sendReply(self, socket, action):
         reply = QtCore.QByteArray()
         stream = QtCore.QDataStream(reply, QtCore.QIODevice.WriteOnly)
         stream.setVersion(STREAM_VERSION)
         stream.writeUInt16(0)
-        stream << action << options
+        stream << action
         stream.device().seek(0)
         stream.writeUInt16(reply.size() - UNIT16)
         socket.write(reply)
+
 
 class QueueServer(QtNetwork.QTcpServer):
     '''

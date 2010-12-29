@@ -19,12 +19,15 @@ PURPOSE: To query and return information about the local system
     You should have received a copy of the GNU Lesser General Public License
     along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 '''
+import re
 import os
 import sys
 import socket
 import fnmatch
 import platform
 import tempfile
+
+from PyQt4 import QtNetwork
 
 CWD    = os.path.dirname(os.path.abspath(__file__))
 PYFARM = os.path.abspath(os.path.join(CWD, "..", ".."))
@@ -62,8 +65,7 @@ class SystemInfo(object):
 
         self.config   = Settings.ReadConfig.general(configDir)
         self.hardware = Hardware(cache)
-        self.software = Software(self.config, cache)
-        #self.network = Network(self.config.netadapter, cache)
+        self.network  = Network()
 
     @staticmethod
     def tmpdir(children=[]):
@@ -210,16 +212,26 @@ class Network(object):
         self.adapter = adapter
         self.cache   = cache
 
+    def _ip(self):
+        '''Return the best guess ip via qt'''
+        for iface in QtNetwork.QNetworkInterface.allInterfaces():
+            for addr in iface.addressEntries():
+                hostAddr = addr.ip()
+                if hostAddr.protocol() == QtNetwork.QAbstractSocket.IPv4Protocol:
+                    ip = hostAddr.toString()
+                    if self._validAddress(ip):
+                        return ip
+
     def ip(self):
         '''Return the ip address'''
-        results = None
-        if os.name == "posix":
-            query = "ifconfig %s | grep 'inet addr' | gawk -F: '{print $2}' | gawk '{print $1}'" % self.adapter
-            results = includes.SimpleCommand(query)
-        else:
-            results = socket.gethostbyname(self.hostname())
+        return self._ip()
+        #results = None
+        #if os.name == "posix":
+            #results = self._ip()
+        #else:
+            #results = socket.gethostbyname(self.hostname())
 
-        return results
+        #return results
 
     def subnet(self):
         '''Return subnet information for the adapter'''
@@ -232,38 +244,16 @@ class Network(object):
 
         return results
 
-    def _validateHostname(self, name):
+    def _validAddress(self, ip):
         '''
-        Ensure that the given name is a proper hostname
-        if not attempt to return a more valid entry
+        Return true if the address is considered valid.
+        Addresses matching localhost ips will not be considered.
         '''
-        if not name or fnmatch.fnmatch(name, "*localhost*"):
-            name = platform.node()
-
-        if not name or fnmatch.fnmatch(name, "*localhost*"):
-            try:    name = socket.getfqdn()
-            except: name = None
-
-        return name
+        if not re.match(r'''127[.]0[.][0-9][.][0-9]''', ip):
+            return True
+        else:
+            return False
 
     def hostname(self):
         '''Return the hostname'''
-        results = None
-        if os.name == "posix" or os.name == "nt":
-            results = includes.SimpleCommand("hostname")
-
-        else:
-            try:    results = socket.getfqdn()
-            except: results = None
-
-        return self._validateHostname(results)
-
-    def mac(self):
-        '''Return mac address for the adapter'''
-        results = None
-        if os.name == "posix":
-            results = includes.SimpleCommand("ifconfig %s | grep 'Link encap' | awk '{print $5}'" % self.adapter)
-        else:
-            log.notimplemented("mac not implemented for %s" % os.name)
-
-        return results
+        return HOSTNAME

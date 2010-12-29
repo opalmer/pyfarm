@@ -28,25 +28,33 @@ from PyQt4 import QtSql
 CWD      = os.path.dirname(os.path.abspath(__file__))
 PYFARM   = os.path.abspath(os.path.join(CWD, "..", ".."))
 MODULE   = os.path.basename(__file__)
-DB_XML   = os.path.join(PYFARM, "cfg", "dbbase.xml")
 LOGLEVEL = 2
 if PYFARM not in sys.path: sys.path.append(PYFARM)
 
-def addHost(host, ip, mac, status=0, fComplete=0, fFailed=0, fRendering=0):
+def addHost(sql, host, ip, status=0, fComplete=0, fFailed=0, fRendering=0):
     '''
     Add a host to the database and ensure it
     is only created once.  This function assumes
     the host you are adding is a "new" host.
     '''
+    # if the new host is not in hosts, add it
+    if not hostExists(sql, host):
+        query = QtSql.QSqlQuery(sql)
+        s = "('%s', '%s', %i, %i, %i, %i)" % (host, ip, status, fComplete, fFailed, fRendering)
+        query.exec_("INSERT INTO hosts VALUES %s" % s)
+
+def hostExists(sql, host):
+    '''Return true if the given host is in the database'''
     i     = 0
     hosts = []
-    query = QtSql.QSqlQuery(SQL)
+    query = QtSql.QSqlQuery(sql)
     query.exec_("SELECT hostname FROM hosts")
 
     while query.next():
         hosts.append(query.value(i).toString())
+        i += 1
 
-    # if the new host is not in hosts, add it
     if host not in hosts:
-        s = "('%s', '%s', '%s', %i, %i, %i, %i)" % (host, ip, mac, status, fComplete, fFailed, fRendering)
-        query.exec_("INSERT INTO hosts VALUES %s" % s)
+        return False
+    else:
+        return True

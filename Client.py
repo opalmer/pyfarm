@@ -52,7 +52,9 @@ class Main(QtCore.QObject):
         if self.pidFile.running() or self.pidFile.exists():
             msg = "%s You cannot run more than one client at once.%s" % (os.linesep, os.linesep)
             msg += "Would you like to shutdown the other client process? ([y]/n) "
-            response = raw_input(msg)
+            #response = raw_input(msg)
+            response = "y"
+            log.warning("Forced overwrite")
 
             if response.strip().lower() == "y":
                 self.pidFile.write(force=True)
@@ -106,16 +108,15 @@ class Main(QtCore.QObject):
 
         # if new hostname OR address, update log and
         #  refresh services
+        portNum = self.config['servers']['queue']
+        queue   = tcp.Queue.QueueClient(self.masterAddress, port=portNum)
         if newName or newAddr:
-            log.netserver(
-                            "Got master: %s (%s)"
-                            % (self.masterHostname, self.masterAddress)
-                         )
+            log.info("Received master address")
+            queue.addClient()
 
-            # inform the master of client computer
-            portNum = self.config['servers']['queue']
-            queue   = tcp.Queue.QueueClient(self.masterAddress, port=portNum)
-            queue.addClient(self.masterHostname, self.masterAddress)
+        else:
+            log.info("Already connected to master: %s" % response[0])
+            queue.addClient(new=False)
 
 
 if __name__ == '__main__':
