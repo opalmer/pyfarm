@@ -21,7 +21,7 @@ PURPOSE: To query and return information about the local system
 '''
 import os
 import sys
-import signal
+import fnmatch
 
 from PyQt4 import QtCore
 
@@ -96,3 +96,27 @@ def processRunning(pid):
             return True
 
     log.debug("Finished search for process state")
+
+def clean(a, b, c ,d):
+    '''Remove all pyc files (and any other tmp files'''
+    for dirpath, dirnames, files in os.walk(PYFARM):
+        if not fnmatch.fnmatch(dirpath, "*.git*"):
+            for dirname in dirnames:
+                if not fnmatch.fnmatch(dirname, "*.git*"):
+                    for filename in files:
+                        path = os.path.join(dirpath, dirname, filename)
+                        if path.endswith(".pyc") and os.path.isfile(path):
+                            os.remove(path)
+    log.info("Lite Cleanup Complete")
+
+def cleanAll(a, b, c ,d):
+    '''Cleanup all files including pyc, database, and lock file'''
+    log.fixme("Custom database location is NOT supported")
+    log.fixme("Cannot remove lock file due to circular dependency")
+    clean('','','','')
+
+    db = os.path.join(PYFARM, "PyFarmDB.sql")
+    if os.path.isfile(db):
+        os.remove(db)
+
+    log.info("Full Cleanup Complete")

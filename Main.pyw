@@ -494,11 +494,6 @@ if __name__ != '__MAIN__':
 
     parser = OptionParser(version="PyFarm v%s" % VERSION)
     parser.add_option(
-                        "--testing", dest="testing",
-                        default=False, action="store_true",
-                        help="Instead of running the ui, run a small set of tests"
-                     )
-    parser.add_option(
                         "--author", dest="author", action="callback",
                         callback=about.author, help="Return the developer's name"
                      )
@@ -506,71 +501,63 @@ if __name__ != '__MAIN__':
                         "--license", dest="license", action="callback",
                         callback=about.license, help="Get the LGPL license header"
                       )
-    parser.add_option(
-                        "--no-version-check", dest="versionCheck", action="store_false",
-                        default=True, help="Bypass software unittesting for Python and PyQt"
-                      )
     #parser.add_option("--sysinfo", dest="sysinfo", action="callback",
                         #callback=sysinfo.hardware, help="Get processor, ram, etc. info")
-    #parser.add_option("--clean", action="callback",  callback=sysutil.clean,
-                        #help="remove all byte-compiled Python files")
-    #parser.add_option("--test", action="callback", callback=test.run,
-                        #help="run testing code")
-    #parser.add_option("-d", "--db", action="callback", callback=SQLio.InitDb,
-                        #help="Set the database for PyFarm before starting the ui")
+    parser.add_option(
+                        "--clean", action="callback",  callback=system.clean,
+                        help="remove all byte-compiled Python files"
+                     )
+    parser.add_option(
+                        "--clean-all", action="callback", callback=system.cleanAll,
+                        help="In addition to removing all .pyc files also remove \
+                        the lock file and database."
+                     )
     (options, args) = parser.parse_args()
 
-    if options.testing:
-        log.warning("Entering testing mode")
-        test = Testing()
-        test.run()
+    ###############################
+    # Event Loop Start
+    ###############################
+    app    = QtGui.QApplication(sys.argv)
 
-    else:
+    if not UNITTESTS:
         ###############################
-        # Event Loop Start
+        # Unit Tests, for safety!
         ###############################
-        app    = QtGui.QApplication(sys.argv)
+        testVerbosity = 0
 
-        if not UNITTESTS:
-            ###############################
-            # Unit Tests, for safety!
-            ###############################
-            testVerbosity = 0
+    # prepare test
+    from lib.test import ModuleImports
+    msg = "Running Unit Test: Version and Module Check"
+    #log.info(msg)
 
-            if options.versionCheck:
-                # prepare test
-                from lib.test import ModuleImports
-                msg = "Running Unit Test: Version and Module Check"
-                #log.info(msg)
+    # run test
+    #test = unittest.TestLoader().loadTestsFromTestCase(ModuleImports.ModuleTests)
+    #unittest.TextTestRunner(verbosity=testVerbosity).run(test)
 
-                # run test
-                #test = unittest.TestLoader().loadTestsFromTestCase(ModuleImports.ModuleTests)
-                #unittest.TextTestRunner(verbosity=testVerbosity).run(test)
+    # prepare test
+    from lib.test import ValidateLogging
+    msg = "Running Unit Test: Logging"
+    #log.info(msg)
 
-            # prepare test
-            from lib.test import ValidateLogging
-            msg = "Running Unit Test: Logging"
-            #log.info(msg)
+    # run test
+    #test = unittest.TestLoader().loadTestsFromTestCase(ValidateLogging.Validate)
+    #unittest.TextTestRunner(verbosity=testVerbosity).run(test)
 
-            # run test
-            #test = unittest.TestLoader().loadTestsFromTestCase(ValidateLogging.Validate)
-            #unittest.TextTestRunner(verbosity=testVerbosity).run(test)
+    # prepare test
+    from lib.test import ValidateNetConfig
+    msg = "Running Unit Test: Network Configuration"
+    #log.info(msg)
 
-            # prepare test
-            from lib.test import ValidateNetConfig
-            msg = "Running Unit Test: Network Configuration"
-            #log.info(msg)
+    # run test
+    #test = unittest.TestLoader().loadTestsFromTestCase(ValidateNetConfig.Validate)
+    #unittest.TextTestRunner(verbosity=testVerbosity).run(test)
 
-            # run test
-            #test = unittest.TestLoader().loadTestsFromTestCase(ValidateNetConfig.Validate)
-            #unittest.TextTestRunner(verbosity=testVerbosity).run(test)
-
-        ###############################
-        # Run UI
-        ###############################
-        main = MainWindow()
-        main.show()
-        sys.exit(app.exec_())
+    ###############################
+    # Run UI
+    ###############################
+    main = MainWindow()
+    main.show()
+    sys.exit(app.exec_())
 
 else:
     log.fatal("This program is not meant to be imported!")
