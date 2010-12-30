@@ -97,7 +97,7 @@ def processRunning(pid):
 
     log.debug("Finished search for process state")
 
-def clean(a, b, c ,d):
+def clean(option=None, opt=None, value=None, parser=None):
     '''Remove all pyc files (and any other tmp files'''
     for dirpath, dirnames, files in os.walk(PYFARM):
         if not fnmatch.fnmatch(dirpath, "*.git*"):
@@ -109,7 +109,7 @@ def clean(a, b, c ,d):
                             os.remove(path)
     log.info("Lite Cleanup Complete")
 
-def cleanAll(a, b, c ,d):
+def cleanAll(option=None, opt=None, value=None, parser=None):
     '''Cleanup all files including pyc, database, and lock file'''
     log.fixme("Custom database location is NOT supported")
     log.fixme("Cannot remove lock file due to circular dependency")

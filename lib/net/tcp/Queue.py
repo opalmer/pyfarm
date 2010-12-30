@@ -197,7 +197,7 @@ class QueueServerThread(QtCore.QThread):
 
             if fnmatch.fnmatch(action, "CLIENT_*"):
                 hostname = QtCore.QString()
-                address = QtCore.QString()
+                address  = QtCore.QString()
                 stream >> hostname >> address
 
                 if action == "CLIENT_NEW":

@@ -142,17 +142,29 @@ class MainWindow(QtGui.QMainWindow):
 
     def runServers(self):
         '''Run the background servers required to operate PyFarm'''
+        listenAddress    = QtNetwork.QHostAddress.Any
         self.queueServer = tcp.Queue.QueueServer(main=self)
+        self.adminServer = tcp.Admin.AdminServer(main=self)
+        queueServerPort  = self.config['servers']['queue']
+        adminServerPort  = self.config['servers']['admin']
 
-        if not self.queueServer.listen(QtNetwork.QHostAddress.Any, self.config['servers']['queue']):
+        if not self.queueServer.listen(listenAddress, queueServerPort):
             error = "Could not start the queue server: %s" % self.queueServer.errorString()
             log.fatal(error)
 
-            if not DEBUG: raise lib.net.ServerFault(error)
-            else: log.warning("Bypassing exception!!!")
+            if not DEBUG:
+                raise lib.net.ServerFault(error)
+            else:
+                log.warning("Bypassing exception!!!")
 
-    def foundNewClient(self, data):
-        print data
+        if not self.adminServer.listen(listenAddress, adminServerPort):
+            error = "Could not start the admin server: %s" % self.adminServer.errorString()
+            log.fatal(error)
+
+            if not DEBUG:
+                raise lib.net.ServerFault(error)
+            else:
+                log.warning("Bypassing exception!!!")
 
     # MainWindow slots, actions, and processes
     # Other actions could include:
@@ -227,7 +239,6 @@ class MainWindow(QtGui.QMainWindow):
             msg = "Host Already In Database: %s" % hostname
             self.updateConsole("client", msg, color='red')
             log.warning(msg)
-
 
     def globalPoint(self, widget, point):
         '''Return the global position for a given point on a widget'''
@@ -482,16 +493,12 @@ class Testing(QtCore.QObject):
         log.terminate("Testing Terminated")
 
 if __name__ != '__MAIN__':
-    # command line opton parsing
     import lib.InputFlags as flags
     from optparse import OptionParser
     about   = flags.About(DEVELOPER, 'GNU-LGPL_Header.txt')
     sysinfo = system.Info.SystemInfo(os.path.join(CFG_ROOT, "general.ini"))
 
-    ###############################
     # Command Line Options
-    ###############################
-
     parser = OptionParser(version="PyFarm v%s" % VERSION)
     parser.add_option(
                         "--author", dest="author", action="callback",

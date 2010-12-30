@@ -30,86 +30,9 @@ PYFARM = os.path.abspath(os.path.join(CWD, "..", "..", ".."))
 MODULE = os.path.basename(__file__)
 if PYFARM not in sys.path: sys.path.append(PYFARM)
 
-from lib import Logger
+from lib import Logger, tcp
 
 UNIT16 = 8
-
-class NewRequest(QtCore.QObject):
-    '''
-    Wrapper object to store basic request information
-
-    VARIABLES:
-        request (string) -- Name of request to send
-        values (list|tuple) -- Values to send with request
-    '''
-    def __init__(self, request, values, parent=None):
-        super(NewRequest, self).__init__(parent)
-        self.log    = Logger.Logger("Admin.NewRequest")
-        self.socket = QtNetwork.QtNetwork.QAbstractSocket()
-
-        self.connect(self.socket, QtCore.SIGNAL("connected()"), self.sendRequest)
-        self.connect(self.socket, QtCore.SIGNAL("readyRead()"), self.readResponse)
-        self.connect(self.socket, QtCore.SIGNAL("disconnected()"), self.serverHasStopped)
-        self.connect(self.socket, QtCore.SIGNAL("error(QtNetwork.QAbstractSocket::SocketError)"), self.serverHasError)
-
-        self.data = QtCore.QByteArray()
-        self.stream = QtCore.QDataStream(self.data, QtCore.QIODevice.WriteOnly)
-        self.stream.setVersion(QtCore.QDataStream.Qt_4_2)
-        self.stream.writeUInt16(0)
-
-        # pack the values
-        self.stream << QtCore.QString(request.upper())
-        for value in values:
-            self.stream << QtCore.QString(value)
-
-        # prepare stream for transmission
-        self.stream.device().seek(0)
-        self.stream.writeUInt16(self.data.size() - UNIT16)
-
-    def send(self, master, port, closeIfOpen=True, timeout=800):
-        if self.socket.isOpen() and closeIfOpen:
-            self.log.netclient("Connection is open, closing")
-            self.socket.close()
-
-        self.log.netclient("Connecting")
-        self.socket.connectToHost(master, port)
-        self.socket.waitForDisconnected(timeout)
-
-    def sendRequest(self):
-        self.log.netclient("sending request")
-        self.nextBlockSize = 0
-        self.socket.write(self.data)
-        self.request = None
-
-    def readResponse(self):
-        self.log.debug("Reading response")
-        stream = QtCore.QDataStream(self.socket)
-        stream.setVersion(QtCore.QDataStream.Qt_4_2)
-
-        while True:
-            if self.nextBlockSize == 0:
-                if self.socket.bytesAvailable() < UNIT16:
-                    break
-                self.nextBlockSize = stream.readUInt16()
-            if self.socket.bytesAvailable() < self.nextBlockSize:
-                break
-            action = QtCore.QString()
-            options = QtCore.QString()
-            stream >> action
-            self.nextBlockSize = 0
-
-            self.log.netclient("Response action from master: %s" % action)
-            self.emit(QtCore.SIGNAL("RESPONSE"), action)
-            self.socket.close()
-
-    def serverHasStopped(self):
-        self.log.error("Server has stopped")
-        self.socket.close()
-
-    def serverHasError(self):
-        self.log.error("Server Error, %s" % self.socket.errorString())
-        self.socket.close()
-
 
 class AdminClient(QtCore.QObject):
     '''
@@ -136,7 +59,7 @@ class AdminClient(QtCore.QObject):
         '''Add the given client to the master'''
         hostname = str(QtNetwork.QHostInfo.localHostName())
         self.log.fixme("Software, system, and network specs not implimented")
-        request = NewRequest("CLIENT_NEW", ("octo", "10.56.1.2", "4096"))
+        request = tcp.Request("CLIENT_SHUTDOWN", ("octo", "10.56.1.2", "4096"))
         self.connect(request, QtCore.SIGNAL("RESPONSE"), self.readResponse)
         request.send(self.master, self.port)
 
@@ -181,7 +104,7 @@ class AdminServerThread(QtCore.QThread):
                     if socket.bytesAvailable() >= nextBlockSize:
                         break
 
-#            # prepare vars for input stream
+            # prepare vars for input stream
             action = QtCore.QString()
             stream >> action
 
@@ -197,7 +120,7 @@ class AdminServerThread(QtCore.QThread):
 
             # final send a back the original host
             self.log.fixme("NOT SENDING REPLY!")
-#            self.sendReply(socket, action, options)
+            self.sendReply(socket, action, options)
             socket.waitForDisconnected()
 
     def sendReply(self, socket, action, options):
@@ -216,9 +139,10 @@ class AdminServer(QtNetwork.QTcpServer):
     Main admin server used to control each individual client.  Controls include client
     restart, service/software discovery, etc.
     '''
-    def __init__(self, parent=None):
+    def __init__(self, main=None, parent=None):
         super(AdminServer, self).__init__(parent)
-        self.log = Logger.Logger("Admin.Server")
+        self.main = main
+        self.log  = Logger.Logger("Admin.Server")
         self.log.netserver("Server Running")
 
     def incomingConnection(self, socketId):
