@@ -37,14 +37,14 @@ from lib import Logger
 
 log = Logger.Logger("db.includes.py", LOGLEVEL)
 
-def connect(dbFile=DB_SQL, clean=False):
+def connect(dbFile=DB_SQL, clean=False, optimize=True):
     '''
     Connect to the given database file and ensure all initial
     conditions and required tables are met.
     '''
     createdDB = False
     if clean and os.path.isfile(dbFile):
-        log.warning("Removing File: %s" % dbFile)
+        log.warning("Removing Database File: %s" % dbFile)
         os.remove(dbFile)
 
     elif not os.path.isfile(dbFile):
@@ -82,8 +82,9 @@ def connect(dbFile=DB_SQL, clean=False):
                     log.info("Created table: %s" % tableName)
 
         # performance updates
-        query.exec_("PRAGMA synchronous=OFF")
-        query.exec_("PRAGMA count_changes=OFF")
+        if optimize:
+            query.exec_("PRAGMA synchronous=OFF")
+            query.exec_("PRAGMA count_changes=OFF")
 
         return db
 

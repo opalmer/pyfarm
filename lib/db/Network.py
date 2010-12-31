@@ -74,3 +74,37 @@ def removeHost(sql, host):
         query = QtSql.QSqlQuery(sql)
         query.exec_("DELETE FROM hosts WHERE hostname = '%s'" % host)
         return True
+
+if __name__ == '__main__':
+    import time
+    import string
+    import random
+    import includes
+
+    log.warning("Adding useless host information for testing!!")
+    sql       = includes.connect(clean=True)
+    MAX_HOSTS = 500
+    start     = time.time()
+    times     = []
+
+    for i in range(MAX_HOSTS):
+        hostname   = ''
+        for i in range(random.randint(5, 8)):
+            letter    = string.ascii_lowercase[random.randint(0, 25)]
+            hostname += letter
+        hostname += str(random.randint(1,60)).zfill(2)
+
+        ip = ['10']
+        for i in range(3):
+            ip.append(str(random.randint(1,128)))
+
+        ip     = '.'.join(ip)
+        tStart = time.time()
+        addHost(sql, hostname, ip)
+        times.append(time.time()-tStart)
+
+    log.debug("Total Time For %i Hosts: %fs" % (MAX_HOSTS, time.time()-start))
+
+    # calculate the average
+    average = sum(times)/len(times)
+    log.debug("Average Time Per Query: %fs" % average)
