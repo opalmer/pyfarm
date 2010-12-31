@@ -31,6 +31,10 @@ MODULE   = os.path.basename(__file__)
 LOGLEVEL = 2
 if PYFARM not in sys.path: sys.path.append(PYFARM)
 
+from lib import Logger
+
+log = Logger.Logger(MODULE, LOGLEVEL)
+
 def addHost(sql, host, ip, status=0, fComplete=0, fFailed=0, fRendering=0):
     '''
     Add a host to the database and ensure it
@@ -57,4 +61,16 @@ def hostExists(sql, host):
     if host not in hosts:
         return False
     else:
+        return True
+
+def removeHost(sql, host):
+    '''Remove the requested host from the database'''
+    if not hostExists(sql, host):
+        log.error("Cannot remove %s, it does not exist in the database" % sql)
+        return False
+
+    else:
+        log.debug("Removing %s from the database" % host)
+        query = QtSql.QSqlQuery(sql)
+        query.exec_("DELETE FROM hosts WHERE hostname = '%s'" % host)
         return True

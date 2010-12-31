@@ -104,18 +104,11 @@ class MainWindow(QtGui.QMainWindow):
                         QtCore.SIGNAL("triggered(QAction *)"),
                         self.submitAction
                     )
-        # END submit menu
-
-        self.connect(
-                        self.ui.hostRefresh,
-                        QtCore.SIGNAL("pressed()"),
-                        self.refreshHosts
-                    )
 
         # general setup and variables
         self.isClosing = False
         self.config    = Settings.ReadConfig.general(CFG_GEN)
-        self.slots     = Slots.Slots(self, self.config)
+        self.slots     = Slots.Slots(self, self.config, SQL)
         self.runServers()
 
     def refreshHosts(self):
@@ -179,7 +172,7 @@ class MainWindow(QtGui.QMainWindow):
     def hostInfoPressed(self): pass # self.slots.host.info()
     def hostDisablePressed(self): pass # self.slots.host.disable()
     def hostEditPressed(self): pass # self.slots.host.edit()
-    def hostRemovePressed(self): pass # self.slots.host.remove()
+    def hostRemovePressed(self): self.slots.host.remove()
     def aboutTriggered(self): pass # self.slots.help.about()
     def diagnosticsTriggered(self): pass # self.slots.help.diagnostics()
     def documentationTriggered(self): pass # self.slots.help.about()
@@ -195,11 +188,15 @@ class MainWindow(QtGui.QMainWindow):
         database, clients, etc.
         '''
         if not self.closeForced:
-        #    for key, value in exitAnswers.items():
-         #       log.ui("Exit State Choice: %s -> %s" % (key, str(value)))
+            try:
+                for key, value in exitAnswers.items():
+                    log.ui("Exit State Choice: %s -> %s" % (key, str(value)))
+            except:
+                log.error("Cannot show exit answers, dialog box is disabled")
 
             log.info("Removing lock file")
             self.pidFile.close()
+
         else:
             print "Force closed!"
 
@@ -208,18 +205,10 @@ class MainWindow(QtGui.QMainWindow):
 
     def closeEvent(self, event):
         '''When the ui is attempting to exit, run this first.  However, make sure we only do this once'''
-        if self.isClosing or self.closeForced:
-            self.pidFile.close()
-
-        else:
-            #exit = ui.Dialogs.CloseEvent()
-            #self.connect(exit, QtCore.SIGNAL("state"), self.closeEventHandler)
-            #exit.exec_()
-            self.isClosing = True
-
-            if event is 'manual':
-                log.debug("Manually closing")
-                self.close()
+        self.pidFile.close()
+        #exit = ui.Dialogs.CloseEvent()
+        #self.connect(exit, QtCore.SIGNAL("state"), self.closeEventHandler)
+        #exit.exec_()
 
     def findHosts(self):
         '''Get hosts via broadcast packet, add them to self.hosts'''

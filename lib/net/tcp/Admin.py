@@ -30,7 +30,7 @@ PYFARM = os.path.abspath(os.path.join(CWD, "..", "..", ".."))
 MODULE = os.path.basename(__file__)
 if PYFARM not in sys.path: sys.path.append(PYFARM)
 
-from lib import Logger, tcp
+from lib import Logger, net
 
 UNIT16 = 8
 

@@ -259,23 +259,6 @@
              </widget>
             </item>
             <item>
-             <widget class="QPushButton" name="hostRefresh">
-              <property name="font">
-               <font>
-                <pointsize>10</pointsize>
-                <weight>50</weight>
-                <bold>false</bold>
-               </font>
-              </property>
-              <property name="statusTip">
-               <string>Manually add a host</string>
-              </property>
-              <property name="text">
-               <string>Refresh</string>
-              </property>
-             </widget>
-            </item>
-            <item>
              <spacer name="verticalSpacer">
               <property name="orientation">
                <enum>Qt::Vertical</enum>
@@ -3110,6 +3093,9 @@
    <property name="statusTip">
     <string>Exit the program and kill active renders</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+Q</string>
+   </property>
   </action>
   <action name="queueSave">
    <property name="text">
@@ -3402,7 +3388,7 @@
    <sender>quit</sender>
    <signal>triggered()</signal>
    <receiver>MainWindow</receiver>
-   <slot>quitTriggered()</slot>
+   <slot>close()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>

@@ -22,26 +22,32 @@ PURPOSE: Slot library for quick access to small actions
 import os
 import sys
 
-CWD    = os.path.dirname(os.path.abspath(__file__))
-PYFARM = os.path.abspath(os.path.join(CWD, ".."))
-MODULE = os.path.basename(__file__)
+CWD      = os.path.dirname(os.path.abspath(__file__))
+PYFARM   = os.path.abspath(os.path.join(CWD, ".."))
+MODULE   = os.path.basename(__file__)
+LOGLEVEL = 2
 if PYFARM not in sys.path: sys.path.append(PYFARM)
 
+from lib import Logger, db
 from lib.net.udp.Broadcast import BroadcastSender
+
+log = Logger.Logger(MODULE, LOGLEVEL)
 
 class Help(object):
     '''Slot functions from the help menu'''
     def __init__(self,parent, config):
         self.parent = parent
-        self.ui = parent.ui
+        self.ui     = parent.ui
         self.config = config
 
 
 class Host(object):
     '''Host related slot functions'''
-    def __init__(self, parent, config):
+    def __init__(self, parent, config, sql):
+        self.log    = Logger.Logger("Slots.Host", LOGLEVEL)
+        self.sql    = sql
         self.parent = parent
-        self.ui = parent.ui
+        self.ui     = parent.ui
         self.config = config
 
     def find(self):
@@ -49,9 +55,36 @@ class Host(object):
         self.broadcast = BroadcastSender(self.config)
         self.broadcast.start()
 
+    def remove(self):
+        '''Remove the selected host from the db and ui'''
+        indexes = self.ui.networkTable.selectedIndexes()
+        if len(indexes):
+            data = {}
+            for index in indexes:
+                # create the initial host dictionary
+                if not data.has_key(index.row()):
+                    data[index.row()] = {}
+
+                # get host information by column
+                host = data[index.row()]
+                if index.column() == 0:
+                    host['hostname'] = index.data().toString()
+
+                elif index.column() == 1:
+                    host['ip'] = index.data().toString()
+
+            # itereate over each host and remove it
+            for key in data.keys():
+                host = data[key]
+                self.log.info("Removing Host: %s (%s)" % (host['hostname'], host['ip']))
+                if db.Network.removeHost(self.sql, host['hostname']):
+                    self.ui.refreshHosts()
+        else:
+            self.log.error("Not enough items selected")
 
 class Slots(object):
     '''Main slots object, all other slots are referenced from here'''
-    def __init__(self, parent, config):
+    def __init__(self, parent, config, sql):
+        self.sql  = sql
         self.help = Help(parent, config)
-        self.host = Host(parent, config)
+        self.host = Host(parent, config, sql)
