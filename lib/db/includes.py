@@ -27,7 +27,7 @@ from PyQt4 import QtSql, QtCore
 
 CWD      = os.path.dirname(os.path.abspath(__file__))
 PYFARM   = os.path.abspath(os.path.join(CWD, "..", ".."))
-MODULE   = os.path.basename(__file__)
+MODULE   = "db.includes"
 DB_XML   = os.path.join(PYFARM, "cfg", "dbbase.xml")
 DB_SQL   = os.path.join(PYFARM, "PyFarmDB.sql")
 LOGLEVEL = 2
@@ -35,7 +35,7 @@ if PYFARM not in sys.path: sys.path.append(PYFARM)
 
 from lib import Logger
 
-log = Logger.Logger("db.includes.py", LOGLEVEL)
+log = Logger.Logger(MODULE, LOGLEVEL)
 
 def connect(dbFile=DB_SQL, clean=False, optimize=True):
     '''

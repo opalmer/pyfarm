@@ -27,7 +27,7 @@ from PyQt4 import QtSql
 
 CWD      = os.path.dirname(os.path.abspath(__file__))
 PYFARM   = os.path.abspath(os.path.join(CWD, "..", ".."))
-MODULE   = os.path.basename(__file__)
+MODULE   = "db.Network"
 LOGLEVEL = 2
 if PYFARM not in sys.path: sys.path.append(PYFARM)
 
@@ -88,19 +88,28 @@ if __name__ == '__main__':
     times     = []
 
     for i in range(MAX_HOSTS):
+        # generate hostname
         hostname   = ''
         for i in range(random.randint(5, 8)):
             letter    = string.ascii_lowercase[random.randint(0, 25)]
             hostname += letter
         hostname += str(random.randint(1,60)).zfill(2)
 
+        # generate ip
         ip = ['10']
         for i in range(3):
             ip.append(str(random.randint(1,128)))
+        ip = '.'.join(ip)
 
-        ip     = '.'.join(ip)
+        # generate other usefull status
+        status    = random.randint(0, 6)
+        complete  = random.randint(0, 1000)
+        failed    = random.randint(0, 15)
+        rendering = random.randint(0, 4)
+
+        # add host to database
         tStart = time.time()
-        addHost(sql, hostname, ip)
+        addHost(sql, hostname, ip, status, complete, failed, rendering)
         times.append(time.time()-tStart)
 
     log.debug("Total Time For %i Hosts: %fs" % (MAX_HOSTS, time.time()-start))

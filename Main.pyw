@@ -47,9 +47,8 @@ import cfg.resources_rc
 from lib.net import tcp, udp
 from lib import db, Logger, ui, Slots, Settings, Session, system
 
-# sestup logging
+# setup logging
 log = Logger.Logger(MODULE, LOGLEVEL)
-SQL = db.connect()
 
 class MainWindow(QtGui.QMainWindow):
     '''This is the controlling class for the main gui'''
@@ -108,7 +107,7 @@ class MainWindow(QtGui.QMainWindow):
         self.connect(
                         self.ui.refreshUi,
                         QtCore.SIGNAL("pressed()"),
-                        self.refreshHosts
+                        self.manualRefresh
                     )
 
         # general setup and variables
@@ -118,7 +117,12 @@ class MainWindow(QtGui.QMainWindow):
         self.runServers()
 
     def refreshHosts(self):
+        '''Refresh the hosts table by refreshing the database model'''
         self.hostTable.refresh()
+
+    def manualRefresh(self):
+        '''Force a refresh'''
+        self.refreshHosts()
 
     def timerRefresh(self):
         '''
@@ -515,8 +519,10 @@ if __name__ != '__MAIN__':
                         "--license", dest="license", action="callback",
                         callback=about.license, help="Get the LGPL license header"
                       )
-    #parser.add_option("--sysinfo", dest="sysinfo", action="callback",
-                        #callback=sysinfo.hardware, help="Get processor, ram, etc. info")
+    parser.add_option(
+                        "--db", dest="db", default=db.DB_SQL,
+                        help="Change default database location"
+                     )
     parser.add_option(
                         "--clean", action="callback",  callback=system.clean,
                         help="remove all byte-compiled Python files"
@@ -527,6 +533,8 @@ if __name__ != '__MAIN__':
                         the lock file and database."
                      )
     (options, args) = parser.parse_args()
+
+    SQL = db.connect(options.db)
 
     ###############################
     # Event Loop Start

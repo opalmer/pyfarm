@@ -83,5 +83,24 @@ class Manager(object):
         self.ui.setModel(self.sqlModel)
 
     def refresh(self):
-        log.debug("Refreshing host table")
+        '''
+        Refresh the host table and reselect any previous items in
+        the best manner possible
+        '''
+        # keyboardSearch
+        indexes = self.ui.selectedIndexes()
+        colA    = None
+        if len(indexes):
+            for index in indexes:
+                if index.column() == 0 and not colA:
+                    colA = index.data().toString()
+
         self.sqlModel.select()
+
+        log.fixme("Refresh fails to always reselect previous selection")
+        log.fixme("...check to ensure we have the correct column")
+        log.fixme("...wait if we do not")
+        log.fixme("...might also have to do with HOW the selection is made")
+
+        if type(colA) != None:
+            self.ui.keyboardSearch(colA)
