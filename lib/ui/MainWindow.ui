@@ -259,6 +259,23 @@
              </widget>
             </item>
             <item>
+             <widget class="QPushButton" name="refreshUi">
+              <property name="font">
+               <font>
+                <pointsize>10</pointsize>
+                <weight>50</weight>
+                <bold>false</bold>
+               </font>
+              </property>
+              <property name="statusTip">
+               <string>Manually add a host</string>
+              </property>
+              <property name="text">
+               <string>refresh</string>
+              </property>
+             </widget>
+            </item>
+            <item>
              <spacer name="verticalSpacer">
               <property name="orientation">
                <enum>Qt::Vertical</enum>

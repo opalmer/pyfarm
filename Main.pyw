@@ -86,12 +86,13 @@ class MainWindow(QtGui.QMainWindow):
         self.ui.statusDock.setWindowTitle("Status Console")
         # END layout
 
-        # setup sqllite tables
-        netTable        = self.ui.networkTable
-        SqlTable        = ui.SqlTables
-        columns         = ("hostname", "ip", "status")
-        sortCol         = "hostname"
-        self.hostTable  = SqlTable.Manager(SQL, netTable, "hosts", columns, sort=sortCol)
+        # setup database
+        netTable       = self.ui.networkTable
+        jobTable       = self.ui.currentJobs
+        SqlTable       = ui.SqlTables
+        netColumns     = ("hostname", "ip", "status")
+        netSort        = "hostname"
+        self.hostTable = SqlTable.Manager(SQL, netTable, "hosts", netColumns, sort=netSort)
 
         # add menu to submit button
         self.submitMenu = QtGui.QMenu()
@@ -104,6 +105,11 @@ class MainWindow(QtGui.QMainWindow):
                         QtCore.SIGNAL("triggered(QAction *)"),
                         self.submitAction
                     )
+        self.connect(
+                        self.ui.refreshUi,
+                        QtCore.SIGNAL("pressed()"),
+                        self.refreshHosts
+                    )
 
         # general setup and variables
         self.isClosing = False
@@ -113,6 +119,18 @@ class MainWindow(QtGui.QMainWindow):
 
     def refreshHosts(self):
         self.hostTable.refresh()
+
+    def timerRefresh(self):
+        '''
+        After the global timer expires, run this function to update the
+        interface, tables, etc.
+
+        NOTE: This function can be intensive, try to keep refresh events
+        to a minimum.
+        '''
+        log.notimplemented("This function has not been implemented yet,")
+        log.notimplemented("...pending evalulation of updating individual")
+        log.nogimplemented("...table fields")
 
     def handlePid(self):
         '''Handle actions relating to the process id file'''
