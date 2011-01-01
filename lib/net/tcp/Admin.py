@@ -59,7 +59,7 @@ class AdminClient(QtCore.QObject):
         '''Add the given client to the master'''
         hostname = str(QtNetwork.QHostInfo.localHostName())
         self.log.fixme("Software, system, and network specs not implimented")
-        request = tcp.Request("CLIENT_SHUTDOWN", ("octo", "10.56.1.2", "4096"))
+        request = net.tcp.Request("CLIENT_SHUTDOWN", ("octo", "10.56.1.2", "4096"))
         self.connect(request, QtCore.SIGNAL("RESPONSE"), self.readResponse)
         request.send(self.master, self.port)
 

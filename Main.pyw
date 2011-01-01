@@ -534,17 +534,12 @@ if __name__ != '__MAIN__':
                      )
     (options, args) = parser.parse_args()
 
+    # Begin event loop
+    app = QtGui.QApplication(sys.argv)
     SQL = db.connect(options.db)
 
-    ###############################
-    # Event Loop Start
-    ###############################
-    app    = QtGui.QApplication(sys.argv)
-
+    # lower verbosity
     if not UNITTESTS:
-        ###############################
-        # Unit Tests, for safety!
-        ###############################
         testVerbosity = 0
 
     # prepare test

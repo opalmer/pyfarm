@@ -54,6 +54,7 @@ class Manager(object):
         self.columns   = columns
         self.query     = "SELECT %s FROM %s" % (','.join(columns), table)
         self.sqlModel  = QtSql.QSqlTableModel()
+
         self.sqlQuery  = QtSql.QSqlQuery(self.query, self.db)
         self.sqlModel.setQuery(self.sqlQuery)
         self.sqlModel.setTable(table)

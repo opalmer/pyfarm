@@ -31,86 +31,10 @@ PYFARM = os.path.abspath(os.path.join(CWD, "..", "..", ".."))
 MODULE = os.path.basename(__file__)
 if PYFARM not in sys.path: sys.path.append(PYFARM)
 
-from lib import Logger, system
+from lib import Logger, system, net
 
 UNIT16         = 8
 STREAM_VERSION = QtCore.QDataStream.Qt_4_2
-
-class Request(QtCore.QObject):
-    '''
-    Wrapper object to store basic request information
-
-    VARIABLES:
-        request (string) -- Name of request to send
-        values (list|tuple) -- Values to send with request
-    '''
-    def __init__(self, request, values, logName="tcp.Request", parent=None):
-        super(Request, self).__init__(parent)
-        self.log    = Logger.Logger(logName)
-        self.socket = QtNetwork.QTcpSocket()
-
-        self.connect(self.socket, QtCore.SIGNAL("connected()"), self.sendRequest)
-        self.connect(self.socket, QtCore.SIGNAL("readyRead()"), self.readResponse)
-        self.connect(self.socket, QtCore.SIGNAL("disconnected()"), self.serverHasStopped)
-        self.connect(self.socket, QtCore.SIGNAL("error(QAbstractSocket::SocketError)"), self.serverHasError)
-
-        self.data = QtCore.QByteArray()
-        self.stream = QtCore.QDataStream(self.data, QtCore.QIODevice.WriteOnly)
-        self.stream.setVersion(STREAM_VERSION)
-        self.stream.writeUInt16(0)
-
-        # pack the values
-        self.stream << QtCore.QString(request.upper())
-        for value in values:
-            self.stream << QtCore.QString(value)
-
-        # prepare stream for transmission
-        self.stream.device().seek(0)
-        self.stream.writeUInt16(self.data.size() - UNIT16)
-
-    def send(self, master, port, closeIfOpen=True, timeout=800):
-        if self.socket.isOpen() and closeIfOpen:
-            self.log.netclient("Connection is open, closing")
-            self.socket.close()
-
-        self.log.netclient("Connecting")
-        self.socket.connectToHost(master, port)
-        self.socket.waitForDisconnected(timeout)
-
-    def sendRequest(self):
-        self.log.netclient("sending request")
-        self.nextBlockSize = 0
-        self.socket.write(self.data)
-        self.request = None
-
-    def readResponse(self):
-        self.log.debug("Reading response")
-        stream = QtCore.QDataStream(self.socket)
-        stream.setVersion(STREAM_VERSION)
-
-        while True:
-            if self.nextBlockSize == 0:
-                if self.socket.bytesAvailable() < UNIT16:
-                    break
-                self.nextBlockSize = stream.readUInt16()
-            if self.socket.bytesAvailable() < self.nextBlockSize:
-                break
-            action = QtCore.QString()
-            options = QtCore.QString()
-            stream >> action
-            self.nextBlockSize = 0
-
-            self.log.netclient("Response action from master: %s" % action)
-            self.emit(QtCore.SIGNAL("RESPONSE"), action)
-            self.socket.close()
-
-    def serverHasStopped(self):
-        self.log.error("Server has stopped")
-        self.socket.close()
-
-    def serverHasError(self):
-        self.log.error("Server Error, %s" % self.socket.errorString())
-        self.socket.close()
 
 
 class QueueClient(QtCore.QObject):
@@ -131,13 +55,13 @@ class QueueClient(QtCore.QObject):
         '''Add the given client to the master'''
         netinfo = system.Info.Network()
         if new:
-            request = Request(
+            request = net.tcp.Request(
                                 "CLIENT_NEW",
                                 (netinfo.hostname(), netinfo.ip()),
                                 logName="QueueClient.Request"
                             )
         else:
-            request = Request(
+            request = net.tcp.Request(
                                 "CLIENT_CONNECTED",
                                 (netinfo.hostname(), netinfo.ip()),
                                 logName="QueueClient.Request"
@@ -195,7 +119,7 @@ class QueueServerThread(QtCore.QThread):
             stream >> action
             self.log.netclient("Receieved Signal: %s" % action)
 
-            if fnmatch.fnmatch(action, "CLIENT_*"):
+            if fnmatch.fnmatch(str(action), "CLIENT_*"):
                 hostname = QtCore.QString()
                 address  = QtCore.QString()
                 stream >> hostname >> address
