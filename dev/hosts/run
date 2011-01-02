@@ -1,8 +1,12 @@
 #!/bin/bash
 
 ID_RSA="/home/opalmer/.ssh/id_rsa_insecure"
-HOSTS=`cat ./hostlist`
+HOSTLIST=$(dirname $0)"/hostlist"
+HOSTS=`cat $HOSTLIST`
 
 for host in $HOSTS; do
+	echo "==== ENTERING ===="
+	echo -e "[ $host ] Executing: $@\n"
 	ssh -i $ID_RSA render@$host $@
+	echo "==== COMPLETED ===="
 done
