@@ -10,3 +10,4 @@ for host in $HOSTS; do
 	ssh -i $ID_RSA render@$host "sudo aptitude update"
 	ssh -i $ID_RSA render@$host "sudo aptitude -y safe-upgrade"
 done
+echo "Update complete on all hosts"

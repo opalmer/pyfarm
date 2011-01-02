@@ -1,4 +1,4 @@
 @echo off
 
-python vbstart.py
+C:\Python26\python.exe vbstart.py
 pause

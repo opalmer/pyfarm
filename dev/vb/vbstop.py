@@ -26,7 +26,10 @@ import os
 import time
 
 if os.name == "nt":
-    SSH_KEY = "/home/opalmer/.ssh/id_rsa_insecure"
+    SSH_KEY = "C:\Users\opalmer\.ssh\id_rsa_insecure"
+	
+elif os.name == "posix":
+	SSH_KEY = "/home/opalmer/.ssh/id_rsa_insecure"
 
 for i in range(6):
     host = '10.56.2.%i' % (i+2)

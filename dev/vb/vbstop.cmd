@@ -1,4 +1,4 @@
 @echo off
 
-python vbstop.py
+C:\Python26\python.exe vbstop.py
 pause
