@@ -5,7 +5,7 @@ INITIAL: May 26 2010
 PURPOSE: To handle and run all client connections on a remote machine
 
     This file is part of PyFarm.
-    Copyright (C) 2008-2010 Oliver Palmer
+    Copyright (C) 2008-2011 Oliver Palmer
 
     PyFarm is free software: you can redistribute it and/or modify
     it under the terms of the GNU Lesser General Public License as published by

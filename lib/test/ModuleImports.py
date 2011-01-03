@@ -5,7 +5,7 @@ INITIAL: Oct 07 2010
 PURPOSE: Ensure all modules will import properly and are included in the current installation
 
     This file is part of PyFarm.
-    Copyright (C) 2008-2010 Oliver Palmer
+    Copyright (C) 2008-2011 Oliver Palmer
 
     PyFarm is free software: you can redistribute it and/or modify
     it under the terms of the GNU Lesser General Public License as published by
