@@ -24,7 +24,7 @@
 -->
 
 <loglevels>
-    <level name="sqlite" enabled="False" solo="False" />
+    <level name="sqlite" enabled="False" solo="True" />
     <level name="netpacket" enabled="True" solo="False" />
     <level name="queue" enabled="True" solo="False" />
     <level name="conditional" enabled="False" solo="False" />

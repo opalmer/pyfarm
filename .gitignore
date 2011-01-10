@@ -1,12 +1,9 @@
-*.cmd
 *.e4p
-*_eric*
-.eric4project
+*eric*
 *sql*
 *.log*
 *.pyc
 *.swp
-tools/depgraph/output/*
 *notes*
 *.timings
 *.profile
@@ -15,3 +12,7 @@ tools/depgraph/output/*
 .pydevproject
 *~
 build
+.git*
+docs*
+tools*
+dev*
