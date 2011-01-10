@@ -1,9 +1,0 @@
-#!/usr/bin/env python
-
-import os
-
-cwd    = os.path.dirname(os.path.abspath(__file__))
-pyfarm = os.path.abspath(os.path.join(cwd, "..", ".."))
-execPy = os.path.join(pyfarm, "lib", "db", "Network.py")
-
-os.system("python %s"  % execPy)
