@@ -78,10 +78,11 @@ class ReadConfig(object):
         out = {}
         xml = minidom.parse(ReadConfig.test(filepath))
 
+        level = 0
         for element in xml.getElementsByTagName("level"):
-            level   = int(element.getAttribute("value"))
             name    = str(element.getAttribute("name"))
-            enabled = str(element.getAttribute("enabled"))
+            enabled = eval(element.getAttribute("enabled"))
+            solo    = eval(element.getAttribute("solo"))
 
             # function name
             if element.hasAttribute("function"):
@@ -89,36 +90,18 @@ class ReadConfig(object):
             else:
                 function = name
 
-            # terminal color (linux only)
-            if element.hasAttribute("color") and os.name == 'posix':
-                coloron  = str(element.getAttribute("color"))
-                coloroff = str(element.getAttribute("color")) + 'OFF'
-            else:
-                coloron = ''
-                coloroff = ''
-
-            # bold attribute
-            if element.hasAttribute("bold") and os.name == 'posix':
-                boldon  = 'BOLD' # this should really be getting the bold VALUE
-                boldoff = 'UNBOLD'
-            else:
-                boldon  = ''
-                boldoff = ''
-
             # place element into output dictionary
             out[name] = {
                             'level'    : level,
                             'name'     : name,
                             'function' : function,
-                            'coloron'  : coloron,
-                            'coloroff' : coloroff,
-                            'boldon'   : boldon,
-                            'boldoff'  : boldoff,
+                            'solo'     : solo,
                             'enabled'  : enabled,
                             'template' : string.Template(
                                 '$time - $logger - %s - $message' % name.upper()
                             )
                          }
+            level += 1
         return out
 
 

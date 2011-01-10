@@ -45,12 +45,12 @@ XML_CONFIG      = os.path.join(PYFARM, "cfg", "loglevels.xml")
 class LevelName(object):
     def __init__(self, name, enabled):
         self.name    = name
-        self.enabled = eval(enabled)
+        self.enabled = enabled
 
 
 class Level(object):
     def __init__(self, method, host, method_name=None):
-        self.host = host
+        self.host   = host
         self.method = method
         setattr(host, method_name or method.__name__, self)
 
@@ -59,42 +59,60 @@ class Level(object):
         nargs.extend(args)
         return apply(self.method, nargs, kwargs)
 
+
 class Logger(object):
     '''
     Custom logging object for PyFarm
 
     VARS:
-        level (int) -- minimum level to log
+        level       (int) -- minimum level to log
         enableSolo (bool) -- If enabed, solo values will be respected for
-        this logger
-        logfile (str) -- file to log to
+                             this logger
+        log         (str) -- file to log to
     '''
-    def __init__(self, name, level=DEFAULT_LEVEL, logfile=None, enableSolo=DEFAULT_SOLO, writeOnly=False):
-        self.enableSolo = enableSolo
+    def __init__(self, name, level=DEFAULT_LEVEL, log=None, solo=DEFAULT_SOLO, writeOnly=False):
         self.level      = level
+        self.solo       = solo
+        self.writeOnly  = writeOnly
         self.config     = Settings.ReadConfig.logger(XML_CONFIG)
-
-        # check for global overrides
-        if GLOBAL_LEVEL: self.level = DEFAULT_LEVEL
-        if GLOBAL_SOLO:  self.solo  = DEFAULT_SOLO
-
         self.timeFormat = "%Y-%m-%d %H:%M:%S"
+        self.log        = log
+
+        # override level and solo if they are defined above
+        if GLOBAL_LEVEL:
+            self.level = DEFAULT_LEVEL
+
+        if GLOBAL_SOLO:
+            self.solo  = DEFAULT_SOLO
+
+        self.levels     = []
+        self.levelCalls = []
+        self.soloLevel  = None
         self.setName(name)
 
-        self.levels = []
-        for function, levelDict in self.config.items():
-            newLevel = self.newLevel(levelDict['name'], levelDict['enabled'], function)
-            vars(self)[levelDict['function']] = newLevel
-            self.levels.append(levelDict['name'])
+        for function, data in self.config.items():
+            solo     = data['solo']
+            name     = data['name']
+            enabled  = data['enabled']
+            function = data['function']
+            level    = self.newLevel(name, enabled, function)
+            vars(self)[function] = level
 
-        if logfile:
-            self.logfile = open(logfile, "a")
+            if solo and not self.soloLevel:
+                self.soloLevel = name
+
+            # append info to lists
+            self.levels.append(name)
+            self.levelCalls.append(function)
+
+        if self.log:
+            self.log = open(log, "a")
+
         else:
-            self.logfile = None
+            self.log = None
 
-        self.writeOnly = writeOnly
-        if writeOnly and not logfile:
-            raise RuntimeError("You declare writeOnly without a logfile")
+        if writeOnly and not self.log:
+            raise IOError("You declared writeOnly without a logfile")
 
     def newLevel(self, name, enabled, function):
         '''Create a new log level'''
@@ -102,27 +120,29 @@ class Logger(object):
 
     def _out(self, level, msg):
         if level.name in self.levels:
-            cfg = self.config[level.name]
+            cfg      = self.config[level.name]
+            enabled  = cfg['enabled']
+            solo     = cfg['solo']
 
-            if not self.writeOnly and level.enabled:
-                print (cfg['template'].substitute(
-                    time=time.strftime(self.timeFormat),
-                    logger=self.name,
-                    message=msg
-                ))
+            if solo and enabled or not self.soloLevel and enabled or solo and not enabled:
+                template      = cfg['template']
+                out           = (
+                                    template.substitute(
+                                        time=time.strftime(self.timeFormat),
+                                        logger=self.name,
+                                        message=msg
+                                    )
+                                )
 
-            if self.logfile:
-                self.logfile.write(out+os.linesep)
-                self.logfile.flush()
+                print out
 
-    def setSolo(self, solo):
-        '''If set to 1 only the logLevel matching solo will be output'''
-        self.solo = solo
-        self.levels = self.levelList[self.solo]
+                if self.log:
+                    self.log.write(out+os.linesep)
+                    self.log.flush()
 
     def close(self):
         '''Close out the log file'''
-        self.logfile.close()
+        self.log.close()
 
     def setName(self, name):
         '''Set the name for the logger'''
