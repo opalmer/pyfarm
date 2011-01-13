@@ -40,7 +40,7 @@ DEFAULT_SOLO    = False
 GLOBAL_LEVEL    = False
 GLOBAL_OVERRIDE = False
 GLOBAL_SOLO     = False
-XML_CONFIG      = os.path.join(PYFARM, "cfg", "loglevels.xml")
+XML_CONFIG      = os.path.join(PYFARM, "cfg", "logger.xml")
 
 class LevelName(object):
     def __init__(self, name, enabled):

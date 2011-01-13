@@ -1,0 +1,56 @@
+<!--
+    HOMEPAGE: www.pyfarm.net
+    INITIAL: July 22 2010
+    PURPOSE: To provide a means of adding, removing, or changing log levels
+    without modifying large amounts of source code.
+
+    This file should not be changed by an end user.
+
+    This file is part of PyFarm.
+    Copyright (C) 2008-2011 Oliver Palmer
+
+    PyFarm is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    PyFarm is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    You should have received a copy of the GNU Lesser General Public License
+    along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
+-->
+
+<Settings>
+    <globals>
+        <attr name="defaultLevel" value="0" />
+        <attr name="enforceLevel" value="False" />
+        <attr name="allowSolo" value="False" />
+        <attr name="template" value="$time - $logger - $level - $message" />
+        <attr name="timeFormat" value="%Y-%m-%d %H:%M:%S" />
+    </globals>
+    <levels>
+        <level name="sqlite" enabled="False" solo="False" />
+        <level name="netpacket" enabled="True" solo="False" />
+        <level name="queue" enabled="True" solo="False" />
+        <level name="conditional" enabled="False" solo="False" />
+        <level name="module import" function="module" enabled="True" solo="False" />
+        <level name="network.server" function="netserver" enabled="True" solo="False" />
+        <level name="network.client" function="netclient" enabled="True"  solo="False" />
+        <level name="network" enabled="False" solo="False" />
+        <level name="ui" enabled="True" solo="False" />
+        <level name="fixme" enabled="True" solo="False" />
+        <level name="not implemented" function="notimplemented" enabled="True" solo="False" />
+        <level name="debug" enabled="True" solo="False" />
+        <level name="info" enabled="True" solo="False" />
+        <level name="not compatible" function="notcompatible" enabled="True" solo="False" />
+        <level name="warning" enabled="True" solo="False" />
+        <level name="deprecated" enabled="True" solo="False" />
+        <level name="error" enabled="True" solo="False" />
+        <level name="critical" enabled="True" solo="False" />
+        <level name="fatal" enabled="True" solo="False" />
+        <level name="terminate" enabled="True" solo="False" />
+    </levels>
+</Settings>
