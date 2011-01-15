@@ -21,16 +21,7 @@ PURPOSE [FOR DEVELOPMENT PURPOSES ONLY]:
     You should have received a copy of the GNU Lesser General Public License
     along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 '''
-
 import os
-import time
-
-print "Bringing up pyroot..."
-if os.name == "nt":
-    os.system("start /B VBoxHeadless -s pyroot")
-
-print "Waiting 15 seconds for pyroot to come up..."
-time.sleep(60)
 
 for i in range(6):
     host = "pynode%s" % str(i+1).zfill(2)
