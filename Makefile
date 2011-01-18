@@ -27,32 +27,27 @@ RELEASEDIR = $(BUILDDIR)/release
 all: frozen release
 
 clean:
-	find . -name "*~" | xargs rm -fv
-	find . -name "*.pyc" | xargs rm -fv
+	@echo "Running Clean..."
+	@find . -name "*~" | xargs rm -fv
+	@find . -name "*.pyc" | xargs rm -fv
 
 mkbuilddir:
+	@echo "Running mkbuilddir..."
 	if test -d $(BUILDDIR); \
 	then echo directory exists: $(BUILDDIR); \
 	else mkdir $(BUILDDIR); \
 	fi
 
 frozen: clean mkbuilddir
+	@echo "Running frozen..."
 	if test -d $(FROZENDIR); \
 	then echo directory exists: $(FROZENDIR); \
 	else mkdir $(FROZENDIR); \
 	fi
 
-	# setup:
-	# mkdir freeze dir with naming: timestamp-repocheckout-pyfarm
-	# tar directory into name above
-	# gzip tar
-	# delete dir
-
 release: clean mkbuilddir
+	@echo "Running release..."
 	if test -d $(RELEASEDIR); \
 	then echo directory exists: $(RELEASEDIR); \
 	else mkdir $(RELEASEDIR); \
 	fi
-
-	# setup:
-	# TBD

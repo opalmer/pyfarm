@@ -7,12 +7,9 @@
 *notes*
 *.timings
 *.profile
-.metadata
-.project
-.pydevproject
 *~
 build
-.git*
+.*
 docs*
 tools*
 dev*

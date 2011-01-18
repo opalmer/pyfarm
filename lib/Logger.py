@@ -64,11 +64,14 @@ class Logger(object):
     '''
     Custom logging object for PyFarm
 
-    VARS:
-        level       (int) -- minimum level to log
-        enableSolo (bool) -- If enabed, solo values will be respected for
-                             this logger
-        log         (str) -- file to log to
+    @param name: Name of logger to create
+    @type  name: C{str}
+    @param solo: If enabled, solo values will be respected for this logger
+    @type  solo: C{bool}
+    @param log: File to log to
+    @type  log: C{str}
+    @param writeOnly: Write to disk only, do not print to stdout
+    @type  writeOnly: C{bool}
     '''
     def __init__(self, name, level=DEFAULT_LEVEL, log=None, solo=DEFAULT_SOLO, writeOnly=False):
         self.level      = level
@@ -119,6 +122,14 @@ class Logger(object):
         return Level(self._out, LevelName(name, enabled), function)
 
     def _out(self, level, msg):
+        '''
+        Evalulate input arguments and settings, output the appropriate locations
+
+        @param level: The requested level to output
+        @type  level: Logger.Level
+        @param msg: the message to print
+        @type  msg: C{str}
+        '''
         if level.name in self.levels:
             cfg      = self.config[level.name]
             enabled  = cfg['enabled']
