@@ -105,16 +105,6 @@ class ReadConfig(object):
         return out
 
 
-class Export(object):
-    '''Used to export settings to an external file'''
-    def __init__(self):
-       pass
-
-    def write(self):
-        '''Out the current settings'''
-        pass
-
-
 class StatusLevel(object):
     '''
     Individual status level containing specific

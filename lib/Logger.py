@@ -42,13 +42,79 @@ GLOBAL_OVERRIDE = False
 GLOBAL_SOLO     = False
 XML_CONFIG      = os.path.join(PYFARM, "cfg", "logger.xml")
 
+class Settings(object):
+    '''
+    Load and return settings information from the given xml file
+
+    @param xml: full path to the xml file
+    @type  xml: C{str}s
+    '''
+    def __init__(self, xml):
+        if not os.path.isfile(xml):
+            raise IOError('%s is not a vaild file path' % xml)
+
+        self.xmlPath = xml
+        self.xml     = minidom.parse(self.xmlPath)
+
+    @property
+    def data(self):
+        '''Return the logger settings as a dictionary'''
+        out   = {}
+        level = 0
+
+        for element in self.xml.getElementsByTagName("level"):
+            name    = str(element.getAttribute("name"))
+            enabled = eval(element.getAttribute("enabled"))
+            solo    = eval(element.getAttribute("solo"))
+
+        # retrieve function name
+        if element.hasAttribute("function"):
+            function = str(element.getAttribute("function"))
+        else:
+            function = name
+
+        # place element into output dictionary
+        out[name] = {
+                        'level'    : level,
+                        'name'     : name,
+                        'function' : function,
+                        'solo'     : solo,
+                        'enabled'  : enabled,
+                        'template' : string.Template(
+                            '$time - $logger - %s - $message' % name.upper()
+                        )
+                    }
+        level += 1
+
+
 class LevelName(object):
+    '''
+    Level name object that controls and configures the final output of a logger
+    as well as producing custom attributes to be used for processing.
+
+    @param name: name of the log level to be output
+    @type  name: C{str}
+    @param enabled: controls if this log level is allowed to output
+    @type  enabled: C{bool}
+    '''
     def __init__(self, name, enabled):
         self.name    = name
         self.enabled = enabled
 
 
 class Level(object):
+    '''
+    Individual level object to hold information pretaining to output of a log
+    line.
+
+    @param method: method being called during output
+    @type  method: Logger_out
+    @param host: LevelName containing minor pieces of information
+    @type  host: LevelName
+    @param method_name: the name of the function to be called when a level is
+                        called
+    @type  method_name: C{str}
+    '''
     def __init__(self, method, host, method_name=None):
         self.host   = host
         self.method = method
@@ -62,7 +128,8 @@ class Level(object):
 
 class Logger(object):
     '''
-    Custom logging object for PyFarm
+    Custom logging object for PyFarm.  Includes various options to control
+    the output and behavior of the class.
 
     @param name: Name of logger to create
     @type  name: C{str}
@@ -118,7 +185,16 @@ class Logger(object):
             raise IOError("You declared writeOnly without a logfile")
 
     def newLevel(self, name, enabled, function):
-        '''Create a new log level'''
+        '''
+        Create a new log level
+
+        @param name: name of the log level to be output
+        @type  name: C{str}
+        @param enabled: controls if this log level is allowed to output
+        @type  enabled: C{bool}
+        @param function: name of function to pass to Level object
+        @type  function: C{str}
+        '''
         return Level(self._out, LevelName(name, enabled), function)
 
     def _out(self, level, msg):
@@ -131,19 +207,21 @@ class Logger(object):
         @type  msg: C{str}
         '''
         if level.name in self.levels:
-            cfg      = self.config[level.name]
-            enabled  = cfg['enabled']
-            solo     = cfg['solo']
+            cfg         = self.config[level.name]
+            enabled     = cfg['enabled']
+            solo        = cfg['solo']
+            enabledSolo = solo and enabled
+            soloLevel   = self.soloLevel and enabled
 
-            if solo and enabled or not self.soloLevel and enabled or solo and not enabled:
-                template      = cfg['template']
-                out           = (
-                                    template.substitute(
-                                        time=time.strftime(self.timeFormat),
-                                        logger=self.name,
-                                        message=msg
-                                    )
-                                )
+            if enabledSolo or not soloLevel or solo and not enabled:
+                template = cfg['template']
+                out      = (
+                            template.substitute(
+                              time=time.strftime(self.timeFormat),
+                              logger=self.name,
+                              message=msg
+                            )
+                           )
 
                 print out
 
@@ -151,10 +229,15 @@ class Logger(object):
                     self.log.write(out+os.linesep)
                     self.log.flush()
 
+    def setName(self, name):
+        '''
+        Set the overall name for the Logger object
+
+        @param name: name to call the logger by
+        @type  name: C{str}
+        '''
+        self.name = name
+
     def close(self):
         '''Close out the log file'''
         self.log.close()
-
-    def setName(self, name):
-        '''Set the name for the logger'''
-        self.name = name
