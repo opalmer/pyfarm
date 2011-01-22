@@ -30,8 +30,6 @@ PYFARM = os.path.abspath(os.path.join(CWD, ".."))
 MODULE = os.path.basename(__file__)
 if PYFARM not in sys.path: sys.path.append(PYFARM)
 
-from lib import Settings
-
 # default values for all loggers
 DEFAULT_LEVEL   = 4
 DEFAULT_SOLO    = False
@@ -42,30 +40,30 @@ GLOBAL_OVERRIDE = False
 GLOBAL_SOLO     = False
 XML_CONFIG      = os.path.join(PYFARM, "cfg", "logger.xml")
 
-class Settings(object):
+def settings(path):
     '''
     Load and return settings information from the given xml file
 
-    @param xml: full path to the xml file
-    @type  xml: C{str}s
+    @param path: full path to the xml file
+    @type  path: C{str}s
     '''
-    def __init__(self, xml):
-        if not os.path.isfile(xml):
-            raise IOError('%s is not a vaild file path' % xml)
+    if not os.path.isfile(path):
+        raise IOError('%s is not a vaild file path' % path)
 
-        self.xmlPath = xml
-        self.xml     = minidom.parse(self.xmlPath)
+    level   = 0
+    out     = {}
+    xml     = minidom.parse(path)
+    globals = out['globals'] = {}
+    levels  = out['levels']  = {}
 
-    @property
-    def data(self):
-        '''Return the logger settings as a dictionary'''
-        out   = {}
-        level = 0
+    for attrib in xml.getElementsByTagName("attr"):
+        globals['name']  = str(attrib.getAttribute("name"))
+        globals['value'] = str(attrib.getAttribute("value"))
 
-        for element in self.xml.getElementsByTagName("level"):
-            name    = str(element.getAttribute("name"))
-            enabled = eval(element.getAttribute("enabled"))
-            solo    = eval(element.getAttribute("solo"))
+    for element in xml.getElementsByTagName("level"):
+        name    = str(element.getAttribute("name"))
+        enabled = eval(element.getAttribute("enabled"))
+        solo    = eval(element.getAttribute("solo"))
 
         # retrieve function name
         if element.hasAttribute("function"):
@@ -74,17 +72,19 @@ class Settings(object):
             function = name
 
         # place element into output dictionary
-        out[name] = {
-                        'level'    : level,
-                        'name'     : name,
-                        'function' : function,
-                        'solo'     : solo,
-                        'enabled'  : enabled,
-                        'template' : string.Template(
-                            '$time - $logger - %s - $message' % name.upper()
-                        )
-                    }
+        levels[name] = {
+                           'level'    : level,
+                           'name'     : name,
+                           'function' : function,
+                           'solo'     : solo,
+                           'enabled'  : enabled,
+                           'template' : string.Template(
+                           '$time - $logger - %s - $message' % name.upper()
+                           )
+                      }
         level += 1
+
+    return out
 
 
 class LevelName(object):
@@ -104,15 +104,15 @@ class LevelName(object):
 
 class Level(object):
     '''
-    Individual level object to hold information pretaining to output of a log
-    line.
+    Individual level object to hold information pretaining to output
+    of a log line.
 
     @param method: method being called during output
     @type  method: Logger_out
     @param host: LevelName containing minor pieces of information
     @type  host: LevelName
-    @param method_name: the name of the function to be called when a level is
-                        called
+    @param method_name: the name of the function to be called when a level
+                        is called
     @type  method_name: C{str}
     '''
     def __init__(self, method, host, method_name=None):
@@ -144,7 +144,7 @@ class Logger(object):
         self.level      = level
         self.solo       = solo
         self.writeOnly  = writeOnly
-        self.config     = Settings.ReadConfig.logger(XML_CONFIG)
+        self.config     = settings(XML_CONFIG)
         self.timeFormat = "%Y-%m-%d %H:%M:%S"
         self.log        = log
 
@@ -160,7 +160,7 @@ class Logger(object):
         self.soloLevel  = None
         self.setName(name)
 
-        for function, data in self.config.items():
+        for function, data in self.config['levels'].items():
             solo     = data['solo']
             name     = data['name']
             enabled  = data['enabled']
@@ -199,7 +199,8 @@ class Logger(object):
 
     def _out(self, level, msg):
         '''
-        Evalulate input arguments and settings, output the appropriate locations
+        Evalulate input arguments and settings, output the appropriate
+        locations
 
         @param level: The requested level to output
         @type  level: Logger.Level
@@ -241,3 +242,7 @@ class Logger(object):
     def close(self):
         '''Close out the log file'''
         self.log.close()
+
+if __name__ == '__main__':
+    log = Logger('test')
+    log.debug('test')
