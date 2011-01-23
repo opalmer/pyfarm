@@ -22,35 +22,43 @@
     You should have received a copy of the GNU Lesser General Public License
     along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 -->
-
 <Settings>
     <globals>
-        <attr name="defaultLevel" value="0" />
-        <attr name="enforceLevel" value="False" />
+        <attr name="defaultSolo" value="False" />
         <attr name="allowSolo" value="False" />
+        <attr name="defaultSolo" value="False" />
+        <attr name="defaultLevel" value="4" />
+        <attr name="forceLevel" value="False" />
         <attr name="template" value="$time - $logger - $level - $message" />
         <attr name="timeFormat" value="%Y-%m-%d %H:%M:%S" />
     </globals>
     <levels>
-        <level name="sqlite" enabled="False" solo="False" />
-        <level name="netpacket" enabled="True" solo="False" />
-        <level name="queue" enabled="True" solo="False" />
-        <level name="conditional" enabled="False" solo="False" />
-        <level name="module import" function="module" enabled="True" solo="False" />
-        <level name="network.server" function="netserver" enabled="True" solo="False" />
-        <level name="network.client" function="netclient" enabled="True"  solo="False" />
-        <level name="network" enabled="False" solo="False" />
-        <level name="ui" enabled="True" solo="False" />
-        <level name="fixme" enabled="True" solo="False" />
-        <level name="not implemented" function="notimplemented" enabled="True" solo="False" />
-        <level name="debug" enabled="True" solo="False" />
-        <level name="info" enabled="True" solo="False" />
-        <level name="not compatible" function="notcompatible" enabled="True" solo="False" />
-        <level name="warning" enabled="True" solo="False" />
-        <level name="deprecated" enabled="True" solo="False" />
-        <level name="error" enabled="True" solo="False" />
-        <level name="critical" enabled="True" solo="False" />
-        <level name="fatal" enabled="True" solo="False" />
-        <level name="terminate" enabled="True" solo="False" />
+        <!--
+            Attributes:
+                Name: The value to call the individual log level
+                Function: The function call to the log level (defaults: same as name)
+                Enabled: Turn an individual log level on or off (default: True)
+                Solo: Isolate the output of a level (default: False)
+        -->
+        <level name="sqlite" />
+        <level name="netpacket" />
+        <level name="queue" />
+        <level name="conditional" />
+        <level name="module import" function="module" />
+        <level name="network.server" function="netserver" />
+        <level name="network.client" function="netclient" />
+        <level name="network" />
+        <level name="ui" />
+        <level name="fixme" />
+        <level name="not implemented" function="notimplemented" />
+        <level name="debug" />
+        <level name="info" />
+        <level name="not compatible" function="notcompatible" />
+        <level name="warning" />
+        <level name="deprecated" />
+        <level name="error" />
+        <level name="critical" />
+        <level name="fatal" />
+        <level name="terminate" />
     </levels>
 </Settings>

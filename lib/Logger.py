@@ -23,68 +23,77 @@ import os
 import sys
 import time
 import string
-from xml.dom import minidom
+import xml.etree.ElementTree
 
 CWD    = os.path.dirname(os.path.abspath(__file__))
 PYFARM = os.path.abspath(os.path.join(CWD, ".."))
 MODULE = os.path.basename(__file__)
 if PYFARM not in sys.path: sys.path.append(PYFARM)
 
-# default values for all loggers
-DEFAULT_LEVEL   = 4
-DEFAULT_SOLO    = False
-
-# overrides and global settings
-GLOBAL_LEVEL    = False
-GLOBAL_OVERRIDE = False
-GLOBAL_SOLO     = False
 XML_CONFIG      = os.path.join(PYFARM, "cfg", "logger.xml")
 
-def settings(path):
+def settings(path=XML_CONFIG):
     '''
-    Load and return settings information from the given xml file
+    Read in an xml file and return a settings dictionary for use
+    by the logger
 
-    @param path: full path to the xml file
-    @type  path: C{str}s
+    @param path: The path to the xml configuration file
+    @type  path: C{str}
     '''
-    if not os.path.isfile(path):
-        raise IOError('%s is not a vaild file path' % path)
+    out  = {}
+    try:
+        if not os.path.isfile(path):
+            raise IOError('%s is not a vaild file path' % path)
 
-    level   = 0
-    out     = {}
-    xml     = minidom.parse(path)
-    globals = out['globals'] = {}
-    levels  = out['levels']  = {}
+        dom  = xml.etree.ElementTree.parse(path)
+        root = dom.getroot()
 
-    for attrib in xml.getElementsByTagName("attr"):
-        globals['name']  = str(attrib.getAttribute("name"))
-        globals['value'] = str(attrib.getAttribute("value"))
+        for child in root.getchildren():
+            for element in child.getchildren():
+                if not out.has_key(child.tag):
+                    out[child.tag] = {}
 
-    for element in xml.getElementsByTagName("level"):
-        name    = str(element.getAttribute("name"))
-        enabled = eval(element.getAttribute("enabled"))
-        solo    = eval(element.getAttribute("solo"))
+                if element.tag == "attr":
+                    # add global settings value to the dictionary
+                    name                 = element.attrib['name']
+                    value                = element.attrib['value']
 
-        # retrieve function name
-        if element.hasAttribute("function"):
-            function = str(element.getAttribute("function"))
-        else:
-            function = name
+                    if name != 'template':
+                        out[child.tag][name] = value
+                    else:
+                        out[child.tag][name] = string.Template(value)
 
-        # place element into output dictionary
-        levels[name] = {
-                           'level'    : level,
-                           'name'     : name,
-                           'function' : function,
-                           'solo'     : solo,
-                           'enabled'  : enabled,
-                           'template' : string.Template(
-                           '$time - $logger - %s - $message' % name.upper()
-                           )
-                      }
-        level += 1
+                elif element.tag == "level":
+                    # check and see if the function key exists, if it does
+                    # not assume we are going to use the name for the function
+                    # call
+                    if not element.attrib.has_key('function'):
+                        element.attrib['function'] = element.attrib['name']
 
-    return out
+                    # assume the level is enabled if we don't find the attribute
+                    if not element.attrib.has_key('enabled'):
+                        element.attrib['enabled'] = True
+                    else:
+                        element.attrib['enabled'] = eval(element.attrib['enabled'])
+
+                    # assume solo is False if we don't find the attribute
+                    if not element.attrib.has_key('solo'):
+                        element.attrib['solo'] = False
+                    else:
+                        element.attrib['solo'] = eval(element.attrib['solo'])
+
+                    # assign the level's dictionary to the full level
+                    # dictionary
+                    out['levels'][element.attrib['name']] = element.attrib
+
+    except IOError:
+        print "Could not read logger config, file does not exist: %s" % path
+
+    except xml.parsers.expat.ExpatError:
+        print "Failed to parse XML properly!"
+
+    finally:
+        return out
 
 
 class LevelName(object):
@@ -133,27 +142,25 @@ class Logger(object):
 
     @param name: Name of logger to create
     @type  name: C{str}
-    @param solo: If enabled, solo values will be respected for this logger
-    @type  solo: C{bool}
+    @param level: The maximum level to output
+    @type  level: C{int}
     @param log: File to log to
     @type  log: C{str}
+    @param solo: If enabled, solo values will be respected for this logger
+    @type  solo: C{bool}
     @param writeOnly: Write to disk only, do not print to stdout
     @type  writeOnly: C{bool}
     '''
-    def __init__(self, name, level=DEFAULT_LEVEL, log=None, solo=DEFAULT_SOLO, writeOnly=False):
-        self.level      = level
-        self.solo       = solo
+    def __init__(self, name, level=None, log=None, writeOnly=False):
         self.writeOnly  = writeOnly
-        self.config     = settings(XML_CONFIG)
-        self.timeFormat = "%Y-%m-%d %H:%M:%S"
+        self.config     = settings()
         self.log        = log
+        self.disabled   = False
+        self.level      = level or self.config['globals']['defaultLevel']
 
         # override level and solo if they are defined above
-        if GLOBAL_LEVEL:
-            self.level = DEFAULT_LEVEL
-
-        if GLOBAL_SOLO:
-            self.solo  = DEFAULT_SOLO
+        if eval(self.config['globals']['forceLevel']):
+            self.level = int(self.config['globals']['defaultLevel'])
 
         self.levels     = []
         self.levelCalls = []
@@ -161,11 +168,11 @@ class Logger(object):
         self.setName(name)
 
         for function, data in self.config['levels'].items():
-            solo     = data['solo']
-            name     = data['name']
-            enabled  = data['enabled']
-            function = data['function']
-            level    = self.newLevel(name, enabled, function)
+            solo                 = data['solo']
+            name                 = data['name']
+            enabled              = data['enabled']
+            function             = data['function']
+            level                = self.newLevel(name, enabled, function)
             vars(self)[function] = level
 
             if solo and not self.soloLevel:
@@ -207,22 +214,22 @@ class Logger(object):
         @param msg: the message to print
         @type  msg: C{str}
         '''
-        if level.name in self.levels:
-            cfg         = self.config[level.name]
+        if level.name in self.levels and not self.disabled:
+            cfg         = self.config['levels'][level.name]
             enabled     = cfg['enabled']
             solo        = cfg['solo']
             enabledSolo = solo and enabled
             soloLevel   = self.soloLevel and enabled
 
             if enabledSolo or not soloLevel or solo and not enabled:
-                template = cfg['template']
-                out      = (
-                            template.substitute(
-                              time=time.strftime(self.timeFormat),
-                              logger=self.name,
-                              message=msg
-                            )
-                           )
+                out = (
+                       self.config['globals']['template'].substitute(
+                         time=time.strftime(self.config['globals']['timeFormat']),
+                         logger=self.name,
+                         level=level.name.upper(),
+                         message=msg
+                       )
+                      )
 
                 print out
 
@@ -242,7 +249,3 @@ class Logger(object):
     def close(self):
         '''Close out the log file'''
         self.log.close()
-
-if __name__ == '__main__':
-    log = Logger('test')
-    log.debug('test')
