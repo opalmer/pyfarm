@@ -150,7 +150,7 @@ class MainWindow(QtGui.QMainWindow):
 
     def runServers(self):
         '''Run the background servers required to operate PyFarm'''
-        listenAddress    = QtNetwork.QHostAddress.Any
+        listenAddress    = QtNetwork.QHostAddress(QtNetwork.QHostAddress.Any)
         self.queueServer = tcp.Queue.QueueServer(main=self)
         self.adminServer = tcp.Admin.AdminServer(main=self)
         queueServerPort  = self.config['servers']['queue']

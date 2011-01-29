@@ -27,7 +27,7 @@ import fnmatch
 import platform
 import tempfile
 
-from PyQt4 import QtNetwork
+from PyQt4 import QtNetwork, QtCore
 
 CWD    = os.path.dirname(os.path.abspath(__file__))
 PYFARM = os.path.abspath(os.path.join(CWD, "..", ".."))
@@ -225,13 +225,6 @@ class Network(object):
     def ip(self):
         '''Return the ip address'''
         return self._ip()
-        #results = None
-        #if os.name == "posix":
-            #results = self._ip()
-        #else:
-            #results = socket.gethostbyname(self.hostname())
-
-        #return results
 
     def subnet(self):
         '''Return subnet information for the adapter'''
@@ -257,3 +250,17 @@ class Network(object):
     def hostname(self):
         '''Return the hostname'''
         return HOSTNAME
+
+
+class Qt(object):
+    '''Setup and return information about Qt'''
+    VERSION_STR   = QtCore.QT_VERSION_STR
+    VERSION_MAJOR = int(VERSION_STR.split('.')[0])
+    VERSION_MINOR = int(VERSION_STR.split('.')[1])
+
+
+class PyQt(object):
+    '''Setup and return information about PyQt'''
+    VERSION_STR   = QtCore.PYQT_VERSION_STR
+    VERSION_MAJOR = int(VERSION_STR.split('.')[0])
+    VERSION_MINOR = int(VERSION_STR.split('.')[1])
