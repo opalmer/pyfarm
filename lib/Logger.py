@@ -30,7 +30,7 @@ PYFARM = os.path.abspath(os.path.join(CWD, ".."))
 MODULE = os.path.basename(__file__)
 if PYFARM not in sys.path: sys.path.append(PYFARM)
 
-XML_CONFIG      = os.path.join(PYFARM, "cfg", "logger.xml")
+XML_CONFIG = os.path.join(PYFARM, "cfg", "logger.xml")
 
 def settings(path=XML_CONFIG):
     '''
@@ -55,8 +55,8 @@ def settings(path=XML_CONFIG):
 
                 if element.tag == "attr":
                     # add global settings value to the dictionary
-                    name                 = element.attrib['name']
-                    value                = element.attrib['value']
+                    name  = element.attrib['name']
+                    value = element.attrib['value']
 
                     if name != 'template':
                         out[child.tag][name] = value
@@ -155,8 +155,11 @@ class Logger(object):
         self.writeOnly  = writeOnly
         self.config     = settings()
         self.log        = log
-        self.disabled   = False
         self.level      = level or self.config['globals']['defaultLevel']
+
+        # setting this property to false during execucution will
+        # disable this logger
+        self.disabled   = False
 
         # override level and solo if they are defined above
         if eval(self.config['globals']['forceLevel']):
