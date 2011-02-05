@@ -32,7 +32,8 @@ if PYFARM not in sys.path: sys.path.append(PYFARM)
 
 from lib import Logger, net
 
-UNIT16 = 8
+UNIT16         = 8
+STREAM_VERSION = net.dataStream()
 
 class AdminClient(QtCore.QObject):
     '''

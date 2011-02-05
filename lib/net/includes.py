@@ -26,10 +26,14 @@ import os
 import sys
 import socket
 
+from PyQt4 import QtCore
+
 CWD    = os.path.dirname(os.path.abspath(__file__))
 PYFARM = os.path.abspath(os.path.join(CWD, "..", ".."))
 MODULE = os.path.basename(__file__)
 if PYFARM not in sys.path: sys.path.append(PYFARM)
+
+from lib import system
 
 class ServerFault(Exception):
     '''Raised when a service experiences a serious error'''
@@ -72,3 +76,9 @@ def lookupHostname(ip):
     NOTE: Requires DNS
     '''
     return socket.gethostbyaddr(ip)[0]
+
+def dataStream():
+    '''Return the proper data stream to use for tcp servers'''
+    major = system.Info.Qt.VERSION_MAJOR
+    minor = system.Info.Qt.VERSION_MINOR
+    return eval("QtCore.QDataStream.Qt_%i_%i" % (major, minor))

@@ -35,6 +35,7 @@ CFG_ROOT  = os.path.join(PYFARM, "cfg")
 ICN_ROOT  = os.path.join(PYFARM, "icons")
 QUE_ICN   = os.path.join(ICN_ROOT, "queue")
 CFG_GEN   = os.path.join(CFG_ROOT, "general.ini")
+UI_FILE   = os.path.join(PYFARM, "lib", "ui", "MainWindow.ui")
 DEVELOPER = 'Oliver Palmer'
 HOMEPAGE  = 'http://www.pyfarm.net'
 VERSION   = '0.5.0'
@@ -64,15 +65,7 @@ class MainWindow(QtGui.QMainWindow):
             self.pidFile.write()
 
         # load the ui file
-        self.ui = uic.loadUi(
-                                os.path.join(
-                                                PYFARM,
-                                                "lib",
-                                                "ui",
-                                                "MainWindow.ui"
-                                            ),
-                                            baseinstance=self
-                            )
+        self.ui = uic.loadUi(UI_FILE, baseinstance=self)
 
         # setup layouts
         self.setWindowTitle("PyFarm -- Version %s" % VERSION)
@@ -157,29 +150,48 @@ class MainWindow(QtGui.QMainWindow):
 
     def runServers(self):
         '''Run the background servers required to operate PyFarm'''
-        listenAddress    = QtNetwork.QHostAddress.Any
+        listenAddress    = QtNetwork.QHostAddress(QtNetwork.QHostAddress.Any)
         self.queueServer = tcp.Queue.QueueServer(main=self)
         self.adminServer = tcp.Admin.AdminServer(main=self)
         queueServerPort  = self.config['servers']['queue']
         adminServerPort  = self.config['servers']['admin']
 
-        if not self.queueServer.listen(listenAddress, queueServerPort):
-            error = "Could not start the queue server: %s" % self.queueServer.errorString()
-            log.fatal(error)
+        try:
 
-            if not DEBUG:
-                raise lib.net.ServerFault(error)
-            else:
-                log.warning("Bypassing exception!!!")
+            if not self.queueServer.listen(listenAddress, queueServerPort):
+                errStr = self.queueServer.errorString()
+                error  = "Could not start the queue server: %s" % errStr
+                log.fatal(error)
 
-        if not self.adminServer.listen(listenAddress, adminServerPort):
-            error = "Could not start the admin server: %s" % self.adminServer.errorString()
-            log.fatal(error)
+                if not DEBUG:
+                    raise lib.net.ServerFault(error)
+                else:
+                    log.warning("Bypassing exception!!!")
 
-            if not DEBUG:
-                raise lib.net.ServerFault(error)
-            else:
-                log.warning("Bypassing exception!!!")
+        except TypeError:
+            log.critical("Invalid type passed to queueServer.listen")
+            self.updateConsole(
+                                "server.error", "Failed to start Queue Server",
+                                color="red"
+                              )
+
+        try:
+            if not self.adminServer.listen(listenAddress, adminServerPort):
+                errStr = self.adminServer.errorString()
+                error  = "Could not start the admin server: %s" % errStr
+                log.fatal(error)
+
+                if not DEBUG:
+                    raise lib.net.ServerFault(error)
+                else:
+                    log.warning("Bypassing exception!!!")
+
+        except TypeError:
+            log.critical("Invalid type passed to adminServer.listen")
+            self.updateConsole(
+                                "server.error", "Failed to start Admin Server",
+                                color="red"
+                              )
 
     # MainWindow slots, actions, and processes
     # Other actions could include:
@@ -254,205 +266,7 @@ class MainWindow(QtGui.QMainWindow):
     def globalPoint(self, widget, point):
         '''Return the global position for a given point on a widget'''
         return widget.mapToGlobal(point)
-#################################
-### BEGIN Context Menus
-#################################
-#
-#    def CreateContextMenus(self):
-#        '''
-#        Create the custom context menus in advance so
-#        they will not need to be created later.
-#        '''
-#        # create a context menu for the job table
-#        jobContext = QMenu()
-#        jobContext.addAction('Hello')
-#        self.jobContextMenu = jobContext
-#
-#    def currentJobsContextMenu(self, pos):
-#        menu = QMenu()
-#        menu.addAction('Job Details', self.JobDetails)
-#        menu.addAction('Remove Job', self.RemoveJobFromTable)
-#        menu.exec_(self.globalPoint(self.ui.currentJobs, pos))
-#
-#    def houdiniNodeListMenu(self, pos):
-#        '''
-#        Popup a custom context menu for the houdini
-#        node list
-#        '''
-#        menu = QMenu()
-#        menu.addAction('Add Node', self.houdiniAddOutputNode)
-#        menu.addAction('Remove Node', self.houdiniNodeListRemoveSelected)
-#        menu.addAction('Empty List', self.houdiniNodeListEmpty)
-#        menu.exec_(self.globalPoint(self.ui.houdiniNodeList, pos))
-#
-#    def mayaCameraEditMenu(self):
-#        '''Popup small menu to edit the camera list'''
-#        widget = self.ui.mayaAddCamera
-#        menu = QMenu()
-#        menu.addAction('Add Camera',self.mayaAddCamera)
-#        menu.addAction('Remove Camera', self.mayaRemoveCamera)
-#        menu.addAction('Empty List', self.ui.mayaCamera.clear)
-#        menu.exec_(self.globalPoint(widget, -widget.mapToParent(-widget.pos())))
-#
-#    def mayaRenderLayersListMenu(self, pos):
-#        '''
-#        Popup a custom context menu for the maya render
-#        layer list
-#        '''
-#        menu = QMenu()
-#        menu.addAction('Add Layer', self.mayaAddLayer)
-#        menu.addAction('Remove Layer', self.mayaRenderLayerRemove)
-#        menu.addAction('Empty List', self.mayaRenderLayerEmpty)
-#        menu.exec_(self.globalPoint(self.ui.mayaRenderLayers, pos))
-#
-##############################
-### END Context Menu
-### BEGIN Host Management
-#################################
-#    def _getHostSelection(self):
-#        '''
-#        Get the current host selection
-#
-#        OUTPUT:
-#            list2 - [rowNum, [hostname, ipaddress, status]]
-#        '''
-#        output = []
-#        tmp = []
-#        output.append(list(self.ui.networkTable.selectedIndexes())[0].row())
-#        for i in list(self.ui.networkTable.selectedItems()):
-#            tmp.append(str(i.text()))
-#
-#        output.append(tmp)
-#
-#        return output
-#
-#    def _customHostDialog(self):
-#        ''''Open a dialog to add a custom host'''
-#        self.customHostDialog = AddHostDialog()
-#        self.connect(self.customHostDialog.buttons, SIGNAL("accepted()"), self._addCustomHost)
-#        self.customHostDialog.exec_()
-#
-#    def _addCustomHost(self):
-#        '''Add the custom host to self.hosts and the gui, close the dialog'''
-#        host = self.customHostDialog.inputHost.text()
-#        self.addHost(str(host))
-#        self.customHostDialog.close()
-#
-#    def initHost(self, info):
-#        '''Given the captured information, add it to self.generalData'''
-#        infosplit = info.split('||')
-#        sysinfo = infosplit[0].split(',')
-#        softwareList = infosplit[1:]
-#
-#        # first process the system info
-#        for entry in sysinfo:
-#            try:
-#                key, value = entry.split('::')
-#                if str(key) == 'ip':
-#                    ip = str(value)
-#                elif str(key) == 'hostname':
-#                    hostname = str(value)
-#                elif str(key) == 'os':
-#                    os = str(value)
-#                elif str(key) == 'arch':
-#                    arch = str(value)
-#            except ValueError:
-#                pass
-#
-#        softwareDict = {}
-#        for software in softwareList:
-#            version, location, generic = software.split('::')
-#            if str(generic) not in softwareDict:
-#                softwareDict[str(generic)] = {}
-#                softwareDict[str(generic)][str(version)] = str(location)
-#            else:
-#                softwareDict[str(generic)][str(version)]  = str(location)
-#
-#        try:
-#            self.dataGeneral.addHost(ip, hostname, os, arch, softwareDict)
-#        except UnboundLocalError:
-#            pass
-#
-#    def showHostInfo(self):
-#        '''Show some info about the host'''
-#        widget = HostInfo()
-#
-#        # gather information
-#        row = self.ui.networkTable.currentRow()
-#        host = self.dataGeneral.network.host
-#
-#        try:
-#            ip = str(self.ui.networkTable.item(row, 0).text())
-#        except AttributeError:
-#            self.msg.info("Please select a host first.", "Before viewing information about a host you must first select one from the network table list.")
-#
-#        # apply it to the widgets
-#        widget.ui.ipAddress.setText(ip)
-#        widget.ui.hostname.setText(host.hostname(ip))
-#        widget.ui.status.setText(host.status(ip, text=True))
-#        widget.ui.os.setText(host.os(ip))
-#        widget.ui.architecture.setText(host.architecture(ip))
-#        widget.ui.rendered.setText(host.rendered(ip, string=True))
-#        widget.ui.failed.setText(host.failed(ip, string=True))
-#        widget.ui.failureRate.setText(host.failureRate(ip, string=True))
-#
-#        # add the software the the tree widget
-#        software = host.softwareDict(ip)
-#        softwareTree = widget.ui.softwareTree
-#        for key in software.keys():
-#            item = QTreeWidgetItem()
-#            item.setText(0, QString(key))
-#            for entry in host.installedVersions(ip, key):
-#                entryItem = QTreeWidgetItem()
-#                try:
-#                    entryItem.setText(0, QString(entry.split(' ')[1]))
-#                # unless we can't split the name
-#                except IndexError:
-#                    entryItem.setText(0, QString(entry))
-#                item.addChild(entryItem)
-#            softwareTree.addTopLevelItem(item)
-#
-#        # open the widget
-#        widget.exec_()
-#################################
-### END Host Management
-#################################
-#    def workSent(self, work):
-#        '''Inform the user that a job is being sent'''
-#        self.updateConsole('NETWORK', 'Sending frame %s from job %s to %s' % (work[2], work[1], work[0]), 'green')
-#
-#    def workComplete(self, worker):
-#        '''Inform the user of done frames'''
-#        ip = worker[0]
-#        job = worker[1]
-#        frame = worker[2]
-#        self.updateConsole('QUEUE', '%s completed frame %s of job %s' % (ip, frame, job), 'brown')
-#
-#    def killRender(self):
-#        '''Kill the current job'''
-#        self.ui.cancelRender.setEnabled(False)
-#        self.que.emptyQue()
-#        # send the kill job to clients !
-#        self.updateConsole('QUEUE', '%s frames waiting to render' % self.que.size(), 'brown')
-#        self.ui.render.setEnabled(True)
-#
-#        self.updateConsole('NETWORK', 'Searching for hosts...', 'green')
-#        findHosts = udp.Broadcast.BroadcastSender(__UUID__, self)
-#        progress = ProgressDialog(QString("Network Broadcast Progress"), \
-#                                                            QString("Cancel Broadcast"), \
-#                                                            0, settings.broadcastValue('maxCount'), self)
-#
-#        self.connect(progress, SIGNAL("canceled()"), findHosts.quit)
-#        self.connect(findHosts, SIGNAL("next"), progress.next)
-#        self.connect(findHosts, SIGNAL("done"), self.dataGeneral.uiStatus.pyfarm.setNetwork)
-#        self.dataGeneral.uiStatus.pyfarm.setMaster(1)
-#        self.dataGeneral.uiStatus.pyfarm.setNetwork(1)
-#        progress.show()
-#        findHosts.run()
-#
-#################################
-### END Job/Que System
-#################################
+
     def updateConsole(self, section, msg, color='black'):
         '''
         Update the ui's status window

@@ -34,8 +34,7 @@ if PYFARM not in sys.path: sys.path.append(PYFARM)
 from lib import Logger, system, net
 
 UNIT16         = 8
-STREAM_VERSION = QtCore.QDataStream.Qt_4_2
-
+STREAM_VERSION = net.dataStream()
 
 class QueueClient(QtCore.QObject):
     '''
