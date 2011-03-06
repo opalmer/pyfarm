@@ -29,7 +29,8 @@
         <attr name="defaultSolo" value="False" />
         <attr name="defaultLevel" value="4" />
         <attr name="forceLevel" value="False" />
-        <attr name="template" value="$time - $logger - $level - $message" />
+        <attr name="template" value="$level - $logger - $message" />
+        <!--<attr name="template" value="$time - $logger - $level - $message" />-->
         <attr name="timeFormat" value="%Y-%m-%d %H:%M:%S" />
     </globals>
     <levels>

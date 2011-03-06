@@ -23,6 +23,7 @@ import os
 import sys
 import time
 import string
+import inspect
 import xml.etree.ElementTree
 
 CWD    = os.path.dirname(os.path.abspath(__file__))
@@ -224,12 +225,25 @@ class Logger(object):
             enabledSolo = solo and enabled
             soloLevel   = self.soloLevel and enabled
 
+            # stack inspection
+            stack  = inspect.stack()[2]
+            frame  = stack[0]
+            split  = stack[1].split(os.sep)
+            head   = split[-2]
+            tail   = split[-1].split(".")[0]
+            module = '.'.join((head, tail))
+
+            if head == '.':
+                module = tail
+
+            trace  = "%s:%i" % (module, frame.f_lineno)
+
             if enabledSolo or not soloLevel or solo and not enabled:
                 out = (
                        self.config['globals']['template'].substitute(
                          time=time.strftime(self.config['globals']['timeFormat']),
-                         logger=self.name,
-                         level=level.name.upper(),
+                         logger="%15s" % trace,
+                         level="%15s"  % level.name.upper(),
                          message=msg
                        )
                       )
