@@ -1,8 +1,9 @@
+#!/usr/bin/env python
 '''
 HOMEPAGE: www.pyfarm.net
-INITIAL: Nov 21 2010
-PURPOSE [FOR DEVELOPMENT PURPOSES ONLY]:
-    Read and return host information.
+INITIAL: Mar 06 2011
+PURPOSE: Theaded TCP server with the intent of performance testing
+and transmission of large data objects (files).
 
     This file is part of PyFarm.
     Copyright (C) 2008-2011 Oliver Palmer
@@ -20,13 +21,3 @@ PURPOSE [FOR DEVELOPMENT PURPOSES ONLY]:
     You should have received a copy of the GNU Lesser General Public License
     along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 '''
-
-import os
-import socket
-import linecache
-
-def hostname():
-    return socket.hostname
-
-def ip():
-    raise NotImplementedError('Cannot return ip, not implemented')
