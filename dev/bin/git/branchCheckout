@@ -1,0 +1,5 @@
+#!/bin/sh
+
+base=`dirname $0`
+git checkout --track -b $1 origin/$1
+cd $base+"../../../branches/$0"
