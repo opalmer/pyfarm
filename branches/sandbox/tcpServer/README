@@ -1,5 +1,0 @@
-The final test will require test data.  It should contain both pure random data:
-dd if=/dev/random of=random_MEGS bs=xMB count=1
-
-And large ascii sets:
-http://desktoppub.about.com/library/weekly/lorem.txt
