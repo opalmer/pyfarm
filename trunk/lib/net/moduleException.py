@@ -1,9 +1,8 @@
 '''
 HOMEPAGE: www.pyfarm.net
-INITIAL: Dec 5 2010
-PURPOSE: Minor functions to be used by the entire package when lib is imported
+INITIAL: Mar. 14 2011
+PURPOSE: Contains exceptions for use by other network libraries
 
-This file is part of PyFarm.
 Copyright (C) 2008-2011 Oliver Palmer
 
 PyFarm is free software: you can redistribute it and/or modify
@@ -19,21 +18,19 @@ GNU Lesser General Public License for more details.
 You should have received a copy of the GNU Lesser General Public License
 along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 '''
+
 import os
 import sys
-import imp
 
 CWD    = os.path.dirname(os.path.abspath(__file__))
 PYFARM = os.path.abspath(os.path.join(CWD, ".."))
 MODULE = os.path.basename(__file__)
 if PYFARM not in sys.path: sys.path.append(PYFARM)
 
-def importFile(filename,  verbose=False):
-    (path, name) = os.path.split(filename)
-    (name, ext) = os.path.splitext(name)
-    try:
-        (file, filename, data) = imp.find_module(name, [path])
+class ServerFault(Exception):
+    '''Raised when a service experiences a serious error'''
+    def __init__(self, value):
+        self.value = value
 
-    except ImportError, e:
-        raise ImportError(e)
-    return imp.load_module(name, file, filename, data)
+    def __str__(self):
+        return repr(self.value)

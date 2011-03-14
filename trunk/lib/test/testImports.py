@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 '''
 HOMEPAGE: www.pyfarm.net
 INITIAL: Oct 07 2010

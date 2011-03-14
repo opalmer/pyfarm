@@ -1,25 +1,24 @@
-#!/usr/bin/env python
 '''
 HOMEPAGE: www.pyfarm.net
 INITIAL: Aug 10 2010
 PURPOSE: Runs test suite on logging config file to verify that it's
 setup properly
 
-    This file is part of PyFarm.
-    Copyright (C) 2008-2011 Oliver Palmer
+This file is part of PyFarm.
+Copyright (C) 2008-2011 Oliver Palmer
 
-    PyFarm is free software: you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
+PyFarm is free software: you can redistribute it and/or modify
+it under the terms of the GNU Lesser General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
 
-    PyFarm is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+PyFarm is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Lesser General Public License for more details.
 
-    You should have received a copy of the GNU Lesser General Public License
-    along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
+You should have received a copy of the GNU Lesser General Public License
+along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 '''
 import re
 import os
@@ -33,11 +32,11 @@ PYFARM = os.path.abspath(os.path.join(CWD, "..", ".."))
 MODULE = os.path.basename(__file__)
 if PYFARM not in sys.path: sys.path.append(PYFARM)
 
-from lib import Logger
+from lib import logger
 
 class Validate(unittest.TestCase):
     def setUp(self):
-        self.log = Logger.Logger('LevelTest')
+        self.log = logger.Logger('LevelTest')
         self.xml = minidom.parse(Logger.XML_CONFIG)
 
     def testLevelsExist(self):

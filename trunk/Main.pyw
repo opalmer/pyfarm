@@ -35,7 +35,7 @@ CFG_ROOT  = os.path.join(PYFARM, "cfg")
 ICN_ROOT  = os.path.join(PYFARM, "icons")
 QUE_ICN   = os.path.join(ICN_ROOT, "queue")
 CFG_GEN   = os.path.join(CFG_ROOT, "general.ini")
-UI_FILE   = os.path.join(PYFARM, "lib", "ui", "MainWindow.ui")
+UI_FILE   = os.path.join(PYFARM, "lib", "ui", "mainWindow.ui")
 DEVELOPER = 'Oliver Palmer'
 HOMEPAGE  = 'http://www.pyfarm.net'
 VERSION   = '0.5.0'
@@ -46,16 +46,16 @@ UNITTESTS = False
 import lib.net
 import cfg.resources_rc
 from lib.net import tcp, udp
-from lib import db, Logger, ui, Slots, Settings, Session, system
+from lib import db, logger, ui, slots, settings, session, system
 
 # setup logging
-log = Logger.Logger(MODULE, LOGLEVEL)
+log = logger.Logger(MODULE, LOGLEVEL)
 
 class MainWindow(QtGui.QMainWindow):
     '''This is the controlling class for the main gui'''
     def __init__(self):
         super(MainWindow, self).__init__()
-        self.pidFile     = Session.State(context=CONTEXT)
+        self.pidFile     = session.State(context=CONTEXT)
         self.closeForced = False
 
         if self.pidFile.running() or self.pidFile.exists():
@@ -81,7 +81,7 @@ class MainWindow(QtGui.QMainWindow):
         # setup database
         netTable       = self.ui.networkTable
         jobTable       = self.ui.currentJobs
-        SqlTable       = ui.SqlTables
+        SqlTable       = ui.sqlTables
         netColumns     = ("hostname", "ip", "status")
         netSort        = "hostname"
         self.hostTable = SqlTable.Manager(SQL, netTable, "hosts", netColumns, sort=netSort)
@@ -105,8 +105,8 @@ class MainWindow(QtGui.QMainWindow):
 
         # general setup and variables
         self.isClosing = False
-        self.config    = Settings.ReadConfig.general(CFG_GEN)
-        self.slots     = Slots.Slots(self, self.config, SQL)
+        self.config    = settings.ReadConfig.general(CFG_GEN)
+        self.slots     = slots.Slots(self, self.config, SQL)
         self.runServers()
 
     def refreshHosts(self):
@@ -151,8 +151,8 @@ class MainWindow(QtGui.QMainWindow):
     def runServers(self):
         '''Run the background servers required to operate PyFarm'''
         listenAddress    = QtNetwork.QHostAddress(QtNetwork.QHostAddress.Any)
-        self.queueServer = tcp.Queue.QueueServer(main=self)
-        self.adminServer = tcp.Admin.AdminServer(main=self)
+        self.queueServer = tcp.queue.QueueServer(main=self)
+        self.adminServer = tcp.admin.AdminServer(main=self)
         queueServerPort  = self.config['servers']['queue']
         adminServerPort  = self.config['servers']['admin']
 
@@ -318,10 +318,10 @@ class Testing(QtCore.QObject):
         log.terminate("Testing Terminated")
 
 if __name__ != '__MAIN__':
-    import lib.InputFlags as flags
+    import lib.inputFlags as flags
     from optparse import OptionParser
     about   = flags.About(DEVELOPER, 'GNU-LGPL_Header.txt')
-    sysinfo = system.Info.SystemInfo(os.path.join(CFG_ROOT, "general.ini"))
+    sysinfo = system.info.SystemInfo(os.path.join(CFG_ROOT, "general.ini"))
 
     # Command Line Options
     parser = OptionParser(version="PyFarm v%s" % VERSION)
@@ -357,7 +357,7 @@ if __name__ != '__MAIN__':
         testVerbosity = 0
 
     # prepare test
-    from lib.test import ModuleImports
+    from lib.test import testImports
     msg = "Running Unit Test: Version and Module Check"
     #log.info(msg)
 
@@ -366,7 +366,7 @@ if __name__ != '__MAIN__':
     #unittest.TextTestRunner(verbosity=testVerbosity).run(test)
 
     # prepare test
-    from lib.test import ValidateLogging
+    from lib.test import testLogging
     msg = "Running Unit Test: Logging"
     #log.info(msg)
 
@@ -375,7 +375,7 @@ if __name__ != '__MAIN__':
     #unittest.TextTestRunner(verbosity=testVerbosity).run(test)
 
     # prepare test
-    from lib.test import ValidateNetConfig
+    from lib.test import testNetConfig
     msg = "Running Unit Test: Network Configuration"
     #log.info(msg)
 
