@@ -26,6 +26,7 @@ import os
 import sys
 import struct
 import socket
+import fnmatch
 
 from PyQt4 import QtCore, QtNetwork
 
@@ -37,7 +38,7 @@ if PYFARM not in sys.path: sys.path.append(PYFARM)
 import lib.net.errors
 from lib import system
 
-LOCAL_ADDRESSES = ('127.0.0.1', '0.0.0.0')
+LOCAL_ADDRESSES = ('127.0.*.*', '0.0.0.0')
 
 class AddressEntry(object):
     '''
@@ -76,6 +77,14 @@ class AddressEntry(object):
         '''Convert a long integer to an ip address'''
         ip = entry.toIPv4Address()
         return socket.inet_ntoa(struct.pack('!L', ip))
+
+    @staticmethod
+    def isLocal(entry):
+        '''Return true if the given entry is a local ip address'''
+        for ipFilter in LOCAL_ADDRESSES:
+            if fnmatch.fnmatch(entry, ipFilter):
+                return True
+        return False
 
 
 class NetworkInterface(object):
@@ -116,7 +125,7 @@ class NetworkInterface(object):
         '''
         if addresses:
             for addr in addresses:
-                if addr.ip not in LOCAL_ADDRESSES:
+                if addr and not AddressEntry.isLocal(addr.ip):
                     return addr
 
     def __repr__(self):
@@ -225,7 +234,7 @@ def interface():
     dnsIp   = lookupAddress(dnsHost)
     for interface in interfaces():
         ip = interface.address.ip
-        if ip == dnsIp:
+        if ip == dnsIp or not AddressEntry.isLocal(ip):
             return interface
 
 def getPort():
