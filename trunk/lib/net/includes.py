@@ -64,14 +64,15 @@ class AddressEntry(object):
             self._broadcast = self.data.broadcast()
 
             # reprocessed entries
-            self.ip         = self._toIPv4(self._ip)
-            self.netmask    = self._toIPv4(self._netmask)
-            self.broadcast  = self._toIPv4(self._broadcast)
+            self.ip         = AddressEntry.toIPv4(self._ip)
+            self.netmask    = AddressEntry.toIPv4(self._netmask)
+            self.broadcast  = AddressEntry.toIPv4(self._broadcast)
 
     def __repr__(self):
         return self.ip or ''
 
-    def _toIPv4(self, entry):
+    @staticmethod
+    def toIPv4(entry):
         '''Convert a long integer to an ip address'''
         ip = entry.toIPv4Address()
         return socket.inet_ntoa(struct.pack('!L', ip))
@@ -92,13 +93,22 @@ class NetworkInterface(object):
         self.mac       = str(self.data.hardwareAddress())
         self.addresses = self._addresses()
         self.address   = self._filterAddresses(self.addresses)
-        #self.isLocal   = self._isLocal()
-        #self.isValid   = self._isValid()
-        
+
+        # shortcut attributes that point to the resolved address entry
+        if self.address:
+            self.ip        = self.address.ip
+            self.netmask   = self.address.netmask
+            self.broadcast = self.address.broadcast
+
+        else:
+            self.ip        = None
+            self.netmask   = None
+            self.broadcast = None
+
     def _addresses(self):
         '''Return a list of all network addresses'''
         return [ AddressEntry(addr) for addr in self.data.addressEntries() ]
-    
+
     def _filterAddresses(self, addresses):
         '''
         Filter the incoming list of address and return only the valid (non-
@@ -110,7 +120,7 @@ class NetworkInterface(object):
                     return addr
 
     def __repr__(self):
-        return self.humanName
+        return self.name
 
 
 class NetworkInterfaces(QtNetwork.QNetworkInterface):
@@ -129,7 +139,7 @@ class NetworkInterfaces(QtNetwork.QNetworkInterface):
         if mac and not mac.startswith("00:00:00"):
             return True
         return False
-    
+
     def _validAddresses(self, interface):
         '''Ensure that the given interface contains valid addresses'''
         if NetworkInterface(interface).addresses:
@@ -146,7 +156,7 @@ class NetworkInterfaces(QtNetwork.QNetworkInterface):
         qtValid   = interface.isValid()
         macValid  = self._validHardwareAddr(interface)
         validAddr = self._validAddresses(interface)
-        
+
         if qtValid and macValid and validAddr:
             return True
 
@@ -159,7 +169,7 @@ class NetworkInterfaces(QtNetwork.QNetworkInterface):
         for interface in self.allInterfaces():
             if self._validInterface(interface):
                 interfaces.append(NetworkInterface(interface))
-                
+
         return interfaces
 
 
@@ -185,31 +195,30 @@ def hostname(fqdn=False):
     @type  fqdn: C{bool}
     '''
     hostname = socket.gethostname()
+    fqdn     = socket.getfqdn(hostname)
     ip       = lookupAddress(hostname)
-    
-    if lookupHostname(lookupAddress(hostname)) == hostname:
+
+    if lookupHostname(lookupAddress(hostname)) in (hostname, fqdn):
         if fqdn:
             return socket.getfqdn(hostname)
         return hostname
-    
+
     else:
-        raise lib.net.errors.DNSMismatch("test")
-    
+        raise lib.net.errors.DNSMismatch("Resolved ip does not match hostname")
+
 def interfaces():
     '''Returns a list of interface objects'''
     return NetworkInterfaces().interfaces
-            
+
 def addresses():
     '''Returns all network addresses'''
-    for address in interfaces():
-        ip = address.toIPv4Address()
-        yield address
-        
+    return [AddressEntry.toIPv4(intr.toIPv4Address()) for intr in interfaces()]
+
 def interface():
     '''
     Return the best possible interface to use for connecting to the local
     network.  We do this by asking the network which network interface maches
-    the current hostname.  If the query fails or does not match we move onto 
+    the current hostname.  If the query fails or does not match we move onto
     the next network adapter.
     '''
     dnsHost = hostname(fqdn=True)
@@ -221,21 +230,28 @@ def interface():
 
 def getPort():
     '''Return an open port to use'''
-    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.bind(('localhost', 0))
+    ip = interface().ip
+    s  = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.bind((ip, 0))
     addr, port = s.getsockname()
     s.close()
     return port
 
 def isOpenPort(openPort):
-    '''Return an open port to use'''
+    '''
+    Ensure that the given port is available for use and can be bound.
+
+    @param openPort: The port to check
+    @type  openPort: C{int}
+    '''
+    ip = interface().ip
     try:
-        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.bind(('localhost', openPort))
+        s  = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.bind((ip, openPort))
         addr, port = s.getsockname()
         s.close()
         return True
-    
+
     except:
         return False
 
