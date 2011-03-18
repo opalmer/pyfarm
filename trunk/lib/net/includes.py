@@ -34,20 +34,10 @@ PYFARM = os.path.abspath(os.path.join(CWD, "..", ".."))
 MODULE = os.path.basename(__file__)
 if PYFARM not in sys.path: sys.path.append(PYFARM)
 
+import lib.net.errors
 from lib import system
 
 LOCAL_ADDRESSES = ('127.0.0.1', '0.0.0.0')
-
-def validInterface(interface):
-    '''
-    Determine if the given interface is valid.  The input to this function
-    will vary and can either be a string or a QtNetwork object
-    '''
-    inputType = type(interface)
-
-    if inputType == str:
-        print "checking string"
-
 
 class AddressEntry(object):
     '''
@@ -97,48 +87,30 @@ class NetworkInterface(object):
     '''
     def __init__(self, interface):
         self.data      = interface
-        self.name      = str(self.data.name())
-        self.humanName = str(self.data.humanReadableName())
+        self.uid       = str(self.data.name())
+        self.name      = str(self.data.humanReadableName())
         self.mac       = str(self.data.hardwareAddress())
-        self.address   = self._addresses()
-        self.isLocal   = self._isLocal()
-        self.isValid   = self._isValid()
+        self.addresses = self._addresses()
+        self.address   = self._filterAddresses(self.addresses)
+        #self.isLocal   = self._isLocal()
+        #self.isValid   = self._isValid()
+        
+    def _addresses(self):
+        '''Return a list of all network addresses'''
+        return [ AddressEntry(addr) for addr in self.data.addressEntries() ]
+    
+    def _filterAddresses(self, addresses):
+        '''
+        Filter the incoming list of address and return only the valid (non-
+        local) entry
+        '''
+        if addresses:
+            for addr in addresses:
+                if addr.ip not in LOCAL_ADDRESSES:
+                    return addr
 
     def __repr__(self):
         return self.humanName
-
-    # TODO: Verify that the last address entry is ALWAYS valid
-    def _addresses(self):
-        '''Find and return all addresses as a class'''
-        address = None
-        self.addresses = []
-
-        for addr in self.data.addressEntries():
-            entry = AddressEntry(addr)
-            self.addresses.append(entry)
-            if entry.address.ip not in LOCAL_ADDRESSES:
-                address = entry
-
-        return address
-
-    def _isLocal(self):
-        '''Return true of the interface is for the localhost'''
-        if self.address.ip in LOCAL_ADDRESSES:
-            return True
-        return False
-
-    def _isValid(self):
-        '''
-        Evaluate the interface object and return true if the interface contains
-        valid information and a non-local address.
-        '''
-        validData    = self.data.isValid()
-        localAddress = False
-
-        if not validData or not self.address.ip or self.isLocal:
-            return False
-
-        return True
 
 
 class NetworkInterfaces(QtNetwork.QNetworkInterface):
@@ -153,7 +125,14 @@ class NetworkInterfaces(QtNetwork.QNetworkInterface):
         @param interface: The interface to test the validity of
         @type  interface: QtNetwork.QNetworkInterface
         '''
-        if not str(interface.hardwareAddress()).startswith("00:00:00"):
+        mac = str(interface.hardwareAddress()).strip()
+        if mac and not mac.startswith("00:00:00"):
+            return True
+        return False
+    
+    def _validAddresses(self, interface):
+        '''Ensure that the given interface contains valid addresses'''
+        if NetworkInterface(interface).addresses:
             return True
         return False
 
@@ -164,7 +143,11 @@ class NetworkInterfaces(QtNetwork.QNetworkInterface):
         @param interface: The interface to test the validity of
         @type  interface: QtNetwork.QNetworkInterface
         '''
-        if interface.isValid():
+        qtValid   = interface.isValid()
+        macValid  = self._validHardwareAddr(interface)
+        validAddr = self._validAddresses(interface)
+        
+        if qtValid and macValid and validAddr:
             return True
 
         return False
@@ -172,26 +155,69 @@ class NetworkInterfaces(QtNetwork.QNetworkInterface):
     @property
     def interfaces(self):
         '''Return a list of all network interfaces'''
-        ifaces = []
+        interfaces = []
         for interface in self.allInterfaces():
-            ifaces.append(interface)
-            print interface
+            if self._validInterface(interface):
+                interfaces.append(NetworkInterface(interface))
+                
+        return interfaces
 
-        return ifaces
 
+def lookupAddress(hostname):
+    '''
+    Given a hostname return an ip address
+    NOTE: Requires DNS
+    '''
+    return socket.gethostbyname(hostname)
 
-def addresses():
-    '''Returns all network addresses'''
-    for address in QtNetwork.QNetworkInterface.allAddresses():
-        ip = address.toIPv4Address()
-        yield address
+def lookupHostname(ip):
+    '''
+    Return the hostname for the given ip address
+    NOTE: Requires DNS
+    '''
+    return socket.gethostbyaddr(ip)[0]
 
+def hostname(fqdn=False):
+    '''
+    Return the proper hostname to use during this python session.
+
+    @param fqdn: If true, return the fully qualified domain name
+    @type  fqdn: C{bool}
+    '''
+    hostname = socket.gethostname()
+    ip       = lookupAddress(hostname)
+    
+    if lookupHostname(lookupAddress(hostname)) == hostname:
+        if fqdn:
+            return socket.getfqdn(hostname)
+        return hostname
+    
+    else:
+        raise lib.net.errors.DNSMismatch("test")
+    
 def interfaces():
     '''Returns a list of interface objects'''
-    for interface in QtNetwork.QNetworkInterface.allInterfaces():
-        iFace = NetworkInterface(interface)
-        if iFace.isValid:
-            yield iFace
+    return NetworkInterfaces().interfaces
+            
+def addresses():
+    '''Returns all network addresses'''
+    for address in interfaces():
+        ip = address.toIPv4Address()
+        yield address
+        
+def interface():
+    '''
+    Return the best possible interface to use for connecting to the local
+    network.  We do this by asking the network which network interface maches
+    the current hostname.  If the query fails or does not match we move onto 
+    the next network adapter.
+    '''
+    dnsHost = hostname(fqdn=True)
+    dnsIp   = lookupAddress(dnsHost)
+    for interface in interfaces():
+        ip = interface.address.ip
+        if ip == dnsIp:
+            return interface
 
 def getPort():
     '''Return an open port to use'''
@@ -209,22 +235,9 @@ def isOpenPort(openPort):
         addr, port = s.getsockname()
         s.close()
         return True
+    
     except:
         return False
-
-def lookupAddress(hostname):
-    '''
-    Given a hostname return an ip address
-    NOTE: Requires DNS
-    '''
-    return socket.gethostbyname(hostname)
-
-def lookupHostname(ip):
-    '''
-    Return the hostname for the given ip address
-    NOTE: Requires DNS
-    '''
-    return socket.gethostbyaddr(ip)[0]
 
 def dataStream():
     '''Return the proper data stream to use for tcp servers'''
@@ -233,5 +246,5 @@ def dataStream():
     return eval("QtCore.QDataStream.Qt_%i_%i" % (major, minor))
 
 if __name__ == "__main__":
-    interfaces = NetworkInterfaces()
-    print interfaces.interfaces
+    iface = interface()
+    print "%s [%s]" %(iface.name, iface.address.ip)

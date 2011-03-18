@@ -1,7 +1,7 @@
 '''
 HOMEPAGE: www.pyfarm.net
-INITIAL: Mar. 14 2011
-PURPOSE: Contains exceptions for use by other network libraries
+INITIAL: Mar. 18 2011
+PURPOSE: Contains the base exception for PyFarm
 
 Copyright (C) 2008-2011 Oliver Palmer
 
@@ -27,8 +27,8 @@ PYFARM = os.path.abspath(os.path.join(CWD, ".."))
 MODULE = os.path.basename(__file__)
 if PYFARM not in sys.path: sys.path.append(PYFARM)
 
-class ServerFault(Exception):
-    '''Raised when a service experiences a serious error'''
+class BaseException(Exception):
+    '''Base PyFarm Exception'''
     def __init__(self, value):
         self.value = value
 
