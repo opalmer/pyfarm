@@ -43,8 +43,8 @@ LOGLEVEL  = 2
 DEBUG     = True
 UNITTESTS = False
 
-import lib.net
 import cfg.resources_rc
+import lib.net, lib.net.errors
 from lib.net import tcp, udp
 from lib import db, logger, ui, slots, settings, session, system
 
@@ -150,21 +150,22 @@ class MainWindow(QtGui.QMainWindow):
 
     def runServers(self):
         '''Run the background servers required to operate PyFarm'''
-        listenAddress    = QtNetwork.QHostAddress(QtNetwork.QHostAddress.Any)
+        listenAddress    = lib.net.address(convert=False)
         self.queueServer = tcp.queue.QueueServer(main=self)
         self.adminServer = tcp.admin.AdminServer(main=self)
         queueServerPort  = self.config['servers']['queue']
         adminServerPort  = self.config['servers']['admin']
 
-        try:
+        print
 
+        try:
             if not self.queueServer.listen(listenAddress, queueServerPort):
                 errStr = self.queueServer.errorString()
                 error  = "Could not start the queue server: %s" % errStr
                 log.fatal(error)
 
                 if not DEBUG:
-                    raise lib.net.ServerFault(error)
+                    raise lib.net.errors.ServerFault(error)
                 else:
                     log.warning("Bypassing exception!!!")
 
@@ -182,7 +183,8 @@ class MainWindow(QtGui.QMainWindow):
                 log.fatal(error)
 
                 if not DEBUG:
-                    raise lib.net.ServerFault(error)
+                    raise lib.net.errors.ServerFault(error)
+
                 else:
                     log.warning("Bypassing exception!!!")
 
@@ -192,6 +194,13 @@ class MainWindow(QtGui.QMainWindow):
                                 "server.error", "Failed to start Admin Server",
                                 color="red"
                               )
+
+        netinfo = "<b>Hostname:</b> %s, <b>IP:</b> %s, <b>Physical Address:</b> %s" % (
+                        lib.net.hostname(),
+                        lib.net.address(convert=True),
+                        lib.net.hardwareAddress()
+                    )
+        self.updateConsole("network.setup", netinfo, color="green")
 
     # MainWindow slots, actions, and processes
     # Other actions could include:

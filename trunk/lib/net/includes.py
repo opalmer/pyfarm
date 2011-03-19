@@ -40,7 +40,7 @@ from lib import system
 
 LOCAL_ADDRESSES = ('127.0.*.*', '0.0.0.0')
 
-class AddressEntry(object):
+class AddressEntry(QtNetwork.QNetworkAddressEntry):
     '''
     Holds properties related to a network interface such as ip, broadcast,
     and netmask.
@@ -49,6 +49,7 @@ class AddressEntry(object):
     @type  addressEntry: QtNetwork.QNetworkAddressEntry
     '''
     def __init__(self, addressEntry):
+        super(AddressEntry, self).__init__(addressEntry)
         self.data       = addressEntry
         if addressEntry == None:
             self._ip        = None
@@ -87,7 +88,7 @@ class AddressEntry(object):
         return False
 
 
-class NetworkInterface(object):
+class NetworkInterface(QtNetwork.QNetworkInterface):
     '''
     Receives information from and creates properties around a
     network interface
@@ -96,6 +97,7 @@ class NetworkInterface(object):
     @type  interface: QtNetwork.QNetworkInterface
     '''
     def __init__(self, interface):
+        super(NetworkInterface, self).__init__(interface)
         self.data      = interface
         self.uid       = str(self.data.name())
         self.name      = str(self.data.humanReadableName())
@@ -237,6 +239,34 @@ def interface():
         if ip == dnsIp or not AddressEntry.isLocal(ip):
             return interface
 
+def address(convert=True):
+    '''
+    Return the QNetworkAddressEntry to use in network servers
+
+    @param convert: If true, convert to a IPv4 string
+    @type  convert: C{bool}
+    '''
+    ip    = INTERFACE.address.data.ip()
+
+    if convert:
+        ip = AddressEntry.toIPv4(ip)
+
+    return ip
+
+def hardwareAddress(basic=False):
+    '''
+    Return the hardware address for the system
+
+    @param basic: If true, return a lowercase colon free version
+    @type  basic: C{bool}
+    '''
+    mac = INTERFACE.mac
+
+    if basic:
+        mac = mac.lower().replace(":", "")
+
+    return mac
+
 def getPort():
     '''Return an open port to use'''
     ip = interface().ip
@@ -253,7 +283,7 @@ def isOpenPort(openPort):
     @param openPort: The port to check
     @type  openPort: C{int}
     '''
-    ip = interface().ip
+    ip = address()
     try:
         s  = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.bind((ip, openPort))
@@ -270,6 +300,9 @@ def dataStream():
     minor = system.info.Qt.VERSION_MINOR
     return eval("QtCore.QDataStream.Qt_%i_%i" % (major, minor))
 
+# establish the base object
+INTERFACE = interface()
 if __name__ == "__main__":
-    iface = interface()
+    iface = INTERFACE
+    addr  = address()
     print "%s [%s]" %(iface.name, iface.address.ip)

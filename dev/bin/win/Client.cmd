@@ -15,5 +15,5 @@
 ::    You should have received a copy of the GNU Lesser General Public License
 ::    along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
-C:\Python26\python.exe %~dp0..\..\..\Client.py
+C:\Python26\python.exe %~dp0..\..\..\trunk\Client.py
 pause

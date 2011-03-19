@@ -25,7 +25,7 @@ import fnmatch
 
 try:
     from includes import *
-    from moduleException import *
+    from errors import *
 
 except ImportError:
     pass

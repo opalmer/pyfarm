@@ -83,6 +83,7 @@ class Main(QtCore.QObject):
         Step 1:
         Listen for an incoming broadcast from the master
         '''
+        log.deprecated("Broadcast port allocation is now handled by lib.net")
         portNum        = self.config['servers']['broadcast']
         self.broadcast = udp.broadcast.BroadcastReceiever(portNum, parent=self)
         self.connect(self.broadcast, QtCore.SIGNAL("masterFound"), self.setMasterAddress)
@@ -108,6 +109,7 @@ class Main(QtCore.QObject):
 
         # if new hostname OR address, update log and
         #  refresh services
+        log.deprecated("Queue port allocation is now handled by lib.net")
         portNum = self.config['servers']['queue']
         queue   = tcp.queue.QueueClient(self.masterAddress, port=portNum)
         if newName or newAddr:
