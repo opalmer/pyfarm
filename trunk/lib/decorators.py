@@ -21,7 +21,6 @@ GNU Lesser General Public License for more details.
 
 You should have received a copy of the GNU Lesser General Public License
 along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
-
 '''
 import os
 import sys
@@ -37,14 +36,14 @@ PYFARM = os.path.abspath(os.path.join(CWD, ".."))
 MODULE = os.path.basename(__file__)
 
 if PYFARM not in sys.path: sys.path.append(PYFARM)
-from lib import Logger
+from lib import logger
 
 # disable the logger and bypass tracebacks for files in TRACE_BYPASS
-log          = Logger.Logger(MODULE).disabled = True
+log          = logger.Logger(MODULE).disabled = True
 catch22Fail  = None
 TRACE_BYPASS = (
                     'string.py', 'Logger.py', 'ElementTree.py',
-                    'AsyncFile.py', '<string>', 'stat.py',
+                    'AsyncfileSystem.py', '<string>', 'stat.py',
                     'genericpath.py', 'DebugBase.py', 'DebugClientBase.py',
                     'AsyncIO.py', 'utf_8.py', 'threading.py', 'ntpath.py',
                     'atexit.py', '__init__.py'

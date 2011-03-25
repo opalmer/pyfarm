@@ -33,7 +33,7 @@ PYFARM = os.path.abspath(os.path.join(CWD, "..", "..", ".."))
 MODULE = os.path.basename(__file__)
 if PYFARM not in sys.path: sys.path.append(PYFARM)
 
-from lib import Logger, Settings, system
+from lib import logger, settings, system
 
 LOGLEVEL = 4
 
@@ -47,8 +47,9 @@ class BroadcastSender(QtCore.QThread):
         self.port     = self.config['servers']['broadcast']
         self.count    = self.config['broadcast']['interval']
         self.maxCount = self.config['broadcast']['maxcount']
-        self.netinfo  = system.Info.Network()
-        self.log      = Logger.Logger("Broadcast.BroadcastSender", LOGLEVEL)
+        self.netinfo  = system.info.Network()
+        self.local    = QtNetwork.QHostAddress()
+        self.log      = logger.Logger("Broadcast.BroadcastSender", LOGLEVEL)
 
     def run(self):
         '''Start the broadcast thread and setup the outgoing connection'''
@@ -70,7 +71,7 @@ class BroadcastSender(QtCore.QThread):
             self.log.debug("Sending broadcast")
             self.datagram.clear()
             self.datagram.insert(0, self.netinfo.hostname())
-            self.socket.writeDatagram(self.datagram.data(), QtNetwork.QHostAddress.Broadcast, self.port)
+            self.socket.writeDatagram(self.datagram.data(), self.local, self.port)
             count += 1
         self.quit()
 
@@ -84,15 +85,16 @@ class BroadcastReceiever(QtCore.QThread):
     '''Class to receieve broadcast signal from master'''
     def __init__(self, port, parent=None):
         super(BroadcastReceiever, self).__init__(parent)
-        self.log  = Logger.Logger("Broadcast.BroadcastReceiever", LOGLEVEL)
-        self.port = port
+        self.log   = logger.Logger("Broadcast.BroadcastReceiever", LOGLEVEL)
+        self.port  = port
+        self.local = QtNetwork.QHostAddress()
         self.log.netserver("Running")
 
     def run(self):
         '''Run the main thread and listen for connections'''
         self.socket = QtNetwork.QUdpSocket()
         self.connect(self.socket, QtCore.SIGNAL("readyRead()"), self.readIncomingBroadcast)
-        self.socket.bind(QtNetwork.QHostAddress.Any, self.port)
+        self.socket.bind(self.local, self.port)
         self.log.netserver("Running")
 
     def readIncomingBroadcast(self):

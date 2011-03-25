@@ -4,21 +4,21 @@ INITIAL: April 7 2008 (revised in July 2010)
 PURPOSE: Group of classes dedicated to the collection and monitoring
 of queue information.
 
-    This file is part of PyFarm.
-    Copyright (C) 2008-2011 Oliver Palmer
+This file is part of PyFarm.
+Copyright (C) 2008-2011 Oliver Palmer
 
-    PyFarm is free software: you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
+PyFarm is free software: you can redistribute it and/or modify
+it under the terms of the GNU Lesser General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
 
-    PyFarm is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+PyFarm is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Lesser General Public License for more details.
 
-    You should have received a copy of the GNU Lesser General Public License
-    along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
+You should have received a copy of the GNU Lesser General Public License
+along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 '''
 import os
 import sys
@@ -31,7 +31,7 @@ PYFARM = os.path.abspath(os.path.join(CWD, "..", "..", ".."))
 MODULE = os.path.basename(__file__)
 if PYFARM not in sys.path: sys.path.append(PYFARM)
 
-from lib import Logger, system, net
+from lib import logger, system, net
 
 UNIT16         = 8
 STREAM_VERSION = net.dataStream()
@@ -48,11 +48,11 @@ class QueueClient(QtCore.QObject):
         super(QueueClient, self).__init__(parent)
         self.master = master
         self.port   = port
-        self.log    = Logger.Logger("Queue.Client")
+        self.log    = logger.Logger("Queue.Client")
 
     def addClient(self, new=True):
         '''Add the given client to the master'''
-        netinfo = system.Info.Network()
+        netinfo = system.info.Network()
         if new:
             request = net.tcp.Request(
                                 "CLIENT_NEW",
@@ -82,7 +82,7 @@ class QueueServerThread(QtCore.QThread):
         self.socketId = socketId
         self.parent   = parent
         self.main     = main
-        self.log      = Logger.Logger("Queue.ServerThread")
+        self.log      = logger.Logger("Queue.ServerThread")
 
     def run(self):
         self.log.debug("Thread started")
@@ -128,7 +128,7 @@ class QueueServerThread(QtCore.QThread):
                     self.main.addHost(hostname, address)
 
                 elif action == "CLIENT_CONNECTED":
-                    msg = "%s's master is already %s" % (hostname, system.Info.HOSTNAME)
+                    msg = "%s's master is already %s" % (hostname, system.info.HOSTNAME)
                     self.main.updateConsole("client", msg, color='orange')
                     self.main.addHost(hostname, address)
 
@@ -156,7 +156,7 @@ class QueueServer(QtNetwork.QTcpServer):
     def __init__(self, main=None, parent=None):
         super(QueueServer, self).__init__(parent)
         self.main = main
-        self.log  = Logger.Logger("Queue.Server")
+        self.log  = logger.Logger("Queue.Server")
 
         # server is running
         self.log.netserver("Server Running")

@@ -33,9 +33,9 @@ DB_SQL   = os.path.join(PYFARM, "PyFarmDB.sql")
 LOGLEVEL = 2
 if PYFARM not in sys.path: sys.path.append(PYFARM)
 
-from lib import Logger
+from lib import logger
 
-log = Logger.Logger(MODULE, LOGLEVEL)
+log = logger.Logger(MODULE, LOGLEVEL)
 
 def connect(dbFile=DB_SQL, clean=False, optimize=True):
     '''

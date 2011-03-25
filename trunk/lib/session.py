@@ -22,15 +22,60 @@ along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 '''
 import os
 import sys
+import time
 
 CWD    = os.path.dirname(os.path.abspath(__file__))
 PYFARM = os.path.abspath(os.path.join(CWD, ".."))
 MODULE = os.path.basename(__file__)
 
 if PYFARM not in sys.path: sys.path.append(PYFARM)
-from lib import Logger, File, system
 
-log = Logger.Logger(MODULE)
+from lib import logger, fileSystem, system
+from PyQt4 import QtCore
+from threading import Thread
+
+log = logger.Logger(MODULE)
+
+class AcquisitionThread(QtCore.QThread):
+    def __init__(self, semaphore, parent=None):
+        super(AcquisitionThread, self).__init__(parent)
+        self.ACQUIRED  = False
+        self.semaphore = semaphore
+
+def run(semaphore):
+    '''Attempt to acquire a lock on the semaphore'''
+    print "hereA"
+    thread = Thread(target=semaphore.acquire)
+    thread.run()
+    print "here"
+    return True
+
+
+class SystemSemaphore(QtCore.QSystemSemaphore):
+    '''System level semaphore locking system with timeouts'''
+    def _tryAcquire(self, timeout):
+        '''Attempt to acquire a lock inside of a thread'''
+        start   = time.time()
+        maxTime = start+timeout
+        #thread  = Thread(target=run(self))
+        #thread.start()
+
+        while time.time() <= maxTime and not self.acquire():
+            print 'hi'
+        print 'timeout'
+
+        #if thread.ACQUIRED:
+            #print 'acquired lock'
+            #return True
+        #else:
+            #print 'could not acquire lock'
+            #return False
+
+    def tryAcquire(self, timeout=5):
+        if not self._tryAcquire(timeout):
+            return False
+        return True
+
 
 class State(object):
     '''
@@ -39,14 +84,14 @@ class State(object):
     be included in this file.
     '''
     def __init__(self, context):
-        self.context  = "%s.%s" % (context, system.Info.HOSTNAME)
-        self.stateDir = os.path.join(system.Info.PYFARMHOME, 'state')
-        self.pidDir   = os.path.join(system.Info.PYFARMHOME, 'pid')
+        self.context  = "%s.%s" % (context, system.info.HOSTNAME)
+        self.stateDir = os.path.join(system.info.PYFARMHOME, 'state')
+        self.pidDir   = os.path.join(system.info.PYFARMHOME, 'pid')
         self.pidFile  = os.path.join(self.pidDir, '%s.pid' % self.context)
 
         # create directories
-        File.mkdir(self.stateDir)
-        File.mkdir(self.pidDir)
+        fileSystem.mkdir(self.stateDir)
+        fileSystem.mkdir(self.pidDir)
 
     def _writePIDFile(self):
         '''Wrote the contents of the pid file'''

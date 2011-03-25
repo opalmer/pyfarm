@@ -31,9 +31,9 @@ MODULE   = "db.Network"
 LOGLEVEL = 2
 if PYFARM not in sys.path: sys.path.append(PYFARM)
 
-from lib import Logger
+from lib import logger
 
-log = Logger.Logger(MODULE, LOGLEVEL)
+log = logger.Logger(MODULE, LOGLEVEL)
 
 def addHost(sql, host, ip, status=0, fComplete=0, fFailed=0, fRendering=0):
     '''

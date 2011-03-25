@@ -3,21 +3,21 @@ HOMEPAGE: www.pyfarm.net
 INITIAL: May 28 2010
 PURPOSE: To query and return information about the local system
 
-    This file is part of PyFarm.
-    Copyright (C) 2008-2011 Oliver Palmer
+This file is part of PyFarm.
+Copyright (C) 2008-2011 Oliver Palmer
 
-    PyFarm is free software: you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
+PyFarm is free software: you can redistribute it and/or modify
+it under the terms of the GNU Lesser General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
 
-    PyFarm is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+PyFarm is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Lesser General Public License for more details.
 
-    You should have received a copy of the GNU Lesser General Public License
-    along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
+You should have received a copy of the GNU Lesser General Public License
+along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 '''
 import os
 import sys
@@ -32,9 +32,9 @@ if PYFARM not in sys.path: sys.path.append(PYFARM)
 
 LOGLEVEL = 4
 
-from lib import Logger
+from lib import logger
 
-log = Logger.Logger(MODULE)
+log = logger.Logger(MODULE)
 
 def SimpleCommand(cmd, all=False, debug=False):
     '''
@@ -42,11 +42,11 @@ def SimpleCommand(cmd, all=False, debug=False):
     from the request command.  Enabling all however will return
     a complete list.
     '''
-    from lib import Logger
+    from lib import logger
     process = QtCore.QProcess()
 
     if debug:
-        log = Logger.Logger("Utility.RunCommand", LOGLEVEL)
+        log = logger.Logger("Utility.RunCommand", LOGLEVEL)
 
     # start process and wait for it complete
     process.start(cmd)

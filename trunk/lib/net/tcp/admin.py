@@ -2,23 +2,23 @@
 HOMEPAGE: www.pyfarm.net
 INITIAL: April 2008 (revised in August 2010)
 PURPOSE: Administration server to provide vital functions to the client such
-as proper shutdown procedures, service restarts, etc.
+         as proper shutdown procedures, service restarts, etc.
 
-    This file is part of PyFarm.
-    Copyright (C) 2008-2011 Oliver Palmer
+This file is part of PyFarm.
+Copyright (C) 2008-2011 Oliver Palmer
 
-    PyFarm is free software: you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
+PyFarm is free software: you can redistribute it and/or modify
+it under the terms of the GNU Lesser General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
 
-    PyFarm is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+PyFarm is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Lesser General Public License for more details.
 
-    You should have received a copy of the GNU Lesser General Public License
-    along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
+You should have received a copy of the GNU Lesser General Public License
+along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 '''
 import os
 import sys
@@ -30,7 +30,7 @@ PYFARM = os.path.abspath(os.path.join(CWD, "..", "..", ".."))
 MODULE = os.path.basename(__file__)
 if PYFARM not in sys.path: sys.path.append(PYFARM)
 
-from lib import Logger, net
+from lib import logger, net
 
 UNIT16         = 8
 STREAM_VERSION = net.dataStream()
@@ -46,7 +46,7 @@ class AdminClient(QtCore.QObject):
         super(AdminClient, self).__init__(parent)
         self.master = master
         self.port   = port
-        self.log    = Logger.Logger("Admin.Client")
+        self.log    = logger.Logger("Admin.Client")
 
 #####################
 # NEW REQUEST FORMAT
@@ -74,7 +74,7 @@ class AdminServerThread(QtCore.QThread):
         super(AdminServerThread, self).__init__(parent)
         self.socketId = socketId
         self.parent   = parent
-        self.log      = Logger.Logger("Admin.ServerThread")
+        self.log      = logger.Logger("Admin.ServerThread")
 
     def run(self):
         self.log.debug("Thread started")
@@ -143,7 +143,7 @@ class AdminServer(QtNetwork.QTcpServer):
     def __init__(self, main=None, parent=None):
         super(AdminServer, self).__init__(parent)
         self.main = main
-        self.log  = Logger.Logger("Admin.Server")
+        self.log  = logger.Logger("Admin.Server")
         self.log.netserver("Server Running")
 
     def incomingConnection(self, socketId):
