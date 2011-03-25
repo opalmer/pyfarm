@@ -1,5 +1,10 @@
 #!/usr/bin/env python
 
+# CLEANUP NOTES:
+# 1.) REMOVE any top level modules/variables at the end of the file
+#     to prevent namespace clashes
+# 2.) should be using FROM lib IMPORT logger
+
 import os
 import shutil
 
@@ -12,7 +17,7 @@ def wipe(path):
         if os.path.isdir(listing):
             shutil.rmtree(listing)
 
-        elif os.path.isfile(listing) and "setup.py" not in listing:
+        elif os.path.isfile(listing) and "setup.py" not in listing and "initTemplate.py" not in listing:
             os.remove(listing)
 
 def insertFirst(line, path, exts=(".py", "pyw")):
@@ -33,12 +38,13 @@ def insertLast(line, path, exts=(".py", "pyw")):
             output.write(os.linesep+line)
             output.close()
 
-def mirror(blank=False, importPrint=True):
+def mirror(blank=False, importPrint=True, templateInit=True):
     '''
     Mirror the trunk to this testing directory
 
     @param blank: Create an empty destination file
     @param importPrint: print the file name on import
+    @param templateInit: Copy initTemplate.py instead of the incoming init
     '''
     print "Copying old files..."
     for parent, dirs, files in os.walk(SRC):
@@ -53,6 +59,9 @@ def mirror(blank=False, importPrint=True):
                     if not os.path.isdir(os.path.dirname(dst)):
                         os.makedirs(os.path.dirname(dst))
 
+                    if dst.endswith("__init__.py") and templateInit:
+                        src = os.path.join(CWD, "initTemplate.py")
+
                     shutil.copy(src, dst)
 
                     if blank:
@@ -66,6 +75,6 @@ def mirror(blank=False, importPrint=True):
 
 def main():
     wipe(CWD)
-    mirror(importPrint=True)
+    mirror(blank=False, importPrint=True, templateInit=True)
 
 main()
