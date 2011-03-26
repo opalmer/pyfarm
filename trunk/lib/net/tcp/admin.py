@@ -30,10 +30,11 @@ PYFARM = os.path.abspath(os.path.join(CWD, "..", "..", ".."))
 MODULE = os.path.basename(__file__)
 if PYFARM not in sys.path: sys.path.append(PYFARM)
 
-from lib import logger, net
+import includes
+from lib import logger
 
 UNIT16         = 8
-STREAM_VERSION = net.dataStream()
+STREAM_VERSION = includes.STREAM_VERSION
 
 class AdminClient(QtCore.QObject):
     '''
@@ -48,9 +49,6 @@ class AdminClient(QtCore.QObject):
         self.port   = port
         self.log    = logger.Logger("Admin.Client")
 
-#####################
-# NEW REQUEST FORMAT
-#####################
     def readResponse(self, response):
         '''Process the response from the server'''
         self.log.netclient("Master responded: %s" % response)

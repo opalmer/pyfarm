@@ -18,22 +18,13 @@ GNU Lesser General Public License for more details.
 You should have received a copy of the GNU Lesser General Public License
 along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 '''
-
-import os
-import sys
-
-CWD    = os.path.dirname(os.path.abspath(__file__))
-PYFARM = os.path.abspath(os.path.join(CWD, ".."))
-MODULE = os.path.basename(__file__)
-if PYFARM not in sys.path: sys.path.append(PYFARM)
-
 import lib.errors
 
 class ServerFault(lib.errors.BaseException):
     '''Raised when a service experiences a serious error'''
     def __init__(self, value):
         super(ServerFault, self).__init__(value)
-        
+
 class DNSMismatch(lib.errors.BaseException):
     '''Raised when a dns entry does not match a reverse lookup'''
     def __init__(self, value):

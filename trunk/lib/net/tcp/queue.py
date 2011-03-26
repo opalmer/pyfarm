@@ -31,10 +31,11 @@ PYFARM = os.path.abspath(os.path.join(CWD, "..", "..", ".."))
 MODULE = os.path.basename(__file__)
 if PYFARM not in sys.path: sys.path.append(PYFARM)
 
-from lib import logger, system, net
+import includes
+from lib import logger, system
 
 UNIT16         = 8
-STREAM_VERSION = net.dataStream()
+STREAM_VERSION = includes.STREAM_VERSION
 
 class QueueClient(QtCore.QObject):
     '''
