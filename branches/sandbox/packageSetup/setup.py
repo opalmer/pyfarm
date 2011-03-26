@@ -46,10 +46,14 @@ def mirror(blank=False, importPrint=True, templateInit=True):
     @param importPrint: print the file name on import
     @param templateInit: Copy initTemplate.py instead of the incoming init
     '''
+    print "Copying cfg..."
+    shutil.copytree(os.path.join(SRC, "cfg"), os.path.join(CWD, "cfg"))
+    print "Copying ui..."
+    shutil.copytree(os.path.join(SRC, "lib", "ui"), os.path.join(CWD, "lib", "ui"))
     print "Copying old files..."
     for parent, dirs, files in os.walk(SRC):
         for filename in files:
-            for ext in ("py", "pyw", "xml"):
+            for ext in ("py", "pyw"):
                 if filename.endswith(".%s" % ext):
                     root = os.path.join(parent, filename)
                     rel  = root.split(SRC)[1][1:]
@@ -69,7 +73,7 @@ def mirror(blank=False, importPrint=True, templateInit=True):
                         fileObj.write("")
                         fileObj.close()
 
-                    if importPrint:
+                    if importPrint and not filename.startswith("Main") and not filename.startswith("Client"):
                         insertFirst("print 'Importing: %s'" % dst, dst)
                         insertLast("print '...imported: %s'" % dst, dst)
 

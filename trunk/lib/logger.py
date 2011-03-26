@@ -229,7 +229,12 @@ class Logger(object):
             stack  = inspect.stack()[2]
             frame  = stack[0]
             split  = stack[1].split(os.sep)
-            head   = split[-2]
+
+            if len(split) > 1:
+                head = split[-2]
+            else:
+                head = split[-1]
+
             tail   = split[-1].split(".")[0]
             module = '.'.join((head, tail))
 
