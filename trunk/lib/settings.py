@@ -26,11 +26,6 @@ import string
 import ConfigParser
 from xml.dom import minidom
 
-CWD    = os.path.dirname(os.path.abspath(__file__))
-PYFARM = os.path.abspath(os.path.join(CWD, ".."))
-MODULE = os.path.basename(__file__)
-if PYFARM not in sys.path: sys.path.append(PYFARM)
-
 class ReadConfig(object):
     '''Parse various configuration files'''
     @staticmethod

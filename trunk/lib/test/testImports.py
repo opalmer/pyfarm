@@ -26,11 +26,6 @@ import unittest
 import modulefinder
 import ConfigParser
 
-CWD    = os.path.dirname(os.path.abspath(__file__))
-PYFARM = os.path.abspath(os.path.join(CWD, "..", ".."))
-MODULE = os.path.basename(__file__)
-if PYFARM not in sys.path: sys.path.append(PYFARM)
-
 class ModuleTests(unittest.TestCase):
     '''Various tests and checks for module imports and their versions'''
     def setUp(self):

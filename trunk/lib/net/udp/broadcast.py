@@ -30,12 +30,11 @@ from PyQt4 import QtCore, QtNetwork
 
 CWD    = os.path.dirname(os.path.abspath(__file__))
 PYFARM = os.path.abspath(os.path.join(CWD, "..", "..", ".."))
-MODULE = os.path.basename(__file__)
 if PYFARM not in sys.path: sys.path.append(PYFARM)
 
 from lib import logger, settings, system
 
-LOGLEVEL = 4
+logger = logger.Logger()
 
 class BroadcastSender(QtCore.QThread):
     '''Class to send broadcast signals to client network'''
@@ -49,11 +48,10 @@ class BroadcastSender(QtCore.QThread):
         self.maxCount = self.config['broadcast']['maxcount']
         self.netinfo  = system.info.Network()
         self.local    = QtNetwork.QHostAddress()
-        self.log      = logger.Logger("Broadcast.BroadcastSender", LOGLEVEL)
 
     def run(self):
         '''Start the broadcast thread and setup the outgoing connection'''
-        self.log.netclient("Broadcasting")
+        logger.netclient("Broadcasting")
         self.socket   = QtNetwork.QUdpSocket()
         self.datagram = QtCore.QByteArray()
         self.send()
@@ -68,7 +66,7 @@ class BroadcastSender(QtCore.QThread):
         # send a broadcast so long as we don't
         #  exceed the set max.
         while count < self.maxCount:
-            self.log.debug("Sending broadcast")
+            logger.debug("Sending broadcast")
             self.datagram.clear()
             self.datagram.insert(0, self.netinfo.hostname())
             self.socket.writeDatagram(self.datagram.data(), self.local, self.port)
@@ -77,7 +75,7 @@ class BroadcastSender(QtCore.QThread):
 
     def quit(self):
         '''End the process and kill the thread'''
-        self.log.netclient("Stopping broadcast")
+        logger.netclient("Stopping broadcast")
         self.exit(0)
 
 
@@ -85,21 +83,20 @@ class BroadcastReceiever(QtCore.QThread):
     '''Class to receieve broadcast signal from master'''
     def __init__(self, port, parent=None):
         super(BroadcastReceiever, self).__init__(parent)
-        self.log   = logger.Logger("Broadcast.BroadcastReceiever", LOGLEVEL)
         self.port  = port
         self.local = QtNetwork.QHostAddress()
-        self.log.netserver("Running")
+        logger.netserver("Running")
 
     def run(self):
         '''Run the main thread and listen for connections'''
         self.socket = QtNetwork.QUdpSocket()
         self.connect(self.socket, QtCore.SIGNAL("readyRead()"), self.readIncomingBroadcast)
         self.socket.bind(self.local, self.port)
-        self.log.netserver("Running")
+        logger.netserver("Running")
 
     def readIncomingBroadcast(self):
         '''Read the incoming host ip and emit it to the client'''
-        self.log.netserver("Incoming broadcast")
+        logger.netserver("Incoming broadcast")
 
         while self.socket.hasPendingDatagrams():
             datagram = QtCore.QByteArray()
@@ -110,10 +107,13 @@ class BroadcastReceiever(QtCore.QThread):
             ip     = str(data[1].toString())
             msg    = str(data[0])
 
-        self.log.netclient("Host: %s IP: %s" % (msg, ip))
+        logger.netclient("Host: %s IP: %s" % (msg, ip))
         self.emit(QtCore.SIGNAL("masterFound"), (msg, ip))
 
     def quit(self):
         '''Stop the broadcast receiever'''
-        self.log.netserver("Stopped")
+        logger.netserver("Stopped")
         self.exit(0)
+
+# cleanup objects
+del CWD, PYFARM

@@ -26,11 +26,8 @@ import string
 import inspect
 import xml.etree.ElementTree
 
-CWD    = os.path.dirname(os.path.abspath(__file__))
-PYFARM = os.path.abspath(os.path.join(CWD, ".."))
-MODULE = os.path.basename(__file__)
-if PYFARM not in sys.path: sys.path.append(PYFARM)
-
+CWD        = os.path.dirname(os.path.abspath(__file__))
+PYFARM     = os.path.abspath(os.path.join(CWD, ".."))
 XML_CONFIG = os.path.join(PYFARM, "cfg", "logger.xml")
 
 def settings(path=XML_CONFIG):
@@ -152,7 +149,7 @@ class Logger(object):
     @param writeOnly: Write to disk only, do not print to stdout
     @type  writeOnly: C{bool}
     '''
-    def __init__(self, name, level=None, log=None, writeOnly=False):
+    def __init__(self, name=None, level=None, log=None, writeOnly=False):
         self.writeOnly  = writeOnly
         self.config     = settings()
         self.log        = log
@@ -187,10 +184,10 @@ class Logger(object):
             self.levelCalls.append(function)
 
         if self.log:
-            self.log = open(log, "a")
+            self.logger = open(log, "a")
 
         else:
-            self.log = None
+            self.logger = None
 
         if writeOnly and not self.log:
             raise IOError("You declared writeOnly without a logfile")
@@ -229,7 +226,12 @@ class Logger(object):
             stack  = inspect.stack()[2]
             frame  = stack[0]
             split  = stack[1].split(os.sep)
-            head   = split[-2]
+
+            if len(split) == 1:
+                head = split[-1]
+            else:
+                head = split[-2]
+
             tail   = split[-1].split(".")[0]
             module = '.'.join((head, tail))
 
@@ -251,8 +253,8 @@ class Logger(object):
                 print out
 
                 if self.log:
-                    self.log.write(out+os.linesep)
-                    self.log.flush()
+                    logger.write(out+os.linesep)
+                    logger.flush()
 
     def setName(self, name):
         '''
@@ -265,4 +267,7 @@ class Logger(object):
 
     def close(self):
         '''Close out the log file'''
-        self.log.close()
+        logger.close()
+
+# cleanup objects
+del CWD, PYFARM

@@ -31,14 +31,12 @@ from PyQt4 import QtNetwork, QtCore
 
 CWD    = os.path.dirname(os.path.abspath(__file__))
 PYFARM = os.path.abspath(os.path.join(CWD, "..", ".."))
-MODULE = os.path.basename(__file__)
 if PYFARM not in sys.path: sys.path.append(PYFARM)
 
 from lib.system import includes
-from lib import logger, settings
+from lib import logger, settings, decorators
 
-LOGLEVEL = 6
-log      = logger.Logger(MODULE, LOGLEVEL)
+logger = logger.Logger()
 
 if os.name == "nt":
     USER     = os.getenv('USERNAME')
@@ -54,11 +52,10 @@ PYFARMHOME = os.path.join(HOME, '.pyfarm')
 
 class SystemInfo(object):
     '''Default system information object to query and store info about hardware and software'''
+    @decorators.deprecated
     def __init__(self, configDir, skipSoftware=True):
+        logger.deprecated("Depcecated in favor of module level functions!!!")
         if os.name == "nt":
-            #process = includes.SimpleCommand("cmd.exe /C systeminfo", all=False)
-            #cache   = str(process.readAll())
-            log.notimplemented("SystemInfo not implemented for %s" % os.name)
             cache = None
         else:
             cache = None
@@ -66,8 +63,10 @@ class SystemInfo(object):
         self.config   = settings.ReadConfig.general(configDir)
         self.hardware = Hardware(cache)
         self.network  = Network()
+        logger.deprecated("Depcecated in favor of module level functions!!!")
 
     @staticmethod
+    @decorators.deprecated
     def tmpdir(children=[]):
         '''Given a list of children, return a full temporary path'''
         path = TMPDIR
@@ -104,12 +103,12 @@ class Hardware(object):
                 self.swapmax = float(includes.SimpleCommand("free | grep Swap | awk '{print $2}'"))/1024
 
             except TypeError:
-                log.fixme("Hardware information (linux) not implimented for new SimpleCommand")
+                logger.fixme("Hardware information (linux) not implimented for new SimpleCommand")
                 self.rammax  = None
                 self.swapmax = None
 
             except ValueError, e:
-                log.fixme("Invalid output from SimpleCommand")
+                logger.fixme("Invalid output from SimpleCommand")
 
         elif os.name == "nt":
             print self.cache
@@ -130,7 +129,7 @@ class Hardware(object):
         if os.name == "posix":
             results = float(includes.SimpleCommand("free | grep 'buffers/cache' | awk '{print $3}'"))/1024
         else:
-            log.notimplemented("Ram used not implemented for %s" % os.name)
+            logger.notimplemented("Ram used not implemented for %s" % os.name)
 
         return self._toGigabyte(results, toGigabyte)
 
@@ -148,7 +147,7 @@ class Hardware(object):
         if os.name == "posix":
             results = float(includes.SimpleCommand("free | grep Swap | awk '{print $3}'"))/1024
         else:
-            log.notimplemented("swap used not implemented for %s" % os.name)
+            logger.notimplemented("swap used not implemented for %s" % os.name)
 
         return self._toGigabyte(results, toGigabyte)
 
@@ -164,7 +163,7 @@ class Hardware(object):
             results = str(multiprocessing.cpu_count())
 
         except ImportError:
-            log.notimplemented("CPU Count not implemented without multiprocessing")
+            logger.notimplemented("CPU Count not implemented without multiprocessing")
 
         return results
 
@@ -174,7 +173,7 @@ class Hardware(object):
         if os.name == "posix":
             results = open('/proc/loadavg').readlines()[0].split()[:3]
         else:
-            log.notimplemented("cpuload not implemented for %s" % os.name)
+            logger.notimplemented("cpuload not implemented for %s" % os.name)
 
         return results
 
@@ -184,7 +183,7 @@ class Hardware(object):
         if os.name == "posix":
             results = float(open('/proc/uptime').readlines()[0].split()[0])
         else:
-            log.notimplemented("uptime not implemented for %s" % os.name)
+            logger.notimplemented("uptime not implemented for %s" % os.name)
 
         return results
 
@@ -194,7 +193,7 @@ class Hardware(object):
         if os.name == "posix":
             results = float(open('/proc/uptime').readlines()[0].split()[1])
         else:
-            log.notimplemented("idletime not implemented for %s" % os.name)
+            logger.notimplemented("idletime not implemented for %s" % os.name)
 
         return results
 
@@ -233,7 +232,7 @@ class Network(object):
             query = "ifconfig %s | grep 'inet addr' | gawk -F: '{print $4}' | gawk '{print $1}'" % self.adapter
             results = includes.SimpleCommand(query)
         else:
-            log.notimplemented("subnet not implemented for %s" % os.name)
+            logger.notimplemented("subnet not implemented for %s" % os.name)
 
         return results
 
@@ -264,3 +263,6 @@ class PyQt(object):
     VERSION_STR   = QtCore.PYQT_VERSION_STR
     VERSION_MAJOR = int(VERSION_STR.split('.')[0])
     VERSION_MINOR = int(VERSION_STR.split('.')[1])
+
+# cleanup objects
+del CWD, PYFARM

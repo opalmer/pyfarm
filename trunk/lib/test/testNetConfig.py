@@ -28,7 +28,6 @@ import ConfigParser
 
 CWD    = os.path.dirname(os.path.abspath(__file__))
 PYFARM = os.path.abspath(os.path.join(CWD, "..", ".."))
-MODULE = os.path.basename(__file__)
 if PYFARM not in sys.path: sys.path.append(PYFARM)
 
 import lib.net
@@ -123,6 +122,9 @@ class Validate(unittest.TestCase):
                         len(ports) != count,
                         "Only found %i open ports, %i is required" % (len(ports),  count)
                     )
+
+# cleanup objects
+del CWD, PYFARM
 
 if __name__ == "__main__":
     unittest.main()

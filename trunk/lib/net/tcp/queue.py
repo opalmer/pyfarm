@@ -28,7 +28,6 @@ from PyQt4 import QtCore, QtNetwork
 
 CWD    = os.path.dirname(os.path.abspath(__file__))
 PYFARM = os.path.abspath(os.path.join(CWD, "..", "..", ".."))
-MODULE = os.path.basename(__file__)
 if PYFARM not in sys.path: sys.path.append(PYFARM)
 
 import includes
@@ -36,6 +35,7 @@ from lib import logger, system
 
 UNIT16         = 8
 STREAM_VERSION = includes.STREAM_VERSION
+logger         = logger.Logger()
 
 class QueueClient(QtCore.QObject):
     '''
@@ -49,7 +49,6 @@ class QueueClient(QtCore.QObject):
         super(QueueClient, self).__init__(parent)
         self.master = master
         self.port   = port
-        self.log    = logger.Logger("Queue.Client")
 
     def addClient(self, new=True):
         '''Add the given client to the master'''
@@ -71,7 +70,7 @@ class QueueClient(QtCore.QObject):
 
     def readResponse(self, response):
         '''Process the response from the server'''
-        self.log.netclient("Master responded: %s" % response)
+        logger.netclient("Master responded: %s" % response)
 
 class QueueServerThread(QtCore.QThread):
     '''
@@ -83,10 +82,9 @@ class QueueServerThread(QtCore.QThread):
         self.socketId = socketId
         self.parent   = parent
         self.main     = main
-        self.log      = logger.Logger("Queue.ServerThread")
 
     def run(self):
-        self.log.debug("Thread started")
+        logger.debug("Thread started")
         socket = QtNetwork.QTcpSocket()
 
         if not socket.setSocketDescriptor(self.socketId):
@@ -117,7 +115,7 @@ class QueueServerThread(QtCore.QThread):
             # prepare vars for input stream
             action = QtCore.QString()
             stream >> action
-            self.log.netclient("Receieved Signal: %s" % action)
+            logger.netclient("Receieved Signal: %s" % action)
 
             if fnmatch.fnmatch(str(action), "CLIENT_*"):
                 hostname = QtCore.QString()
@@ -125,7 +123,7 @@ class QueueServerThread(QtCore.QThread):
                 stream >> hostname >> address
 
                 if action == "CLIENT_NEW":
-                    self.log.netclient("Host: %s IP: %s" % (hostname, address))
+                    logger.netclient("Host: %s IP: %s" % (hostname, address))
                     self.main.addHost(hostname, address)
 
                 elif action == "CLIENT_CONNECTED":
@@ -157,13 +155,15 @@ class QueueServer(QtNetwork.QTcpServer):
     def __init__(self, main=None, parent=None):
         super(QueueServer, self).__init__(parent)
         self.main = main
-        self.log  = logger.Logger("Queue.Server")
 
         # server is running
-        self.log.netserver("Server Running")
+        logger.netserver("Server Running")
 
     def incomingConnection(self, socketId):
-        self.log.netserver("Incoming Connection")
+        logger.netserver("Incoming Connection")
         self.thread = QueueServerThread(socketId, main=self.main, parent=self)
         self.connect(self.thread, QtCore.SIGNAL("finished()"), self.thread, QtCore.SLOT("deleteLater()"))
         self.thread.start()
+
+# cleanup objects
+del CWD, PYFARM

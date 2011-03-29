@@ -29,25 +29,24 @@ from xml.dom import minidom
 
 CWD    = os.path.dirname(os.path.abspath(__file__))
 PYFARM = os.path.abspath(os.path.join(CWD, "..", ".."))
-MODULE = os.path.basename(__file__)
 if PYFARM not in sys.path: sys.path.append(PYFARM)
 
 from lib import logger
 
 class Validate(unittest.TestCase):
     def setUp(self):
-        self.log = logger.Logger('LevelTest')
+        self.logger = logger.Logger('LevelTest')
         self.xml = minidom.parse(Logger.XML_CONFIG)
 
     def testLevelsExist(self):
         '''Make sure levels exist'''
-        self.assertTrue(self.log.levels,  "Log levels do not exist")
+        self.assertTrue(logger.levels,  "Log levels do not exist")
 
     def testValidFunctionNames(self):
         '''Assure function names are valid'''
         containsSpaces = re.compile(r'''(.+\s.+)''')
         containsDot = re.compile(r'''(.+[.].+)''')
-        for name,  data in self.log.config.items():
+        for name,  data in logger.config.items():
                 self.failIf(
                                 containsSpaces.search(data['function']) or "." in data['function'],
                                 "'%s' is not a valid function name for Logger" % data['function']
@@ -112,7 +111,7 @@ class Validate(unittest.TestCase):
     def testMissingLogLevels(self):
         '''Verify all log levels are present in xml'''
         functions = []
-        reLog = re.compile(r"""(?:log|logger|logging)[.](\w+)(?:[(])""")
+        relogger = re.compile(r"""(?:log|logger|logging)[.](\w+)(?:[(])""")
 
         for element in self.xml.getElementsByTagName("level"):
             if element.hasAttribute("function"):
@@ -124,7 +123,7 @@ class Validate(unittest.TestCase):
             for filename in fnmatch.filter(files, "*.py"):
                 if not fnmatch.fnmatch(path,  "*tools*") and not fnmatch.fnmatch(filename,  "*__init__*"):
                     for line in open(os.path.join(path,  filename),  'r'):
-                        search = reLog.search(line)
+                        search = relogger.search(line)
                         if search:
                             fName = search.group(1)
                             if fName not in functions: print line
@@ -133,8 +132,8 @@ class Validate(unittest.TestCase):
                                             "Log function %s does not exist in the xml file" % fName
                                         )
 
-
-
+# cleanup objects
+del CWD, PYFARM
 
 if __name__ == "__main__":
     unittest.main()

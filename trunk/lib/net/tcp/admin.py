@@ -27,7 +27,6 @@ from PyQt4 import QtCore, QtNetwork
 
 CWD    = os.path.dirname(os.path.abspath(__file__))
 PYFARM = os.path.abspath(os.path.join(CWD, "..", "..", ".."))
-MODULE = os.path.basename(__file__)
 if PYFARM not in sys.path: sys.path.append(PYFARM)
 
 import includes
@@ -35,6 +34,7 @@ from lib import logger
 
 UNIT16         = 8
 STREAM_VERSION = includes.STREAM_VERSION
+logger         = logger.Logger()
 
 class AdminClient(QtCore.QObject):
     '''
@@ -47,17 +47,16 @@ class AdminClient(QtCore.QObject):
         super(AdminClient, self).__init__(parent)
         self.master = master
         self.port   = port
-        self.log    = logger.Logger("Admin.Client")
 
     def readResponse(self, response):
         '''Process the response from the server'''
-        self.log.netclient("Master responded: %s" % response)
+        logger.netclient("Master responded: %s" % response)
         # processing begins here
 
     def addClient(self, hostname, ip):
         '''Add the given client to the master'''
         hostname = str(QtNetwork.QHostInfo.localHostName())
-        self.log.fixme("Software, system, and network specs not implimented")
+        logger.fixme("Software, system, and network specs not implimented")
         request = net.tcp.Request("CLIENT_SHUTDOWN", ("octo", "10.56.1.2", "4096"))
         self.connect(request, QtCore.SIGNAL("RESPONSE"), self.readResponse)
         request.send(self.master, self.port)
@@ -72,10 +71,9 @@ class AdminServerThread(QtCore.QThread):
         super(AdminServerThread, self).__init__(parent)
         self.socketId = socketId
         self.parent   = parent
-        self.log      = logger.Logger("Admin.ServerThread")
 
     def run(self):
-        self.log.debug("Thread started")
+        logger.debug("Thread started")
         socket = QtNetwork.QtNetwork.QAbstractSocket()
 
         if not socket.setSocketDescriptor(self.socketId):
@@ -107,18 +105,18 @@ class AdminServerThread(QtCore.QThread):
             action = QtCore.QString()
             stream >> action
 
-            self.log.netclient("Receieved QtCore.SIGNAL: %s" % action)
+            logger.netclient("Receieved QtCore.SIGNAL: %s" % action)
             if action == "CLIENT_NEW":
                 hostname = QtCore.QString()
                 address = QtCore.QString()
                 ram = QtCore.QString()
                 stream >> hostname >> address >> ram
-                self.log.netclient("Hostname: %s" % hostname)
-                self.log.netclient("Addrss: %s" % address)
-                self.log.netclient("Ram: %s" % ram)
+                logger.netclient("Hostname: %s" % hostname)
+                logger.netclient("Addrss: %s" % address)
+                logger.netclient("Ram: %s" % ram)
 
             # final send a back the original host
-            self.log.fixme("NOT SENDING REPLY!")
+            logger.fixme("NOT SENDING REPLY!")
             self.sendReply(socket, action, options)
             socket.waitForDisconnected()
 
@@ -141,11 +139,13 @@ class AdminServer(QtNetwork.QTcpServer):
     def __init__(self, main=None, parent=None):
         super(AdminServer, self).__init__(parent)
         self.main = main
-        self.log  = logger.Logger("Admin.Server")
-        self.log.netserver("Server Running")
+        logger.netserver("Server Running")
 
     def incomingConnection(self, socketId):
-        self.log.netserver("Incoming Connection")
+        logger.netserver("Incoming Connection")
         self.thread = AdminServerThread(socketId, self)
         self.connect(self.thread, QtCore.SIGNAL("finished()"), self.thread, QtCore.SLOT("deleteLater()"))
         self.thread.start()
+
+# cleanup objects
+del CWD, PYFARM

@@ -33,7 +33,7 @@ if PYFARM not in sys.path: sys.path.append(PYFARM)
 
 from lib import logger
 
-log = logger.Logger(MODULE, LOGLEVEL)
+logger = logger.Logger(MODULE, LOGLEVEL)
 
 def addHost(sql, host, ip, status=0, fComplete=0, fFailed=0, fRendering=0):
     '''
@@ -66,11 +66,11 @@ def hostExists(sql, host):
 def removeHost(sql, host):
     '''Remove the requested host from the database'''
     if not hostExists(sql, host):
-        log.error("Cannot remove %s, it does not exist in the database" % sql)
+        logger.error("Cannot remove %s, it does not exist in the database" % sql)
         return False
 
     else:
-        log.debug("Removing %s from the database" % host)
+        logger.debug("Removing %s from the database" % host)
         query = QtSql.QSqlQuery(sql)
         query.exec_("DELETE FROM hosts WHERE hostname = '%s'" % host)
         return True
@@ -81,7 +81,7 @@ if __name__ == '__main__':
     import random
     import includes
 
-    log.warning("Adding useless host information for testing!!")
+    logger.warning("Adding useless host information for testing!!")
     sql       = includes.connect(clean=True)
     MAX_HOSTS = 500
     start     = time.time()
@@ -112,8 +112,8 @@ if __name__ == '__main__':
         addHost(sql, hostname, ip, status, complete, failed, rendering)
         times.append(time.time()-tStart)
 
-    log.debug("Total Time For %i Hosts: %fs" % (MAX_HOSTS, time.time()-start))
+    logger.debug("Total Time For %i Hosts: %fs" % (MAX_HOSTS, time.time()-start))
 
     # calculate the average
     average = sum(times)/len(times)
-    log.debug("Average Time Per Query: %fs" % average)
+    logger.debug("Average Time Per Query: %fs" % average)

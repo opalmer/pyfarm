@@ -23,18 +23,15 @@ along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 import os
 import sys
 import time
-
-CWD    = os.path.dirname(os.path.abspath(__file__))
-PYFARM = os.path.abspath(os.path.join(CWD, ".."))
-MODULE = os.path.basename(__file__)
-
-if PYFARM not in sys.path: sys.path.append(PYFARM)
-
-from lib import logger, fileSystem, system
-from PyQt4 import QtCore
 from threading import Thread
 
-log = logger.Logger(MODULE)
+from PyQt4 import QtCore
+
+import logger
+import fileSystem
+import system
+
+logger = logger.Logger()
 
 class AcquisitionThread(QtCore.QThread):
     def __init__(self, semaphore, parent=None):
@@ -101,7 +98,7 @@ class State(object):
 
         if self.exists():
             pid = self.pid()
-            log.debug("Success! Wrote pid %s to file" % pid)
+            logger.debug("Success! Wrote pid %s to file" % pid)
 
     def running(self):
         '''
@@ -110,7 +107,7 @@ class State(object):
         '''
         if self.exists():
             pid = self.pid()
-            if system.processRunning(pid):
+            if system.process.running(pid):
                 return True
 
         else:
@@ -119,15 +116,15 @@ class State(object):
     def write(self, force=False):
         '''Write the process ID to the directory'''
         if self.exists() and not force and not self.running():
-            log.warning("PID file found for %s, user input required" % self.pid(live=True))
+            logger.warning("PID file found for %s, user input required" % self.pid(live=True))
 
         elif self.exists() and force:
-            log.debug("Attempting to kill the process and remove the pid file")
+            logger.debug("Attempting to kill the process and remove the pid file")
             self.kill()
             self._writePIDFile()
 
         else:
-            log.info("Writing to PID %i File: %s" % (self.pid(live=True), self.pidFile))
+            logger.info("Writing to PID %i File: %s" % (self.pid(live=True), self.pidFile))
             self._writePIDFile()
 
     def exists(self):
@@ -135,7 +132,7 @@ class State(object):
         if os.path.isfile(self.pidFile):
             return True
         else:
-            log.warning("PID file does not exist")
+            logger.warning("PID file does not exist")
             return False
 
     def kill(self):
@@ -144,7 +141,7 @@ class State(object):
             system.killProcess(self.pid())
 
         else:
-            log.warning("Cannot kill a process that is not running")
+            logger.warning("Cannot kill a process that is not running")
 
         self.remove()
 
@@ -166,4 +163,4 @@ class State(object):
            self.remove()
 
         except:
-            log.error("Failed to remove process state file!")
+            logger.error("Failed to remove process state file!")

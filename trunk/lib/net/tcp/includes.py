@@ -26,7 +26,6 @@ from PyQt4 import QtNetwork, QtCore
 
 CWD    = os.path.dirname(os.path.abspath(__file__))
 PYFARM = os.path.abspath(os.path.join(CWD, "..", "..", ".."))
-MODULE = os.path.basename(__file__)
 if PYFARM not in sys.path: sys.path.append(PYFARM)
 
 from lib import logger
@@ -91,23 +90,23 @@ class Request(QtCore.QObject):
     def send(self, master, port, closeIfOpen=True, timeout=800):
         '''Connect to, pack, and prepare to send the request'''
         if self.socket.isOpen() and closeIfOpen:
-            self.log.netclient("Connection is open, closing")
+            logger.netclient("Connection is open, closing")
             self.socket.close()
 
-        self.log.netclient("Connecting")
+        logger.netclient("Connecting")
         self.socket.connectToHost(master, port)
         self.socket.waitForDisconnected(timeout)
 
     def sendRequest(self):
         '''Write the request to the connected socket'''
-        self.log.netclient("Sending request")
+        logger.netclient("Sending request")
         self.nextBlockSize = 0
         self.socket.write(self.data)
         self.request = None
 
     def readResponse(self):
         '''Read the response from the server'''
-        self.log.debug("Reading response")
+        logger.debug("Reading response")
         stream = QtCore.QDataStream(self.socket)
         stream.setVersion(STREAM_VERSION)
 
@@ -123,16 +122,22 @@ class Request(QtCore.QObject):
             stream >> action
             self.nextBlockSize = 0
 
-            self.log.netclient("Response action from master: %s" % action)
+            logger.netclient("Response action from master: %s" % action)
             self.emit(QtCore.SIGNAL("RESPONSE"), action)
             self.socket.close()
 
     def serverHasStopped(self):
         '''Log and close the socket when server stops'''
-        self.log.error("Server has stopped")
+        logger.error("Server has stopped")
         self.socket.close()
 
     def serverHasError(self):
         '''Log and close the socket on error'''
-        self.log.error("Server Error, %s" % self.socket.errorString())
+        logger.error("Server Error, %s" % self.socket.errorString())
         self.socket.close()
+
+        self.connect(self.thread, QtCore.SIGNAL("finished()"), self.thread, QtCore.SLOT("deleteLater()"))
+        self.thread.start()
+
+# cleanup objects
+del CWD, PYFARM

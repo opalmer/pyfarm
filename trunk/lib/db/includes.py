@@ -35,7 +35,7 @@ if PYFARM not in sys.path: sys.path.append(PYFARM)
 
 from lib import logger
 
-log = logger.Logger(MODULE, LOGLEVEL)
+logger = logger.Logger(MODULE, LOGLEVEL)
 
 def connect(dbFile=DB_SQL, clean=False, optimize=True):
     '''
@@ -44,7 +44,7 @@ def connect(dbFile=DB_SQL, clean=False, optimize=True):
     '''
     createdDB = False
     if clean and os.path.isfile(dbFile):
-        log.warning("Removing Database File: %s" % dbFile)
+        logger.warning("Removing Database File: %s" % dbFile)
         os.remove(dbFile)
 
     elif not os.path.isfile(dbFile):
@@ -54,7 +54,7 @@ def connect(dbFile=DB_SQL, clean=False, optimize=True):
     db.setDatabaseName(dbFile)
 
     if db.open():
-        log.info("Connected to DB: %s" % dbFile)
+        logger.info("Connected to DB: %s" % dbFile)
         xml   = minidom.parse(DB_XML)
         query = QtSql.QSqlQuery(db)
 
@@ -79,7 +79,7 @@ def connect(dbFile=DB_SQL, clean=False, optimize=True):
                 # execute the generated script
                 results = query.exec_(QtCore.QString(script))
                 if createdDB:
-                    log.info("Created table: %s" % tableName)
+                    logger.info("Created table: %s" % tableName)
 
         # performance updates
         if optimize:

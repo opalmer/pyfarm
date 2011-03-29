@@ -28,12 +28,11 @@ from PyQt4 import QtCore
 
 CWD    = os.path.dirname(os.path.abspath(__file__))
 PYFARM = os.path.abspath(os.path.join(CWD, ".."))
-MODULE = os.path.basename(__file__)
 if PYFARM not in sys.path: sys.path.append(PYFARM)
 
-from lib import logger, system
+import lib
 
-log = logger.Logger(MODULE)
+logger = lib.logger.Logger()
 
 def mkdir(path):
     '''Create a directory'''
@@ -41,9 +40,9 @@ def mkdir(path):
         try:
             os.makedirs(path)
         except:
-            log.error("Failed to create directory: %s" % path)
+            logger.error("Failed to create directory: %s" % path)
         else:
-            log.info("Created Directory: %s" % path)
+            logger.info("Created Directory: %s" % path)
 
 class Tail(QtCore.QObject):
     '''
@@ -101,6 +100,7 @@ class Tail(QtCore.QObject):
 
         f.close()
 
+
 class Monitor(QtCore.QObject):
     '''Given a filepath, monitor it for changes.'''
     def __init__(self, filepath, parent=None):
@@ -119,3 +119,6 @@ class Monitor(QtCore.QObject):
     def newLine(self, line):
         print "%03i: %s" % (self.linecount, line.strip("\r\n"))
         self.linecount += 1
+
+# cleanup objects
+del CWD, PYFARM, lib

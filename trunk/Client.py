@@ -37,7 +37,7 @@ from lib.net.tcp.queue import QueueClient
 from lib.net import tcp, udp
 from lib import logger, settings, session
 
-log = logger.Logger(MODULE)
+logger = logger.Logger(MODULE)
 
 class Main(QtCore.QObject):
     def __init__(self, parent=None):
@@ -54,14 +54,14 @@ class Main(QtCore.QObject):
             msg += "Would you like to shutdown the other client process? ([y]/n) "
             #response = raw_input(msg)
             response = "y"
-            log.warning("Forced overwrite")
+            logger.warning("Forced overwrite")
 
             if response.strip().lower() == "y":
                 self.pidFile.write(force=True)
                 self.listenForBroadcast()
 
             else:
-                log.critical("You can only run one client at a time")
+                logger.critical("You can only run one client at a time")
                 sys.exit(1)
 
         else:
@@ -70,12 +70,12 @@ class Main(QtCore.QObject):
 
     def stop(self):
         '''Stop any currently running clients'''
-        log.info("Attempting to stop client process")
+        logger.info("Attempting to stop client process")
         if self.pidFile.exists():
             self.pidFile.kill()
             self.pidFile.remove()
 
-        log.info("Exiting")
+        logger.info("Exiting")
         sys.exit(0)
 
     def listenForBroadcast(self):
@@ -83,7 +83,7 @@ class Main(QtCore.QObject):
         Step 1:
         Listen for an incoming broadcast from the master
         '''
-        log.deprecated("Broadcast port allocation is now handled by lib.net")
+        logger.deprecated("Broadcast port allocation is now handled by lib.net")
         portNum        = self.config['servers']['broadcast']
         self.broadcast = udp.broadcast.BroadcastReceiever(portNum, parent=self)
         self.connect(self.broadcast, QtCore.SIGNAL("masterFound"), self.setMasterAddress)
@@ -109,15 +109,15 @@ class Main(QtCore.QObject):
 
         # if new hostname OR address, update log and
         #  refresh services
-        log.deprecated("Queue port allocation is now handled by lib.net")
+        logger.deprecated("Queue port allocation is now handled by lib.net")
         portNum = self.config['servers']['queue']
         queue   = tcp.queue.QueueClient(self.masterAddress, port=portNum)
         if newName or newAddr:
-            log.info("Received master address")
+            logger.info("Received master address")
             queue.addClient()
 
         else:
-            log.info("Already connected to master: %s" % response[0])
+            logger.info("Already connected to master: %s" % response[0])
             queue.addClient(new=False)
 
 

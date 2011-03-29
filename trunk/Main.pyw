@@ -29,8 +29,6 @@ from PyQt4 import QtCore, QtGui, QtNetwork, uic
 
 CWD       = os.path.dirname(os.path.abspath(__file__))
 PYFARM    = CWD
-MODULE    = os.path.basename(__file__)
-CONTEXT   = MODULE.split(".")[0]
 CFG_ROOT  = os.path.join(PYFARM, "cfg")
 ICN_ROOT  = os.path.join(PYFARM, "icons")
 QUE_ICN   = os.path.join(ICN_ROOT, "queue")
@@ -49,13 +47,13 @@ from lib.net import tcp, udp
 from lib import db, logger, ui, slots, settings, session, system
 
 # setup logging
-log = logger.Logger(MODULE, LOGLEVEL)
+logger = logger.Logger()
 
 class MainWindow(QtGui.QMainWindow):
     '''This is the controlling class for the main gui'''
     def __init__(self):
         super(MainWindow, self).__init__()
-        self.pidFile     = session.State(context=CONTEXT)
+        self.pidFile     = session.State(context='Main')
         self.closeForced = False
 
         if self.pidFile.running() or self.pidFile.exists():
@@ -125,16 +123,16 @@ class MainWindow(QtGui.QMainWindow):
         NOTE: This function can be intensive, try to keep refresh events
         to a minimum.
         '''
-        log.notimplemented("This function has not been implemented yet,")
-        log.notimplemented("...pending evalulation of updating individual")
-        log.nogimplemented("...table fields")
+        logger.notimplemented("This function has not been implemented yet,")
+        logger.notimplemented("...pending evalulation of updating individual")
+        logger.nogimplemented("...table fields")
 
     def handlePid(self):
         '''Handle actions relating to the process id file'''
-        title  = "%s Is Already Running" % CONTEXT
+        title  = "Main.pyw Is Already Running"
         msg    = "PyFarm already seems to be open, terminate the running"
         msg   += " process if needed and continue?"
-        log.warning("%s: User input required" % title)
+        logger.warning("%s: User input required" % title)
         yes    = QtGui.QMessageBox.Yes
         no     = QtGui.QMessageBox.No
         msgBox = QtGui.QMessageBox.warning(
@@ -146,7 +144,7 @@ class MainWindow(QtGui.QMainWindow):
             self.pidFile.write(force=True)
 
         else:
-            log.warning("Not overwriting PID file")
+            logger.warning("Not overwriting PID file")
 
     def runServers(self):
         '''Run the background servers required to operate PyFarm'''
@@ -162,15 +160,15 @@ class MainWindow(QtGui.QMainWindow):
             if not self.queueServer.listen(listenAddress, queueServerPort):
                 errStr = self.queueServer.errorString()
                 error  = "Could not start the queue server: %s" % errStr
-                log.fatal(error)
+                logger.fatal(error)
 
                 if not DEBUG:
                     raise lib.net.errors.ServerFault(error)
                 else:
-                    log.warning("Bypassing exception!!!")
+                    logger.warning("Bypassing exception!!!")
 
         except TypeError:
-            log.critical("Invalid type passed to queueServer.listen")
+            logger.critical("Invalid type passed to queueServer.listen")
             self.updateConsole(
                                 "server.error", "Failed to start Queue Server",
                                 color="red"
@@ -180,16 +178,16 @@ class MainWindow(QtGui.QMainWindow):
             if not self.adminServer.listen(listenAddress, adminServerPort):
                 errStr = self.adminServer.errorString()
                 error  = "Could not start the admin server: %s" % errStr
-                log.fatal(error)
+                logger.fatal(error)
 
                 if not DEBUG:
                     raise lib.net.errors.ServerFault(error)
 
                 else:
-                    log.warning("Bypassing exception!!!")
+                    logger.warning("Bypassing exception!!!")
 
         except TypeError:
-            log.critical("Invalid type passed to adminServer.listen")
+            logger.critical("Invalid type passed to adminServer.listen")
             self.updateConsole(
                                 "server.error", "Failed to start Admin Server",
                                 color="red"
@@ -208,7 +206,7 @@ class MainWindow(QtGui.QMainWindow):
     ## slots.state (current software, job, crons, etc.)
     def submitAction(self, action):
         '''Return a QIcon object with icon preloaded'''
-        log.ui("Submitted With: %s" % action.text())
+        logger.ui("Submitted With: %s" % action.text())
 
     def hostFindPressed(self): self.slots.host.find()
     def hostAddPressed(self): pass # self.slots.host.add()
@@ -233,17 +231,17 @@ class MainWindow(QtGui.QMainWindow):
         if not self.closeForced:
             try:
                 for key, value in exitAnswers.items():
-                    log.ui("Exit State Choice: %s -> %s" % (key, str(value)))
+                    logger.ui("Exit State Choice: %s -> %s" % (key, str(value)))
             except:
-                log.error("Cannot show exit answers, dialog box is disabled")
+                logger.error("Cannot show exit answers, dialog box is disabled")
 
-            log.info("Removing lock file")
+            logger.info("Removing lock file")
             self.pidFile.close()
 
         else:
             print "Force closed!"
 
-        log.critical("Closing!")
+        logger.critical("Closing!")
         sys.exit()
 
     def closeEvent(self, event):
@@ -260,9 +258,9 @@ class MainWindow(QtGui.QMainWindow):
 
     def addHost(self, hostname, ip):
         '''Add a host to the database and refresh the ui'''
-        log.debug("Attempting to add %s (%s) to database" % (hostname, ip))
+        logger.debug("Attempting to add %s (%s) to database" % (hostname, ip))
         if not db.Network.hostExists(SQL, hostname):
-            log.info("Added Client: %s" % hostname)
+            logger.info("Added Client: %s" % hostname)
             msg = "Added Host: %s" % hostname
             self.updateConsole("client", msg, color='green')
             db.Network.addHost(SQL, hostname, ip)
@@ -270,7 +268,7 @@ class MainWindow(QtGui.QMainWindow):
         else:
             msg = "Host Already In Database: %s" % hostname
             self.updateConsole("client", msg, color='red')
-            log.warning(msg)
+            logger.warning(msg)
 
     def globalPoint(self, widget, point):
         '''Return the global position for a given point on a widget'''
@@ -296,15 +294,15 @@ class Testing(QtCore.QObject):
     '''Quick testing code'''
     def __init__(self, parent=None):
         super(Testing, self).__init__(parent)
-        log = Logger.Logger("Main.Testing")
+        logger = Logger.Logger("Main.Testing")
         self.config = ReadConfig(CFG_ROOT)
-        log.debug("Test code initilized")
+        logger.debug("Test code initilized")
 
     def broadIncriment(self):
-        log.netclient("Incrimented")
+        logger.netclient("Incrimented")
 
     def broadDone(self, signal):
-        log.netclient("Broadcast complete")
+        logger.netclient("Broadcast complete")
 
     def sendBroadcast(self):
         '''Send out a broadcast to inform clients of the master node'''
@@ -315,16 +313,16 @@ class Testing(QtCore.QObject):
 
     def runStatusServer(self):
         '''Run the status server and listen for connections'''
-        log.netserver("Running status server")
+        logger.netserver("Running status server")
 
     def run(self, option=None, opt=None, value=None, parser=None):
-        log.debug("Running test code")
+        logger.debug("Running test code")
 
         self.runStatusServer()
         self.sendBroadcast()
 
-        log.debug("Test run complete")
-        log.terminate("Testing Terminated")
+        logger.debug("Test run complete")
+        logger.terminate("Testing Terminated")
 
 if __name__ != '__MAIN__':
     import lib.inputFlags as flags
@@ -368,7 +366,7 @@ if __name__ != '__MAIN__':
     # prepare test
     from lib.test import testImports
     msg = "Running Unit Test: Version and Module Check"
-    #log.info(msg)
+    #logger.info(msg)
 
     # run test
     #test = unittest.TestLoader().loadTestsFromTestCase(ModuleImports.ModuleTests)
@@ -377,7 +375,7 @@ if __name__ != '__MAIN__':
     # prepare test
     from lib.test import testLogging
     msg = "Running Unit Test: Logging"
-    #log.info(msg)
+    #logger.info(msg)
 
     # run test
     #test = unittest.TestLoader().loadTestsFromTestCase(ValidateLogging.Validate)
@@ -386,7 +384,7 @@ if __name__ != '__MAIN__':
     # prepare test
     from lib.test import testNetConfig
     msg = "Running Unit Test: Network Configuration"
-    #log.info(msg)
+    #logger.info(msg)
 
     # run test
     #test = unittest.TestLoader().loadTestsFromTestCase(ValidateNetConfig.Validate)
@@ -400,4 +398,4 @@ if __name__ != '__MAIN__':
     sys.exit(app.exec_())
 
 else:
-    log.fatal("This program is not meant to be imported!")
+    logger.fatal("This program is not meant to be imported!")

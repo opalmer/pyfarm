@@ -32,10 +32,9 @@ from PyQt4 import QtCore, QtNetwork
 
 CWD    = os.path.dirname(os.path.abspath(__file__))
 PYFARM = os.path.abspath(os.path.join(CWD, "..", ".."))
-MODULE = os.path.basename(__file__)
 if PYFARM not in sys.path: sys.path.append(PYFARM)
 
-import lib.net.errors
+import errors
 from lib import system
 
 LOCAL_ADDRESSES = ('127.0.*.*', '0.0.0.0')
@@ -215,7 +214,7 @@ def hostname(fqdn=False):
         return hostname
 
     else:
-        raise lib.net.errors.DNSMismatch("Resolved ip does not match hostname")
+        raise errors.DNSMismatch("Resolved ip does not match hostname")
 
 def interfaces():
     '''Returns a list of interface objects'''
@@ -300,8 +299,10 @@ def dataStream():
     minor = system.info.Qt.VERSION_MINOR
     return eval("QtCore.QDataStream.Qt_%i_%i" % (major, minor))
 
-# establish the base object
+# establish the base object and cleanup
 INTERFACE = interface()
+del CWD, PYFARM
+
 if __name__ == "__main__":
     iface = INTERFACE
     addr  = address()
