@@ -33,7 +33,7 @@ CWD    = os.path.dirname(os.path.abspath(__file__))
 PYFARM = os.path.abspath(os.path.join(CWD, "..", ".."))
 if PYFARM not in sys.path: sys.path.append(PYFARM)
 
-from lib.system import includes
+from lib.system import process
 from lib import logger, settings, decorators
 
 logger = logger.Logger()
@@ -99,8 +99,8 @@ class Hardware(object):
 
         if os.name == "posix":
             try:
-                self.rammax = float(includes.SimpleCommand("free | grep Mem | awk '{print $2}'"))/1024
-                self.swapmax = float(includes.SimpleCommand("free | grep Swap | awk '{print $2}'"))/1024
+                self.rammax = float(process.SimpleCommand("free | grep Mem | awk '{print $2}'"))/1024
+                self.swapmax = float(process.SimpleCommand("free | grep Swap | awk '{print $2}'"))/1024
 
             except TypeError:
                 logger.fixme("Hardware information (linux) not implimented for new SimpleCommand")
@@ -127,7 +127,7 @@ class Hardware(object):
         '''Return the amout of ram used'''
         results = None
         if os.name == "posix":
-            results = float(includes.SimpleCommand("free | grep 'buffers/cache' | awk '{print $3}'"))/1024
+            results = float(process.SimpleCommand("free | grep 'buffers/cache' | awk '{print $3}'"))/1024
         else:
             logger.notimplemented("Ram used not implemented for %s" % os.name)
 
@@ -145,7 +145,7 @@ class Hardware(object):
         '''Return the total amout of swap used'''
         results = None
         if os.name == "posix":
-            results = float(includes.SimpleCommand("free | grep Swap | awk '{print $3}'"))/1024
+            results = float(process.SimpleCommand("free | grep Swap | awk '{print $3}'"))/1024
         else:
             logger.notimplemented("swap used not implemented for %s" % os.name)
 
@@ -230,7 +230,7 @@ class Network(object):
         results = None
         if os.name == "posix":
             query = "ifconfig %s | grep 'inet addr' | gawk -F: '{print $4}' | gawk '{print $1}'" % self.adapter
-            results = includes.SimpleCommand(query)
+            results = process.SimpleCommand(query)
         else:
             logger.notimplemented("subnet not implemented for %s" % os.name)
 

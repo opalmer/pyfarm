@@ -1,4 +1,5 @@
 *.e4p
+_*
 *eric*
 *sql*
 *.log*
