@@ -20,18 +20,18 @@ along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 '''
 import os
 
-try:
-    from includes import *
+if os.name == 'nt':
+    from windows import *
 
-except ImportError:
-    pass
+elif os.name == 'posix':
+    try:
+        from linux import *
 
-for filename in os.listdir(os.path.dirname(os.path.abspath(__file__))):
-    isInit    = filename.startswith("__init__")
-    isInclude = filename.startswith("includes")
+    except ImportError:
+        from cygwin import *
 
-    if filename.endswith(".py") and not isInit and not isInclude:
-        __import__(filename.split(".")[0], locals(), globals())
+elif os.name == 'mac':
+    from macosx import *
 
-# cleanup extra objects
-del os, filename, isInit, isInclude
+else:
+    raise Exception("%s is not a supported system!" % os.name)

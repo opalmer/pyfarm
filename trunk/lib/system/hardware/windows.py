@@ -103,9 +103,12 @@ def uptime(): return 0
 def osName(): return os.path.basename(__file__).split('.')[0]
 def osVersion(): return 0
 
-
 def architecture():
     '''Return the system architecture'''
     if platform.architecture()[0] == "64bit":
         return "x86_64"
     return "i686"
+
+
+# cleanup objects specific to this module
+del kernel32, mpr, _winreg, ctypes
