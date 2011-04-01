@@ -22,36 +22,43 @@ along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 import os
 import sys
 
-if os.uname != "nt":
+if os.name != "nt":
     print "FAIL: Cannot import the windows hardware library onto %s!!" % os.name
     sys.exit(1)
 
+import re
 import _winreg
 import subprocess
 import platform
 import ctypes
+import types
 
 kernel32 = ctypes.windll.kernel32
 mpr      = ctypes.windll.mpr
+CWD      = os.path.dirname(os.path.abspath(__file__))
+SYSLIB   = os.path.abspath(os.path.join(CWD, "..", ".."))
+if SYSLIB not in sys.path: sys.path.append(SYSLIB)
 
-class SysStruct(ctypes.Structure):
+from system import convert
+
+class _SysStruct(ctypes.Structure):
     _fields_ = [
                     ("wProcessorArchitecture", ctypes.c_ushort),
                     ("wReserved", ctypes.c_ushort)
                ]
 
 
-class SysUnion(ctypes.Union):
+class _SysUnion(ctypes.Union):
     _fields_ = [
                     ("dwOemId", ctypes.c_uint),
-                    ("struct", SysStruct)
+                    ("struct", _SysStruct)
                 ]
 
 
-class System(ctypes.Structure):
+class _System(ctypes.Structure):
     '''Return information about the system'''
     _fields_ = [
-                    ("union", SysUnion),
+                    ("union", _SysUnion),
                     ("dwPageSize", ctypes.c_uint),
                     ("lpMinimumApplicationAddress", ctypes.c_void_p),
                     ("lpMaximumApplicationAddress", ctypes.c_void_p),
@@ -64,7 +71,7 @@ class System(ctypes.Structure):
                 ]
 
 
-class Memory(ctypes.Structure):
+class _Memory(ctypes.Structure):
     '''
     Return information about the memory on the current system
 
@@ -90,14 +97,47 @@ class Memory(ctypes.Structure):
                     ("ullAvailExtendedVirtual", ctypes.c_uint64)
                 ]
 
+def _cpuInfo():
+    '''Return a dictionary from the registry with cpu information'''
+    cpu    = {}
+    key    = "HARDWARE\\DESCRIPTION\\System\\CentralProcessor\\0"
+    regKey = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, key)
+
+    for num in range(_winreg.QueryInfoKey(regKey)[1]):
+        name, value, keyType = _winreg.EnumValue(regKey, num)
+
+        # remove unicode and extra spaces
+        rmUnicode = re.sub(r'''[^\x00-\x7F]+''', r'''''',  str(value)).strip()
+        strip     = re.sub(r'''\s+''', r''' ''', rmUnicode)
+        cpu[name] = strip
+
+    regKey.Close()
+    return cpu
+
+def _memoryInfo():
+    '''Return and up to date memory information object'''
+    memory = _Memory()
+    memory.dwLength = ctypes.sizeof(memory)
+    kernel32.GlobalMemoryStatusEx(ctypes.byref(memory))
+    return memory
+
+# setup ctype objects
+_cpu    = _cpuInfo()
+_system = _System()
+_struct = _SysStruct()
+_memory = _memoryInfo()
+kernel32.GetSystemInfo(ctypes.byref(_system))
 
 def cpuCount():
     '''
     Return the number of processors installed in the system.  Please note that
     this count includes logical as well as physical processors.
     '''
-    sysInfo = System()
-    return sysInfo.dwNumberOfProcessors
+    return _system.dwNumberOfProcessors
+
+def cpuType():
+    '''Return the type of cpu current installed'''
+    return _cpu['ProcessorNameString']
 
 def cpuSpeed():
     '''
@@ -105,17 +145,49 @@ def cpuSpeed():
     some CPUs are throttled down when not in use so this value may appear
     lowr than it really is.
     '''
+    return int(_cpu['~MHz'])
+
+def ramTotal():
+    '''Return the total about of physical ram installed (in MB)'''
+    return convert.kbToMB(_memoryInfo().ullTotalPhys)
+
+def ramFree():
+    '''Return the current amount of physical RAM available for use'''
+    return convert.kbToMB(_memoryInfo().ullAvailPhys)
+
+def swapTotal():
+    '''Return the size of the swap'''
+    return convert.kbToMB(_memoryInfo().ullTotalPageFile)-ramTotal()
+
+def swapFree():
+    '''Return the amount of swap free'''
+    return convert.kbToMB(_memoryInfo().ullAvailVirtual)-swapTotal()
+
+def load():
+    '''Return the average system load'''
+    return 0, 0, 0
+
+def uptime():
+    '''
+    Return the total amount of time in seconds that the system has been
+    online
+    '''
     return 0
 
-def ramTotal(): return 0
-def ramFree(): return 0
-def swapTotal(): return 0
-def swapFree(): return 0
-def load(): return 0, 0, 0
-def uptime(): return 0
-def idletime(): return 0
-def osName(): return os.path.basename(__file__).split('.')[0]
-def osVersion(): return 0
+def idletime():
+    '''
+    Return the total amout of time in seconds that the system has spent idle
+    since the last boot
+    '''
+    return 0
+
+def osName():
+    '''Operating system name based on current file name'''
+    return os.path.basename(__file__).split('.')[0]
+
+def osVersion():
+    '''Version of the operating system or kernel installed'''
+    return platform.uname()[2]
 
 def architecture():
     '''Return the system architecture'''
@@ -136,12 +208,6 @@ def report():
             output[key] = value()
 
     return output
-
-
-
-# cleanup objects specific to this module
-del kernel32, mpr, _winreg, ctypes
-
 
 if __name__ == '__main__':
     print

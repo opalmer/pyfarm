@@ -22,6 +22,11 @@ along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 import os
 import types
 
+SYSLIB   = os.path.abspath(os.path.join(CWD, "..", ".."))
+if SYSLIB not in sys.path: sys.path.append(SYSLIB)
+
+from system import convert
+
 def _procInfo(path, key):
     '''Generator object to return specific lines with CPU information'''
     try:
@@ -43,6 +48,10 @@ def cpuCount():
             count += 1
 
     return count
+
+def cpuType():
+    '''Return the type of cpu current installed'''
+    return 0
 
 def cpuSpeed():
     '''
@@ -85,7 +94,7 @@ def ramTotal():
             except:
                 pass
 
-    return ram
+    return convert.kBToMB(ram)
 
 def ramFree():
     '''Return the current amount of physical RAM available for use'''
@@ -97,7 +106,7 @@ def ramFree():
     except:
         pass
 
-    return ram
+    return  convert.kBToMB(ram)
 
 def swapTotal():
     '''Return the size of the swap'''
@@ -110,7 +119,7 @@ def swapTotal():
             except:
                 pass
 
-    return swap
+    return  convert.kBToMB(swap)
 
 def swapFree():
     '''Return the amount of swap free'''
@@ -123,7 +132,7 @@ def swapFree():
             except:
                 pass
 
-    return swap
+    return  convert.kBToMB(swap)
 
 def load():
     '''Return the average system load'''
@@ -164,6 +173,7 @@ def osName():
     return os.path.basename(__file__).split('.')[0]
 
 def osVersion():
+    '''Version of the operating system or kernel installed'''
     return os.uname()[2]
 
 def architecture():
