@@ -19,11 +19,17 @@ GNU Lesser General Public License for more details.
 You should have received a copy of the GNU Lesser General Public License
 along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 '''
+import os
+import sys
+
+if os.uname != "nt":
+    print "FAIL: Cannot import the windows hardware library onto %s!!" % os.name
+    sys.exit(1)
+
 import _winreg
 import subprocess
 import platform
 import ctypes
-import sys
 
 kernel32 = ctypes.windll.kernel32
 mpr      = ctypes.windll.mpr
@@ -93,13 +99,21 @@ def cpuCount():
     sysInfo = System()
     return sysInfo.dwNumberOfProcessors
 
-def cpuSpeed(): return 0
+def cpuSpeed():
+    '''
+    Return the cpu speed as the operating system sees it.  Please note that
+    some CPUs are throttled down when not in use so this value may appear
+    lowr than it really is.
+    '''
+    return 0
+
 def ramTotal(): return 0
-def ramAvailable(): return 0
-def virtualMemoryTotal(): return 0
-def virtualMemoryAvailable(): return 0
+def ramFree(): return 0
+def swapTotal(): return 0
+def swapFree(): return 0
 def load(): return 0, 0, 0
 def uptime(): return 0
+def idletime(): return 0
 def osName(): return os.path.basename(__file__).split('.')[0]
 def osVersion(): return 0
 
@@ -109,6 +123,28 @@ def architecture():
         return "x86_64"
     return "i686"
 
+def report():
+    '''Report all hardware information in the form of a dictionary'''
+    output = {}
+
+    for key, value in globals().items():
+        isFunction = type(value) == types.FunctionType
+        isPrivate  = key.startswith("_")
+        isReport   = key == "report"
+
+        if isFunction and not isPrivate and not isReport:
+            output[key] = value()
+
+    return output
+
+
 
 # cleanup objects specific to this module
 del kernel32, mpr, _winreg, ctypes
+
+
+if __name__ == '__main__':
+    print
+    print "                 %s SYSTEM INFORMATION" % osName().upper()
+    for key, value in report().items():
+        print "%25s | %s" % (key, value)

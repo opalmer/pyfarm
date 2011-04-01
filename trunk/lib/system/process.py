@@ -31,6 +31,7 @@ PYFARM = os.path.abspath(os.path.join(CWD, "..", ".."))
 if PYFARM not in sys.path: sys.path.append(PYFARM)
 
 import lib
+from lib.system import hardware
 
 logger = lib.logger.Logger()
 
@@ -96,13 +97,11 @@ def kill(pid):
 
     return True
 
-def running(pid):
-    '''Return true if the requested process is running'''
+def exists(pid):
+    '''Return True if the requested pid exists'''
     pid = int(pid)
-    if os.name == "nt":
-        pass
 
-    else:
+    if hardware.osName() == "linux":
         try:
             os.kill(pid, 0)
 
@@ -111,8 +110,40 @@ def running(pid):
             return False
 
         else:
-            logger.debug("Process is Running: %i" % pid)
+            logger.error("Process Exists: %i" % pid)
             return True
+
+    return True
+
+def running(pid):
+    '''Return true if the requested process is running (not idle)'''
+    pass
+
+def memoryUsage(pid, peak=False):
+    '''
+    Return the amount of memory consumed by a given process id in KB
+
+    @param pid: Process id to search for
+    @type  pid: C{int}
+    @param peak: If true, show only the peak memory usage
+    @type  peak: C{bool}
+    '''
+    pid = int(pid)
+
+    if hardware.osName() == "linux":
+        path   = "/proc/%i/status" % pid
+        search = "VmSize"
+
+        if peak:
+            search = "VmPeak"
+
+        if os.path.exists(path):
+            for line in open(path, 'r'):
+                if line.startswith(search):
+                    return line.split()[1]
 
 # cleanup objects
 del CWD, PYFARM, lib
+
+if __name__ == '__main__':
+    print memoryUsage(sys.argv[1])

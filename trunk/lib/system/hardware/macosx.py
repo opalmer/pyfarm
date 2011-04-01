@@ -19,16 +19,38 @@ GNU Lesser General Public License for more details.
 You should have received a copy of the GNU Lesser General Public License
 along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 '''
+import os
+import types
 
-# placeholders
 def cpuCount(): return 0
 def cpuSpeed(): return 0
 def ramTotal(): return 0
-def ramAvailable(): return 0
-def virtualMemoryTotal(): return 0
-def virtualMemoryAvailable(): return 0
+def ramFree(): return 0
+def swapTotal(): return 0
+def swapFree(): return 0
 def load(): return 0, 0, 0
 def uptime(): return 0
+def idletime(): return 0
 def osName(): return os.path.basename(__file__).split('.')[0]
 def osVersion(): return 0
 def architecture(): return 0
+def report():
+    '''Report all hardware information in the form of a dictionary'''
+    output = {}
+
+    for key, value in globals().items():
+        isFunction = type(value) == types.FunctionType
+        isPrivate  = key.startswith("_")
+        isReport   = key == "report"
+
+        if isFunction and not isPrivate and not isReport:
+            output[key] = value()
+
+    return output
+
+
+if __name__ == '__main__':
+    print
+    print "                 %s SYSTEM INFORMATION" % osName().upper()
+    for key, value in report().items():
+        print "%25s | %s" % (key, value)
