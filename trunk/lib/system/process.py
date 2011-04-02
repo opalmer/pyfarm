@@ -31,7 +31,7 @@ PYFARM = os.path.abspath(os.path.join(CWD, "..", ".."))
 if PYFARM not in sys.path: sys.path.append(PYFARM)
 
 import lib
-from lib.system import hardware
+from lib.system import hardware, convert
 
 logger = lib.logger.Logger()
 
@@ -130,6 +130,7 @@ def memoryUsage(pid, peak=False):
     '''
     pid = int(pid)
 
+    print hardware.osName()
     if hardware.osName() == "linux":
         path   = "/proc/%i/status" % pid
         search = "VmSize"
@@ -140,10 +141,36 @@ def memoryUsage(pid, peak=False):
         if os.path.exists(path):
             for line in open(path, 'r'):
                 if line.startswith(search):
-                    return line.split()[1]
+                    return int(line.split()[1])
 
-# cleanup objects
-del CWD, PYFARM, lib
+        else:
+            logger.error("No such file: %s" % path)
+
+    # if we can't find the memory usage, return None
+    return None
+
+def exceedsMemoryLimit(pid, limit, terminate=False):
+    '''
+    Do not allow the given process id to exceed a given value.  If it does we
+    will either return True or kill the process.
+
+    @param pid: The process id to check
+    @type  pid: C{int}
+    @param limit: The limit to impose on the given process id (in megabytes)
+    @type  limit: C{int}
+    @param terminate: If True, kill the proces if it exceeds the limit
+    @type  terminate: C{bool}
+    '''
+    # ensure we are only passing integers
+    pid   = int(pid)
+    limit = int(pid)
+    usage = memoryUsage(pid)
+
+    if usage and usage > limit:
+        kill(pid)
+        return True
+
+    return False
 
 if __name__ == '__main__':
     print memoryUsage(sys.argv[1])

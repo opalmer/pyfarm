@@ -24,11 +24,11 @@ if os.name == 'nt':
     from windows import *
 
 elif os.name == 'posix':
-    try:
-        from linux import *
+    #try:
+    from linux import *
 
-    except ImportError:
-        from cygwin import *
+    #except ImportError, error:
+        #from cygwin import *
 
 elif os.name == 'mac':
     from macosx import *

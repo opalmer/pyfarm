@@ -26,4 +26,4 @@ def kbToMB(kb):
 
 def kBToMB(kB):
     '''Convert kilobytes to megabytes'''
-    return kb / 1024
+    return kB / 1024

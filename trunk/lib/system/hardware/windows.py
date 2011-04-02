@@ -35,11 +35,6 @@ import types
 
 kernel32 = ctypes.windll.kernel32
 mpr      = ctypes.windll.mpr
-CWD      = os.path.dirname(os.path.abspath(__file__))
-SYSLIB   = os.path.abspath(os.path.join(CWD, "..", ".."))
-if SYSLIB not in sys.path: sys.path.append(SYSLIB)
-
-from system import convert
 
 class _SysStruct(ctypes.Structure):
     _fields_ = [
@@ -97,6 +92,9 @@ class _Memory(ctypes.Structure):
                     ("ullAvailExtendedVirtual", ctypes.c_uint64)
                 ]
 
+def _kBToMB(kB): return kB / 1024
+def _kbToMB(kB): return kb / 1024 / 1024
+
 def _cpuInfo():
     '''Return a dictionary from the registry with cpu information'''
     cpu    = {}
@@ -149,19 +147,19 @@ def cpuSpeed():
 
 def ramTotal():
     '''Return the total about of physical ram installed (in MB)'''
-    return convert.kbToMB(_memoryInfo().ullTotalPhys)
+    return _kbToMB(_memoryInfo().ullTotalPhys)
 
 def ramFree():
     '''Return the current amount of physical RAM available for use'''
-    return convert.kbToMB(_memoryInfo().ullAvailPhys)
+    return _kbToMB(_memoryInfo().ullAvailPhys)
 
 def swapTotal():
     '''Return the size of the swap'''
-    return convert.kbToMB(_memoryInfo().ullTotalPageFile)-ramTotal()
+    return _kbToMB(_memoryInfo().ullTotalPageFile)-ramTotal()
 
 def swapFree():
     '''Return the amount of swap free'''
-    return convert.kbToMB(_memoryInfo().ullAvailVirtual)-swapTotal()
+    return _kbToMB(_memoryInfo().ullAvailVirtual)-swapTotal()
 
 def load():
     '''Return the average system load'''

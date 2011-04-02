@@ -20,12 +20,10 @@ You should have received a copy of the GNU Lesser General Public License
 along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 '''
 import os
+import sys
 import types
 
-SYSLIB   = os.path.abspath(os.path.join(CWD, "..", ".."))
-if SYSLIB not in sys.path: sys.path.append(SYSLIB)
-
-from system import convert
+def _kBToMB(kB): return kB / 1024
 
 def _procInfo(path, key):
     '''Generator object to return specific lines with CPU information'''
@@ -94,7 +92,7 @@ def ramTotal():
             except:
                 pass
 
-    return convert.kBToMB(ram)
+    return _kBtoMB(ram)
 
 def ramFree():
     '''Return the current amount of physical RAM available for use'''
@@ -106,7 +104,7 @@ def ramFree():
     except:
         pass
 
-    return  convert.kBToMB(ram)
+    return  _kBtoMB(ram)
 
 def swapTotal():
     '''Return the size of the swap'''
@@ -119,7 +117,7 @@ def swapTotal():
             except:
                 pass
 
-    return  convert.kBToMB(swap)
+    return  _kBtoMB(swap)
 
 def swapFree():
     '''Return the amount of swap free'''
@@ -132,7 +130,7 @@ def swapFree():
             except:
                 pass
 
-    return  convert.kBToMB(swap)
+    return  _kBtoMB(swap)
 
 def load():
     '''Return the average system load'''
