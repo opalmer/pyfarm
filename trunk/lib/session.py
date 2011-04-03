@@ -33,47 +33,6 @@ import system
 
 logger = logger.Logger()
 
-class AcquisitionThread(QtCore.QThread):
-    def __init__(self, semaphore, parent=None):
-        super(AcquisitionThread, self).__init__(parent)
-        self.ACQUIRED  = False
-        self.semaphore = semaphore
-
-def run(semaphore):
-    '''Attempt to acquire a lock on the semaphore'''
-    print "hereA"
-    thread = Thread(target=semaphore.acquire)
-    thread.run()
-    print "here"
-    return True
-
-
-class SystemSemaphore(QtCore.QSystemSemaphore):
-    '''System level semaphore locking system with timeouts'''
-    def _tryAcquire(self, timeout):
-        '''Attempt to acquire a lock inside of a thread'''
-        start   = time.time()
-        maxTime = start+timeout
-        #thread  = Thread(target=run(self))
-        #thread.start()
-
-        while time.time() <= maxTime and not self.acquire():
-            print 'hi'
-        print 'timeout'
-
-        #if thread.ACQUIRED:
-            #print 'acquired lock'
-            #return True
-        #else:
-            #print 'could not acquire lock'
-            #return False
-
-    def tryAcquire(self, timeout=5):
-        if not self._tryAcquire(timeout):
-            return False
-        return True
-
-
 class State(object):
     '''
     Read and write state information about the current
@@ -106,19 +65,14 @@ class State(object):
         is currently running
         '''
         if self.exists():
-            pid = self.pid()
-            if system.process.exists(pid):
+            if system.process.exists(self.pid()) and self.pid() != os.getpid():
                 return True
 
-        else:
-            return False
+        return False
 
     def write(self, force=False):
         '''Write the process ID to the directory'''
-        if self.exists() and not force and not self.running():
-            logger.warning("PID file found for %s, user input required" % self.pid(live=True))
-
-        elif self.exists() and force:
+        if self.exists() and force:
             logger.debug("Attempting to kill the process and remove the pid file")
             self.kill()
             self._writePIDFile()
@@ -131,9 +85,7 @@ class State(object):
         '''Return true of the process id file exists'''
         if os.path.isfile(self.pidFile):
             return True
-        else:
-            logger.warning("PID file does not exist")
-            return False
+        return False
 
     def kill(self):
         '''Kill the currently running process'''

@@ -9,8 +9,8 @@ PURPOSE: Main program to run and manage PyFarm
 
     PyFarm is free software: you can redistribute it and/or modify
     it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
+    the Free Software Foundation, either __version__ 3 of the License, or
+    (at your option) any later __version__.
 
     PyFarm is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -34,11 +34,12 @@ ICN_ROOT  = os.path.join(PYFARM, "icons")
 QUE_ICN   = os.path.join(ICN_ROOT, "queue")
 CFG_GEN   = os.path.join(CFG_ROOT, "general.ini")
 UI_FILE   = os.path.join(PYFARM, "lib", "ui", "mainWindow.ui")
-DEVELOPER = 'Oliver Palmer'
-HOMEPAGE  = 'http://www.pyfarm.net'
-VERSION   = '0.5.0'
+PIDFILE   = None
 DEBUG     = False
 UNITTESTS = False
+
+__author__  = "Oliver Palmer"
+__version__ = "0.5.0"
 
 import cfg.resources_rc
 import lib.net, lib.net.errors
@@ -52,20 +53,23 @@ class MainWindow(QtGui.QMainWindow):
     '''This is the controlling class for the main gui'''
     def __init__(self):
         super(MainWindow, self).__init__()
-        self.pidFile     = session.State(context='Main')
+
+        self.pidFile     = session.State(context='PyFarm.Main')
         self.closeForced = False
 
-        if self.pidFile.running() or self.pidFile.exists():
+        if self.pidFile.running():
             self.handlePid()
 
         else:
             self.pidFile.write()
 
+        PIDFILE = self.pidFile.pidFile
+
         # load the ui file
         self.ui = uic.loadUi(UI_FILE, baseinstance=self)
 
         # setup layouts
-        self.setWindowTitle("PyFarm -- Version %s" % VERSION)
+        self.setWindowTitle("PyFarm -- __version__ %s" % __version__)
         self.centralWidget().setLayout(self.ui.layoutRoot)
         self.ui.toolboxNetwork.setLayout(self.ui.layoutNetwork)
         self.ui.toolboxSubmit.setLayout(self.ui.submitToolboxLayout)
@@ -329,14 +333,14 @@ class Testing(QtCore.QObject):
 if __name__ != '__MAIN__':
     import lib.inputFlags as flags
     from optparse import OptionParser
-    about   = flags.About(DEVELOPER, 'GNU-LGPL_Header.txt')
+    about   = flags.About(__author__, 'GNU-LGPL_Header.txt')
     sysinfo = system.info.SystemInfo(os.path.join(CFG_ROOT, "general.ini"))
 
     # Command Line Options
-    parser = OptionParser(version="PyFarm v%s" % VERSION)
+    parser = OptionParser(version="PyFarm v%s" % __version__)
     parser.add_option(
                         "--author", dest="author", action="callback",
-                        callback=about.author, help="Return the developer's name"
+                        callback=about.author, help="Return the __author__'s name"
                      )
     parser.add_option(
                         "--license", dest="license", action="callback",
@@ -367,7 +371,7 @@ if __name__ != '__MAIN__':
 
     # prepare test
     from lib.test import testImports
-    msg = "Running Unit Test: Version and Module Check"
+    msg = "Running Unit Test: __version__ and Module Check"
     #logger.info(msg)
 
     # run test
@@ -397,7 +401,13 @@ if __name__ != '__MAIN__':
     ###############################
     main = MainWindow()
     main.show()
-    sys.exit(app.exec_())
+    app.exec_()
 
+    # be sure we cleanup the pid file
+    try:
+        os.remove(PIDFILE)
+    except: pass
+    finally:
+        sys.exit(0)
 else:
     logger.fatal("This program is not meant to be imported!")
