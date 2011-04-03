@@ -34,6 +34,8 @@ UNIT16         = 8
 QT_VERSION     = QtCore.QT_VERSION_STR.split('.')
 STREAM_VERSION = eval('QtCore.QDataStream.Qt_%s_%s' %(QT_VERSION[0], QT_VERSION[1]))
 
+logger = logger.Logger()
+
 class Request(QtCore.QObject):
     '''
     Wrapper object to store basic request information
@@ -41,11 +43,9 @@ class Request(QtCore.QObject):
     VARIABLES:
         request (string) -- Name of request to send
         values (list|tuple) -- Values to send with request
-        logName (string) -- Name to set logger to
     '''
-    def __init__(self, request, values, logName="Base.Request", parent=None):
+    def __init__(self, request, values, parent=None):
         super(Request, self).__init__(parent)
-        self.log    = logger.Logger(logName)
         self.socket = QtNetwork.QTcpSocket()
 
         self.connect(
@@ -73,7 +73,7 @@ class Request(QtCore.QObject):
                      )
 
         # initial data stream configuration
-        self.data = QtCore.QByteArray()
+        self.data   = QtCore.QByteArray()
         self.stream = QtCore.QDataStream(self.data, QtCore.QIODevice.WriteOnly)
         self.stream.setVersion(STREAM_VERSION)
         self.stream.writeUInt16(0)
@@ -136,8 +136,11 @@ class Request(QtCore.QObject):
         logger.error("Server Error, %s" % self.socket.errorString())
         self.socket.close()
 
-        self.connect(self.thread, QtCore.SIGNAL("finished()"), self.thread, QtCore.SLOT("deleteLater()"))
         self.thread.start()
+        self.connect(
+                        self.thread, QtCore.SIGNAL("finished()"),
+                        self.thread, QtCore.SLOT("deleteLater()")
+                    )
 
 # cleanup objects
 del CWD, PYFARM

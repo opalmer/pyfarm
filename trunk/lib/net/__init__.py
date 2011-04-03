@@ -19,13 +19,14 @@ You should have received a copy of the GNU Lesser General Public License
 along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 '''
 import os
+from includes import *
+from errors import *
+
 try:
     import tcp # we seem to have trouble import lib...
-    from includes import *
-    from errors import *
 
 except ImportError, error:
-    print "ImportError (lib.net): %s" % error
+    pass
 
 for filename in os.listdir(os.path.dirname(os.path.abspath(__file__))):
     isInit    = filename.startswith("__init__")

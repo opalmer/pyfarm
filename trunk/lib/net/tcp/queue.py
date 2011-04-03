@@ -31,7 +31,7 @@ PYFARM = os.path.abspath(os.path.join(CWD, "..", "..", ".."))
 if PYFARM not in sys.path: sys.path.append(PYFARM)
 
 import includes
-from lib import logger, system
+from lib import logger, system, net
 
 UNIT16         = 8
 STREAM_VERSION = includes.STREAM_VERSION
@@ -45,10 +45,10 @@ class QueueClient(QtCore.QObject):
     INPUT:
         master (str) -- ip address of master to connect to
     '''
-    def __init__(self, master, port=65501, parent=None):
+    def __init__(self, config, master, parent=None):
         super(QueueClient, self).__init__(parent)
         self.master = master
-        self.port   = port
+        self.port   = config['servers']['queue']
 
     def addClient(self, new=True):
         '''Add the given client to the master'''
@@ -56,14 +56,12 @@ class QueueClient(QtCore.QObject):
         if new:
             request = net.tcp.Request(
                                 "CLIENT_NEW",
-                                (netinfo.hostname(), netinfo.ip()),
-                                logName="QueueClient.Request"
+                                (netinfo.hostname(), netinfo.ip())
                             )
         else:
             request = net.tcp.Request(
                                 "CLIENT_CONNECTED",
-                                (netinfo.hostname(), netinfo.ip()),
-                                logName="QueueClient.Request"
+                                (netinfo.hostname(), netinfo.ip())
                              )
         self.connect(request, QtCore.SIGNAL("RESPONSE"), self.readResponse)
         request.send(self.master, self.port)
@@ -124,12 +122,12 @@ class QueueServerThread(QtCore.QThread):
 
                 if action == "CLIENT_NEW":
                     logger.netclient("Host: %s IP: %s" % (hostname, address))
-                    self.main.addHost(hostname, address)
+                    self.main.addHost(hostname, address, mode="new")
 
                 elif action == "CLIENT_CONNECTED":
                     msg = "%s's master is already %s" % (hostname, system.info.HOSTNAME)
                     self.main.updateConsole("client", msg, color='orange')
-                    self.main.addHost(hostname, address)
+                    self.main.addHost(hostname, address, mode="refresh")
 
             self.sendReply(socket, action)
             socket.waitForDisconnected()

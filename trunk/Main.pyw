@@ -37,8 +37,7 @@ UI_FILE   = os.path.join(PYFARM, "lib", "ui", "mainWindow.ui")
 DEVELOPER = 'Oliver Palmer'
 HOMEPAGE  = 'http://www.pyfarm.net'
 VERSION   = '0.5.0'
-LOGLEVEL  = 2
-DEBUG     = True
+DEBUG     = False
 UNITTESTS = False
 
 import cfg.resources_rc
@@ -154,16 +153,15 @@ class MainWindow(QtGui.QMainWindow):
         queueServerPort  = self.config['servers']['queue']
         adminServerPort  = self.config['servers']['admin']
 
-        print
-
         try:
-            if not self.queueServer.listen(listenAddress, queueServerPort):
+            if not self.queueServer.listen(port=queueServerPort):
                 errStr = self.queueServer.errorString()
                 error  = "Could not start the queue server: %s" % errStr
                 logger.fatal(error)
 
                 if not DEBUG:
                     raise lib.net.errors.ServerFault(error)
+
                 else:
                     logger.warning("Bypassing exception!!!")
 
@@ -175,7 +173,7 @@ class MainWindow(QtGui.QMainWindow):
                               )
 
         try:
-            if not self.adminServer.listen(listenAddress, adminServerPort):
+            if not self.adminServer.listen(port=adminServerPort):
                 errStr = self.adminServer.errorString()
                 error  = "Could not start the admin server: %s" % errStr
                 logger.fatal(error)
@@ -239,7 +237,7 @@ class MainWindow(QtGui.QMainWindow):
             self.pidFile.close()
 
         else:
-            print "Force closed!"
+            logger.warning("Force closed!")
 
         logger.critical("Closing!")
         sys.exit()
@@ -247,28 +245,32 @@ class MainWindow(QtGui.QMainWindow):
     def closeEvent(self, event):
         '''When the ui is attempting to exit, run this first.  However, make sure we only do this once'''
         self.pidFile.close()
-        #exit = ui.Dialogs.CloseEvent()
-        #self.connect(exit, QtCore.SIGNAL("state"), self.closeEventHandler)
-        #exit.exec_()
 
     def findHosts(self):
         '''Get hosts via broadcast packet, add them to self.hosts'''
         self.broadcast = udp.Broadcast.BroadcastSender(self.config)
         self.broadcast.run()
 
-    def addHost(self, hostname, ip):
+    def addHost(self, hostname, ip, mode="new"):
         '''Add a host to the database and refresh the ui'''
         logger.debug("Attempting to add %s (%s) to database" % (hostname, ip))
-        if not db.Network.hostExists(SQL, hostname):
-            logger.info("Added Client: %s" % hostname)
-            msg = "Added Host: %s" % hostname
+        if mode == "new":
+            msg = "Adding Host: %s [%s]" % (hostname, ip)
             self.updateConsole("client", msg, color='green')
-            db.Network.addHost(SQL, hostname, ip)
-            self.refreshHosts()
-        else:
-            msg = "Host Already In Database: %s" % hostname
-            self.updateConsole("client", msg, color='red')
-            logger.warning(msg)
+
+        elif mode == "refresh":
+            msg = "Refreshing Host: %s [%s]" % (hostname, ip)
+            logger.debug(msg)
+#        if not db.Network.hostExists(SQL, hostname):
+#            logger.info("Added Client: %s" % hostname)
+#            msg = "Added Host: %s" % hostname
+#            self.updateConsole("client", msg, color='green')
+#            db.Network.addHost(SQL, hostname, ip)
+#            self.refreshHosts()
+#        else:
+#            msg = "Host Already In Database: %s" % hostname
+#            self.updateConsole("client", msg, color='red')
+#            logger.warning(msg)
 
     def globalPoint(self, widget, point):
         '''Return the global position for a given point on a widget'''

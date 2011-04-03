@@ -107,7 +107,7 @@ class State(object):
         '''
         if self.exists():
             pid = self.pid()
-            if system.process.running(pid):
+            if system.process.exists(pid):
                 return True
 
         else:
@@ -138,7 +138,7 @@ class State(object):
     def kill(self):
         '''Kill the currently running process'''
         if self.running():
-            system.killProcess(self.pid())
+            system.process.kill(self.pid())
 
         else:
             logger.warning("Cannot kill a process that is not running")

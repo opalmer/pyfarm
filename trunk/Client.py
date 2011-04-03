@@ -32,8 +32,6 @@ CFG_ROOT  = os.path.join(PYFARM, "cfg")
 CFG_GEN   = os.path.join(CFG_ROOT, "general.ini")
 CONTEXT   = MODULE.split(".")[0]
 
-from lib.net.tcp.queue import QueueClient
-
 from lib.net import tcp, udp
 from lib import logger, settings, session
 
@@ -84,8 +82,7 @@ class Main(QtCore.QObject):
         Listen for an incoming broadcast from the master
         '''
         logger.deprecated("Broadcast port allocation is now handled by lib.net")
-        portNum        = self.config['servers']['broadcast']
-        self.broadcast = udp.broadcast.BroadcastReceiever(portNum, parent=self)
+        self.broadcast = udp.broadcast.BroadcastReceiever(self.config, parent=self)
         self.connect(self.broadcast, QtCore.SIGNAL("masterFound"), self.setMasterAddress)
         self.broadcast.run()
 
@@ -110,8 +107,7 @@ class Main(QtCore.QObject):
         # if new hostname OR address, update log and
         #  refresh services
         logger.deprecated("Queue port allocation is now handled by lib.net")
-        portNum = self.config['servers']['queue']
-        queue   = tcp.queue.QueueClient(self.masterAddress, port=portNum)
+        queue   = tcp.queue.QueueClient(self.config, self.masterAddress)
         if newName or newAddr:
             logger.info("Received master address")
             queue.addClient()

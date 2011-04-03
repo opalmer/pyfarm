@@ -18,20 +18,7 @@ GNU Lesser General Public License for more details.
 You should have received a copy of the GNU Lesser General Public License
 along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 '''
-import os
-
-try:
-    from includes import *
-
-except ImportError:
-    pass
-
-for filename in os.listdir(os.path.dirname(os.path.abspath(__file__))):
-    isInit    = filename.startswith("__init__")
-    isInclude = filename.startswith("includes")
-
-    if filename.endswith(".py") and not isInit and not isInclude:
-        __import__(filename.split(".")[0], locals(), globals())
-
-# cleanup extra objects
-del os, filename, isInit, isInclude
+# explicit import setup
+from includes import *
+import admin
+import queue

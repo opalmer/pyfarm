@@ -32,7 +32,7 @@ CWD    = os.path.dirname(os.path.abspath(__file__))
 PYFARM = os.path.abspath(os.path.join(CWD, "..", "..", ".."))
 if PYFARM not in sys.path: sys.path.append(PYFARM)
 
-from lib import logger, settings, system
+from lib import logger, settings, system, net
 
 logger = logger.Logger()
 
@@ -42,12 +42,11 @@ class BroadcastSender(QtCore.QThread):
         super(BroadcastSender, self).__init__(parent)
         # setup some standard vars, so we dont broadcast forever
         addresses     = []
-        self.config   = config
-        self.port     = self.config['servers']['broadcast']
-        self.count    = self.config['broadcast']['interval']
-        self.maxCount = self.config['broadcast']['maxcount']
+        self.port     = config['servers']['broadcast']
+        self.count    = config['broadcast']['interval']
+        self.maxCount = config['broadcast']['maxcount']
         self.netinfo  = system.info.Network()
-        self.local    = QtNetwork.QHostAddress()
+        self.local    = QtNetwork.QHostAddress.Broadcast
 
     def run(self):
         '''Start the broadcast thread and setup the outgoing connection'''
@@ -81,17 +80,16 @@ class BroadcastSender(QtCore.QThread):
 
 class BroadcastReceiever(QtCore.QThread):
     '''Class to receieve broadcast signal from master'''
-    def __init__(self, port, parent=None):
+    def __init__(self, config, parent=None):
         super(BroadcastReceiever, self).__init__(parent)
-        self.port  = port
-        self.local = QtNetwork.QHostAddress()
+        self.port = config['servers']['broadcast']
         logger.netserver("Running")
 
     def run(self):
         '''Run the main thread and listen for connections'''
         self.socket = QtNetwork.QUdpSocket()
         self.connect(self.socket, QtCore.SIGNAL("readyRead()"), self.readIncomingBroadcast)
-        self.socket.bind(self.local, self.port)
+        self.socket.bind(self.port)
         logger.netserver("Running")
 
     def readIncomingBroadcast(self):
