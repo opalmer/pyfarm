@@ -22,6 +22,8 @@ along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 import os
 import types
 
+from common import *
+
 def cpuCount(): return 0
 def cpuSpeed(): return 0
 def ramTotal(): return 0
@@ -31,9 +33,6 @@ def swapFree(): return 0
 def load(): return 0, 0, 0
 def uptime(): return 0
 def idletime(): return 0
-def osName(): return os.path.basename(__file__).split('.')[0]
-def osVersion(): return 0
-def architecture(): return 0
 def report():
     '''Report all hardware information in the form of a dictionary'''
     output = {}
@@ -47,7 +46,6 @@ def report():
             output[key] = value()
 
     return output
-
 
 if __name__ == '__main__':
     print

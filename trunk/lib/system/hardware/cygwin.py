@@ -20,21 +20,21 @@ You should have received a copy of the GNU Lesser General Public License
 along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 '''
 import os
+import sys
 import types
 
-# placeholders
-def cpuCount(): return 0
-def cpuSpeed(): return 0
-def ramTotal(): return 0
-def ramFree(): return 0
-def swapTotal(): return 0
-def swapFree(): return 0
-def load(): return 0, 0, 0
-def uptime(): return 0
-def idletime(): return 0
-def osName(): return os.path.basename(__file__).split('.')[0]
-def osVersion(): return 0
-def architecture(): return 0
+from common import *
+
+def load():
+    '''Return the average system load'''
+    loads = open('/proc/loadavg', 'r').read().split()
+    return float(loads[0]), float(loads[1]), float(loads[2])
+
+
+def osName():
+    '''Operating system name based on current file name'''
+    return os.path.basename(__file__).split('.')[0]
+
 def report():
     '''Report all hardware information in the form of a dictionary'''
     output = {}
@@ -49,9 +49,7 @@ def report():
 
     return output
 
-
 if __name__ == '__main__':
-    print
     print "                 %s SYSTEM INFORMATION" % osName().upper()
     for key, value in report().items():
         print "%25s | %s" % (key, value)

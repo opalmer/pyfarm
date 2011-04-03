@@ -26,12 +26,18 @@ if os.name != "nt":
     print "FAIL: Cannot import the windows hardware library onto %s!!" % os.name
     sys.exit(1)
 
+try:
+    import _winreg as winreg
+
+except ImportError:
+    import winreg
+
 import re
-import _winreg
-import subprocess
-import platform
-import ctypes
 import types
+import ctypes
+import subprocess
+
+from common import *
 
 kernel32 = ctypes.windll.kernel32
 mpr      = ctypes.windll.mpr
@@ -66,6 +72,7 @@ class _System(ctypes.Structure):
                 ]
 
 
+
 class _Memory(ctypes.Structure):
     '''
     Return information about the memory on the current system
@@ -92,17 +99,15 @@ class _Memory(ctypes.Structure):
                     ("ullAvailExtendedVirtual", ctypes.c_uint64)
                 ]
 
-def _kBToMB(kB): return kB / 1024
-def _kbToMB(kB): return kb / 1024 / 1024
 
 def _cpuInfo():
     '''Return a dictionary from the registry with cpu information'''
     cpu    = {}
     key    = "HARDWARE\\DESCRIPTION\\System\\CentralProcessor\\0"
-    regKey = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, key)
+    regKey = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, key)
 
-    for num in range(_winreg.QueryInfoKey(regKey)[1]):
-        name, value, keyType = _winreg.EnumValue(regKey, num)
+    for num in range(winreg.QueryInfoKey(regKey)[1]):
+        name, value, keyType = winreg.EnumValue(regKey, num)
 
         # remove unicode and extra spaces
         rmUnicode = re.sub(r'''[^\x00-\x7F]+''', r'''''',  str(value)).strip()
@@ -161,37 +166,9 @@ def swapFree():
     '''Return the amount of swap free'''
     return _kbToMB(_memoryInfo().ullAvailVirtual)-swapTotal()
 
-def load():
-    '''Return the average system load'''
-    return 0, 0, 0
-
-def uptime():
-    '''
-    Return the total amount of time in seconds that the system has been
-    online
-    '''
-    return 0
-
-def idletime():
-    '''
-    Return the total amout of time in seconds that the system has spent idle
-    since the last boot
-    '''
-    return 0
-
 def osName():
     '''Operating system name based on current file name'''
     return os.path.basename(__file__).split('.')[0]
-
-def osVersion():
-    '''Version of the operating system or kernel installed'''
-    return platform.uname()[2]
-
-def architecture():
-    '''Return the system architecture'''
-    if platform.architecture()[0] == "64bit":
-        return "x86_64"
-    return "i686"
 
 def report():
     '''Report all hardware information in the form of a dictionary'''
@@ -208,7 +185,6 @@ def report():
     return output
 
 if __name__ == '__main__':
-    print
     print "                 %s SYSTEM INFORMATION" % osName().upper()
     for key, value in report().items():
         print "%25s | %s" % (key, value)

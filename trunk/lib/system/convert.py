@@ -22,8 +22,8 @@ along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
 def kbToMB(kb):
     '''Convert kilobits to megabytes'''
-    return kb / 1024 / 1024
+    return int(kb) / 1024 / 1024
 
 def kBToMB(kB):
     '''Convert kilobytes to megabytes'''
-    return kB / 1024
+    return int(kB) / 1024

@@ -19,16 +19,16 @@ You should have received a copy of the GNU Lesser General Public License
 along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 '''
 import os
+import platform
 
 if os.name == 'nt':
     from windows import *
 
-elif os.name == 'posix':
-    #try:
+elif os.name == 'posix' and "CYGWIN" not in platform.platform():
     from linux import *
 
-    #except ImportError, error:
-        #from cygwin import *
+elif os.name == 'posix' and "CYGWIN" in platform.platform():
+    from cygwin import *
 
 elif os.name == 'mac':
     from macosx import *

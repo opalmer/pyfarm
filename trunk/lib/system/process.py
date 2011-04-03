@@ -88,7 +88,7 @@ def kill(pid):
             logger.error("No Such Process: %i" % pid)
             return False
 
-    else:
+    elif hardware.osName() == "linux" or hardware.osName() == "cygwin":
         try:
             os.kill(pid, 9)
 
@@ -101,7 +101,7 @@ def exists(pid):
     '''Return True if the requested pid exists'''
     pid = int(pid)
 
-    if hardware.osName() == "linux":
+    if hardware.osName() == "linux" or hardware.osName() == "cygwin":
         try:
             os.kill(pid, 0)
 
@@ -111,13 +111,15 @@ def exists(pid):
 
         else:
             logger.error("Process Exists: %i" % pid)
-            return True
+
+    elif hardware.osName() == "windows":
+        stdout, stderr = runcmd('tasklist /FI "PID eq %i"' % pid)
+        stdout = ' '.join(stdout)
+
+        if stdout.startswith("INFO: No tasks"):
+            return False
 
     return True
-
-def running(pid):
-    '''Return true if the requested process is running (not idle)'''
-    pass
 
 def memoryUsage(pid, peak=False):
     '''
@@ -130,8 +132,7 @@ def memoryUsage(pid, peak=False):
     '''
     pid = int(pid)
 
-    print hardware.osName()
-    if hardware.osName() == "linux":
+    if hardware.osName() == "linux" or hardware.osName() == "cygwin":
         path   = "/proc/%i/status" % pid
         search = "VmSize"
 
@@ -145,6 +146,13 @@ def memoryUsage(pid, peak=False):
 
         else:
             logger.error("No such file: %s" % path)
+
+    elif hardware.osName() == "windows":
+        stdout, stderr = runcmd('tasklist /FI "PID eq %i"' % pid)
+        stdout = ' '.join(stdout)
+
+        if not stdout.startswith("INFO: No tasks"):
+            return convert.kBToMB(stdout.split()[-2].replace(",",""))
 
     # if we can't find the memory usage, return None
     return None
@@ -163,14 +171,11 @@ def exceedsMemoryLimit(pid, limit, terminate=False):
     '''
     # ensure we are only passing integers
     pid   = int(pid)
-    limit = int(pid)
+    limit = int(limit)
     usage = memoryUsage(pid)
 
     if usage and usage > limit:
-        kill(pid)
+        if terminate: kill(pid)
         return True
 
     return False
-
-if __name__ == '__main__':
-    print memoryUsage(sys.argv[1])
