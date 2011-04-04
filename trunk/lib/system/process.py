@@ -30,12 +30,12 @@ CWD    = os.path.dirname(os.path.abspath(__file__))
 PYFARM = os.path.abspath(os.path.join(CWD, "..", ".."))
 if PYFARM not in sys.path: sys.path.append(PYFARM)
 
-import lib
+from lib import decorators, logger
 from lib.system import hardware, convert
 
-logger = lib.logger.Logger()
+logger = logger.Logger()
 
-@lib.decorators.deprecated
+@decorators.deprecated
 def SimpleCommand(cmd, all=False, debug=False):
     '''
     By default this function will return the first results only
