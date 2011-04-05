@@ -43,7 +43,7 @@ __version__ = "0.5.0"
 
 import cfg.resources_rc
 import lib.net, lib.net.errors
-from lib.net import tcp, udp
+from lib.net import tcp
 from lib import db, logger, ui, slots, settings, session, system
 
 # setup logging
@@ -250,11 +250,6 @@ class MainWindow(QtGui.QMainWindow):
         '''When the ui is attempting to exit, run this first.  However, make sure we only do this once'''
         self.pidFile.close()
 
-    def findHosts(self):
-        '''Get hosts via broadcast packet, add them to self.hosts'''
-        self.broadcast = udp.Broadcast.BroadcastSender(self.config)
-        self.broadcast.run()
-
     def addHost(self, hostname, ip, mode="new"):
         '''Add a host to the database and refresh the ui'''
         logger.debug("Attempting to add %s (%s) to database" % (hostname, ip))
@@ -309,13 +304,6 @@ class Testing(QtCore.QObject):
 
     def broadDone(self, signal):
         logger.netclient("Broadcast complete")
-
-    def sendBroadcast(self):
-        '''Send out a broadcast to inform clients of the master node'''
-        broadcast = udp.Broadcast.BroadcastSender(self.config, self)
-        #self.connect(broadcast, SIGNAL("next"), self.broadIncriment)
-        #self.connect(broadcast, SIGNAL("done"), self.broadDone)
-        broadcast.run()
 
     def runStatusServer(self):
         '''Run the status server and listen for connections'''

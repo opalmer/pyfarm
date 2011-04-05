@@ -23,6 +23,7 @@ of remote hosts
 import os
 import re
 import sys
+import time
 import socket
 import traceback
 
@@ -43,14 +44,13 @@ class BroadcastSender(QtCore.QThread):
         # setup some standard vars, so we dont broadcast forever
         addresses     = []
         self.port     = config['servers']['broadcast']
-        self.count    = config['broadcast']['interval']
-        self.maxCount = config['broadcast']['maxcount']
+        self.interval = config['broadcast']['interval']
+        self.duration = config['broadcast']['duration']
         self.netinfo  = system.info.Network()
-        self.local    = QtNetwork.QHostAddress.Broadcast
 
     def run(self):
         '''Start the broadcast thread and setup the outgoing connection'''
-        logger.netclient("Broadcasting")
+        logger.netclient("Starting Broadcast")
         self.socket   = QtNetwork.QUdpSocket()
         self.datagram = QtCore.QByteArray()
         self.send()
@@ -60,21 +60,35 @@ class BroadcastSender(QtCore.QThread):
         Send the broadcast packet so long as we have not exceeded
         the above specs.
         '''
-        count = 0
+        self.stopBroadcast = False
+        start              = time.time()
+        stop               = start + self.duration
 
-        # send a broadcast so long as we don't
-        #  exceed the set max.
-        while count < self.maxCount:
-            logger.debug("Sending broadcast")
+        while time.time() < stop:
+            if self.stopBroadcast:
+                break
+
             self.datagram.clear()
             self.datagram.insert(0, self.netinfo.hostname())
-            self.socket.writeDatagram(self.datagram.data(), self.local, self.port)
-            count += 1
+
+            # send the frame
+            self.socket.writeDatagram(
+                                        self.datagram.data(),
+                                        QtNetwork.QHostAddress.Broadcast,
+                                        self.port
+                                      )
+
+            # emit a broadcast signal for progress then sleep
+            self.emit(QtCore.SIGNAL("broadcast"))
+            time.sleep(self.interval)
+
+        self.emit(QtCore.SIGNAL("complete"))
         self.quit()
 
     def quit(self):
         '''End the process and kill the thread'''
-        logger.netclient("Stopping broadcast")
+        self.stopBroadcast = True
+        logger.netclient("Stopping Broadcast")
         self.exit(0)
 
 

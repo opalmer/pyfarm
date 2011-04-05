@@ -52,7 +52,7 @@ class ReadConfig(object):
                     out[section][option] = cfg.get(section, option)
 
                 elif section == "broadcast":
-                    out[section][option] = cfg.getint(section, option)
+                    out[section][option] = cfg.getfloat(section, option)
 
                 elif section == "database":
                     out[section][option] = cfg.get(section, option)

@@ -21,8 +21,12 @@ along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 '''
 import os
 import sys
+import time
+
+from PyQt4 import QtGui, QtCore
 
 import db
+import ui
 import logger
 from net import udp
 
@@ -36,18 +40,40 @@ class Help(object):
         self.config = config
 
 
-class Host(object):
+class Host(QtCore.QObject):
     '''Host related slot functions'''
     def __init__(self, parent, config, sql):
+        super(Host, self).__init__(parent)
         self.sql    = sql
         self.parent = parent
         self.ui     = parent.ui
         self.config = config
 
+        # establish broadcast related variables
+#        self.broadcasting   = False
+        self.lastBroadcast  = 0
+        self.nextBroadcast  = 0
+        self.broadcastDelay = self.config['broadcast']['delay']
+
     def find(self):
         '''Search for hosts running the client program'''
-        self.broadcast = udp.broadcast.BroadcastSender(self.config)
-        self.broadcast.start()
+        if time.time() >= self.nextBroadcast:
+            self.lastBroadcast = time.time()
+            self.nextBroadcast = self.lastBroadcast + self.broadcastDelay
+            broadcast = udp.broadcast.BroadcastSender(self.config)
+            progress  = ui.dialogs.BroadcastProgress(broadcast, self.ui)
+            self.connect(progress, QtCore.SIGNAL("canceled()"), broadcast.quit)
+            progress.show()
+            broadcast.start()
+
+        elif not time.time() >= self.nextBroadcast:
+            delay = self.broadcastDelay
+            warn  = "Please wait at least %i seconds " % delay
+            warn += "between broadcasts before attempting another another."
+            QtGui.QMessageBox.warning(
+                                        self.ui, "Broadcast Delayed",
+                                        warn, "Ok", "Cancel"
+                                     )
 
     def remove(self):
         '''Remove the selected host from the db and ui'''
