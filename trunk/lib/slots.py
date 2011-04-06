@@ -42,15 +42,15 @@ class Help(object):
 
 class Host(QtCore.QObject):
     '''Host related slot functions'''
-    def __init__(self, parent, config, sql):
+    def __init__(self, parent, config, services, sql):
         super(Host, self).__init__(parent)
-        self.sql    = sql
-        self.parent = parent
-        self.ui     = parent.ui
-        self.config = config
+        self.sql      = sql
+        self.parent   = parent
+        self.ui       = parent.ui
+        self.config   = config
+        self.services = services
 
         # establish broadcast related variables
-#        self.broadcasting   = False
         self.lastBroadcast  = 0
         self.nextBroadcast  = 0
         self.broadcastDelay = self.config['broadcast']['delay']
@@ -60,7 +60,7 @@ class Host(QtCore.QObject):
         if time.time() >= self.nextBroadcast:
             self.lastBroadcast = time.time()
             self.nextBroadcast = self.lastBroadcast + self.broadcastDelay
-            broadcast = udp.broadcast.BroadcastSender(self.config)
+            broadcast = udp.broadcast.BroadcastSender(self.config, self.services)
             progress  = ui.dialogs.BroadcastProgress(broadcast, self.ui)
             self.connect(progress, QtCore.SIGNAL("canceled()"), broadcast.quit)
             progress.show()
@@ -104,7 +104,7 @@ class Host(QtCore.QObject):
 
 class Slots(object):
     '''Main slots object, all other slots are referenced from here'''
-    def __init__(self, parent, config, sql):
+    def __init__(self, parent, config, services, sql):
         self.sql  = sql
         self.help = Help(parent, config)
-        self.host = Host(parent, config, sql)
+        self.host = Host(parent, config, services, sql)

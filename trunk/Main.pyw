@@ -107,7 +107,8 @@ class MainWindow(QtGui.QMainWindow):
         # general setup and variables
         self.isClosing = False
         self.config    = settings.ReadConfig.general(CFG_GEN)
-        self.slots     = slots.Slots(self, self.config, SQL)
+        self.services  = lib.net.Services()
+        self.slots     = slots.Slots(self, self.config, self.services, SQL)
         self.runServers()
 
     def refreshHosts(self):
@@ -154,11 +155,9 @@ class MainWindow(QtGui.QMainWindow):
         listenAddress    = lib.net.address(convert=False)
         self.queueServer = tcp.queue.QueueServer(main=self)
         self.adminServer = tcp.admin.AdminServer(main=self)
-        queueServerPort  = self.config['servers']['queue']
-        adminServerPort  = self.config['servers']['admin']
 
         try:
-            if not self.queueServer.listen(port=queueServerPort):
+            if not self.queueServer.listen():
                 errStr = self.queueServer.errorString()
                 error  = "Could not start the queue server: %s" % errStr
                 logger.fatal(error)
@@ -168,6 +167,11 @@ class MainWindow(QtGui.QMainWindow):
 
                 else:
                     logger.warning("Bypassing exception!!!")
+            else:
+                port = self.queueServer.serverPort()
+                info = "Port: %i" % port
+                self.updateConsole("server.queue", info, color="darkblue")
+                self.services['queue'] = port
 
         except TypeError:
             logger.critical("Invalid type passed to queueServer.listen")
@@ -177,7 +181,7 @@ class MainWindow(QtGui.QMainWindow):
                               )
 
         try:
-            if not self.adminServer.listen(port=adminServerPort):
+            if not self.adminServer.listen():
                 errStr = self.adminServer.errorString()
                 error  = "Could not start the admin server: %s" % errStr
                 logger.fatal(error)
@@ -187,6 +191,12 @@ class MainWindow(QtGui.QMainWindow):
 
                 else:
                     logger.warning("Bypassing exception!!!")
+
+            else:
+                port = self.adminServer.serverPort()
+                info = "Port: %i" % port
+                self.updateConsole("server.admin", info, color="darkblue")
+                self.services['admin'] = port
 
         except TypeError:
             logger.critical("Invalid type passed to adminServer.listen")
@@ -201,6 +211,10 @@ class MainWindow(QtGui.QMainWindow):
                         lib.net.hardwareAddress()
                     )
         self.updateConsole("network.setup", netinfo, color="green")
+
+        # pass hostname and address information to the services dictionary
+        self.services.setHostname(lib.net.hostname())
+        self.services.setAddress(lib.net.address(convert=True))
 
     # MainWindow slots, actions, and processes
     # Other actions could include:

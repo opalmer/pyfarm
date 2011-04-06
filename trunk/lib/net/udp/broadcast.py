@@ -39,10 +39,11 @@ logger = logger.Logger()
 
 class BroadcastSender(QtCore.QThread):
     '''Class to send broadcast signals to client network'''
-    def __init__(self, config, parent=None):
+    def __init__(self, config, services, parent=None):
         super(BroadcastSender, self).__init__(parent)
         # setup some standard vars, so we dont broadcast forever
         addresses     = []
+        self.services = services
         self.port     = config['servers']['broadcast']
         self.interval = config['broadcast']['interval']
         self.duration = config['broadcast']['duration']
@@ -61,8 +62,10 @@ class BroadcastSender(QtCore.QThread):
         the above specs.
         '''
         self.stopBroadcast = False
+        services           = self.services.toString()
         start              = time.time()
         stop               = start + self.duration
+        broadcast          = QtNetwork.QHostAddress("255.255.255.255")
 
         while time.time() < stop:
             if self.stopBroadcast:
@@ -73,8 +76,8 @@ class BroadcastSender(QtCore.QThread):
 
             # send the frame
             self.socket.writeDatagram(
-                                        self.datagram.data(),
-                                        QtNetwork.QHostAddress.Broadcast,
+                                        services,
+                                        broadcast,
                                         self.port
                                       )
 
@@ -118,6 +121,9 @@ class BroadcastReceiever(QtCore.QThread):
             data   = self.socket.readDatagram(datagram.size())
             ip     = str(data[1].toString())
             msg    = str(data[0])
+            logger.netclient("Received: %s" % msg)
+            logger.fatal("Cannot process advertisement packet")
+            sys.exit(1)
 
         logger.netclient("Host: %s IP: %s" % (msg, ip))
         self.emit(QtCore.SIGNAL("masterFound"), (msg, ip))

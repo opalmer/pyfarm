@@ -146,7 +146,7 @@ def osVersion():
 
 def architecture():
     '''Return the system architecture'''
-    if platform.machine() == "x86":
+    if platform.machine() in ("x86", "x86_64"):
         return "x86_64"
     return "i686"
 

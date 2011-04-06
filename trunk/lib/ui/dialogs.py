@@ -73,7 +73,6 @@ class CloseEvent(QtGui.QDialog):
                 }
         self.emit(QtCore.SIGNAL("state"), state)
 
-
 class BroadcastProgress(QtGui.QProgressDialog):
     '''
     Progress dialog to keep the user informed of broadcast progress
@@ -87,8 +86,8 @@ class BroadcastProgress(QtGui.QProgressDialog):
         self.broadcast = broadcast
 
         # set window text
-        self.setWindowTitle("Discovering Clients")
-        self.setLabelText("Sending Broadcast Signal")
+        self.setWindowTitle("Broadcasting")
+        self.setLabelText("Discovering Clients")
         self.setCancelButtonText("Stop")
 
         # calculate and set the progress range

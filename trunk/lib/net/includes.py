@@ -27,6 +27,7 @@ import sys
 import struct
 import socket
 import fnmatch
+import UserDict
 
 from PyQt4 import QtCore, QtNetwork
 
@@ -38,6 +39,24 @@ import errors
 from lib import system
 
 LOCAL_ADDRESSES = ('127.0.*.*', '0.0.0.0')
+
+class Services(UserDict.UserDict):
+    '''
+    Special user dictionary to convert a dictionary of services
+    to string values before sending to a remote client.  This is done both
+    to cut down on the number of bits being sent and to prevent eval statements
+    from potentially causing security hazards on the receiving end.
+    '''
+    def setHostname(self, name): self.hostname = name
+    def setAddress(self, address): self.address = address
+    def toString(self):
+        '''Return a string representation of self.data'''
+        items = ["(%s,%s)" % (self.hostname, self.address)]
+        for service, port in self.data.items():
+            items.append("%s:%i" % (service, port))
+
+        return ",".join(items)
+
 
 class AddressEntry(QtNetwork.QNetworkAddressEntry):
     '''
