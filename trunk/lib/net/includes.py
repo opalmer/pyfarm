@@ -26,6 +26,7 @@ import os
 import sys
 import struct
 import socket
+import base64
 import fnmatch
 import UserDict
 
@@ -47,15 +48,47 @@ class Services(UserDict.UserDict):
     to cut down on the number of bits being sent and to prevent eval statements
     from potentially causing security hazards on the receiving end.
     '''
-    def setHostname(self, name): self.hostname = name
-    def setAddress(self, address): self.address = address
+    def __init__(self, hostname='', address=''):
+        self.data     = {}
+        self.hostname = hostname
+        self.address  = address
+
+    @staticmethod
+    def fromString(source):
+        '''
+        Return information on services offered by a remote host as a three
+        part tuple:
+            (master, address, serviceDictionary)
+        '''
+        services = {}
+        hostname = None
+        addr     = None
+        for entry in base64.standard_b64decode(source).split(","):
+            if "|" in entry:
+                split    = entry.split("|")
+                hostname = split[0]
+                addr     = split[1]
+            else:
+                split = entry.split(":")
+                services[split[0]] = int(split[1])
+
+        return hostname, addr, services
+
     def toString(self):
         '''Return a string representation of self.data'''
-        items = ["(%s,%s)" % (self.hostname, self.address)]
+        items = ["%s|%s" % (self.hostname, self.address)]
         for service, port in self.data.items():
             items.append("%s:%i" % (service, port))
 
-        return ",".join(items)
+        return base64.standard_b64encode(",".join(items))
+
+    def setHostname(self, name):
+        '''Set the hostnam after initial setup'''
+        self.hostname = name
+
+    def setAddress(self, address):
+        '''Set the IP address after initial setup'''
+        self.address = address
 
 
 class AddressEntry(QtNetwork.QNetworkAddressEntry):

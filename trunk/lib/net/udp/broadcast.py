@@ -105,7 +105,11 @@ class BroadcastReceiever(QtCore.QThread):
     def run(self):
         '''Run the main thread and listen for connections'''
         self.socket = QtNetwork.QUdpSocket()
-        self.connect(self.socket, QtCore.SIGNAL("readyRead()"), self.readIncomingBroadcast)
+        self.connect(
+                        self.socket,
+                        QtCore.SIGNAL("readyRead()"),
+                        self.readIncomingBroadcast
+                    )
         self.socket.bind(self.port)
         logger.netserver("Running")
 
@@ -117,16 +121,21 @@ class BroadcastReceiever(QtCore.QThread):
             datagram = QtCore.QByteArray()
             datagram.resize(self.socket.pendingDatagramSize())
 
-            sender = QtNetwork.QHostAddress()
-            data   = self.socket.readDatagram(datagram.size())
-            ip     = str(data[1].toString())
-            msg    = str(data[0])
-            logger.netclient("Received: %s" % msg)
-            logger.fatal("Cannot process advertisement packet")
-            sys.exit(1)
+            sender   = QtNetwork.QHostAddress()
+            data     = self.socket.readDatagram(datagram.size())
+            packet   = str(data[0])
+            msg      = net.Services.fromString(packet)
 
-        logger.netclient("Host: %s IP: %s" % (msg, ip))
-        self.emit(QtCore.SIGNAL("masterFound"), (msg, ip))
+            # unpacked packet
+            ip       = str(data[1].toString())
+            host     = msg[0]
+            services = msg[2]
+
+            logger.netclient("Received: %s" % packet)
+            logger.netclient("Decoded: %s" % packet)
+
+        logger.netclient("Host: %s IP: %s" % (host, ip))
+        self.emit(QtCore.SIGNAL("masterFound"), (host, ip))
 
     def quit(self):
         '''Stop the broadcast receiever'''
