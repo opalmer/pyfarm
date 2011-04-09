@@ -42,13 +42,14 @@ class QueueClient(QtCore.QObject):
     Queue client used to connect to a queue server and
     exchange information.
 
-    INPUT:
-        master (str) -- ip address of master to connect to
+    @param master: The address or hostname of a machine to send the packet to
+    @type  master: C{str}
+    @param port: The port to send the packet through
+    @type  port: C{int}
     '''
-    def __init__(self, config, master, parent=None):
+    def __init__(self, master, port, parent=None):
         super(QueueClient, self).__init__(parent)
         self.master = master
-        self.port   = config['servers']['queue']
 
     def addClient(self, new=True):
         '''Add the given client to the master'''

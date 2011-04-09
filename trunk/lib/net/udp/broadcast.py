@@ -132,10 +132,11 @@ class BroadcastReceiever(QtCore.QThread):
             services = msg[2]
 
             logger.netclient("Received: %s" % packet)
-            logger.netclient("Decoded: %s" % packet)
+            logger.netclient("Decoded: %s" % msg)
 
         logger.netclient("Host: %s IP: %s" % (host, ip))
         self.emit(QtCore.SIGNAL("masterFound"), (host, ip))
+        self.emit(QtCore.SIGNAL("services"), services)
 
     def quit(self):
         '''Stop the broadcast receiever'''

@@ -40,10 +40,15 @@ logger = logger.Logger(MODULE)
 class Main(QtCore.QObject):
     def __init__(self, parent=None):
         super(Main, self).__init__(parent)
-        self.masterHostname = ''
-        self.masterAddress  = ''
         self.config         = settings.ReadConfig.general(CFG_GEN)
         self.pidFile        = session.State(context=CONTEXT)
+
+        # network pre-setup
+        self.queueServer    = None
+        self.adminServer    = None
+        self.masterHostname = ''
+        self.masterAddress  = ''
+        self.newMaster      = False
 
     def handlePid(self):
         '''Handle actions relating to the process id file'''
@@ -83,7 +88,16 @@ class Main(QtCore.QObject):
         '''
         logger.deprecated("Broadcast port allocation is now handled by lib.net")
         self.broadcast = udp.broadcast.BroadcastReceiever(self.config, parent=self)
-        self.connect(self.broadcast, QtCore.SIGNAL("masterFound"), self.setMasterAddress)
+        self.connect(
+                        self.broadcast,
+                        QtCore.SIGNAL("masterFound"),
+                        self.setMasterAddress
+                    )
+        self.connect(
+                        self.broadcast,
+                        QtCore.SIGNAL("services"),
+                        self.startServers
+                    )
         self.broadcast.run()
 
     def setMasterAddress(self, response):
@@ -93,6 +107,11 @@ class Main(QtCore.QObject):
         '''
         newName = False
         newAddr = False
+
+        if response[0] != self.masterHostname or response[0] != self.masterAddress:
+            self.newMaster      = True
+            self.masterHostname = response[0]
+            self.masterAddress  = response[1]
 
         # check for new hostname
         if response[0] != self.masterHostname:
@@ -104,10 +123,7 @@ class Main(QtCore.QObject):
             self.masterAddress = response[1]
             newName            = True
 
-        # if new hostname OR address, update log and
-        #  refresh services
-        logger.deprecated("Queue port allocation is now handled by lib.net")
-        queue   = tcp.queue.QueueClient(self.config, self.masterAddress)
+        queue = tcp.queue.QueueClient(self.config, self.masterAddress)
         if newName or newAddr:
             logger.info("Received master address")
             queue.addClient()
@@ -115,6 +131,44 @@ class Main(QtCore.QObject):
         else:
             logger.info("Already connected to master: %s" % response[0])
             queue.addClient(new=False)
+
+    def startServers(self, services):
+        '''
+        Step 3:
+        Startup the servers on the proper ports and send client info to the
+        master host.
+        '''
+        if self.masterAddress and self.newMaster:
+            logger.netclient("Sending client info to %s" % self.masterAddress)
+            queueClient    = tcp.queue.QueueClient(
+                                                    self.masterAddress,
+                                                    services['queue']
+                                                  )
+            self.newMaster = False
+
+            # be sure we shutdown any running servers first
+            if self.admin: self.admin.close()
+            if self.queue: self.queue.close()
+
+            logger.netserver("Starting admin server")
+            self.admin = tcp.admin.AdminServer(self)
+            if not self.admin.listen(services['admin']):
+                errStr = self.admin.errorString()
+                error  = "Could not start the admin server: %s" % errStr
+                logger.fatal(error)
+
+            else:
+                logger.netserver("...admin server running")
+
+            logger.netserver("Starting queue server")
+            self.queue = tcp.queue.QueueServer(self)
+            if not self.queue.listen(services['queue']):
+                errStr = self.queue.errorString()
+                error  = "Could not start the queue server: %s" % errStr
+                logger.fatal(error)
+
+            else:
+                logger.netserver("...queue server running")
 
 
 if __name__ == '__main__':
