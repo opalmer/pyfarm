@@ -36,6 +36,19 @@ UNIT16         = 8
 STREAM_VERSION = net.dataStream()
 logger         = logger.Logger()
 
+#class SSLParms(QtCore.QObject):
+    #'''
+    #Place holder class to hold information about an
+    #SSL certificate
+    #'''
+    #def __init__(self, certFile, keyFile, parent=None):
+        #super(SSLParms, self).__init__(parent)
+        #self.cert = QtCore.QFile(certFile, parent)
+        #self.cert.open(QtCore.QFile.ReadOnly)
+        #certificate = QtNetwork.QSslCertificate(self.cert)
+        #self.key  = QtCore.QString(keyFile)
+
+
 class RPCServerThread(QtCore.QThread):
     '''
     Queue server thread spawned upon every incoming connection to
@@ -59,10 +72,16 @@ class RPCServer(QtNetwork.QTcpServer):
     '''
     def __init__(self, cert, key, password, parent=None):
         super(RPCServer, self).__init__(parent)
-        self.cert     = QtCore.QString(cert):
-        self.key      = QtCore.QString(key)
-        self.password = QtCore.QByteArray(len(password), password)
-        logger.netserver("Server Running")
+        ##self.cert     = QtCore.QString(cert):
+        #self.key      = QtCore.QString(key)
+        #self.password = QtCore.QByteArray(len(password), password)
+        #self.sslParms = None
+
+        #if not self.key.isEmpty() and not self.key.isEmpty():
+            #logger.netserver("Establishing SSL Cert.")
+            #self.sslParms =
+
+        logger.netserver("Server setup")
 
     def incomingConnection(self, socketId):
         '''
