@@ -285,6 +285,8 @@ if __name__ == '__main__':
     logger.info("Starting: %i" % os.getpid())
     app    = QtCore.QCoreApplication(sys.argv)
     server = RPCServer('cert', 'key', 'password')
+
     if server.listen(QtNetwork.QHostAddress("127.0.0.1"), 5050):
         logger.netserver("%s Server Running on port %i" % (server.name, server.serverPort()))
-    app.exec_()
+
+    sys.exit(app.exec_())

@@ -152,7 +152,7 @@ class Logger(object):
     @param writeOnly: Write to disk only, do not print to stdout
     @type  writeOnly: C{bool}
     '''
-    def __init__(self, name, level=None, log=None, writeOnly=False):
+    def __init__(self, name=None, level=None, log=None, writeOnly=False):
         self.writeOnly  = writeOnly
         self.config     = settings()
         self.log        = log
