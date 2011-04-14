@@ -22,7 +22,8 @@ along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 '''
 import os
 import sys
-import fnmatch
+import xmlrpclib
+import xml.etree.ElementTree
 
 from PyQt4 import QtCore, QtNetwork
 
@@ -36,12 +37,44 @@ from lib import logger, system, net
 UNIT16         = 8
 STREAM_VERSION = net.dataStream()
 logger         = logger.Logger()
+types          = []
+
+def rpcResponse(source, typeName, value):
+    '''
+    Based on the source object arguments formulate and return a response
+    '''
+    reply  = QtCore.QByteArray("<?xml version='1.0'?>")
+    reply.append("<methodResponse><params><param><value>")
+    reply.append("<string>%s</string>" % str(value))
+    reply.append("</value></param></params></methodResponse>")
+
+    return reply
+
+def rpcResponseB(results):
+    '''
+    Based on the source object arguments formulate and return a response
+    '''
+    reply = QtCore.QByteArray()
+    dump  = xmlrpclib.dumps((results, ), methodresponse=True)
+    for line in dump:
+        reply.append(line.strip())
+
+    #reply.append(dump)
+
+    return reply
 
 class RPCServerThread(QtCore.QThread):
     def __init__(self, socketId, parent=None):
         super(RPCServerThread, self).__init__(parent)
         self.socketId = socketId
         self.parent   = parent
+
+    def _getData(self, socket):
+        '''
+        Parse the incoming request from the socket and return the method
+        call and its input(s)
+        '''
+        return xmlrpclib.loads(socket.readAll().trimmed())
 
     def run(self):
         logger.debug("Thread started")
@@ -63,57 +96,25 @@ class RPCServerThread(QtCore.QThread):
 
                 ## load next block size with the total size of the stream
                 if socket.bytesAvailable() >= UNIT16:
-                    nextBlockSize = stream.readUInt16()
-                    logger.debug("next block size")
-                    values = socket.readAll()
-                    self.sendReply(socket, values)
+                    nextBlockSize  = stream.readUInt16()
+                    data           = self._getData(socket)
 
-                    socket.write("hello world")
+                    results = ''
+                    self.sendReply(socket, data[0])
                     break
 
             if socket.bytesAvailable() < nextBlockSize:
                 socket.close()
 
-                #while True:
-                    #socket.waitForReadyRead(-1)
-                    #if socket.bytesAvailable() >= nextBlockSize:
-                        #break
-
-            ## prepare vars for input stream
-            #action = QtCore.QString()
-            #stream >> action
-            #logger.netclient("Receieved Signal: %s" % action)
-
-            #if fnmatch.fnmatch(str(action), "CLIENT_*"):
-                #hostname = QtCore.QString()
-                #address  = QtCore.QString()
-                #stream >> hostname >> address
-
-                #if action == "CLIENT_NEW":
-                    #logger.netclient("Host: %s IP: %s" % (hostname, address))
-                    #self.main.addHost(hostname, address)
-
-                #elif action == "CLIENT_CONNECTED":
-                    #msg = "%s's master is already %s" % (hostname, system.info.HOSTNAME)
-                    #self.main.updateConsole("client", msg, color='orange')
-                    #self.main.addHost(hostname, address)
-
-            #self.sendReply(socket, action)
             socket.waitForDisconnected()
 
-        sys.exit(0)
-
-    def sendReply(self, socket, action):
-        reply = QtCore.QByteArray()
-        stream = QtCore.QDataStream(reply, QtCore.QIODevice.WriteOnly)
-        stream.setVersion(STREAM_VERSION)
-        stream.writeUInt16(0)
-        stream << QtCore.QString(action)
-        stream.device().seek(0)
-        stream.writeUInt16(reply.size() - UNIT16)
-        socket.write(reply)
+    def sendReply(self, socket, response):
+        reply = rpcResponse('test', 'test', response)
+        replyB = rpcResponseB(response)
+        print len(reply),reply
+        print len(replyB),replyB
+        socket.write(replyB)
         socket.close()
-
 
 class RPCServer(QtNetwork.QTcpServer):
     def __init__(self, parent=None):

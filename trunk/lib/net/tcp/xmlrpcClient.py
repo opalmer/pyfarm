@@ -21,6 +21,7 @@ along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 '''
 import os
 import sys
+import cPickle
 import xmlrpclib
 
 from PyQt4 import QtCore, QtNetwork
@@ -39,9 +40,16 @@ class RPCClient(QtCore.QObject):
 
     def run(self):
         try:
-            logger.info("Attempting to connect to http://127.0.0.1:54000")
-            client = xmlrpclib.ServerProxy("http://127.0.0.1:54000", verbose=True)
-            client.echo("test")
+            logger.info("Testing http://127.0.0.1:54000")
+            client = xmlrpclib.ServerProxy("http://127.0.0.1:54000", verbose=False)
+
+            results = client.echo("hello world", "again")
+            print type(results), results
+            results = client.echo({"first key":"result"}, True)
+            for i in results:
+                print type(i), i
+
+            sys.exit()
 
         except Exception, error:
             logger.error("EXCEPTION: %s" % error)
