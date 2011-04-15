@@ -58,7 +58,10 @@ class RPCServerThread(QtCore.QThread):
         call and its input(s)
         '''
         peer = str(socket.peerAddress().toString())
+        print xmlrpclib.dumps(str(socket.readAll().trimmed()))
+        print [str(socket.readAll().trimmed())]
         data = xmlrpclib.loads(str(socket.readAll().trimmed()))
+
         logger.rpccall("%s -> %s%s" % (peer, str(data[1]), str(data[0])))
         return data
 
