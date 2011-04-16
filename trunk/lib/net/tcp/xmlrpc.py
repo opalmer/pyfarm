@@ -20,8 +20,12 @@ You should have received a copy of the GNU Lesser General Public License
 along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 '''
 import os
+import re
 import sys
-import fnmatch
+import types
+import xmlrpclib
+from PyQt4 import QtCore
+import xml.etree.cElementTree
 
 from PyQt4 import QtCore, QtNetwork
 
@@ -35,258 +39,251 @@ from lib import logger, system, net
 UNIT16         = 8
 STREAM_VERSION = net.dataStream()
 logger         = logger.Logger('test', 'test')
+loads          = xmlrpclib.loads
 
-#class SSLParms(QtCore.QObject):
-    #'''
-    #Place holder class to hold information about an
-    #SSL certificate
-    #'''
-    #def __init__(self, certFile, keyFile, parent=None):
-        #super(SSLParms, self).__init__(parent)
-        #self.cert = QtCore.QFile(certFile, parent)
-        #self.cert.open(QtCore.QFile.ReadOnly)
-        #certificate = QtNetwork.QSslCertificate(self.cert)
-        #self.key  = QtCore.QString(keyFile)
+def dumps(method, values):
+    '''
+    Return a valid dump response for transmission back to an xmlrpc client
+    '''
+    return xmlrpclib.dumps((values, ), method, methodresponse=True)
 
-class Protocol(QtCore.QObject):
-    def __init__(self, socket, timeout=5000, parent=None):
-        super(Protocol, self).__init__(parent)
-        self.socket  = socket
-        self.timeout = timeout
-        self.timerId = None
+class SerializationFailure(Exception):
+    def __repr__(self, error):
+        return "Failed to Serialize Data: %s" % error.lower()
 
-    def _readyRead(self):
-        print "HERE_@!!!"
-        logger.netserver("Socket is ready to read")
-        self.restartTimeout()
 
-    def _bytesWritten(self, bytes):
-        logger.netserver("Socket has written %i bytes" % bytes)
-        self.restartTimeout()
+class InvalidRPC(Exception):
+    def __repr__(self, error):
+        return "Invalid Data: %s" % error.lower()
 
-    def _killTimer(self, timerId):
-        logger.warning("Killing Timer: %i" % timerId)
-        self.killTimer(timerId)
 
-    def getSocket(self): return self.socket
+class Serialization(QtCore.QObject):
+    '''
+    Base class holding generic functions for serialization.  This class
+    also emits a signal (method) upon finding the method name
 
-    def timerEvent(self, event):
-        if event.timerId() == self.timerId:
-            logger.debug("Emitted Timer Event: %i" % self.timerId)
-            self.emit(QtCore.SIGNAL("protocolTimeout()"))
-            self.killTimer(self.timerId)
-            self.timerId = 0
+    @param socket: String or byte array to parse xml from
+    '''
+    def __init__(self, socket, parent=None):
+        super(Serialization, self).__init__(parent)
+        if type(socket) == QtNetwork.QTcpSocket:
+            self.source = socket.readAll()
 
-    def setTimeout(self, value):
-        '''Set the timout timer to the given value'''
-        if self.timerId:
-            self._killTimer(self.timerId)
-            self.timerId = 0
+            if self.source.isEmpty():
+                raise InvalidRPC("socket byte array is empty")
 
-        if self.timeout:
-            self.connect(socket, QtCore.SIGNAL("readyRead()"), self._readyRead)
-            self.connect(socket, QtCore.SIGNAL("bytesWritten(qint64)"), self._bytesWritten)
+        elif type(socket) in types.StringTypes:
+            self.source = socket
 
-    def stopTimeout(self):
-        self.setTimeout(0)
+            if not self.source:
+                raise InvalidRPC("source string is empty")
 
-    def restartTimeout(self):
-        '''Kill the current timer and restart'''
-        if self.timerId:
-            self._killTimer(self.timerId)
-
-        self.timerId = self.startTimer(self.timeout)
-
-class State:
-    ReadingHeader, ReadingBody, WaitingReply, SendingReply, Done = range(5)
-
-class HTTPServer(Protocol):
-    def __init__(self, socket, timeout=5000, parent=None):
-        super(HTTPServer, self).__init__(socket, timeout)
-        self.socket            = socket
-
-        self.requestBody       = QtCore.QByteArray()
-        self.requestHeader     = QtNetwork.QHttpRequestHeader()
-        self.requestHeaderBody = QtCore.QString()
-
-        self.connect(self.socket, QtCore.SIGNAL("readyRead()"), self._readyRead)
-        self.connect(self.socket, QtCore.SIGNAL("bytesWritten(qint64)"), self._bytesWritten)
-
-        if self.socket.bytesAvailable() > 0:
-            print "HERE!!!"
-            self.readyRead()
-
-    def readyReady(self):
-        logger.netserver("Attmempting to read from socket")
-        if not self.socket.bytesAvailable():
-            return
-
-        state = self.socket.state()
-
-        if state == State.ReadingHeader:
-            logger.netserver("State: Reading header")
-            if self.readRequestHeader() and self.requestContainsBody():
-                state = State.ReadingBody
-            else:
-                state = State.WaitingReply
-                self.emit(
-                            QtCore.SIGNAL("requestReceived"),
-                            (self.requestHeader, self.requestBody)
-                        )
-
-        elif state == State.ReadingBody:
-            logger.netserver("State: Reading body")
-            state = State.WaitingReply
-            self.emit(
-                        QtCore.SIGNAL("requestReceived"),
-                        (self.requestHeader, self.requestBody)
-                    )
-
-        elif state == State.WaitingReply:
-            logger.netserver("State: Waiting Reply")
-            self.emit(QtCore.SIGNAL("parseError"))
-        elif state == State.SendingReply:
-            logger.netserver("State: Sending Reply")
-            self.emit(QtCore.SIGNAL("parseError"))
-        elif state == State.Done:
-            logger.netserver("State: Done")
-            self.emit(QtCore.SIGNAL("parseError"))
-
-    def readRequestBody(self):
-        bytesToRead = int(self.requestHeader.contentLength()) - int(self.requestBody.size())
-        if bytesToRead > self.socket.bytesAvailable():
-            bytesToRead = self.socket.bytesAvailable()
-
-        self.requestBody.append(self.socket.read(bytesToRead))
-
-        if self.requestBody.size() == int(self.requestHeader.contentLength()):
-            return True
         else:
+            error = "cannot serialize %s objects" % type(socket)
+            raise SerializationFailure(error)
+
+        self.cTree  = xml.etree.cElementTree.fromstring(self._getXml(self.source))
+
+        for child in self.cTree.getchildren():
+            # set the mothod name
+            if child.tag == "methodName":
+                self.method = child.text
+                self.emit(QtCore.SIGNAL("method"), child.text)
+
+            # establish the parameters
+            elif child.tag == "params":
+                self.inputs = child
+
+    def _getXml(self, source):
+        '''
+        Parse the rpc request and return the xml structure for processing.
+
+        @param source: The full rpc structure to return the xml from
+        @type  source: C{str}
+        '''
+        match = re.match(r""".+ \d+(:?\r\n)+(.+)""", source, re.DOTALL)
+
+        if not match:
+            raise SerializationFailure("failed to match xml header")
+
+        return match.group(2)
+
+
+class Deserialize(Serialization):
+    def __init__(self, socket, parent=None):
+        super(Deserialize, self).__init__(socket, parent)
+        self.parms = []
+
+        # iterate over all parameters and create a list of inputs
+        for inputElement in self.getValues(self.inputs):
+            for parm in inputElement.getchildren():
+                self.parms.append(self.parsedType(parm))
+
+        self.parms = tuple(self.parms)
+
+    def parsedType(self, element):
+        '''
+        Return the correct type for the given element.  In the interest of
+        security, eval() will not be used in place of a list lookup for
+        boolean objects.
+
+        @param element: The element to pull typeName and value from
+        @type  element: xml.etree.cElementTree.Element
+        '''
+        typeName    = element.tag
+        value       = element.text
+        if typeName == "struct":   return self.parsedDict(element)
+        elif typeName == "string": return str(value)
+        elif typeName == "double": return float(value)
+        elif typeName == "int":    return int(value)
+        elif typeName == "boolean":
+            if value in ("True", "1.0", "1"):
+                return True
             return False
 
-    def requestContainsBody(self):
-        return self.requestHeader.hasContentLength()
+        else:
+            raise TypeError("%s has not been mapped yet" % typeName)
 
-    def readRequestHeader(self):
-        logger.netserver("reading request header")
-        win     = "\r\n"
-        nix     = "\r"
-        winEnd  = QtCore.QByteArray(len(win), win)
-        nixEnd  = QtCore.QByteArray(len(nix), nix)
+    def parsedDict(self, element):
+        '''
+        Recursivly parse a struct entry and return a dictionary
 
-        while socket.canReadLine():
-            line = socket.readLine()
-            if line == winEnd or line == nixEnd or line.isEmpty():
-                break
-            self.requestHeaderBody.append(line)
+        @param element: The struct element to return a dictionary for
+        @type  element: xml.etree.cElementTree.Element
+        '''
+        output = {}
+        for member in element.getchildren():
+            for entry in member.getchildren():
+                # set the next keyname
+                if entry.tag == "name":
+                    key = entry.text
 
-        self.requestHeader = QtNetwork.QHttpRequestHeader(request)
-        self.requestHeaderBody.clear()
-        self.requestBody.clear()
+                else:
+                    for value in entry.getchildren():
+                        output[key] = self.parsedType(value)
 
-        if self.requestHeader.isValid():
-            logger.debug("Header: %s" % self.requestHeader.toString())
-            return True
+        return output
 
-        logger.error("Invalid request header: %s" % self.requestHeader.toString())
-        self.emit(QtCore.SIGNAL("parseError()"))
-        return False
+    def getValues(self, parameters):
+        '''Return all value elements from the given parameters'''
+        for child in parameters.getchildren():
+            for value in child.getchildren():
+                yield value
+
 
 class RPCServerThread(QtCore.QThread):
     '''
-    Queue server thread spawned upon every incoming connection to
-    prevent collisions.
+    Server thread than handles all processing of a rpc connection.  This
+    object should be passed to the QTcpServer prior to starting the server:
+
+    server = RPCServer(RPCServerThread)
     '''
     def __init__(self, socketId, parent=None):
         super(RPCServerThread, self).__init__(parent)
         self.socketId = socketId
         self.parent   = parent
+        self.socket   = None
+        self.peer     = None
+        self.data     = None
+
+    def response(self):
+        '''
+        This method is used to override self.response before sending our
+        response to the peer and should be overridden by any subclass.
+        '''
+        return True
+
+    def sendFault(self, fault, faultCode):
+        '''Send a fault code to the remote host'''
+        self.sendReply(fault=fault, faultCode=faultCode)
+
+    def sendReply(self, fault=None, faultCode=-1):
+        '''
+        Send our response and close the socket.  Be sure that before we
+        send out reply we construct a proper response using xmlrpclib.dumps.
+        This method can also send fault objects when given a fault string.
+        '''
+        if not fault:
+            reply  = (self.response(), )
+            method = self.data.method
+            dump   = xmlrpclib.dumps(
+                                        reply,
+                                        methodname=method, methodresponse=True
+                                    )
+        # if we have fault argumen
+        else:
+            fault = xmlrpclib.Fault(fault, faultCode)
+            dump  = xmlrpclib.dumps(fault)
+
+        # send the rpc dump and close the connection
+        self.socket.write(dump)
+        self.socket.close()
 
     def run(self):
-        logger.debug("Thread started")
-        socket = QtNetwork.QTcpSocket()
+        '''
+        Main processing of thread object, this method should not be
+        overriden
+        '''
+        self.socket = QtNetwork.QTcpSocket()
 
-        if not socket.setSocketDescriptor(self.socketId):
-            self.emit(QtCore.SIGNAL("error(int)"), socket.error())
-            logger.error("Socket Error: %s" % socket.error())
+        if not self.socket.setSocketDescriptor(self.socketId):
+            error = str(self.socket.error())
+            logger.error("Error Setting Socket Descriptor: %s" % error)
+            self.emit(QtCore.SIGNAL("error(int)"), self.socket.error())
+            self.sendFault("Error setting socket descriptor", 1)
             return
 
-        http = HTTPServer(socket)
-        print socket.bytesAvailable()
-        #assert socket.state() == QtNetwork.QAbstractSocket.ConnectedState
-        self.connect(socket, QtCore.SIGNAL("disconnected()"), self.disconnected)
-        self.connect(http, QtCore.SIGNAL("protocolTimeout"), self.protocolTimeout)
-        self.connect(http, QtCore.SIGNAL("parseError"), self.parseError)
-        self.connect(http, QtCore.SIGNAL("requestReceived"), self.requestReceived)
-        self.connect(http, QtCore.SIGNAL("replySent"), self.replySent)
+        self.peer = str(self.socket.peerAddress().toString())
+        while self.socket.state() == QtNetwork.QAbstractSocket.ConnectedState:
+            nextBlockSize = 0
+            stream        = QtCore.QDataStream(self.socket)
+            stream.setVersion(STREAM_VERSION)
 
-    def disconnected(self):
-        logger.netserver("disconnected")
+            while True:
+                self.socket.waitForReadyRead(-1)
 
-    def protocolTimeout(self):
-        logger.netserver("Protocol has timed out")
+                if self.socket.bytesAvailable() >= UNIT16:
+                    nextBlockSize = stream.readUInt16()
+                    self.data     = Deserialize(self.socket)
+                    logger.rpccall("%s -> %s%s" % (
+                                                self.peer, self.data.method,
+                                                self.data.parms
+                                                )
+                                    )
+                    self.sendReply()
+                    break
 
-    def parseError(self):
-        logger.error("parse error!")
-
-    def requestReceived(self, data):
-        logger.netserver("requestReceived: %s" % data)
-
-    def replySent(self, reply):
-        logger.netserver("replySent: %s" % reply)
+            if self.socket.bytesAvailable() < nextBlockSize:
+                if not self.socket.waitForDisconnected():
+                    error = str(self.socket.error())
+                    self.sendFault("Error while disconnecting", 2)
 
 
 class RPCServer(QtNetwork.QTcpServer):
-    '''
-    Main remote proceduce call server class.  Used to receieve
-    calls from client and register new functions on the local server.
-    '''
-    def __init__(self, cert, key, password, parent=None):
+    def __init__(self, rpcThread=None, parent=None):
         super(RPCServer, self).__init__(parent)
-        logger.netserver("Server setup")
-
-    @property
-    def name(self):
-        return "RPC"
+        self.threadClass = threadClass
 
     def incomingConnection(self, socketId):
-        '''
-        When an incoming connection is spawned create a thread
-        and send the new connection to it
-        '''
-        logger.netserver("Incoming Connection")
-        self.thread = RPCServerThread(socketId, parent=self)
+        self.thread = self.threadClass(socketId, parent=self)
         self.connect(
-                        self.thread,
-                        QtCore.SIGNAL("finished()"),
-                        self.thread,
-                        QtCore.SLOT("deleteLater()")
+                        self.thread, QtCore.SIGNAL("finished()"),
+                        self.thread, QtCore.SLOT("deleteLater()")
                     )
         self.thread.start()
 
-
-    def registerSlot(self, target, slot, path=None):
-        pass
-
-class TestServer(QtCore.QObject):
-    def __init__(self, parent=None):
-        super(TestServer, self).__init__(parent)
-        self.server = RPCServer('cert', 'key', 'password')
-
-        if self.server.listen(QtNetwork.QHostAddress("127.0.0.1"), 5050):
-            self.server.registerSlot(self, QtCore.SLOT("echo(QVariant)"))
-
-    def echo(self, text):
-        return text
-
-
-
 if __name__ == '__main__':
-    logger.info("Starting: %i" % os.getpid())
-    app    = QtCore.QCoreApplication(sys.argv)
-    server = RPCServer('cert', 'key', 'password')
+    import xmlrpclib
+    xmlSource  = "POST /RPC2 HTTP/1.0\r\nHost: 127.0.0.1:54000\r\nUser-Agent: xmlrpclib.py/1.0.1 (by www.pythonware.com)\r\nContent-Type: text/xml\r\nContent-Length: 336\r\n\r\n<?xml version='1.0'?>\n<methodCall>\n<methodName>echo</methodName>\n<params>\n<param>\n<value><struct>\n<member>\n<name>key</name>\n<value><string>value</string></value>\n</member>\n</struct></value>\n</param>\n<param>\n<value><double>2.0</double></value>\n</param>\n<param>\n<value><string>thirdInput</string></value>\n</param>\n</params>\n</methodCall>\n"
+    xmlSourceB = "ST /RPC2 HTTP/1.0\r\nHost: 127.0.0.1:54000\r\nUser-Agent: xmlrpclib.py/1.0.1 (by www.pythonware.com)\r\nContent-Type: text/xml\r\nContent-Length: 1004\r\n\r\n<?xml version='1.0'?>\n<methodCall>\n<methodName>echo</methodName>\n<params>\n<param>\n<value><struct>\n<member>\n<name>dictA</name>\n<value><struct>\n<member>\n<name>entryAA</name>\n<value><boolean>1</boolean></value>\n</member>\n<member>\n<name>entryAB</name>\n<value><int>1</int></value>\n</member>\n<member>\n<name>entryAC</name>\n<value><double>1.0</double></value>\n</member>\n<member>\n<name>dictAD</name>\n<value><struct>\n<member>\n<name>itemB</name>\n<value><string>hi there</string></value>\n</member>\n<member>\n<name>itemA</name>\n<value><boolean>1</boolean></value>\n</member>\n<member>\n<name>emptyDict</name>\n<value><struct>\n</struct></value>\n</member>\n</struct></value>\n</member>\n</struct></value>\n</member>\n<member>\n<name>strA</name>\n<value><string>hello</string></value>\n</member>\n<member>\n<name>intA</name>\n<value><double>1.0</double></value>\n</member>\n</struct></value>\n</param>\n<param>\n<value><double>2.0</double></value>\n</param>\n<param>\n<value><string>thirdInput</string></value>\n</param>\n</params>\n</methodCall>\n"
+    xmlSourceC = "ml\r\nContent-Length: 1004\r\n\r\n<?xml version='1.0'?>\n<methodCall>\n<methodName>echo</methodName>\n<params>\n<param>\n<value><struct>\n<member>\n<name>dictA</name>\n<value><struct>\n<member>\n<name>entryAA</name>\n<value><boolean>1</boolean></value>\n</member>\n<member>\n<name>entryAB</name>\n<value><int>1</int></value>\n</member>\n<member>\n<name>entryAC</name>\n<value><double>1.0</double></value>\n</member>\n<member>\n<name>dictAD</name>\n<value><struct>\n<member>\n<name>itemB</name>\n<value><string>hi there</string></value>\n</member>\n<member>\n<name>itemA</name>\n<value><boolean>1</boolean></value>\n</member>\n<member>\n<name>emptyDict</name>\n<value><struct>\n</struct></value>\n</member>\n</struct></value>\n</member>\n</struct></value>\n</member>\n<member>\n<name>strA</name>\n<value><string>hello</string></value>\n</member>\n<member>\n<name>intA</name>\n<value><double>1.0</double></value>\n</member>\n</struct></value>\n</param>\n<param>\n<value><double>2.0</double></value>\n</param>\n<param>\n<value><string>thirdInput</string></value>\n</param>\n</params>\n</methodCall>\n"
 
-    if server.listen(QtNetwork.QHostAddress("127.0.0.1"), 5050):
-        logger.netserver("%s Server Running on port %i" % (server.name, server.serverPort()))
-
-    sys.exit(app.exec_())
+    i = 1
+    for source in (xmlSource, xmlSourceB, xmlSourceC):
+        print "Testing Source %i..." % i
+        xmlToObjs = Deserialize(source)
+        objsToXml = dumps(xmlToObjs.method, xmlToObjs.parms)
+        xmlToLoad = xmlrpclib.loads(objsToXml)
+        print "...method name match: %s" % (xmlToObjs.method == xmlToLoad[1])
+        print "....input parm match:  %s" % (xmlToObjs.parms == tuple(xmlToLoad[0][0]))
+        i += 1

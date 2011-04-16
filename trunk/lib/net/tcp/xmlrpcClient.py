@@ -41,10 +41,23 @@ class RPCClient(QtCore.QObject):
     def run(self):
         try:
             logger.info("Testing http://127.0.0.1:54000")
-            client = xmlrpclib.ServerProxy("http://127.0.0.1:54000", encoding='utf-8', verbose=False)
-            print client.echo("test")
-            #print client.echo("hello world", "again")
-            #print client.echo({"key":"value"}, 2.0, "thirdInput")
+            client = xmlrpclib.ServerProxy("http://127.0.0.1:54000", verbose=False)
+
+            data = {
+                        "strA"  : "hello",
+                        "intA"  : 1.0,
+                        "dictA" : {
+                                    "entryAA" : True,
+                                    "entryAB" : 1,
+                                    "entryAC" : 1.0,
+                                    "dictAD"  : {
+                                                    "itemA"     : True,
+                                                    "itemB"     : "hi there",
+                                                    "emptyDict" : {}
+                                                 }
+                                  }
+                    }
+            print client.echo(data, 2.0, "thirdInput")
 
             sys.exit()
 

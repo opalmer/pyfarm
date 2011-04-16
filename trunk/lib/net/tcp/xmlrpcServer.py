@@ -31,6 +31,7 @@ PYFARM = os.path.abspath(os.path.join(CWD, "..", "..", ".."))
 MODULE = os.path.basename(__file__)
 if PYFARM not in sys.path: sys.path.append(PYFARM)
 
+from xmlrpc import Deserialize
 from lib import logger, system, net
 
 UNIT16         = 8
@@ -39,72 +40,100 @@ logger         = logger.Logger()
 types          = []
 
 class RPCServerThread(QtCore.QThread):
+    '''
+    Server thread than handles all processing of a rpc connection.  This
+    object should be passed to the QTcpServer prior to starting the server:
+
+    server = RPCSErver(RPCServerThread)
+    '''
     def __init__(self, socketId, parent=None):
         super(RPCServerThread, self).__init__(parent)
         self.socketId = socketId
         self.parent   = parent
+        self.socket   = None
+        self.peer     = None
+        self.data     = None
 
-    def _response(self, results):
+    def response(self):
         '''
-        Based on the source object arguments formulate and return a response
+        This method is used to override self.response before sending our
+        response to the peer and should be overridden by any subclass.
         '''
-        dump  = xmlrpclib.dumps((results, ), methodresponse=True)
-        reply = QtCore.QByteArray(dump)
-        return dump
+        return True
 
-    def _getData(self, socket):
-        '''
-        Parse the incoming request from the socket and return the method
-        call and its input(s)
-        '''
-        peer = str(socket.peerAddress().toString())
-        print xmlrpclib.dumps(str(socket.readAll().trimmed()))
-        print [str(socket.readAll().trimmed())]
-        data = xmlrpclib.loads(str(socket.readAll().trimmed()))
+    def sendFault(self, fault, faultCode):
+        '''Send a fault code to the remote host'''
+        self.sendReply(fault=fault, faultCode=faultCode)
 
-        logger.rpccall("%s -> %s%s" % (peer, str(data[1]), str(data[0])))
-        return data
+    def sendReply(self, fault=None, faultCode=-1):
+        '''
+        Send our response and close the socket.  Be sure that before we
+        send out reply we construct a proper response using xmlrpclib.dumps.
+        This method can also send fault objects when given a fault string.
+        '''
+        if not fault:
+            reply  = (self.response(), )
+            method = self.data.method
+            dump   = xmlrpclib.dumps(
+                                        reply,
+                                        methodname=method, methodresponse=True
+                                    )
+        # if we have fault argumen
+        else:
+            fault = xmlrpclib.Fault(fault, faultCode)
+            dump  = xmlrpclib.dumps(fault)
+
+        # send the rpc dump and close the connection
+        self.socket.write(dump)
+        self.socket.close()
 
     def run(self):
-        socket = QtNetwork.QTcpSocket()
+        '''
+        Main processing of thread object, this method should not be
+        overriden
+        '''
+        self.socket = QtNetwork.QTcpSocket()
 
-        if not socket.setSocketDescriptor(self.socketId):
-            error = str(socket.error())
+        if not self.socket.setSocketDescriptor(self.socketId):
+            error = str(self.socket.error())
             logger.error("Error Setting Socket Descriptor: %s" % error)
-            self.emit(QtCore.SIGNAL("error(int)"), socket.error())
+            self.emit(QtCore.SIGNAL("error(int)"), self.socket.error())
+            self.sendFault("Error setting socket descriptor", 1)
             return
 
-        while socket.state() == QtNetwork.QAbstractSocket.ConnectedState:
+        self.peer = str(self.socket.peerAddress().toString())
+        while self.socket.state() == QtNetwork.QAbstractSocket.ConnectedState:
             nextBlockSize = 0
-            ip            = socket.peerAddress().toString()
-            stream        = QtCore.QDataStream(socket)
+            stream        = QtCore.QDataStream(self.socket)
             stream.setVersion(STREAM_VERSION)
 
             while True:
-                socket.waitForReadyRead(-1)
+                self.socket.waitForReadyRead(-1)
 
-                if socket.bytesAvailable() >= UNIT16:
-                    nextBlockSize  = stream.readUInt16()
-                    data           = self._getData(socket)
-                    self.sendReply(socket, data[0])
+                if self.socket.bytesAvailable() >= UNIT16:
+                    nextBlockSize = stream.readUInt16()
+                    self.data     = Deserialize(self.socket)
+                    logger.rpccall("%s -> %s%s" % (
+                                                self.peer, self.data.method,
+                                                self.data.parms
+                                                )
+                                    )
+                    self.sendReply()
                     break
 
-            if socket.bytesAvailable() < nextBlockSize:
-                if not socket.waitForDisconnected():
-                    error = str(socket.error())
-                    logger.error("Error Disconnecting: %s" % error)
+            if self.socket.bytesAvailable() < nextBlockSize:
+                if not self.socket.waitForDisconnected():
+                    error = str(self.socket.error())
+                    self.sendFault("Error while disconnecting", 2)
 
-    def sendReply(self, socket, response):
-        data = self._response(response)
-        socket.write(data)
-        socket.close()
 
 class RPCServer(QtNetwork.QTcpServer):
-    def __init__(self, parent=None):
+    def __init__(self, rpcThread=None, parent=None):
         super(RPCServer, self).__init__(parent)
+        self.rpcThread = rpcThread
 
     def incomingConnection(self, socketId):
-        self.thread = RPCServerThread(socketId, parent=self)
+        self.thread = self.rpcThread(socketId, parent=self)
         self.connect(
                         self.thread, QtCore.SIGNAL("finished()"),
                         self.thread, QtCore.SLOT("deleteLater()")
@@ -114,7 +143,7 @@ class RPCServer(QtNetwork.QTcpServer):
 if __name__ == '__main__':
     logger.info("Starting: %i" % os.getpid())
     app    = QtCore.QCoreApplication(sys.argv)
-    server = RPCServer()
+    server = RPCServer(RPCServerThread)
 
     if server.listen(QtNetwork.QHostAddress("127.0.0.1"), 54000):
         logger.netserver("RPC Server Running on port 54000")
