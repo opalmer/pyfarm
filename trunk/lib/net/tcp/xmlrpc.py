@@ -23,6 +23,7 @@ import os
 import re
 import sys
 import types
+import inspect
 import xmlrpclib
 from PyQt4 import QtCore
 import xml.etree.cElementTree
@@ -171,7 +172,7 @@ class Deserialize(Serialization):
                 yield value
 
 
-class RPCServerThread(QtCore.QThread):
+class BaseServerThread(QtCore.QThread):
     '''
     Server thread than handles all processing of a rpc connection.  This
     object should be passed to the QTcpServer prior to starting the server:
@@ -179,17 +180,111 @@ class RPCServerThread(QtCore.QThread):
     server = RPCServer(RPCServerThread)
     '''
     def __init__(self, socketId, parent=None):
-        super(RPCServerThread, self).__init__(parent)
+        super(BaseServerThread, self).__init__(parent)
         self.socketId = socketId
         self.parent   = parent
         self.socket   = None
         self.peer     = None
         self.data     = None
 
+    def _getMethod(self, method):
+        '''Return the method with the given name'''
+        return getattr(self.__class__, method)
+
+    def _callMethod(self, method, args):
+        '''
+        Call the requested method while passing arguments, return the
+        results of the call
+        '''
+        #print args
+        try:
+            method = getattr(self.__class__, method)
+            print method()
+        except Exception, error:
+            print error
+            sys.exit()
+        return self._getMethod(method)
+
+    def _allMethods(self, parentMethods=False):
+        '''Return a list of methods currently attached to the class'''
+        methods = []
+        for listing in inspect.getmembers(self):
+            if inspect.ismethod(listing[1]):
+                methods.append(listing[0])
+        return methods
+
+    def _methodList(self):
+        '''
+        Return a list of methods being overridden in this class (methods
+        that can be called via rpc)
+        '''
+        methods = []
+        for name in vars(self.__class__).keys():
+            if not name.startswith("_"):
+                methods.append(name)
+        return methods
+
+    def _containsMethod(self, method):
+        '''Return True if the class contains the given method'''
+        if method in self._methodList():
+            return True
+        return False
+
+    def _validMethod(self, method):
+        '''
+        We cannot allow clients to call private methods, check to see if the
+        current method being called is considered private.
+        '''
+        if not method.startswith("_"):
+            return True
+        return False
+
+    def _validateCall(self, method, args):
+        '''
+        Return True if the input given by the RPC call from the client matches
+        the required input to the given method.
+        '''
+        method = getattr(self.__class__, method)
+        if len(inspect.getargspec(method)[0])-1 == len(args):
+            return True
+        return False
+
+    def _validateRequest(self):
+        '''
+        Perform the checks necessary to ensure the method we are attempting
+        to call is valid
+        '''
+        fault      = None
+        faultCode  = None
+        method     = self.data.method
+        methodArgs = self.data.parms
+
+        # make sure the method calls is not private
+        if not self._validMethod(method):
+            fault     = "Permission denied to private method"
+            faultCode = 403
+            return fault, faultCode
+
+        # make sure the class contains the method
+        if not self._containsMethod(method):
+            fault     = "No such method"
+            faultCode = 404
+            return fault, faultCode
+
+        # ensure our input to the method contains the proper arguments
+        if not self._validateCall(method, methodArgs):
+            fault     = "Invalid input to method"
+            faultCode = 400
+            return fault, faultCode
+
+        return fault, faultCode
+
+    # TODO: Replace self.response with the call from the actuall function
     def response(self):
         '''
-        This method is used to override self.response before sending our
-        response to the peer and should be overridden by any subclass.
+        This method is used to override the response being sent back to the
+        client.  Although it is not a private method it cannot be called
+        either directly or indirectly by the client.
         '''
         return True
 
@@ -197,22 +292,29 @@ class RPCServerThread(QtCore.QThread):
         '''Send a fault code to the remote host'''
         self.sendReply(fault=fault, faultCode=faultCode)
 
-    def sendReply(self, fault=None, faultCode=-1):
+    def sendReply(self, error=None, errorCode=-1):
         '''
         Send our response and close the socket.  Be sure that before we
         send out reply we construct a proper response using xmlrpclib.dumps.
         This method can also send fault objects when given a fault string.
         '''
-        if not fault:
+        error, errorCode = self._validateRequest()
+
+        print self._callMethod(self.data.method, self.data.parms)
+
+        if not error:
+            # TODO: Replace self.response with the call from the actuall function
             reply  = (self.response(), )
-            method = self.data.method
             dump   = xmlrpclib.dumps(
                                         reply,
-                                        methodname=method, methodresponse=True
+                                        methodname=self.data.method,
+                                        methodresponse=True
                                     )
-        # if we have fault argumen
+
+        # if input is passed into fault send a fault string and code
+        # back to the client instead
         else:
-            fault = xmlrpclib.Fault(fault, faultCode)
+            fault = xmlrpclib.Fault(error, errorCode)
             dump  = xmlrpclib.dumps(fault)
 
         # send the rpc dump and close the connection
@@ -259,9 +361,9 @@ class RPCServerThread(QtCore.QThread):
                     self.sendFault("Error while disconnecting", 2)
 
 
-class RPCServer(QtNetwork.QTcpServer):
-    def __init__(self, rpcThread=None, parent=None):
-        super(RPCServer, self).__init__(parent)
+class BaseServer(QtNetwork.QTcpServer):
+    def __init__(self, threadClass=None, parent=None):
+        super(BaseServer, self).__init__(parent)
         self.threadClass = threadClass
 
     def incomingConnection(self, socketId):
@@ -271,19 +373,3 @@ class RPCServer(QtNetwork.QTcpServer):
                         self.thread, QtCore.SLOT("deleteLater()")
                     )
         self.thread.start()
-
-if __name__ == '__main__':
-    import xmlrpclib
-    xmlSource  = "POST /RPC2 HTTP/1.0\r\nHost: 127.0.0.1:54000\r\nUser-Agent: xmlrpclib.py/1.0.1 (by www.pythonware.com)\r\nContent-Type: text/xml\r\nContent-Length: 336\r\n\r\n<?xml version='1.0'?>\n<methodCall>\n<methodName>echo</methodName>\n<params>\n<param>\n<value><struct>\n<member>\n<name>key</name>\n<value><string>value</string></value>\n</member>\n</struct></value>\n</param>\n<param>\n<value><double>2.0</double></value>\n</param>\n<param>\n<value><string>thirdInput</string></value>\n</param>\n</params>\n</methodCall>\n"
-    xmlSourceB = "ST /RPC2 HTTP/1.0\r\nHost: 127.0.0.1:54000\r\nUser-Agent: xmlrpclib.py/1.0.1 (by www.pythonware.com)\r\nContent-Type: text/xml\r\nContent-Length: 1004\r\n\r\n<?xml version='1.0'?>\n<methodCall>\n<methodName>echo</methodName>\n<params>\n<param>\n<value><struct>\n<member>\n<name>dictA</name>\n<value><struct>\n<member>\n<name>entryAA</name>\n<value><boolean>1</boolean></value>\n</member>\n<member>\n<name>entryAB</name>\n<value><int>1</int></value>\n</member>\n<member>\n<name>entryAC</name>\n<value><double>1.0</double></value>\n</member>\n<member>\n<name>dictAD</name>\n<value><struct>\n<member>\n<name>itemB</name>\n<value><string>hi there</string></value>\n</member>\n<member>\n<name>itemA</name>\n<value><boolean>1</boolean></value>\n</member>\n<member>\n<name>emptyDict</name>\n<value><struct>\n</struct></value>\n</member>\n</struct></value>\n</member>\n</struct></value>\n</member>\n<member>\n<name>strA</name>\n<value><string>hello</string></value>\n</member>\n<member>\n<name>intA</name>\n<value><double>1.0</double></value>\n</member>\n</struct></value>\n</param>\n<param>\n<value><double>2.0</double></value>\n</param>\n<param>\n<value><string>thirdInput</string></value>\n</param>\n</params>\n</methodCall>\n"
-    xmlSourceC = "ml\r\nContent-Length: 1004\r\n\r\n<?xml version='1.0'?>\n<methodCall>\n<methodName>echo</methodName>\n<params>\n<param>\n<value><struct>\n<member>\n<name>dictA</name>\n<value><struct>\n<member>\n<name>entryAA</name>\n<value><boolean>1</boolean></value>\n</member>\n<member>\n<name>entryAB</name>\n<value><int>1</int></value>\n</member>\n<member>\n<name>entryAC</name>\n<value><double>1.0</double></value>\n</member>\n<member>\n<name>dictAD</name>\n<value><struct>\n<member>\n<name>itemB</name>\n<value><string>hi there</string></value>\n</member>\n<member>\n<name>itemA</name>\n<value><boolean>1</boolean></value>\n</member>\n<member>\n<name>emptyDict</name>\n<value><struct>\n</struct></value>\n</member>\n</struct></value>\n</member>\n</struct></value>\n</member>\n<member>\n<name>strA</name>\n<value><string>hello</string></value>\n</member>\n<member>\n<name>intA</name>\n<value><double>1.0</double></value>\n</member>\n</struct></value>\n</param>\n<param>\n<value><double>2.0</double></value>\n</param>\n<param>\n<value><string>thirdInput</string></value>\n</param>\n</params>\n</methodCall>\n"
-
-    i = 1
-    for source in (xmlSource, xmlSourceB, xmlSourceC):
-        print "Testing Source %i..." % i
-        xmlToObjs = Deserialize(source)
-        objsToXml = dumps(xmlToObjs.method, xmlToObjs.parms)
-        xmlToLoad = xmlrpclib.loads(objsToXml)
-        print "...method name match: %s" % (xmlToObjs.method == xmlToLoad[1])
-        print "....input parm match:  %s" % (xmlToObjs.parms == tuple(xmlToLoad[0][0]))
-        i += 1
