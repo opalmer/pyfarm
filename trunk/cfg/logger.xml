@@ -48,8 +48,10 @@
         <level name="module import" function="module" />
         <level name="network.server" function="netserver" />
         <level name="network.client" function="netclient" />
-        <level name="rpc.call" function="rpccall" />
         <level name="rpc.debug" function="rpcdebug" />
+        <level name="rpc.call" function="rpccall" />
+        <level name="rpc.result" function="rpcresult" />
+        <level name="rpc.error" function="rpcerror" />
         <level name="network" />
         <level name="ui" />
         <level name="fixme" />

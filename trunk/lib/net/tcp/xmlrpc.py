@@ -137,6 +137,7 @@ class Deserialize(Serialization):
         elif typeName == "string": return str(value)
         elif typeName == "double": return float(value)
         elif typeName == "int":    return int(value)
+        #elif typeName == "dateTime.iso8601":
         elif typeName == "boolean":
             if value in ("True", "1.0", "1"):
                 return True
@@ -187,23 +188,14 @@ class BaseServerThread(QtCore.QThread):
         self.peer     = None
         self.data     = None
 
-    def _getMethod(self, method):
-        '''Return the method with the given name'''
-        return getattr(self.__class__, method)
-
     def _callMethod(self, method, args):
         '''
         Call the requested method while passing arguments, return the
         results of the call
+
+        TODO: Replace the eval statement
         '''
-        #print args
-        try:
-            method = getattr(self.__class__, method)
-            print method()
-        except Exception, error:
-            print error
-            sys.exit()
-        return self._getMethod(method)
+        return eval("self.%s%s" % (method, args))
 
     def _allMethods(self, parentMethods=False):
         '''Return a list of methods currently attached to the class'''
@@ -244,8 +236,22 @@ class BaseServerThread(QtCore.QThread):
         Return True if the input given by the RPC call from the client matches
         the required input to the given method.
         '''
-        method = getattr(self.__class__, method)
-        if len(inspect.getargspec(method)[0])-1 == len(args):
+        method     = getattr(self.__class__, method)
+        inspection = list(inspect.getargspec(method))
+
+        # make sure all inspection output are not None
+        index = 0
+        for entry in inspection:
+            if not entry:
+                inspection[index] = []
+            index += 1
+
+        arguments = len(inspection[0][1:])
+        keywords  = len(inspection[3])
+        required  = arguments - keywords
+        argCount  = len(args)
+
+        if argCount <= arguments and argCount >= required:
             return True
         return False
 
@@ -267,30 +273,21 @@ class BaseServerThread(QtCore.QThread):
 
         # make sure the class contains the method
         if not self._containsMethod(method):
-            fault     = "No such method"
+            fault     = "No such method self.%s" % method
             faultCode = 404
             return fault, faultCode
 
         # ensure our input to the method contains the proper arguments
         if not self._validateCall(method, methodArgs):
-            fault     = "Invalid input to method"
+            fault     = "Invalid input to self.%s" % method
             faultCode = 400
             return fault, faultCode
 
         return fault, faultCode
 
-    # TODO: Replace self.response with the call from the actuall function
-    def response(self):
-        '''
-        This method is used to override the response being sent back to the
-        client.  Although it is not a private method it cannot be called
-        either directly or indirectly by the client.
-        '''
-        return True
-
     def sendFault(self, fault, faultCode):
         '''Send a fault code to the remote host'''
-        self.sendReply(fault=fault, faultCode=faultCode)
+        self.sendReply(error=fault, errorCode=faultCode)
 
     def sendReply(self, error=None, errorCode=-1):
         '''
@@ -298,24 +295,27 @@ class BaseServerThread(QtCore.QThread):
         send out reply we construct a proper response using xmlrpclib.dumps.
         This method can also send fault objects when given a fault string.
         '''
-        error, errorCode = self._validateRequest()
-
-        print self._callMethod(self.data.method, self.data.parms)
-
+        # if error is currently none, then we need to validate the rpc request
         if not error:
-            # TODO: Replace self.response with the call from the actuall function
-            reply  = (self.response(), )
+            error, errorCode = self._validateRequest()
+
+        # if the there still is not an error after validation then we
+        # can query the results
+        if not error:
+            reply  = (self._callMethod(self.data.method, self.data.parms), )
             dump   = xmlrpclib.dumps(
                                         reply,
                                         methodname=self.data.method,
                                         methodresponse=True
                                     )
+            logger.rpcresult("%s <- %s" % (self.peer, str(reply[0])))
 
         # if input is passed into fault send a fault string and code
         # back to the client instead
         else:
             fault = xmlrpclib.Fault(error, errorCode)
             dump  = xmlrpclib.dumps(fault)
+            logger.rpcerror("%s <- Error %i: %s" % (self.peer, errorCode, error))
 
         # send the rpc dump and close the connection
         self.socket.write(dump)
@@ -346,19 +346,35 @@ class BaseServerThread(QtCore.QThread):
 
                 if self.socket.bytesAvailable() >= UNIT16:
                     nextBlockSize = stream.readUInt16()
-                    self.data     = Deserialize(self.socket)
-                    logger.rpccall("%s -> %s%s" % (
-                                                self.peer, self.data.method,
-                                                self.data.parms
-                                                )
-                                    )
-                    self.sendReply()
+                    try:
+                        self.data = Deserialize(self.socket)
+
+                    except TypeError, error:
+                        self.sendFault(str(error), 501)
+                        logger.rpcerror("%s: %s" % (self.peer, str(error)))
+
+                    except Exception, error:
+                        self.sendFault(str(error), 500)
+                        logger.error("Unhandled Exception: %s" % error)
+
+                    else:
+                        logger.rpccall("%s -> %s%s" % (
+                                                    self.peer, self.data.method,
+                                                    self.data.parms
+                                                    )
+                                        )
+                        self.sendReply()
                     break
 
             if self.socket.bytesAvailable() < nextBlockSize:
                 if not self.socket.waitForDisconnected():
                     error = str(self.socket.error())
-                    self.sendFault("Error while disconnecting", 2)
+                    self.sendFault("Error while disconnecting: %s" % error, 500)
+                    logger.error("Error disconnecting from %s: %s" % (
+                                                                       self.peer,
+                                                                       error
+                                                                     )
+                                                                     )
 
 
 class BaseServer(QtNetwork.QTcpServer):

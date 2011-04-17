@@ -42,13 +42,21 @@ class RPCTestThread(xmlrpc.BaseServerThread):
     '''
     Test server thread
     '''
-    def testMethod(self):
-        return True
+    def tupleResult(self):
+        return True, True
 
-    def add(self, a, b):
-        return a + b
+    def time(self, t):
+        print t
+        return t
+
+    def add(self, a, b, c=1, d=1, e=1):
+        return a + b + c + d + e
 
     def response(self):
+        return True
+
+    def stop(self):
+        sys.exit()
         return True
 
 if __name__ == '__main__':
