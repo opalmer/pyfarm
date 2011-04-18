@@ -83,7 +83,9 @@ class Serialization(QtCore.QObject):
             error = "cannot serialize %s objects" % type(socket)
             raise SerializationFailure(error)
 
-        self.cTree  = xml.etree.cElementTree.fromstring(self._getXml(self.source))
+        self.resource = self._getResource(self.source)
+        self.rpcXml   = self._getXml(self.source)
+        self.cTree    = xml.etree.cElementTree.fromstring(self.rpcXml)
 
         for child in self.cTree.getchildren():
             # set the mothod name
@@ -94,6 +96,20 @@ class Serialization(QtCore.QObject):
             # establish the parameters
             elif child.tag == "params":
                 self.inputs = child
+
+    def _getResource(self, source):
+        '''
+        Return the resource name from the rpc request
+
+        @param source: The full rpc structure to return the resource
+        @type  source: C{str}
+        '''
+        match = re.match(r"""(?:POST|ST)\s/(.+)\sHTTP""", source, re.DOTALL)
+
+        if not match:
+            raise SerializationFailure("failed to find the resource")
+
+        return str(match.group(1))
 
     def _getXml(self, source):
         '''
@@ -107,7 +123,7 @@ class Serialization(QtCore.QObject):
         if not match:
             raise SerializationFailure("failed to match xml header")
 
-        return match.group(2)
+        return str(match.group(2))
 
 
 class Deserialize(Serialization):
@@ -172,6 +188,11 @@ class Deserialize(Serialization):
             for value in child.getchildren():
                 yield value
 
+class BaseResource(QtCore.QObject):
+    '''Base resource with preset name and QObject inheritance'''
+    def __init__(self, parent=None):
+        super(BaseResource, self).__init__(parent)
+
 
 class BaseServerThread(QtCore.QThread):
     '''
@@ -188,14 +209,23 @@ class BaseServerThread(QtCore.QThread):
         self.peer     = None
         self.data     = None
 
-    def _callMethod(self, method, args):
+    def _getMethod(self, resource, method):
+        '''Return the method for the given resource'''
+        return self.parent.resources[method]
+
+    def _callMethod(self, data):
         '''
         Call the requested method while passing arguments, return the
         results of the call
 
         TODO: Replace the eval statement
         '''
-        return eval("self.%s%s" % (method, args))
+        resource = self.data.resource
+        method   = self.data.method
+        args     = self.data.parms
+        command  = "self.parent.resources['%s'].%s%s" % (resource, method, args)
+
+        return eval(command)
 
     def _allMethods(self, parentMethods=False):
         '''Return a list of methods currently attached to the class'''
@@ -205,20 +235,23 @@ class BaseServerThread(QtCore.QThread):
                 methods.append(listing[0])
         return methods
 
-    def _methodList(self):
+    def _methodList(self, resource):
         '''
         Return a list of methods being overridden in this class (methods
         that can be called via rpc)
         '''
-        methods = []
-        for name in vars(self.__class__).keys():
+        methods  = []
+        resource = self.data.resource
+
+        for name in vars(self.parent.resources[resource].__class__).keys():
             if not name.startswith("_"):
                 methods.append(name)
+
         return methods
 
-    def _containsMethod(self, method):
+    def _containsMethod(self, resource, method):
         '''Return True if the class contains the given method'''
-        if method in self._methodList():
+        if method in self._methodList(resource):
             return True
         return False
 
@@ -231,12 +264,12 @@ class BaseServerThread(QtCore.QThread):
             return True
         return False
 
-    def _validateCall(self, method, args):
+    def _validateCall(self, resource, method, args):
         '''
         Return True if the input given by the RPC call from the client matches
         the required input to the given method.
         '''
-        method     = getattr(self.__class__, method)
+        method     = getattr(self.parent.resources[resource].__class__, method)
         inspection = list(inspect.getargspec(method))
 
         # make sure all inspection output are not None
@@ -255,6 +288,14 @@ class BaseServerThread(QtCore.QThread):
             return True
         return False
 
+    def _validResource(self, resource):
+        '''
+        Query self.parent.resources and ensure that the requested resoure exists
+        '''
+        if self.parent.resources.has_key(resource):
+            return True
+        return False
+
     def _validateRequest(self):
         '''
         Perform the checks necessary to ensure the method we are attempting
@@ -264,6 +305,13 @@ class BaseServerThread(QtCore.QThread):
         faultCode  = None
         method     = self.data.method
         methodArgs = self.data.parms
+        resource   = self.data.resource
+
+        # ensure that the resource being called exists in the parent's resources
+        if not self._validResource(resource):
+            fault     = "Resource %s does not exist" % resource
+            faultCode = 404
+            return fault, faultCode
 
         # make sure the method calls is not private
         if not self._validMethod(method):
@@ -271,15 +319,15 @@ class BaseServerThread(QtCore.QThread):
             faultCode = 403
             return fault, faultCode
 
-        # make sure the class contains the method
-        if not self._containsMethod(method):
-            fault     = "No such method self.%s" % method
+        # make sure the resource contains the method
+        if not self._containsMethod(resource, method):
+            fault     = "No such method %s.%s" % (resource, method)
             faultCode = 404
             return fault, faultCode
 
         # ensure our input to the method contains the proper arguments
-        if not self._validateCall(method, methodArgs):
-            fault     = "Invalid input to self.%s" % method
+        if not self._validateCall(resource, method, methodArgs):
+            fault     = "Invalid input to %s.%s" % (resource, method)
             faultCode = 400
             return fault, faultCode
 
@@ -302,7 +350,7 @@ class BaseServerThread(QtCore.QThread):
         # if the there still is not an error after validation then we
         # can query the results
         if not error:
-            reply  = (self._callMethod(self.data.method, self.data.parms), )
+            reply  = (self._callMethod(self.data), )
             dump   = xmlrpclib.dumps(
                                         reply,
                                         methodname=self.data.method,
@@ -358,9 +406,11 @@ class BaseServerThread(QtCore.QThread):
                         logger.error("Unhandled Exception: %s" % error)
 
                     else:
-                        logger.rpccall("%s -> %s%s" % (
-                                                    self.peer, self.data.method,
-                                                    self.data.parms
+                        logger.rpccall("%s -> %s.%s%s" % (
+                                                            self.peer,
+                                                            self.data.resource,
+                                                            self.data.method,
+                                                            self.data.parms
                                                     )
                                         )
                         self.sendReply()
@@ -378,12 +428,27 @@ class BaseServerThread(QtCore.QThread):
 
 
 class BaseServer(QtNetwork.QTcpServer):
-    def __init__(self, threadClass=None, parent=None):
+    def __init__(self, resources={}, parent=None):
         super(BaseServer, self).__init__(parent)
-        self.threadClass = threadClass
+        self.resources = resources
+
+    def addResource(self, name, resource=None):
+        '''Add a new resource to the resources dictionary'''
+        # if name is not a string then assume it's a class and use it both
+        # as the resource and for the resource name
+        if type(name) not in types.StringTypes:
+            resource = name
+            name     = name.__class__.__name__
+
+        if not self.resources.has_key(name):
+            logger.netserver("Added Resource: %s" % name)
+            self.resources[name] = resource
 
     def incomingConnection(self, socketId):
-        self.thread = self.threadClass(socketId, parent=self)
+        '''
+        For each incoming connection, start a thread and hand off processing
+        '''
+        self.thread = BaseServerThread(socketId, parent=self)
         self.connect(
                         self.thread, QtCore.SIGNAL("finished()"),
                         self.thread, QtCore.SLOT("deleteLater()")

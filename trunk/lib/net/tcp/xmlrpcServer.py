@@ -38,7 +38,13 @@ STREAM_VERSION = net.dataStream()
 logger         = logger.Logger()
 types          = []
 
-class RPCTestThread(xmlrpc.BaseServerThread):
+
+class RPCTestResource(xmlrpc.BaseResource):
+    def resource(self):
+        return "this is the test resource"
+
+
+class MainResource(xmlrpc.BaseResource):
     '''
     Test server thread
     '''
@@ -60,11 +66,22 @@ class RPCTestThread(xmlrpc.BaseServerThread):
         return True
 
 if __name__ == '__main__':
+    test = RPCTestResource()
     logger.info("Starting: %i" % os.getpid())
-    app    = QtCore.QCoreApplication(sys.argv)
-    server = xmlrpc.BaseServer(threadClass=RPCTestThread)
+    app          = QtCore.QCoreApplication(sys.argv)
+    server       = xmlrpc.BaseServer()
+    testInstance = RPCTestResource()
+    main         = MainResource()
 
-    if server.listen(QtNetwork.QHostAddress("127.0.0.1"), 54000):
-        logger.netserver("RPC Server Running on port 54000")
+    server.addResource(testInstance)
+    server.addResource(main)
+    server.addResource("test", main)
+
+    try:
+        if server.listen(QtNetwork.QHostAddress("127.0.0.1"), 54000):
+            logger.netserver("RPC Server Running on port 54000")
+
+    except Exception, error:
+        print "ERROR: %s" % error
 
     sys.exit(app.exec_())
