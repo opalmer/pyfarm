@@ -150,10 +150,10 @@ class Deserialize(Serialization):
         typeName    = element.tag
         value       = element.text
         if typeName == "struct":   return self.parsedDict(element)
+        elif typeName == "array":  return self.parsedArray(element)
         elif typeName == "string": return str(value)
         elif typeName == "double": return float(value)
         elif typeName == "int":    return int(value)
-        #elif typeName == "dateTime.iso8601":
         elif typeName == "boolean":
             if value in ("True", "1.0", "1"):
                 return True
@@ -161,6 +161,16 @@ class Deserialize(Serialization):
 
         else:
             raise TypeError("%s has not been mapped yet" % typeName)
+
+    def parsedArray(self, element):
+        '''Rerursivly parse an array element and return a list'''
+        output = []
+        for member in element.getchildren():
+            for entry in member.getchildren():
+                for value in entry.getchildren():
+                    output.append(self.parsedType(value))
+
+        return output
 
     def parsedDict(self, element):
         '''
@@ -189,9 +199,12 @@ class Deserialize(Serialization):
                 yield value
 
 class BaseResource(QtCore.QObject):
-    '''Base resource with preset name and QObject inheritance'''
+    '''Base resource with QObject inheritance and test functions'''
     def __init__(self, parent=None):
         super(BaseResource, self).__init__(parent)
+
+    def echo(self, value):
+        return value
 
 
 class BaseServerThread(QtCore.QThread):
@@ -431,6 +444,7 @@ class BaseServer(QtNetwork.QTcpServer):
     def __init__(self, resources={}, parent=None):
         super(BaseServer, self).__init__(parent)
         self.resources = resources
+        self.addResource("RPC2", BaseResource()) # add the 'default' resource
 
     def addResource(self, name, resource=None):
         '''Add a new resource to the resources dictionary'''
