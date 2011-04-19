@@ -35,7 +35,7 @@ PYFARM = os.path.abspath(os.path.join(CWD, "..", "..", ".."))
 MODULE = os.path.basename(__file__)
 if PYFARM not in sys.path: sys.path.append(PYFARM)
 
-from lib import logger, system, net
+from lib import logger, net
 
 UNIT16         = 8
 STREAM_VERSION = net.dataStream()
@@ -86,6 +86,7 @@ class Serialization(QtCore.QObject):
         self.resource = self._getResource(self.source)
         self.rpcXml   = self._getXml(self.source)
         self.cTree    = xml.etree.cElementTree.fromstring(self.rpcXml)
+        self.emit(QtCore.SIGNAL("resource"), self.resource)
 
         for child in self.cTree.getchildren():
             # set the mothod name
@@ -468,3 +469,18 @@ class BaseServer(QtNetwork.QTcpServer):
                         self.thread, QtCore.SLOT("deleteLater()")
                     )
         self.thread.start()
+
+
+if __name__ == "__main__":
+    logger.info("Starting: %i" % os.getpid())
+    app    = QtCore.QCoreApplication(sys.argv)
+    server = BaseServer()
+
+    try:
+        if server.listen(QtNetwork.QHostAddress("127.0.0.1")):
+            logger.netserver("RPC Server Running on port %i" % server.serverPort())
+
+    except Exception, error:
+        logger.error("Unknown Error: %s" % error)
+
+    sys.exit(app.exec_())
