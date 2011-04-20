@@ -24,22 +24,27 @@
 -->
 <Settings>
     <globals>
-        <attr name="defaultSolo" value="False" />
+        <!--
+            Template Variables:
+                lib - Library name of the calling module
+                module - File of the calliung module
+                line - line logger is being called from
+                level - name of the level being called
+                logName - general of the log making the call
+                message - the message being sent
+        -->
         <attr name="allowSolo" value="False" />
-        <attr name="defaultSolo" value="False" />
         <attr name="defaultLevel" value="4" />
-        <attr name="forceLevel" value="False" />
-        <attr name="template" value="$level - $logger - $message" />
-        <!--<attr name="template" value="$time - $logger - $level - $message" />-->
+        <attr name="template" value="$module:$line - $level - $message" />
         <attr name="timeFormat" value="%Y-%m-%d %H:%M:%S" />
     </globals>
     <levels>
         <!--
             Attributes:
-                Name: The value to call the individual log level
-                Function: The function call to the log level (defaults: same as name)
-                Enabled: Turn an individual log level on or off (default: True)
-                Solo: Isolate the output of a level (default: False)
+                name: The value to call the individual log level
+                function: The function call to the log level (defaults: same as name)
+                enabled: Turn an individual log level on or off (default: True)
+                solo: Isolate the output of a level (default: False)
         -->
         <level name="sqlite" />
         <level name="netpacket" />
@@ -49,9 +54,9 @@
         <level name="network.server" function="netserver" />
         <level name="network.client" function="netclient" />
         <level name="rpc.debug" function="rpcdebug" />
-        <level name="rpc.call" function="rpccall" />
-        <level name="rpc.result" function="rpcresult" />
-        <level name="rpc.error" function="rpcerror" />
+        <level name="rpc.call" function="rpccall" enabled="False" />
+        <level name="rpc.result" function="rpcresult" enabled="False" />
+        <level name="rpc.error" function="rpcerror" enabled="False" />
         <level name="network" />
         <level name="ui" />
         <level name="fixme" />

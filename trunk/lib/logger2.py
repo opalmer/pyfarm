@@ -21,9 +21,9 @@ along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 '''
 import os
 import sys
-import time
 import string
 import inspect
+import UserList
 import xml.etree.ElementTree
 
 CWD    = os.path.dirname(os.path.abspath(__file__))
@@ -33,7 +33,7 @@ if PYFARM not in sys.path: sys.path.append(PYFARM)
 
 XML_CONFIG = os.path.join(PYFARM, "cfg", "logger.xml")
 
-def settings(path=XML_CONFIG):
+def settings(config=XML_CONFIG):
     '''
     Read in an xml file and return a settings dictionary for use
     by the logger
@@ -41,233 +41,221 @@ def settings(path=XML_CONFIG):
     @param path: The path to the xml configuration file
     @type  path: C{str}
     '''
-    out  = {}
+    if not os.path.isfile(config):
+        raise IOError('%s is not a vaild file path' % config)
+
     try:
-        if not os.path.isfile(path):
-            raise IOError('%s is not a vaild file path' % path)
+        dom = xml.etree.ElementTree.parse(config)
 
-        dom  = xml.etree.ElementTree.parse(path)
-        root = dom.getroot()
+    except Exception, error:
+        print "ERROR: %s" % error
+        sys.exit(1)
 
-        for child in root.getchildren():
-            for element in child.getchildren():
-                if not out.has_key(child.tag):
-                    out[child.tag] = {}
+    # setup initial values
+    data   = {}
+    root   = dom.getroot()
 
-                if element.tag == "attr":
-                    # add global settings value to the dictionary
-                    name  = element.attrib['name']
-                    value = element.attrib['value']
+    # read in the global settings
+    settings = data['settings'] = {}
+    for mainSetting in root.findall("globals/attr"):
+        key   = mainSetting.attrib['name']
+        value = mainSetting.attrib['value']
 
-                    if name != 'template':
-                        out[child.tag][name] = value
-                    else:
-                        out[child.tag][name] = string.Template(value)
+        # attempt to convert the value to something usable
+        value = str(value)
 
-                elif element.tag == "level":
-                    # check and see if the function key exists, if it does
-                    # not assume we are going to use the name for the function
-                    # call
-                    if not element.attrib.has_key('function'):
-                        element.attrib['function'] = element.attrib['name']
+        ##...to bool
+        if value == "False":  value = False
+        elif value == "True": value = True
 
-                    # assume the level is enabled if we don't find the attribute
-                    if not element.attrib.has_key('enabled'):
-                        element.attrib['enabled'] = True
-                    else:
-                        element.attrib['enabled'] = eval(element.attrib['enabled'])
+        ## ...to float
+        elif "." in value:
+            try:                     value = float(value)
+            except Exception, error: None
 
-                    # assume solo is False if we don't find the attribute
-                    if not element.attrib.has_key('solo'):
-                        element.attrib['solo'] = False
-                    else:
-                        element.attrib['solo'] = eval(element.attrib['solo'])
+        ## ...to integer
+        else:
+            try:                         value = int(value)
+            except Exception, error:     None
 
-                    # assign the level's dictionary to the full level
-                    # dictionary
-                    out['levels'][element.attrib['name']] = element.attrib
+        # add the global setting
+        settings[key] = value
 
-    except IOError:
-        print "Could not read logger config, file does not exist: %s" % path
+    # read the level settings
+    count  = 0
+    levels = data['levels'] = []
+    for levelSettings in root.findall("levels/level"):
+        setting          = levelSettings.attrib
+        setting['level'] = count
 
-    except xml.parsers.expat.ExpatError:
-        print "Failed to parse XML properly!"
+        # add any missing function name
+        if not setting.has_key("function"):
+            setting['function'] = setting['name']
 
-    finally:
-        return out
+        # setup enabled key
+        if count <= settings['defaultLevel']:
+            setting['enabled'] = False
+
+        elif setting.has_key("enabled") and setting['enabled'] == "True":
+            setting['enabled'] = True
+
+        elif setting.has_key("enabled") and setting['enabled'] == "False":
+            setting['enabled'] = False
+
+        else:
+            setting['enabled'] = True
+
+        # setup solo
+        if not settings['allowSolo']:
+            setting['solo'] = False
+
+        elif setting.has_key("solo") and setting['enabled'] == "True":
+            setting['solo'] = True
+
+        else:
+            setting['solo'] = False
+
+        levels.append(setting)
+        count += 1
+
+    return data
 
 
-class LevelName(object):
+class History(UserList.UserList):
     '''
-    Level name object that controls and configures the final output of a logger
-    as well as producing custom attributes to be used for processing.
+    Holds onto the history of a log object
 
-    @param name: name of the log level to be output
-    @type  name: C{str}
-    @param enabled: controls if this log level is allowed to output
+    @param enabled: Determines if history will be logged
     @type  enabled: C{bool}
+    @param maxLength: The max length of the history log
+    @type  maxLength: C{int}
     '''
-    def __init__(self, name, enabled):
-        self.name    = name
-        self.enabled = enabled
+    def __init__(self, enabled=False, maxLength=500):
+        self.data      = []
+        self.enabled   = enabled
+        self.maxLength = maxLength
+
+    def __repr__(self):
+        return os.linesep.join(self)
+
+    def append(self, value):
+        '''Append line to self.data while respecting the max history length'''
+        if self.enabled:
+            # remove index zero if we have already reached the max log size
+            if len(self) >= self.maxLength:
+                self.pop(0)
+
+            self.data.append(str(value))
+
+    def clear(self):
+        '''Clear all history'''
+        self.data = []
 
 
 class Level(object):
     '''
-    Individual level object to hold information pretaining to output
-    of a log line.
+    Container object which hold the log attribute and log history
 
-    @param method: method being called during output
-    @type  method: Logger_out
-    @param host: LevelName containing minor pieces of information
-    @type  host: LevelName
-    @param method_name: the name of the function to be called when a level
-                        is called
-    @type  method_name: C{str}
+    @param root: The root log object
+    @type  root: logger.Logger
+    @param settings: The settings to assign to the log
+    @type  settings: C{dict}
+    @param tempalte: String template for output
+    @type  template: string.Template
+    @param history: Enable to disable history
+    @type  history: C{bool}
+    @param maxHistory: The max number of lines to maintain in history
+    @type  maxHistory: C{int}
     '''
-    def __init__(self, method, host, method_name=None):
-        self.host   = host
-        self.method = method
-        setattr(host, method_name or method.__name__, self)
+    def __init__(self, root, settings, history=False, maxHistory=500):
+        self.history = History(enabled=history, maxLength=maxHistory)
+        self.root     = root
+        self.logName  = root.name
+        self.template = root.template
 
-    def __call__(self, *args, **kwargs):
-        nargs = [self.host]
-        nargs.extend(args)
-        return apply(self.method, nargs, kwargs)
+        # assign all keys in settings dictionary to class attributes
+        for key, value in settings.items():
+            setattr(self, key, value)
+
+
+    def _moduleName(self, stack):
+        '''Given the inspection stack return the module name'''
+        path   = stack[0].f_code.co_filename
+        split  = path.split(os.sep)
+        module =  split[-1].split(".")[0]
+
+        if len(split) > 1:
+            split  = split[-2:]
+            module = split[0]+"."+module
+
+        return module
+
+    def __call__(self, text, force=False):
+        output = ''
+
+        if self.root.enabled and (self.enabled or force):
+            self.history.append(text)
+
+            # prepare the log message
+            stack  = inspect.stack()[1]
+            path   = stack[0].f_code.co_filename
+            split  = path.split(os.sep)
+            module = split[-1].split(".")[0]
+
+            if len(split) > 1:
+                split  = split[-2:]
+                lib    = split[0]
+                module = lib+"."+module
+
+            else:
+                module = split[0].split(".")[0]
+                lib    = ''
+
+            # convert template into formatted string
+            # NOTE: Be sure that any variables used here are defined in the
+            # logging configuration file
+            output = self.template.substitute(
+                                                lib=lib,
+                                                module=module,
+                                                line=stack[0].f_lineno,
+                                                level=self.name.upper(),
+                                                message=text
+                                            )
+            print output
+
+        return output # return the output as well for processing if needed
 
 
 class Logger(object):
     '''
-    Custom logging object for PyFarm.  Includes various options to control
-    the output and behavior of the class.
+    Main logger module that ties the log settings and log level together into
+    one object.
 
-    @param name: Name of logger to create
-    @type  name: C{str}
-    @param level: The maximum level to output
-    @type  level: C{int}
-    @param log: File to log to
-    @type  log: C{str}
-    @param solo: If enabled, solo values will be respected for this logger
-    @type  solo: C{bool}
-    @param writeOnly: Write to disk only, do not print to stdout
-    @type  writeOnly: C{bool}
+    NOTE: Name and level are legacy variables and are not being used at this
+    time.
     '''
-    def __init__(self, name=None, level=None, log=None, writeOnly=False):
-        self.writeOnly  = writeOnly
-        self.config     = settings()
-        self.log        = log
-        self.level      = level or self.config['globals']['defaultLevel']
+    def __init__(self, name='PyFarm', level=None):
+        self.settings = settings()
+        self.enabled  = True
+        self.name     = name
+        self.levels   = []
+        self.template = string.Template(self.settings['settings']['template'])
 
-        # setting this property to false during execucution will
-        # disable this logger
-        self.disabled   = False
+        for level in self.settings['levels']:
+            log = Level(self, level)
+            setattr(self, level['function'], log)
+            self.levels.append(log)
 
-        # override level and solo if they are defined above
-        if eval(self.config['globals']['forceLevel']):
-            self.level = int(self.config['globals']['defaultLevel'])
-
-        self.levels     = []
-        self.levelCalls = []
-        self.soloLevel  = None
-        self.setName(name)
-
-        for function, data in self.config['levels'].items():
-            solo                 = data['solo']
-            name                 = data['name']
-            enabled              = data['enabled']
-            function             = data['function']
-            level                = self.newLevel(name, enabled, function)
-            vars(self)[function] = level
-
-            if solo and not self.soloLevel:
-                self.soloLevel = name
-
-            # append info to lists
-            self.levels.append(name)
-            self.levelCalls.append(function)
-
-        if self.log:
-            self.log = open(log, "a")
-
-        else:
-            self.log = None
-
-        if writeOnly and not self.log:
-            raise IOError("You declared writeOnly without a logfile")
-
-    def newLevel(self, name, enabled, function):
+    def setEnabled(self, enabled):
         '''
-        Create a new log level
-
-        @param name: name of the log level to be output
-        @type  name: C{str}
-        @param enabled: controls if this log level is allowed to output
-        @type  enabled: C{bool}
-        @param function: name of function to pass to Level object
-        @type  function: C{str}
+        Set the logger as either enabled or disabled.  This function is made
+        avaliable for use by PyQts signals and slots.
         '''
-        return Level(self._out, LevelName(name, enabled), function)
+        self.enabled = enabled
 
-    def _out(self, level, msg):
+    def setLevel(self, level):
         '''
-        Evalulate input arguments and settings, output the appropriate
-        locations
-
-        @param level: The requested level to output
-        @type  level: Logger.Level
-        @param msg: the message to print
-        @type  msg: C{str}
+        Set the overall log level.  This function is made avaliable for use
+        by PyQts signals and slots.
         '''
-        if level.name in self.levels and not self.disabled:
-            cfg         = self.config['levels'][level.name]
-            enabled     = cfg['enabled']
-            solo        = cfg['solo']
-            enabledSolo = solo and enabled
-            soloLevel   = self.soloLevel and enabled
-
-            # stack inspection
-            stack  = inspect.stack()[2]
-            frame  = stack[0]
-            split  = stack[1].split(os.sep)
-
-            if len(split) > 1:
-                head = split[-2]
-            else:
-                head = split[-1]
-
-            tail   = split[-1].split(".")[0]
-            module = '.'.join((head, tail))
-
-            if head == '.':
-                module = tail
-
-            trace  = "%s:%i" % (module, frame.f_lineno)
-
-            if enabledSolo or not soloLevel or solo and not enabled:
-                out = (
-                       self.config['globals']['template'].substitute(
-                         time=time.strftime(self.config['globals']['timeFormat']),
-                         logger="%15s" % trace,
-                         level="%15s"  % level.name.upper(),
-                         message=msg
-                       )
-                      )
-
-                print out
-
-                if self.log:
-                    self.log.write(out+os.linesep)
-                    self.log.flush()
-
-    def setName(self, name):
-        '''
-        Set the overall name for the Logger object
-
-        @param name: name to call the logger by
-        @type  name: C{str}
-        '''
-        self.name = name
-
-    def close(self):
-        '''Close out the log file'''
-        self.log.close()
+        self.level = level
