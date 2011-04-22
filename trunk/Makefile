@@ -30,6 +30,7 @@ clean:
 	@echo "Running Clean..."
 	@find . -name "*~" | xargs rm -fv
 	@find . -name "*.pyc" | xargs rm -fv
+	@find . -name "*.pyo" | xargs rm -fv
 
 mkbuilddir:
 	@echo "Running mkbuilddir..."
