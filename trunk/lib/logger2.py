@@ -259,3 +259,10 @@ class Logger(object):
         by PyQts signals and slots.
         '''
         self.level = level
+
+if __name__ == '__main__':
+    print "Testing logger"
+    logger = Logger()
+
+    for level in logger.levels:
+        level.__call__("%s says hello" % level.name)

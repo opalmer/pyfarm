@@ -35,7 +35,7 @@
         -->
         <attr name="allowSolo" value="False" />
         <attr name="defaultLevel" value="4" />
-        <attr name="template" value="$module:$line - $level - $message" />
+        <attr name="template" value="%(module)s:%(line)i - %(level)s - %(message)s" />
         <attr name="timeFormat" value="%Y-%m-%d %H:%M:%S" />
     </globals>
     <levels>
