@@ -26,11 +26,6 @@ import string
 import ConfigParser
 from xml.dom import minidom
 
-CWD    = os.path.dirname(os.path.abspath(__file__))
-PYFARM = os.path.abspath(os.path.join(CWD, ".."))
-MODULE = os.path.basename(__file__)
-if PYFARM not in sys.path: sys.path.append(PYFARM)
-
 class ReadConfig(object):
     '''Parse various configuration files'''
     @staticmethod
@@ -57,7 +52,7 @@ class ReadConfig(object):
                     out[section][option] = cfg.get(section, option)
 
                 elif section == "broadcast":
-                    out[section][option] = cfg.getint(section, option)
+                    out[section][option] = cfg.getfloat(section, option)
 
                 elif section == "database":
                     out[section][option] = cfg.get(section, option)

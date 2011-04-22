@@ -23,11 +23,6 @@ along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 import os
 import sys
 
-CWD    = os.path.dirname(os.path.abspath(__file__))
-PYFARM = os.path.abspath(os.path.join(CWD, "..",  ".."))
-MODULE = os.path.basename(__file__)
-if PYFARM not in sys.path: sys.path.append(PYFARM)
-
 from PyQt4.Qt import Qt
 from PyQt4 import QtCore, QtGui
 
@@ -77,3 +72,34 @@ class CloseEvent(QtGui.QDialog):
                     "hostAction" : self.rHosts.currentIndex()
                 }
         self.emit(QtCore.SIGNAL("state"), state)
+
+
+class BroadcastProgress(QtGui.QProgressDialog):
+    '''
+    Progress dialog to keep the user informed of broadcast progress
+
+    @param broadcast: The broadcast server object
+    @type  broadcast: lib.net.udp.broadcast.BroadcastSender
+    '''
+    def __init__(self, broadcast, parent=None):
+        super(BroadcastProgress, self).__init__(parent)
+        # broadcast must be bound or the thread will crash
+        self.broadcast = broadcast
+
+        # set window text
+        self.setWindowTitle("Discovering Clients")
+        self.setLabelText("Sending Broadcast Signal")
+        self.setCancelButtonText("Stop")
+
+        # calculate and set the progress range
+        self.setRange(0, broadcast.duration / broadcast.interval)
+
+        # connect broadcast to progress
+        self.progress = 1
+        self.connect(broadcast, QtCore.SIGNAL("broadcast"), self.increment)
+        self.connect(broadcast, QtCore.SIGNAL("complete"), self.close)
+
+    def increment(self):
+        '''Increment the progress meter'''
+        self.setValue(self.progress)
+        self.progress += 1

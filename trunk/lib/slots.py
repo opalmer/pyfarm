@@ -21,17 +21,16 @@ along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 '''
 import os
 import sys
+import time
 
-CWD      = os.path.dirname(os.path.abspath(__file__))
-PYFARM   = os.path.abspath(os.path.join(CWD, ".."))
-MODULE   = os.path.basename(__file__)
-LOGLEVEL = 2
-if PYFARM not in sys.path: sys.path.append(PYFARM)
+from PyQt4 import QtGui, QtCore
 
-from lib import logger, db
-from lib.net.udp.broadcast import BroadcastSender
+import db
+import ui
+import logger
+from net import udp
 
-log = logger.Logger(MODULE, LOGLEVEL)
+logger = logger.Logger()
 
 class Help(object):
     '''Slot functions from the help menu'''
@@ -41,19 +40,40 @@ class Help(object):
         self.config = config
 
 
-class Host(object):
+class Host(QtCore.QObject):
     '''Host related slot functions'''
-    def __init__(self, parent, config, sql):
-        self.log    = logger.Logger("slots.Host", LOGLEVEL)
-        self.sql    = sql
-        self.parent = parent
-        self.ui     = parent.ui
-        self.config = config
+    def __init__(self, parent, config, services, sql):
+        super(Host, self).__init__(parent)
+        self.sql      = sql
+        self.parent   = parent
+        self.ui       = parent.ui
+        self.config   = config
+        self.services = services
+
+        # establish broadcast related variables
+        self.lastBroadcast  = 0
+        self.nextBroadcast  = 0
+        self.broadcastDelay = self.config['broadcast']['delay']
 
     def find(self):
         '''Search for hosts running the client program'''
-        self.broadcast = BroadcastSender(self.config)
-        self.broadcast.start()
+        if time.time() >= self.nextBroadcast:
+            self.lastBroadcast = time.time()
+            self.nextBroadcast = self.lastBroadcast + self.broadcastDelay
+            broadcast = udp.broadcast.BroadcastSender(self.config, self.services)
+            progress  = ui.dialogs.BroadcastProgress(broadcast, self.ui)
+            self.connect(progress, QtCore.SIGNAL("canceled()"), broadcast.quit)
+            progress.show()
+            broadcast.start()
+
+        elif not time.time() >= self.nextBroadcast:
+            delay = self.broadcastDelay
+            warn  = "Please wait at least %i seconds " % delay
+            warn += "between broadcasts before attempting another another."
+            QtGui.QMessageBox.warning(
+                                        self.ui, "Broadcast Delayed",
+                                        warn, "Ok", "Cancel"
+                                     )
 
     def remove(self):
         '''Remove the selected host from the db and ui'''
@@ -76,15 +96,15 @@ class Host(object):
             # itereate over each host and remove it
             for key in data.keys():
                 host = data[key]
-                self.log.info("Removing Host: %s (%s)" % (host['hostname'], host['ip']))
+                logger.info("Removing Host: %s (%s)" % (host['hostname'], host['ip']))
                 if db.Network.removeHost(self.sql, host['hostname']):
                     self.ui.refreshHosts()
         else:
-            self.log.error("Not enough items selected")
+            logger.error("Not enough items selected")
 
 class Slots(object):
     '''Main slots object, all other slots are referenced from here'''
-    def __init__(self, parent, config, sql):
+    def __init__(self, parent, config, services, sql):
         self.sql  = sql
         self.help = Help(parent, config)
-        self.host = Host(parent, config, sql)
+        self.host = Host(parent, config, services, sql)

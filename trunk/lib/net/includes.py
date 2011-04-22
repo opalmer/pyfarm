@@ -26,19 +26,70 @@ import os
 import sys
 import struct
 import socket
+import base64
 import fnmatch
+import UserDict
 
 from PyQt4 import QtCore, QtNetwork
 
 CWD    = os.path.dirname(os.path.abspath(__file__))
 PYFARM = os.path.abspath(os.path.join(CWD, "..", ".."))
-MODULE = os.path.basename(__file__)
 if PYFARM not in sys.path: sys.path.append(PYFARM)
 
-import lib.net.errors
+import errors
 from lib import system
 
 LOCAL_ADDRESSES = ('127.0.*.*', '0.0.0.0')
+
+class Services(UserDict.UserDict):
+    '''
+    Special user dictionary to convert a dictionary of services
+    to string values before sending to a remote client.  This is done both
+    to cut down on the number of bits being sent and to prevent eval statements
+    from potentially causing security hazards on the receiving end.
+    '''
+    def __init__(self, hostname='', address=''):
+        self.data     = {}
+        self.hostname = hostname
+        self.address  = address
+
+    @staticmethod
+    def fromString(source):
+        '''
+        Return information on services offered by a remote host as a three
+        part tuple:
+            (master, address, serviceDictionary)
+        '''
+        services = {}
+        hostname = None
+        addr     = None
+        for entry in base64.standard_b64decode(source).split(","):
+            if "|" in entry:
+                split    = entry.split("|")
+                hostname = split[0]
+                addr     = split[1]
+            else:
+                split = entry.split(":")
+                services[split[0]] = int(split[1])
+
+        return hostname, addr, services
+
+    def toString(self):
+        '''Return a string representation of self.data'''
+        items = ["%s|%s" % (self.hostname, self.address)]
+        for service, port in self.data.items():
+            items.append("%s:%i" % (service, port))
+
+        return base64.standard_b64encode(",".join(items))
+
+    def setHostname(self, name):
+        '''Set the hostnam after initial setup'''
+        self.hostname = name
+
+    def setAddress(self, address):
+        '''Set the IP address after initial setup'''
+        self.address = address
+
 
 class AddressEntry(QtNetwork.QNetworkAddressEntry):
     '''
@@ -215,7 +266,7 @@ def hostname(fqdn=False):
         return hostname
 
     else:
-        raise lib.net.errors.DNSMismatch("Resolved ip does not match hostname")
+        raise errors.DNSMismatch("Resolved ip does not match hostname")
 
 def interfaces():
     '''Returns a list of interface objects'''
@@ -300,8 +351,10 @@ def dataStream():
     minor = system.info.Qt.VERSION_MINOR
     return eval("QtCore.QDataStream.Qt_%i_%i" % (major, minor))
 
-# establish the base object
+# establish the base object and cleanup
 INTERFACE = interface()
+del CWD, PYFARM
+
 if __name__ == "__main__":
     iface = INTERFACE
     addr  = address()

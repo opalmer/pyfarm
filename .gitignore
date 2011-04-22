@@ -3,6 +3,7 @@
 *sql*
 *.log*
 *.pyc
+*.pyo
 *.swp
 *notes*
 *.timings
