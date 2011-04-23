@@ -122,7 +122,11 @@ class Main(QtCore.QObject):
 
 
 if __name__ == '__main__':
+    import signal
     from optparse import OptionParser
+
+    # handle ctrl + c signals
+    signal.signal(signal.SIGINT, signal.SIG_DFL)
 
     parser = OptionParser()
     parser.add_option(

@@ -333,10 +333,14 @@ class Testing(QtCore.QObject):
         logger.terminate("Testing Terminated")
 
 if __name__ != '__MAIN__':
+    import signal
     import lib.inputFlags as flags
     from optparse import OptionParser
     about   = flags.About(__author__, 'GNU-LGPL_Header.txt')
     sysinfo = system.info.SystemInfo(os.path.join(CFG_ROOT, "general.ini"))
+
+    # handle ctrl + c signals
+    signal.signal(signal.SIGINT, signal.SIG_DFL)
 
     # Command Line Options
     parser = OptionParser(version="PyFarm v%s" % __version__)
