@@ -37,9 +37,29 @@ PYFARM = os.path.abspath(os.path.join(CWD, "..", ".."))
 if PYFARM not in sys.path: sys.path.append(PYFARM)
 
 import errors
-from lib import system
+from lib import system, logger
 
 LOCAL_ADDRESSES = ('127.0.*.*', '0.0.0.0')
+logger = logger.Logger()
+
+class MasterAddress(object):
+    '''Contains information about the master host'''
+    def __init__(self):
+        self.hostname = None
+        self.port     = None
+        self.ip       = None
+
+    def setAddress(self, hostname, ip, port):
+        '''Set the hostname, ip, and port for the master address object'''
+        if hostname != self.hostname or ip != self.ip or self.port != port:
+            logger.netclient("Setting master: %s:%i" % (hostname, port))
+            self.hostname = hostname
+            self.port     = port
+            self.ip       = ip
+            return True
+
+        return False
+
 
 class Services(UserDict.UserDict):
     '''
@@ -89,6 +109,10 @@ class Services(UserDict.UserDict):
     def setAddress(self, address):
         '''Set the IP address after initial setup'''
         self.address = address
+
+    def addService(self, name, port):
+        '''Add a service with the given name and port to the dictionary'''
+        self.data[name] = port
 
 
 class AddressEntry(QtNetwork.QNetworkAddressEntry):

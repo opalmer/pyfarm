@@ -48,6 +48,19 @@ def dumps(method, values):
     '''
     return xmlrpclib.dumps((values, ), method, methodresponse=True)
 
+def client(hostname, port, resource):
+    '''Return a client to the given master and resource'''
+    args = (hostname, port, resource)
+
+    if not type(port) == types.IntType:
+        try:
+            port = int(port)
+
+        except Exception, error:
+            logger.error("Uncaught Exception: %s" % error)
+
+    return xmlrpclib.ServerProxy("http://%s:%i/%s" % args)
+
 class SerializationFailure(Exception):
     def __repr__(self, error):
         return "Failed to Serialize Data: %s" % error.lower()
@@ -469,7 +482,6 @@ class BaseServer(QtNetwork.QTcpServer):
                         self.thread, QtCore.SLOT("deleteLater()")
                     )
         self.thread.start()
-
 
 if __name__ == "__main__":
     logger.info("Starting: %i" % os.getpid())

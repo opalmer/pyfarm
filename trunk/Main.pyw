@@ -150,60 +150,40 @@ class MainWindow(QtGui.QMainWindow):
         else:
             logger.warning("Not overwriting PID file")
 
+    def _serverError(self, server, serverName):
+        '''Format, display, and present a server error to the ui and console'''
+        msg   = (serverName, str(server.errorString()))
+        error = "Could not start the %s server: %s" % msg
+        self.updateConsole("server", error, color="darkblue")
+        logger.fatal(error)
+
+    def _serverRunning(self, server, serverName):
+        '''
+        Format, display, and present information about a running server to the
+        interface and console
+        '''
+        msg  = (serverName, server.serverPort())
+        info = "%s running on port %i" % msg
+        self.updateConsole("server", info, color="green")
+        logger.netserver(info)
+
     def runServers(self):
         '''Run the background servers required to operate PyFarm'''
-        listenAddress    = lib.net.address(convert=False)
-        self.queueServer = tcp.queue.QueueServer(main=self)
-        self.adminServer = tcp.admin.AdminServer(main=self)
+        listenAddress  = lib.net.address(convert=False)
 
-        try:
-            if not self.queueServer.listen():
-                errStr = self.queueServer.errorString()
-                error  = "Could not start the queue server: %s" % errStr
-                logger.fatal(error)
+        # create resources for xmlrpc server
+        queue = tcp.queue.Resource()
+        hosts = tcp.hosts.Resource()
 
-                if not DEBUG:
-                    raise lib.net.errors.ServerFault(error)
+        self.rpcServer = tcp.xmlrpc.BaseServer()
+        self.rpcServer.addResource("queue", queue)
+        self.rpcServer.addResource("hosts", hosts)
 
-                else:
-                    logger.warning("Bypassing exception!!!")
-            else:
-                port = self.queueServer.serverPort()
-                info = "Port: %i" % port
-                self.updateConsole("server.queue", info, color="darkblue")
-                self.services['queue'] = port
+        if not self.rpcServer.listen():
+            self._serverError(self.rpcServer, "RPCServer")
 
-        except TypeError:
-            logger.critical("Invalid type passed to queueServer.listen")
-            self.updateConsole(
-                                "server.error", "Failed to start Queue Server",
-                                color="red"
-                              )
-
-        try:
-            if not self.adminServer.listen():
-                errStr = self.adminServer.errorString()
-                error  = "Could not start the admin server: %s" % errStr
-                logger.fatal(error)
-
-                if not DEBUG:
-                    raise lib.net.errors.ServerFault(error)
-
-                else:
-                    logger.warning("Bypassing exception!!!")
-
-            else:
-                port = self.adminServer.serverPort()
-                info = "Port: %i" % port
-                self.updateConsole("server.admin", info, color="darkblue")
-                self.services['admin'] = port
-
-        except TypeError:
-            logger.critical("Invalid type passed to adminServer.listen")
-            self.updateConsole(
-                                "server.error", "Failed to start Admin Server",
-                                color="red"
-                              )
+        else:
+            self._serverRunning(self.rpcServer, "RPCServer")
 
         netinfo = "<b>Hostname:</b> %s, <b>IP:</b> %s, <b>Physical Address:</b> %s" % (
                         lib.net.hostname(),
@@ -212,9 +192,11 @@ class MainWindow(QtGui.QMainWindow):
                     )
         self.updateConsole("network.setup", netinfo, color="green")
 
-        # pass hostname and address information to the services dictionary
+        # pass hostname, address, and service information to the
+        # services dictionary
         self.services.setHostname(lib.net.hostname())
         self.services.setAddress(lib.net.address(convert=True))
+        self.services.addService("xmlrpc", self.rpcServer.serverPort())
 
     # MainWindow slots, actions, and processes
     # Other actions could include:

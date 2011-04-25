@@ -1,7 +1,7 @@
 '''
 HOMEPAGE: www.pyfarm.net
-INITIAL: Aug. 26 2010
-PURPOSE: Template servers, threads, and packet construction
+INITIAL: April 25 2011
+PURPOSE: Clients resource to manage, query, and check clients
 
 This file is part of PyFarm.
 Copyright (C) 2008-2011 Oliver Palmer
@@ -22,15 +22,36 @@ along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 import os
 import sys
 
-from PyQt4 import QtNetwork, QtCore
+from PyQt4 import QtCore
 
 CWD    = os.path.dirname(os.path.abspath(__file__))
 PYFARM = os.path.abspath(os.path.join(CWD, "..", "..", ".."))
 MODULE = os.path.basename(__file__)
 if PYFARM not in sys.path: sys.path.append(PYFARM)
 
-from lib import logger
+import xmlrpc
+from lib import logger, system, net
 
-UNIT16         = 8
-QT_VERSION     = QtCore.QT_VERSION_STR.split('.')
-STREAM_VERSION = eval('QtCore.QDataStream.Qt_%s_%s' %(QT_VERSION[0], QT_VERSION[1]))
+logger = logger.Logger()
+
+class Resource(QtCore.QObject):
+    def __init__(self, parent=None):
+        super(Resource, self).__init__(parent)
+        self.parent = parent
+
+    def newClient(self, hostname, ip, sysinfo):
+        '''
+        Add a client to the database using the given hostname, ip address,
+        and system information
+        '''
+        client = {
+                    "hostname" : hostname,
+                    "address"  : ip,
+                    "system"   : sysinfo
+                 }
+        self.emit(QtCore.SIGNAL("newHost"), client)
+
+        logger.netserver("New Host: %s (%s)" % (hostname, ip))
+
+        # reply back to client with success and reason code
+        return True, 200
