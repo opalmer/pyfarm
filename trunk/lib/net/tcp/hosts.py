@@ -22,22 +22,19 @@ along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 import os
 import sys
 
-from PyQt4 import QtCore
-
 CWD    = os.path.dirname(os.path.abspath(__file__))
 PYFARM = os.path.abspath(os.path.join(CWD, "..", "..", ".."))
 if PYFARM not in sys.path: sys.path.append(PYFARM)
 
 import xmlrpc
-from lib import logger, system, net, db
+from lib import logger, db
 
 logger = logger.Logger()
 
-class Resource(QtCore.QObject):
-    def __init__(self, sql, parent=None):
-        super(Resource, self).__init__(parent)
-        self.parent = parent
-        self.sql    = sql
+class Resource(xmlrpc.BaseResource):
+    def __init__(self, sql, parent):
+        super(Resource, self).__init__(sql, parent)
+        print self.sql
         
     def newClient(self, hostname, ip, sysinfo):
         '''

@@ -24,6 +24,7 @@ import re
 import sys
 import types
 import inspect
+import httplib
 import xmlrpclib
 from PyQt4 import QtCore
 import xml.etree.cElementTree
@@ -32,7 +33,6 @@ from PyQt4 import QtCore, QtNetwork
 
 CWD    = os.path.dirname(os.path.abspath(__file__))
 PYFARM = os.path.abspath(os.path.join(CWD, "..", "..", ".."))
-MODULE = os.path.basename(__file__)
 if PYFARM not in sys.path: sys.path.append(PYFARM)
 
 from lib import logger, net
@@ -216,13 +216,13 @@ class Deserialize(Serialization):
             for value in child.getchildren():
                 yield value
 
-class BaseResource(QtCore.QObject):
-    '''Base resource with QObject inheritance and test functions'''
-    def __init__(self, parent=None):
-        super(BaseResource, self).__init__(parent)
 
-    def echo(self, value):
-        return value
+class BaseResource(QtCore.QObject):
+    '''Base resource interited by all resource objects'''
+    def __init__(self, sql=None, parent=None):
+        super(BaseResource, self).__init__(parent)
+        self.sql    = sql
+        self.parent = parent
 
 
 class BaseServerThread(QtCore.QThread):
@@ -486,6 +486,7 @@ class BaseServer(QtNetwork.QTcpServer):
                         self.thread, QtCore.SLOT("deleteLater()")
                     )
         self.thread.start()
+
 
 if __name__ == "__main__":
     logger.info("Starting: %i" % os.getpid())

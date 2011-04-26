@@ -139,13 +139,12 @@ class MainWindow(QtGui.QMainWindow):
         title  = "Main.pyw Is Already Running"
         msg    = "PyFarm already seems to be open, terminate the running"
         msg   += " process if needed and continue?"
+        
         logger.warning("%s: User input required" % title)
+        
         yes    = QtGui.QMessageBox.Yes
         no     = QtGui.QMessageBox.No
-        msgBox = QtGui.QMessageBox.warning(
-                                            self, title, msg,
-                                            yes|no
-                                          )
+        msgBox = QtGui.QMessageBox.warning(self, title, msg, yes|no)
 
         if msgBox == yes:
             self.pidFile.write(force=True)
@@ -172,8 +171,6 @@ class MainWindow(QtGui.QMainWindow):
 
     def runServers(self):
         '''Run the background servers required to operate PyFarm'''
-        listenAddress  = lib.net.address(convert=False)
-
         # create resources for xmlrpc server
         queue = tcp.queue.Resource(SQL, self)
         hosts = tcp.hosts.Resource(SQL, self)
@@ -246,7 +243,10 @@ class MainWindow(QtGui.QMainWindow):
         sys.exit()
 
     def closeEvent(self, event):
-        '''When the ui is attempting to exit, run this first.  However, make sure we only do this once'''
+        '''
+        When the ui is attempting to exit, run this first.  
+        However, make sure we only do this once
+        '''
         self.pidFile.close()
 
     def globalPoint(self, widget, point):
@@ -256,13 +256,16 @@ class MainWindow(QtGui.QMainWindow):
     def updateConsole(self, section, msg, color='black'):
         '''
         Update the ui's status window
-
-        VARS:
-            section (string)-- The section to report from (ex. NETWORK)
-            msg (string) - The message to post
-            color (string) - The color name or hex value to set the section
+        
+        @param section: The section to report from (will be raised to UPPER)
+        @type  section: C{str}
+        @param msg: The message to dispaly
+        @type  msg: C{str}
+        @param color: Color to set the section header to
+        @type  color: C{str}
         '''
-        status = '<font color=%s><b>%s</b></font> - %s' % (color, section.upper(), msg)
+        args   = (color, section.upper(), msg)
+        status = '<font color=%s><b>%s</b></font> - %s' % args
         self.ui.status.append(status)
 
 #################################
@@ -271,8 +274,9 @@ class MainWindow(QtGui.QMainWindow):
 
 if __name__ != '__MAIN__':
     import signal
-    import lib.inputFlags as flags
     from optparse import OptionParser
+    
+    import lib.inputFlags as flags    
     about   = flags.About(__author__, 'GNU-LGPL_Header.txt')
     sysinfo = system.info.SystemInfo(os.path.join(CFG_ROOT, "general.ini"))
 
