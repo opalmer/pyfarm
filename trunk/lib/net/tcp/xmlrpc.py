@@ -48,10 +48,10 @@ def dumps(method, values):
     '''
     return xmlrpclib.dumps((values, ), method, methodresponse=True)
 
-def client(hostname, port, resource):
+def client(hostname, port, resource, verbose=False):
     '''Return a client to the given master and resource'''
     args = (hostname, port, resource)
-
+    
     if not type(port) == types.IntType:
         try:
             port = int(port)
@@ -59,7 +59,10 @@ def client(hostname, port, resource):
         except Exception, error:
             logger.error("Uncaught Exception: %s" % error)
 
-    return xmlrpclib.ServerProxy("http://%s:%i/%s" % args)
+    return xmlrpclib.ServerProxy(
+                                    "http://%s:%i/%s" % args, verbose=verbose,
+                                    allow_none=True
+                                )
 
 class SerializationFailure(Exception):
     def __repr__(self, error):
@@ -168,6 +171,7 @@ class Deserialize(Serialization):
         elif typeName == "string": return str(value)
         elif typeName == "double": return float(value)
         elif typeName == "int":    return int(value)
+        elif typeName == "nil":    return None
         elif typeName == "boolean":
             if value in ("True", "1.0", "1"):
                 return True

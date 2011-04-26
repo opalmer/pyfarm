@@ -32,13 +32,13 @@ import xmlrpc
 from lib import logger, system, net, db
 
 logger = logger.Logger()
-sql    = db.connect()
 
 class Resource(QtCore.QObject):
-    def __init__(self, parent=None):
+    def __init__(self, sql, parent=None):
         super(Resource, self).__init__(parent)
         self.parent = parent
-
+        self.sql    = sql
+        
     def newClient(self, hostname, ip, sysinfo):
         '''
         Add a client to the database using the given hostname, ip address,
@@ -48,7 +48,7 @@ class Resource(QtCore.QObject):
         logger.info(msg)
         self.parent.updateConsole("client", msg, color='green')
 
-        if db.network.addHost(hostname, ip, sysinfo):
+        if db.network.addHost(self.sql, hostname, ip, sysinfo):
             return True, 200
 
         else:
@@ -59,4 +59,4 @@ class Resource(QtCore.QObject):
         Same procedure as newClient but this is meant to update rather than
         create a host connection
         '''
-        pass
+        return True

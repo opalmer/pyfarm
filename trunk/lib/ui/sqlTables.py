@@ -29,33 +29,37 @@ if PYFARM not in sys.path: sys.path.append(PYFARM)
 from PyQt4.Qt import Qt
 from PyQt4 import QtSql, QtCore
 
-from lib import logger, db
+from lib import logger
 
 # setup logging
 logger = logger.Logger()
-sql    = db.connect()
 
 class Manager(object):
     '''
     SqlTable manager for QTableView objects.
-
-    VARIABLES:
-        sql        (QSqlDatabase) -- database to operate on
-        ui        (QTableView)   -- Table to add sql model to
-        tableName (str)          -- Name of database to run query on
-        path      (str)          -- Location of sql file (or special memory string)
-        columns   (list)         -- Columns to retrieve from table
-        sort      (str)          -- Column to sort table by
+    
+    @param sql: Database to operate on
+    @type  sql: QtSql.QSqlDatabase
+    @param ui: Table to add sql model to
+    @type  ui: QtGui.QTableView
+    @param tableName: Name of database to run queries on
+    @type  tablename: C{str}
+    @param path: Location of sql file (or special memory string)
+    @type  path: C{str}
+    @param columns: Columns to retrieve from table
+    @type  columns: C{list}
+    @param sort: Column to sort by
+    @type  sort: C{str}
     '''
-    def __init__(self, ui, table, columns, sort=None):
+    def __init__(self, sql, ui, table, columns, sort=None):
+        self.sql       = sql
         self.ui        = ui
         self.columns   = columns
         self.query     = "SELECT %s FROM %s" % (','.join(columns), table)
         self.sqlModel  = QtSql.QSqlTableModel()
-
-        self.sqlQuery  = QtSql.QSqlQuery(self.query, sql)
+        self.sqlQuery  = QtSql.QSqlQuery(self.query, self.sql)
         self.sqlModel.setQuery(self.sqlQuery)
-        self.sqlModel.setTable(table)
+        self.sqlModel.setTable(table)        
 
         # create global column variables
         i = 0

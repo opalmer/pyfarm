@@ -28,20 +28,18 @@ CWD      = os.path.dirname(os.path.abspath(__file__))
 PYFARM   = os.path.abspath(os.path.join(CWD, "..", ".."))
 if PYFARM not in sys.path: sys.path.append(PYFARM)
 
-import includes
 from lib import logger
 
 logger = logger.Logger()
-sql    = includes.connect()
 
-def addHost(host, ip, sysinfo, status=0, fComplete=0, fFailed=0, fRendering=0):
+def addHost(sql, host, ip, sysinfo, status=0, fComplete=0, fFailed=0, fRendering=0):
     '''
     Add a host to the database and ensure it
     is only created once.  This function assumes
     the host you are adding is a "new" host.
     '''
     # if the new host is not in hosts, add it
-    if not hostExists(host):
+    if not hostExists(sql, host):
         query = QtSql.QSqlQuery(sql)
         s = "('%s', '%s', %i, %i, %i, %i)" % (host, ip, status, fComplete, fFailed, fRendering)
         query.exec_("INSERT INTO hosts VALUES %s" % s)
@@ -51,7 +49,7 @@ def addHost(host, ip, sysinfo, status=0, fComplete=0, fFailed=0, fRendering=0):
         logger.error("Cannot add host, %s is already in the database" % host)
         return False
 
-def hostExists(host):
+def hostExists(sql, host):
     '''Return true if the given host is in the database'''
     i     = 0
     hosts = []
@@ -67,7 +65,7 @@ def hostExists(host):
     else:
         return True
 
-def removeHost(host):
+def removeHost(sql, host):
     '''Remove the requested host from the database'''
     if not hostExists(sql, host):
         logger.error("Cannot remove %s, it does not exist in the database" % sql)

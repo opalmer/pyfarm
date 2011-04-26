@@ -85,7 +85,10 @@ class MainWindow(QtGui.QMainWindow):
         SqlTable       = ui.sqlTables
         netColumns     = ("hostname", "ip", "status")
         netSort        = "hostname"
-        self.hostTable = SqlTable.Manager(netTable, "hosts", netColumns, sort=netSort)
+        self.hostTable = SqlTable.Manager(
+                                            SQL, netTable, "hosts", 
+                                            netColumns, sort=netSort
+                                          )
 
         # add menu to submit button
         self.submitMenu = QtGui.QMenu()
@@ -172,8 +175,8 @@ class MainWindow(QtGui.QMainWindow):
         listenAddress  = lib.net.address(convert=False)
 
         # create resources for xmlrpc server
-        queue = tcp.queue.Resource(self)
-        hosts = tcp.hosts.Resource(self)
+        queue = tcp.queue.Resource(SQL, self)
+        hosts = tcp.hosts.Resource(SQL, self)
 
         self.rpcServer = tcp.xmlrpc.BaseServer()
         self.rpcServer.addResource("queue", queue)
@@ -303,7 +306,7 @@ if __name__ != '__MAIN__':
 
     # Begin event loop
     app  = QtGui.QApplication(sys.argv)
-    db.init(options.db)
+    SQL  = db.connect(options.db)
 
     # lower verbosity
     if not UNITTESTS:

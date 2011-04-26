@@ -31,27 +31,11 @@ DB_XML   = os.path.join(PYFARM, "cfg", "dbbase.xml")
 DB_SQL   = os.path.join(PYFARM, "PyFarmDB.sql")
 if PYFARM not in sys.path: sys.path.append(PYFARM)
 
-from lib import logger, utilities
+from lib import logger
 
 logger = logger.Logger()
 
-def connect(dbFile=DB_SQL):
-    '''Create and return a new database connection'''
-    if not os.path.isfile(dbFile):
-        logger.fatal("Cannot create a connection to a database that does not exist")
-
-    # create a new connection and be sure we give it a 'unique' name
-    db = QtSql.QSqlDatabase.addDatabase("QSQLITE", utilities.randomString())
-    db.setDatabaseName(dbFile)
-
-    if db.open():
-        return db
-
-    logger.error("Failed to open database!")
-    return None
-
-
-def init(dbFile=DB_SQL, clean=False, optimize=True):
+def connect(dbFile=DB_SQL, clean=False, optimize=True):
     '''
     Connect to the given database file and ensure all initial
     conditions and required tables are met.

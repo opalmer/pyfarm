@@ -35,9 +35,10 @@ from lib import logger, system, net
 logger = logger.Logger()
 
 class Resource(QtCore.QObject):
-    def __init__(self, parent=None):
+    def __init__(self, sql, parent=None):
         super(Resource, self).__init__(parent)
         self.parent = parent
+        self.sql    = sql
 
     def ping(self, address):
         '''Try to send data to the remote client, return True on success'''

@@ -25,13 +25,11 @@ import time
 
 from PyQt4 import QtGui, QtCore
 
-import db
 import ui
 import logger
 from net import udp
 
 logger = logger.Logger()
-sql    = db.connect()
 
 class Help(object):
     '''Slot functions from the help menu'''
