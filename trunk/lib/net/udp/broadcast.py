@@ -115,7 +115,6 @@ class BroadcastReceiever(QtCore.QThread):
 
     def readIncomingBroadcast(self):
         '''Read the incoming host ip and emit it to the client'''
-        logger.netserver("Incoming broadcast")
 
         while self.socket.hasPendingDatagrams():
             datagram = QtCore.QByteArray()
@@ -131,10 +130,6 @@ class BroadcastReceiever(QtCore.QThread):
             host     = msg[0]
             services = msg[2]
 
-            logger.netclient("Received: %s" % packet)
-            logger.netclient("Decoded: %s" % str(services))
-
-        logger.netclient("Host: %s IP: %s" % (host, ip))
         self.emit(QtCore.SIGNAL("broadcast"), (host, ip, services))
 
     def quit(self):

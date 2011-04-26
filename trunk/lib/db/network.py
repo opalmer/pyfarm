@@ -19,7 +19,6 @@ GNU Lesser General Public License for more details.
 You should have received a copy of the GNU Lesser General Public License
 along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 '''
-
 import os
 import sys
 
@@ -27,27 +26,32 @@ from PyQt4 import QtSql
 
 CWD      = os.path.dirname(os.path.abspath(__file__))
 PYFARM   = os.path.abspath(os.path.join(CWD, "..", ".."))
-MODULE   = "db.Network"
-LOGLEVEL = 2
 if PYFARM not in sys.path: sys.path.append(PYFARM)
 
+import includes
 from lib import logger
 
-log = logger.Logger(MODULE, LOGLEVEL)
+logger = logger.Logger()
+sql    = includes.connect()
 
-def addHost(sql, host, ip, status=0, fComplete=0, fFailed=0, fRendering=0):
+def addHost(host, ip, sysinfo, status=0, fComplete=0, fFailed=0, fRendering=0):
     '''
     Add a host to the database and ensure it
     is only created once.  This function assumes
     the host you are adding is a "new" host.
     '''
     # if the new host is not in hosts, add it
-    if not hostExists(sql, host):
+    if not hostExists(host):
         query = QtSql.QSqlQuery(sql)
         s = "('%s', '%s', %i, %i, %i, %i)" % (host, ip, status, fComplete, fFailed, fRendering)
         query.exec_("INSERT INTO hosts VALUES %s" % s)
+        return True
 
-def hostExists(sql, host):
+    else:
+        logger.error("Cannot add host, %s is already in the database" % host)
+        return False
+
+def hostExists(host):
     '''Return true if the given host is in the database'''
     i     = 0
     hosts = []
@@ -63,14 +67,14 @@ def hostExists(sql, host):
     else:
         return True
 
-def removeHost(sql, host):
+def removeHost(host):
     '''Remove the requested host from the database'''
     if not hostExists(sql, host):
-        log.error("Cannot remove %s, it does not exist in the database" % sql)
+        logger.error("Cannot remove %s, it does not exist in the database" % sql)
         return False
 
     else:
-        log.debug("Removing %s from the database" % host)
+        logger.debug("Removing %s from the database" % host)
         query = QtSql.QSqlQuery(sql)
         query.exec_("DELETE FROM hosts WHERE hostname = '%s'" % host)
         return True
@@ -81,7 +85,7 @@ if __name__ == '__main__':
     import random
     import includes
 
-    log.warning("Adding useless host information for testing!!")
+    logger.warning("Adding useless host information for testing!!")
     sql       = includes.connect(clean=True)
     MAX_HOSTS = 500
     start     = time.time()
@@ -112,8 +116,8 @@ if __name__ == '__main__':
         addHost(sql, hostname, ip, status, complete, failed, rendering)
         times.append(time.time()-tStart)
 
-    log.debug("Total Time For %i Hosts: %fs" % (MAX_HOSTS, time.time()-start))
+    logger.debug("Total Time For %i Hosts: %fs" % (MAX_HOSTS, time.time()-start))
 
     # calculate the average
     average = sum(times)/len(times)
-    log.debug("Average Time Per Query: %fs" % average)
+    logger.debug("Average Time Per Query: %fs" % average)

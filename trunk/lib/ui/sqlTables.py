@@ -24,38 +24,36 @@ import sys
 
 CWD      = os.path.dirname(os.path.abspath(__file__))
 PYFARM   = os.path.abspath(os.path.join(CWD, "..",  ".."))
-MODULE   = os.path.basename(__file__)
-LOGLEVEL = 2
 if PYFARM not in sys.path: sys.path.append(PYFARM)
 
 from PyQt4.Qt import Qt
 from PyQt4 import QtSql, QtCore
 
-from lib import logger
+from lib import logger, db
 
 # setup logging
-log = logger.Logger(MODULE, LOGLEVEL)
+logger = logger.Logger()
+sql    = db.connect()
 
 class Manager(object):
     '''
     SqlTable manager for QTableView objects.
 
     VARIABLES:
-        db        (QSqlDatabase) -- database to operate on
+        sql        (QSqlDatabase) -- database to operate on
         ui        (QTableView)   -- Table to add sql model to
         tableName (str)          -- Name of database to run query on
         path      (str)          -- Location of sql file (or special memory string)
         columns   (list)         -- Columns to retrieve from table
         sort      (str)          -- Column to sort table by
     '''
-    def __init__(self, db, ui, table, columns, sort=None):
-        self.db        = db
+    def __init__(self, ui, table, columns, sort=None):
         self.ui        = ui
         self.columns   = columns
         self.query     = "SELECT %s FROM %s" % (','.join(columns), table)
         self.sqlModel  = QtSql.QSqlTableModel()
 
-        self.sqlQuery  = QtSql.QSqlQuery(self.query, self.db)
+        self.sqlQuery  = QtSql.QSqlQuery(self.query, sql)
         self.sqlModel.setQuery(self.sqlQuery)
         self.sqlModel.setTable(table)
 
@@ -98,10 +96,10 @@ class Manager(object):
 
         self.sqlModel.select()
 
-        log.fixme("Refresh fails to always reselect previous selection")
-        log.fixme("...check to ensure we have the correct column")
-        log.fixme("...wait if we do not")
-        log.fixme("...might also have to do with HOW the selection is made")
+        logger.fixme("Refresh fails to always reselect previous selection")
+        logger.fixme("...check to ensure we have the correct column")
+        logger.fixme("...wait if we do not")
+        logger.fixme("...might also have to do with HOW the selection is made")
 
         if type(colA) != None:
             self.ui.keyboardSearch(colA)

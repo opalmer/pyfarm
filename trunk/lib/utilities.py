@@ -1,7 +1,7 @@
 '''
 HOMEPAGE: www.pyfarm.net
-INITIAL: Dec 5 2010
-PURPOSE: Minor functions to be used by the entire package when lib is imported
+INITIAL: April 25 2011
+PURPOSE: Small library for functions and classes that are not purpose specific
 
 This file is part of PyFarm.
 Copyright (C) 2008-2011 Oliver Palmer
@@ -19,21 +19,10 @@ GNU Lesser General Public License for more details.
 You should have received a copy of the GNU Lesser General Public License
 along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 '''
-import os
-import sys
-import imp
 
-CWD    = os.path.dirname(os.path.abspath(__file__))
-PYFARM = os.path.abspath(os.path.join(CWD, ".."))
-MODULE = os.path.basename(__file__)
-if PYFARM not in sys.path: sys.path.append(PYFARM)
+import random
+import string
 
-def importFile(filename,  verbose=False):
-    (path, name) = os.path.split(filename)
-    (name, ext) = os.path.splitext(name)
-    try:
-        (file, filename, data) = imp.find_module(name, [path])
-
-    except ImportError, e:
-        raise ImportError(e)
-    return imp.load_module(name, file, filename, data)
+def randomString(length=24):
+    ascii = string.ascii_uppercase + string.digits
+    return ''.join(random.choice(ascii) for x in range(length))

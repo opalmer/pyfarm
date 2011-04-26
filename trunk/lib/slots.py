@@ -31,6 +31,7 @@ import logger
 from net import udp
 
 logger = logger.Logger()
+sql    = db.connect()
 
 class Help(object):
     '''Slot functions from the help menu'''
@@ -42,9 +43,8 @@ class Help(object):
 
 class Host(QtCore.QObject):
     '''Host related slot functions'''
-    def __init__(self, parent, config, services, sql):
+    def __init__(self, parent, config, services):
         super(Host, self).__init__(parent)
-        self.sql      = sql
         self.parent   = parent
         self.ui       = parent.ui
         self.config   = config
@@ -76,7 +76,7 @@ class Host(QtCore.QObject):
                                      )
 
     def remove(self):
-        '''Remove the selected host from the db and ui'''
+        '''Remove the selected host from the sql and ui'''
         indexes = self.ui.networkTable.selectedIndexes()
         if len(indexes):
             data = {}
@@ -97,14 +97,13 @@ class Host(QtCore.QObject):
             for key in data.keys():
                 host = data[key]
                 logger.info("Removing Host: %s (%s)" % (host['hostname'], host['ip']))
-                if db.Network.removeHost(self.sql, host['hostname']):
+                if sql.Network.removeHost(sql, host['hostname']):
                     self.ui.refreshHosts()
         else:
             logger.error("Not enough items selected")
 
 class Slots(object):
     '''Main slots object, all other slots are referenced from here'''
-    def __init__(self, parent, config, services, sql):
-        self.sql  = sql
+    def __init__(self, parent, config, services):
         self.help = Help(parent, config)
-        self.host = Host(parent, config, services, sql)
+        self.host = Host(parent, config, services)

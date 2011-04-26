@@ -27,10 +27,8 @@ from PyQt4 import QtCore
 
 CWD       = os.path.dirname(os.path.abspath(__file__))
 PYFARM    = CWD
-MODULE    = os.path.basename(__file__)
 CFG_ROOT  = os.path.join(PYFARM, "cfg")
 CFG_GEN   = os.path.join(CFG_ROOT, "general.ini")
-CONTEXT   = MODULE.split(".")[0]
 
 from lib import logger, settings, session, system, net
 from lib.net import tcp, udp
@@ -42,7 +40,7 @@ class Main(QtCore.QObject):
         super(Main, self).__init__(parent)
         self.master  = net.MasterAddress()
         self.config  = settings.ReadConfig.general(CFG_GEN)
-        self.pidFile = session.State(context=CONTEXT)
+        self.pidFile = session.State(context='PyFarm.Client')
 
     def handlePid(self):
         '''Handle actions relating to the process id file'''

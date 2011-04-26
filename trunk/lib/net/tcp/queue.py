@@ -27,7 +27,6 @@ from PyQt4 import QtCore
 
 CWD    = os.path.dirname(os.path.abspath(__file__))
 PYFARM = os.path.abspath(os.path.join(CWD, "..", "..", ".."))
-MODULE = os.path.basename(__file__)
 if PYFARM not in sys.path: sys.path.append(PYFARM)
 
 import xmlrpc
@@ -43,4 +42,4 @@ class Resource(QtCore.QObject):
     def ping(self, address):
         '''Try to send data to the remote client, return True on success'''
         logger.notimplemented("Ping not yet implemented")
-        pass
+        return False

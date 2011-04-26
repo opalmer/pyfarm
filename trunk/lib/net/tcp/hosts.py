@@ -26,13 +26,13 @@ from PyQt4 import QtCore
 
 CWD    = os.path.dirname(os.path.abspath(__file__))
 PYFARM = os.path.abspath(os.path.join(CWD, "..", "..", ".."))
-MODULE = os.path.basename(__file__)
 if PYFARM not in sys.path: sys.path.append(PYFARM)
 
 import xmlrpc
-from lib import logger, system, net
+from lib import logger, system, net, db
 
 logger = logger.Logger()
+sql    = db.connect()
 
 class Resource(QtCore.QObject):
     def __init__(self, parent=None):
@@ -44,14 +44,19 @@ class Resource(QtCore.QObject):
         Add a client to the database using the given hostname, ip address,
         and system information
         '''
-        client = {
-                    "hostname" : hostname,
-                    "address"  : ip,
-                    "system"   : sysinfo
-                 }
-        self.emit(QtCore.SIGNAL("newHost"), client)
+        msg = "Adding Host: %s" % hostname
+        logger.info(msg)
+        self.parent.updateConsole("client", msg, color='green')
 
-        logger.netserver("New Host: %s (%s)" % (hostname, ip))
+        if db.network.addHost(hostname, ip, sysinfo):
+            return True, 200
 
-        # reply back to client with success and reason code
-        return True, 200
+        else:
+            return False, "Host Already In DB"
+
+    def updateClient(self, hostname, ip, sysinfo):
+        '''
+        Same procedure as newClient but this is meant to update rather than
+        create a host connection
+        '''
+        pass

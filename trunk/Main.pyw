@@ -69,7 +69,7 @@ class MainWindow(QtGui.QMainWindow):
         self.ui = uic.loadUi(UI_FILE, baseinstance=self)
 
         # setup layouts
-        self.setWindowTitle("PyFarm -- __version__ %s" % __version__)
+        self.setWindowTitle("PyFarm -- Version %s" % __version__)
         self.centralWidget().setLayout(self.ui.layoutRoot)
         self.ui.toolboxNetwork.setLayout(self.ui.layoutNetwork)
         self.ui.toolboxSubmit.setLayout(self.ui.submitToolboxLayout)
@@ -85,7 +85,7 @@ class MainWindow(QtGui.QMainWindow):
         SqlTable       = ui.sqlTables
         netColumns     = ("hostname", "ip", "status")
         netSort        = "hostname"
-        self.hostTable = SqlTable.Manager(SQL, netTable, "hosts", netColumns, sort=netSort)
+        self.hostTable = SqlTable.Manager(netTable, "hosts", netColumns, sort=netSort)
 
         # add menu to submit button
         self.submitMenu = QtGui.QMenu()
@@ -108,7 +108,7 @@ class MainWindow(QtGui.QMainWindow):
         self.isClosing = False
         self.config    = settings.ReadConfig.general(CFG_GEN)
         self.services  = lib.net.Services()
-        self.slots     = slots.Slots(self, self.config, self.services, SQL)
+        self.slots     = slots.Slots(self, self.config, self.services)
         self.runServers()
 
     def refreshHosts(self):
@@ -172,8 +172,8 @@ class MainWindow(QtGui.QMainWindow):
         listenAddress  = lib.net.address(convert=False)
 
         # create resources for xmlrpc server
-        queue = tcp.queue.Resource()
-        hosts = tcp.hosts.Resource()
+        queue = tcp.queue.Resource(self)
+        hosts = tcp.hosts.Resource(self)
 
         self.rpcServer = tcp.xmlrpc.BaseServer()
         self.rpcServer.addResource("queue", queue)
@@ -201,7 +201,7 @@ class MainWindow(QtGui.QMainWindow):
     # MainWindow slots, actions, and processes
     # Other actions could include:
     ## slots.stats
-    ## slots.state (current software, job, crons, etc.)
+    ## slots.state (current software, job, crons, etc.)F
     def submitAction(self, action):
         '''Return a QIcon object with icon preloaded'''
         logger.ui("Submitted With: %s" % action.text())
@@ -246,27 +246,6 @@ class MainWindow(QtGui.QMainWindow):
         '''When the ui is attempting to exit, run this first.  However, make sure we only do this once'''
         self.pidFile.close()
 
-    def addHost(self, hostname, ip, mode="new"):
-        '''Add a host to the database and refresh the ui'''
-        logger.debug("Attempting to add %s (%s) to database" % (hostname, ip))
-        if mode == "new":
-            msg = "Adding Host: %s [%s]" % (hostname, ip)
-            self.updateConsole("client", msg, color='green')
-
-        elif mode == "refresh":
-            msg = "Refreshing Host: %s [%s]" % (hostname, ip)
-            logger.debug(msg)
-#        if not db.Network.hostExists(SQL, hostname):
-#            logger.info("Added Client: %s" % hostname)
-#            msg = "Added Host: %s" % hostname
-#            self.updateConsole("client", msg, color='green')
-#            db.Network.addHost(SQL, hostname, ip)
-#            self.refreshHosts()
-#        else:
-#            msg = "Host Already In Database: %s" % hostname
-#            self.updateConsole("client", msg, color='red')
-#            logger.warning(msg)
-
     def globalPoint(self, widget, point):
         '''Return the global position for a given point on a widget'''
         return widget.mapToGlobal(point)
@@ -286,33 +265,6 @@ class MainWindow(QtGui.QMainWindow):
 #################################
 ### END General Utilities
 #################################
-
-class Testing(QtCore.QObject):
-    '''Quick testing code'''
-    def __init__(self, parent=None):
-        super(Testing, self).__init__(parent)
-        logger = Logger.Logger("Main.Testing")
-        self.config = ReadConfig(CFG_ROOT)
-        logger.debug("Test code initilized")
-
-    def broadIncriment(self):
-        logger.netclient("Incrimented")
-
-    def broadDone(self, signal):
-        logger.netclient("Broadcast complete")
-
-    def runStatusServer(self):
-        '''Run the status server and listen for connections'''
-        logger.netserver("Running status server")
-
-    def run(self, option=None, opt=None, value=None, parser=None):
-        logger.debug("Running test code")
-
-        self.runStatusServer()
-        self.sendBroadcast()
-
-        logger.debug("Test run complete")
-        logger.terminate("Testing Terminated")
 
 if __name__ != '__MAIN__':
     import signal
@@ -350,8 +302,8 @@ if __name__ != '__MAIN__':
     (options, args) = parser.parse_args()
 
     # Begin event loop
-    app = QtGui.QApplication(sys.argv)
-    SQL = db.connect(options.db)
+    app  = QtGui.QApplication(sys.argv)
+    db.init(options.db)
 
     # lower verbosity
     if not UNITTESTS:

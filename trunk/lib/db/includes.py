@@ -27,24 +27,38 @@ from PyQt4 import QtSql, QtCore
 
 CWD      = os.path.dirname(os.path.abspath(__file__))
 PYFARM   = os.path.abspath(os.path.join(CWD, "..", ".."))
-MODULE   = "db.includes"
 DB_XML   = os.path.join(PYFARM, "cfg", "dbbase.xml")
 DB_SQL   = os.path.join(PYFARM, "PyFarmDB.sql")
-LOGLEVEL = 2
 if PYFARM not in sys.path: sys.path.append(PYFARM)
 
-from lib import logger
+from lib import logger, utilities
 
-log = logger.Logger(MODULE, LOGLEVEL)
+logger = logger.Logger()
 
-def connect(dbFile=DB_SQL, clean=False, optimize=True):
+def connect(dbFile=DB_SQL):
+    '''Create and return a new database connection'''
+    if not os.path.isfile(dbFile):
+        logger.fatal("Cannot create a connection to a database that does not exist")
+
+    # create a new connection and be sure we give it a 'unique' name
+    db = QtSql.QSqlDatabase.addDatabase("QSQLITE", utilities.randomString())
+    db.setDatabaseName(dbFile)
+
+    if db.open():
+        return db
+
+    logger.error("Failed to open database!")
+    return None
+
+
+def init(dbFile=DB_SQL, clean=False, optimize=True):
     '''
     Connect to the given database file and ensure all initial
     conditions and required tables are met.
     '''
     createdDB = False
     if clean and os.path.isfile(dbFile):
-        log.warning("Removing Database File: %s" % dbFile)
+        logger.warning("Removing Database File: %s" % dbFile)
         os.remove(dbFile)
 
     elif not os.path.isfile(dbFile):
@@ -54,7 +68,7 @@ def connect(dbFile=DB_SQL, clean=False, optimize=True):
     db.setDatabaseName(dbFile)
 
     if db.open():
-        log.info("Connected to DB: %s" % dbFile)
+        logger.info("Connected to DB: %s" % dbFile)
         xml   = minidom.parse(DB_XML)
         query = QtSql.QSqlQuery(db)
 
@@ -79,7 +93,7 @@ def connect(dbFile=DB_SQL, clean=False, optimize=True):
                 # execute the generated script
                 results = query.exec_(QtCore.QString(script))
                 if createdDB:
-                    log.info("Created table: %s" % tableName)
+                    logger.info("Created table: %s" % tableName)
 
         # performance updates
         if optimize:
