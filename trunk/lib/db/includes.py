@@ -21,6 +21,7 @@ along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 '''
 import os
 import sys
+import types
 from xml.dom import minidom
 
 from PyQt4 import QtSql, QtCore
@@ -35,10 +36,59 @@ from lib import logger
 
 logger = logger.Logger()
 
+def query(sql, statement, errorFatal=True):
+    '''
+    Run the given sql statement and check to see if it was a success.  If
+    errorFatal is true, throw a fatal logger statementa and exit the program
+
+    @param sql: The database to run the query on
+    @type  sql: QtSql.QSqlDatabase
+    @param statement: The statement to run
+    @type  statement: C{str}
+    @param errorFatal: If True force exit the application upon error
+    @type  errorFatal: C{bool}
+    '''
+    query = QtSql.QSqlQuery(sql)
+
+    if not query.exec_(statement):
+        error = query.lastError()
+        logger.sqlerror("Query Failure: %s" % str(error.text()))
+
+        if errorFatal:
+            logger.fatal("SQL Statement Failure, see previous errors")
+            sys.exit(1)
+
+        return False
+    return query
+
+def convertInput(*args):
+    '''Given a set of input arguments output a valid sql insertion statement'''
+    values = []
+
+    for value in args:
+        typeName = type(value)
+
+        if typeName in (types.TupleType, types.ListType, types.DictionaryType):
+            value = "'''%s'''" % value.__repr__()
+
+        elif typeName in types.StringTypes:
+            value = "'%s'" % value
+
+        values.append(str(value))
+
+    return ','.join(values)
+
 def connect(dbFile=DB_SQL, clean=False, optimize=True):
     '''
     Connect to the given database file and ensure all initial
     conditions and required tables are met.
+
+    @param dbFile: The file or special string to use a database
+    @type  dbFile: C{str}
+    @param clean: When True remote the database before running
+    @type  clean: C{bool}
+    @param optimize: When True optimize the database for performance
+    @type  optimize: C{bool}
     '''
     createdDB = False
     if clean and os.path.isfile(dbFile):

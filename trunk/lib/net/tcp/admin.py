@@ -35,19 +35,23 @@ logger = logger.Logger()
 class Resource(xmlrpc.BaseResource):
     def __init__(self, sql, parent):
         super(Resource, self).__init__(sql, parent)
-        
-    def shutdown(self, hostname):
-        '''Shutdown a client'''
+
+    def shutdown(self):
+        '''Tell a remote client to shutdown'''
         pass
-    
-    def restart(self, hostname):
-        '''Restart a client'''
+
+    def restart(self):
+        '''Tell a remote client to restart'''
         pass
-    
-    def disable(self, hostname):
-        '''Disable a client'''
+
+    def disable(self):
+        '''Disable a remote client'''
         pass
-    
-    def enable(self, hostname):
-        '''Enable a client'''
+
+    def enable(self):
+        '''Enable a remote client'''
+        pass
+
+    def reportState(self, state):
+        '''Report the state of the client'''
         pass

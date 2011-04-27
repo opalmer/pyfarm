@@ -22,13 +22,12 @@ along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 import os
 import sys
 
-from PyQt4 import QtSql
-
 CWD      = os.path.dirname(os.path.abspath(__file__))
 PYFARM   = os.path.abspath(os.path.join(CWD, "..", ".."))
 if PYFARM not in sys.path: sys.path.append(PYFARM)
 
-from lib import logger
+import includes
+from lib import logger, ui
 
 logger = logger.Logger()
 
@@ -40,21 +39,29 @@ def addHost(sql, host, ip, sysinfo, status=0, fComplete=0, fFailed=0, fRendering
     '''
     # if the new host is not in hosts, add it
     if not hostExists(sql, host):
-        query = QtSql.QSqlQuery(sql)
-        s = "('%s', '%s', %i, %i, %i, %i)" % (host, ip, status, fComplete, fFailed, fRendering)
-        query.exec_("INSERT INTO hosts VALUES %s" % s)
+        values = includes.convertInput(
+                                       host, ip, status, fComplete, fFailed,
+                                       fRendering, sysinfo['osName'],
+                                       sysinfo['architecture'],
+                                       sysinfo['idletime'], sysinfo['uptime'],
+                                       sysinfo['load'], sysinfo['cpuCount'],
+                                       sysinfo['cpuSpeed'], sysinfo['cpuType'],
+                                       sysinfo['ramTotal'], sysinfo['ramFree'],
+                                       sysinfo['swapTotal'], sysinfo['swapFree']
+                                      )
+
+        includes.query(sql, "INSERT INTO hosts VALUES (%s)" % values)
         return True
 
     else:
-        logger.error("Cannot add host, %s is already in the database" % host)
+        logger.warning("Cannot add host, %s is already in the database" % host)
         return False
 
 def hostExists(sql, host):
     '''Return true if the given host is in the database'''
     i     = 0
     hosts = []
-    query = QtSql.QSqlQuery(sql)
-    query.exec_("SELECT hostname FROM hosts")
+    query = includes.query(sql, "SELECT hostname FROM hosts")
 
     while query.next():
         hosts.append(query.value(i).toString())
@@ -62,8 +69,8 @@ def hostExists(sql, host):
 
     if host not in hosts:
         return False
-    else:
-        return True
+
+    return True
 
 def removeHost(sql, host):
     '''Remove the requested host from the database'''
@@ -71,11 +78,10 @@ def removeHost(sql, host):
         logger.error("Cannot remove %s, it does not exist in the database" % sql)
         return False
 
-    else:
-        logger.debug("Removing %s from the database" % host)
-        query = QtSql.QSqlQuery(sql)
-        query.exec_("DELETE FROM hosts WHERE hostname = '%s'" % host)
-        return True
+    logger.debug("Removing %s from the database" % host)
+    statement = "DELETE FROM hosts WHERE hostname = '%s'" % host
+    query     = includes.query(sql, statement)
+    return True
 
 if __name__ == '__main__':
     import time
