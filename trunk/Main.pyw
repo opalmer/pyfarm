@@ -4,21 +4,21 @@ HOMEPAGE: www.pyfarm.net
 INITIAL: Jan 12 2009
 PURPOSE: Main program to run and manage PyFarm
 
-    This file is part of PyFarm.
-    Copyright (C) 2008-2011 Oliver Palmer
+This file is part of PyFarm.
+Copyright (C) 2008-2011 Oliver Palmer
 
-    PyFarm is free software: you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation, either __version__ 3 of the License, or
-    (at your option) any later __version__.
+PyFarm is free software: you can redistribute it and/or modify
+it under the terms of the GNU Lesser General Public License as published by
+the Free Software Foundation, either __version__ 3 of the License, or
+(at your option) any later __version__.
 
-    PyFarm is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+PyFarm is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Lesser General Public License for more details.
 
-    You should have received a copy of the GNU Lesser General Public License
-    along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
+You should have received a copy of the GNU Lesser General Public License
+along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 '''
 import os
 import sys
@@ -86,7 +86,7 @@ class MainWindow(QtGui.QMainWindow):
         netColumns     = ("hostname", "ip", "status")
         netSort        = "hostname"
         self.hostTable = SqlTable.Manager(
-                                            SQL, netTable, "hosts", 
+                                            SQL, netTable, "hosts",
                                             netColumns, sort=netSort
                                           )
 
@@ -139,9 +139,9 @@ class MainWindow(QtGui.QMainWindow):
         title  = "Main.pyw Is Already Running"
         msg    = "PyFarm already seems to be open, terminate the running"
         msg   += " process if needed and continue?"
-        
+
         logger.warning("%s: User input required" % title)
-        
+
         yes    = QtGui.QMessageBox.Yes
         no     = QtGui.QMessageBox.No
         msgBox = QtGui.QMessageBox.warning(self, title, msg, yes|no)
@@ -244,7 +244,7 @@ class MainWindow(QtGui.QMainWindow):
 
     def closeEvent(self, event):
         '''
-        When the ui is attempting to exit, run this first.  
+        When the ui is attempting to exit, run this first.
         However, make sure we only do this once
         '''
         self.pidFile.close()
@@ -256,7 +256,7 @@ class MainWindow(QtGui.QMainWindow):
     def updateConsole(self, section, msg, color='black'):
         '''
         Update the ui's status window
-        
+
         @param section: The section to report from (will be raised to UPPER)
         @type  section: C{str}
         @param msg: The message to dispaly
@@ -275,8 +275,8 @@ class MainWindow(QtGui.QMainWindow):
 if __name__ != '__MAIN__':
     import signal
     from optparse import OptionParser
-    
-    import lib.inputFlags as flags    
+
+    import lib.inputFlags as flags
     about   = flags.About(__author__, 'GNU-LGPL_Header.txt')
     sysinfo = system.info.SystemInfo(os.path.join(CFG_ROOT, "general.ini"))
 

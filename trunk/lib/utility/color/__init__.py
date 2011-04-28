@@ -20,9 +20,6 @@ along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 '''
 import os
 
-import colorama
-colorama.init()
-
 try:
     from includes import *
 

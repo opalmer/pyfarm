@@ -1,7 +1,7 @@
 '''
 HOMEPAGE: www.pyfarm.net
-INITIAL: April 25 2011
-PURPOSE: Small library for functions and classes that are not purpose specific
+INITIAL: April 27 2011
+PURPOSE: Color management library for formatting and returning color strings
 
 This file is part of PyFarm.
 Copyright (C) 2008-2011 Oliver Palmer
@@ -19,10 +19,19 @@ GNU Lesser General Public License for more details.
 You should have received a copy of the GNU Lesser General Public License
 along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 '''
+import os
+import sys
 
-import random
-import string
+from PyQt4 import QtCore
+from QtCore import Qt
 
-def rand(length=24):
-    ascii = string.ascii_uppercase + string.digits
-    return ''.join(random.choice(ascii) for x in range(length))
+import colorama
+colorama.init()
+
+class Manager(object):
+    '''
+    Main color management class, controls input and output of color information
+    to various formats including the terminal and user interface
+    '''
+    def __init__(self):
+        pass
