@@ -24,12 +24,17 @@ BUILDDIR   = "dev/build"
 FROZENDIR  = $(BUILDDIR)/frozen
 RELEASEDIR = $(BUILDDIR)/release
 
-all: frozen release
+all:
+	@echo "Options are:"
+	@echo "    clean"
+	@echo "    freeze"
+	@echo "    release"
 
 clean:
 	@echo "Running Clean..."
 	@find . -name "*~" | xargs rm -fv
 	@find . -name "*.pyc" | xargs rm -fv
+	@find . -name "*.pyo" | xargs rm -fv
 
 mkbuilddir:
 	@echo "Running mkbuilddir..."
@@ -38,8 +43,8 @@ mkbuilddir:
 	else mkdir $(BUILDDIR); \
 	fi
 
-frozen: clean mkbuilddir
-	@echo "Running frozen..."
+freeze: clean mkbuilddir
+	@echo "Running freeze..."
 	if test -d $(FROZENDIR); \
 	then echo directory exists: $(FROZENDIR); \
 	else mkdir $(FROZENDIR); \

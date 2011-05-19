@@ -1,7 +1,7 @@
 '''
 HOMEPAGE: www.pyfarm.net
-INITIAL: Dec 5 2010
-PURPOSE: Minor functions to be used by the entire package when lib is imported
+INITIAL: April 27 2011
+PURPOSE: Color management library for formatting and returning color strings
 
 This file is part of PyFarm.
 Copyright (C) 2008-2011 Oliver Palmer
@@ -21,19 +21,17 @@ along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 '''
 import os
 import sys
-import imp
 
-CWD    = os.path.dirname(os.path.abspath(__file__))
-PYFARM = os.path.abspath(os.path.join(CWD, ".."))
-MODULE = os.path.basename(__file__)
-if PYFARM not in sys.path: sys.path.append(PYFARM)
+from PyQt4 import QtCore
+from QtCore import Qt
 
-def importFile(filename,  verbose=False):
-    (path, name) = os.path.split(filename)
-    (name, ext) = os.path.splitext(name)
-    try:
-        (file, filename, data) = imp.find_module(name, [path])
+import colorama
+colorama.init()
 
-    except ImportError, e:
-        raise ImportError(e)
-    return imp.load_module(name, file, filename, data)
+class Manager(object):
+    '''
+    Main color management class, controls input and output of color information
+    to various formats including the terminal and user interface
+    '''
+    def __init__(self):
+        pass

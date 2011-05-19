@@ -34,7 +34,7 @@ LOGLEVEL = 4
 
 from lib import logger
 
-log = logger.Logger(MODULE)
+log = logger.Logger()
 
 def SimpleCommand(cmd, all=False, debug=False):
     '''
@@ -52,50 +52,19 @@ def SimpleCommand(cmd, all=False, debug=False):
     process.start(cmd)
 
     if debug:
-        log.debug("Starting process PID: %i" % process.pid())
+        logger.debug("Starting process PID: %i" % process.pid())
 
     if not process.waitForStarted(): return False
     if not process.waitForFinished(): return False
 
     if debug:
-        log.debug("Process Complete")
+        logger.debug("Process Complete")
 
     results = process.readAll().data()
 
     if all: return results
     else:   return results.split(os.linesep)[0]
 
-def killProcess(pid):
-    '''Kill process by id'''
-    if os.name == "nt":
-        SimpleCommand("taskkill /PID %i /F" % pid)
-
-    else:
-        try:
-            os.kill(pid, 9)
-        except OSError:
-            log.error("Cannot kill a process that does not actually exist")
-
-def processRunning(pid):
-    '''Return true if the requested process is running'''
-    pid = int(pid)
-    log.debug("Searching for proces state: %i" % pid)
-    if os.name == "nt":
-        log.notimplemented("Cannot retrieve process status on NT systems")
-
-    else:
-        try:
-            os.getpgid(pid)
-
-        except OSError:
-            log.debug("Process Is Stopped: %i" % pid)
-            return False
-
-        else:
-            log.debug("Process is Running: %i" % pid)
-            return True
-
-    log.debug("Finished search for process state")
 
 def clean(option=None, opt=None, value=None, parser=None):
     '''Remove all pyc files (and any other tmp files'''
@@ -107,16 +76,16 @@ def clean(option=None, opt=None, value=None, parser=None):
                         path = os.path.join(dirpath, dirname, filename)
                         if path.endswith(".pyc") and os.path.isfile(path):
                             os.remove(path)
-    log.info("Lite Cleanup Complete")
+    logger.info("Lite Cleanup Complete")
 
 def cleanAll(option=None, opt=None, value=None, parser=None):
     '''Cleanup all files including pyc, database, and lock file'''
-    log.fixme("Custom database location is NOT supported")
-    log.fixme("Cannot remove lock file due to circular dependency")
+    logger.fixme("Custom database location is NOT supported")
+    logger.fixme("Cannot remove lock file due to circular dependency")
     clean('','','','')
 
     db = os.path.join(PYFARM, "PyFarmDB.sql")
     if os.path.isfile(db):
         os.remove(db)
 
-    log.info("Full Cleanup Complete")
+    logger.info("Full Cleanup Complete")

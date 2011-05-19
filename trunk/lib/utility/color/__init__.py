@@ -1,8 +1,6 @@
 '''
 HOMEPAGE: www.pyfarm.net
-INITIAL: April 7 2008 (revised in July 2010)
-PURPOSE: Group of classes dedicated to the collection and monitoring
-of queue information.
+PURPOSE: To import the standard includes and setup the package
 
 This file is part of PyFarm.
 Copyright (C) 2008-2011 Oliver Palmer
@@ -21,22 +19,19 @@ You should have received a copy of the GNU Lesser General Public License
 along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 '''
 import os
-import sys
 
-CWD    = os.path.dirname(os.path.abspath(__file__))
-PYFARM = os.path.abspath(os.path.join(CWD, "..", "..", ".."))
-if PYFARM not in sys.path: sys.path.append(PYFARM)
+try:
+    from includes import *
 
-import xmlrpc
-from lib import logger
+except ImportError:
+    pass
 
-logger = logger.Logger()
+for filename in os.listdir(os.path.dirname(os.path.abspath(__file__))):
+    isInit    = filename.startswith("__init__")
+    isInclude = filename.startswith("includes")
 
-class Resource(xmlrpc.BaseResource):
-    def __init__(self, sql, parent):
-        super(Resource, self).__init__(sql, parent)
+    if filename.endswith(".py") and not isInit and not isInclude:
+        __import__(filename.split(".")[0], locals(), globals())
 
-    def ping(self, address):
-        '''Try to send data to the remote client, return True on success'''
-        logger.notimplemented("Ping not yet implemented")
-        return False
+# cleanup extra objects
+del os, filename, isInit, isInclude

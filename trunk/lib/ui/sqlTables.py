@@ -24,8 +24,6 @@ import sys
 
 CWD      = os.path.dirname(os.path.abspath(__file__))
 PYFARM   = os.path.abspath(os.path.join(CWD, "..",  ".."))
-MODULE   = os.path.basename(__file__)
-LOGLEVEL = 2
 if PYFARM not in sys.path: sys.path.append(PYFARM)
 
 from PyQt4.Qt import Qt
@@ -34,30 +32,34 @@ from PyQt4 import QtSql, QtCore
 from lib import logger
 
 # setup logging
-log = logger.Logger(MODULE, LOGLEVEL)
+logger = logger.Logger()
 
 class Manager(object):
     '''
     SqlTable manager for QTableView objects.
-
-    VARIABLES:
-        db        (QSqlDatabase) -- database to operate on
-        ui        (QTableView)   -- Table to add sql model to
-        tableName (str)          -- Name of database to run query on
-        path      (str)          -- Location of sql file (or special memory string)
-        columns   (list)         -- Columns to retrieve from table
-        sort      (str)          -- Column to sort table by
+    
+    @param sql: Database to operate on
+    @type  sql: QtSql.QSqlDatabase
+    @param ui: Table to add sql model to
+    @type  ui: QtGui.QTableView
+    @param tableName: Name of database to run queries on
+    @type  tablename: C{str}
+    @param path: Location of sql file (or special memory string)
+    @type  path: C{str}
+    @param columns: Columns to retrieve from table
+    @type  columns: C{list}
+    @param sort: Column to sort by
+    @type  sort: C{str}
     '''
-    def __init__(self, db, ui, table, columns, sort=None):
-        self.db        = db
+    def __init__(self, sql, ui, table, columns, sort=None):
+        self.sql       = sql
         self.ui        = ui
         self.columns   = columns
         self.query     = "SELECT %s FROM %s" % (','.join(columns), table)
         self.sqlModel  = QtSql.QSqlTableModel()
-
-        self.sqlQuery  = QtSql.QSqlQuery(self.query, self.db)
+        self.sqlQuery  = QtSql.QSqlQuery(self.query, self.sql)
         self.sqlModel.setQuery(self.sqlQuery)
-        self.sqlModel.setTable(table)
+        self.sqlModel.setTable(table)        
 
         # create global column variables
         i = 0
@@ -98,10 +100,10 @@ class Manager(object):
 
         self.sqlModel.select()
 
-        log.fixme("Refresh fails to always reselect previous selection")
-        log.fixme("...check to ensure we have the correct column")
-        log.fixme("...wait if we do not")
-        log.fixme("...might also have to do with HOW the selection is made")
+        logger.fixme("Refresh fails to always reselect previous selection")
+        logger.fixme("...check to ensure we have the correct column")
+        logger.fixme("...wait if we do not")
+        logger.fixme("...might also have to do with HOW the selection is made")
 
         if type(colA) != None:
             self.ui.keyboardSearch(colA)

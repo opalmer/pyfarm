@@ -4,21 +4,21 @@ HOMEPAGE: www.pyfarm.net
 INITIAL: May 26 2010
 PURPOSE: To handle and run all client connections on a remote machine
 
-    This file is part of PyFarm.
-    Copyright (C) 2008-2011 Oliver Palmer
+This file is part of PyFarm.
+Copyright (C) 2008-2011 Oliver Palmer
 
-    PyFarm is free software: you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
+PyFarm is free software: you can redistribute it and/or modify
+it under the terms of the GNU Lesser General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
 
-    PyFarm is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+PyFarm is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Lesser General Public License for more details.
 
-    You should have received a copy of the GNU Lesser General Public License
-    along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
+You should have received a copy of the GNU Lesser General Public License
+along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 '''
 import os
 import sys
@@ -27,25 +27,20 @@ from PyQt4 import QtCore
 
 CWD       = os.path.dirname(os.path.abspath(__file__))
 PYFARM    = CWD
-MODULE    = os.path.basename(__file__)
 CFG_ROOT  = os.path.join(PYFARM, "cfg")
 CFG_GEN   = os.path.join(CFG_ROOT, "general.ini")
-CONTEXT   = MODULE.split(".")[0]
 
-from lib.net.tcp.queue import QueueClient
-
+from lib import logger, settings, session, system, net
 from lib.net import tcp, udp
-from lib import logger, settings, session
 
-log = logger.Logger(MODULE)
+logger = logger.Logger()
 
 class Main(QtCore.QObject):
     def __init__(self, parent=None):
         super(Main, self).__init__(parent)
-        self.masterHostname = ''
-        self.masterAddress  = ''
-        self.config         = settings.ReadConfig.general(CFG_GEN)
-        self.pidFile        = session.State(context=CONTEXT)
+        self.master  = net.MasterAddress()
+        self.config  = settings.ReadConfig.general(CFG_GEN)
+        self.pidFile = session.State(context='PyFarm.Client')
 
     def handlePid(self):
         '''Handle actions relating to the process id file'''
@@ -54,14 +49,14 @@ class Main(QtCore.QObject):
             msg += "Would you like to shutdown the other client process? ([y]/n) "
             #response = raw_input(msg)
             response = "y"
-            log.warning("Forced overwrite")
+            logger.warning("Forced overwrite")
 
             if response.strip().lower() == "y":
                 self.pidFile.write(force=True)
                 self.listenForBroadcast()
 
             else:
-                log.critical("You can only run one client at a time")
+                logger.critical("You can only run one client at a time")
                 sys.exit(1)
 
         else:
@@ -70,12 +65,12 @@ class Main(QtCore.QObject):
 
     def stop(self):
         '''Stop any currently running clients'''
-        log.info("Attempting to stop client process")
+        logger.info("Attempting to stop client process")
         if self.pidFile.exists():
             self.pidFile.kill()
             self.pidFile.remove()
 
-        log.info("Exiting")
+        logger.info("Exiting")
         sys.exit(0)
 
     def listenForBroadcast(self):
@@ -83,10 +78,13 @@ class Main(QtCore.QObject):
         Step 1:
         Listen for an incoming broadcast from the master
         '''
-        log.deprecated("Broadcast port allocation is now handled by lib.net")
         portNum        = self.config['servers']['broadcast']
         self.broadcast = udp.broadcast.BroadcastReceiever(portNum, parent=self)
-        self.connect(self.broadcast, QtCore.SIGNAL("masterFound"), self.setMasterAddress)
+        self.connect(
+                        self.broadcast,
+                        QtCore.SIGNAL("broadcast"),
+                        self.setMasterAddress
+                    )
         self.broadcast.run()
 
     def setMasterAddress(self, response):
@@ -94,35 +92,29 @@ class Main(QtCore.QObject):
         Step 2:
         Set self.master to the incoming ip
         '''
-        newName = False
-        newAddr = False
+        # master info
+        hostname = response[0]
+        address  = response[1]
+        port     = int(response[2]['xmlrpc'])
 
-        # check for new hostname
-        if response[0] != self.masterHostname:
-            self.masterHostname  = response[0]
-            newName              = True
+        if self.master.setAddress(hostname, address, port):
+            # localhost name, address, and info
+            clientName = net.hostname()
+            clientAddr = net.address()
+            clientSpec = system.hardware.report()
 
-        # check for new address
-        if response[1] != self.masterAddress:
-            self.masterAddress = response[1]
-            newName            = True
-
-        # if new hostname OR address, update log and
-        #  refresh services
-        log.deprecated("Queue port allocation is now handled by lib.net")
-        portNum = self.config['servers']['queue']
-        queue   = tcp.queue.QueueClient(self.masterAddress, port=portNum)
-        if newName or newAddr:
-            log.info("Received master address")
-            queue.addClient()
-
-        else:
-            log.info("Already connected to master: %s" % response[0])
-            queue.addClient(new=False)
+            # send to master
+            hosts = tcp.xmlrpc.client(hostname, port, "hosts")
+            if hosts.newClient(clientName, clientAddr, clientSpec):
+                logger.netclient("Added %s to hosts" % clientName)
 
 
 if __name__ == '__main__':
+    import signal
     from optparse import OptionParser
+
+    # handle ctrl + c signals
+    signal.signal(signal.SIGINT, signal.SIG_DFL)
 
     parser = OptionParser()
     parser.add_option(

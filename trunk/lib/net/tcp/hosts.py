@@ -1,8 +1,7 @@
 '''
 HOMEPAGE: www.pyfarm.net
-INITIAL: April 7 2008 (revised in July 2010)
-PURPOSE: Group of classes dedicated to the collection and monitoring
-of queue information.
+INITIAL: April 25 2011
+PURPOSE: Clients resource to manage, query, and check clients
 
 This file is part of PyFarm.
 Copyright (C) 2008-2011 Oliver Palmer
@@ -28,15 +27,33 @@ PYFARM = os.path.abspath(os.path.join(CWD, "..", "..", ".."))
 if PYFARM not in sys.path: sys.path.append(PYFARM)
 
 import xmlrpc
-from lib import logger
+from lib import logger, db
 
 logger = logger.Logger()
 
 class Resource(xmlrpc.BaseResource):
     def __init__(self, sql, parent):
         super(Resource, self).__init__(sql, parent)
+        print self.sql
+        
+    def newClient(self, hostname, ip, sysinfo):
+        '''
+        Add a client to the database using the given hostname, ip address,
+        and system information
+        '''
+        msg = "Adding Host: %s" % hostname
+        logger.info(msg)
+        self.parent.updateConsole("client", msg, color='green')
 
-    def ping(self, address):
-        '''Try to send data to the remote client, return True on success'''
-        logger.notimplemented("Ping not yet implemented")
-        return False
+        if db.network.addHost(self.sql, hostname, ip, sysinfo):
+            return True, 200
+
+        else:
+            return False, "Host Already In DB"
+
+    def updateClient(self, hostname, ip, sysinfo):
+        '''
+        Same procedure as newClient but this is meant to update rather than
+        create a host connection
+        '''
+        return True

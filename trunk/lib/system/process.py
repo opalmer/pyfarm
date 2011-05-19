@@ -100,17 +100,16 @@ def kill(pid):
 def exists(pid):
     '''Return True if the requested pid exists'''
     pid = int(pid)
-
+    logger.debug("Checking for process: %i" % pid)
     if hardware.osName() == "linux" or hardware.osName() == "cygwin":
         try:
             os.kill(pid, 0)
+            logger.error("Process Exists: %i" % pid)
+            return True
 
         except OSError:
             logger.error("No such process: %i" % pid)
             return False
-
-        else:
-            logger.error("Process Exists: %i" % pid)
 
     elif hardware.osName() == "windows":
         stdout, stderr = runcmd('tasklist /FI "PID eq %i"' % pid)

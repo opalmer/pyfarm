@@ -24,6 +24,7 @@ import re
 import sys
 import types
 import inspect
+import httplib
 import xmlrpclib
 from PyQt4 import QtCore
 import xml.etree.cElementTree
@@ -32,7 +33,6 @@ from PyQt4 import QtCore, QtNetwork
 
 CWD    = os.path.dirname(os.path.abspath(__file__))
 PYFARM = os.path.abspath(os.path.join(CWD, "..", "..", ".."))
-MODULE = os.path.basename(__file__)
 if PYFARM not in sys.path: sys.path.append(PYFARM)
 
 from lib import logger, net
@@ -47,6 +47,22 @@ def dumps(method, values):
     Return a valid dump response for transmission back to an xmlrpc client
     '''
     return xmlrpclib.dumps((values, ), method, methodresponse=True)
+
+def client(hostname, port, resource, verbose=False):
+    '''Return a client to the given master and resource'''
+    args = (hostname, port, resource)
+    
+    if not type(port) == types.IntType:
+        try:
+            port = int(port)
+
+        except Exception, error:
+            logger.error("Uncaught Exception: %s" % error)
+
+    return xmlrpclib.ServerProxy(
+                                    "http://%s:%i/%s" % args, verbose=verbose,
+                                    allow_none=True
+                                )
 
 class SerializationFailure(Exception):
     def __repr__(self, error):
@@ -155,6 +171,7 @@ class Deserialize(Serialization):
         elif typeName == "string": return str(value)
         elif typeName == "double": return float(value)
         elif typeName == "int":    return int(value)
+        elif typeName == "nil":    return None
         elif typeName == "boolean":
             if value in ("True", "1.0", "1"):
                 return True
@@ -199,13 +216,13 @@ class Deserialize(Serialization):
             for value in child.getchildren():
                 yield value
 
-class BaseResource(QtCore.QObject):
-    '''Base resource with QObject inheritance and test functions'''
-    def __init__(self, parent=None):
-        super(BaseResource, self).__init__(parent)
 
-    def echo(self, value):
-        return value
+class BaseResource(QtCore.QObject):
+    '''Base resource interited by all resource objects'''
+    def __init__(self, sql=None, parent=None):
+        super(BaseResource, self).__init__(parent)
+        self.sql    = sql
+        self.parent = parent
 
 
 class BaseServerThread(QtCore.QThread):

@@ -31,6 +31,18 @@
         <column name="frames_complete" type="int" />
         <column name="frames_failed" type="int" />
         <column name="frames_rendering" type="int" />
+        <column name="os" type="str" />
+        <column name="arhitecture" type="str" />
+        <column name="idle" type="str" />
+        <column name="uptime" type="str" />
+        <column name="load" type="str" />
+        <column name="cpuCount" type="int" />
+        <column name="cpuSpeed" type="float" />
+        <column name="cpuType" type="str" />
+        <column name="ramTotal" type="int" />
+        <column name="ramFree" type="int" />
+        <column name="swapTotal" type="int" />
+        <column name="swapFree" type="int" />
     </table>
     <table name="software">
         <column name="ip" type="str" />

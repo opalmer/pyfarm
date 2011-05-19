@@ -1,7 +1,6 @@
 '''
 HOMEPAGE: www.pyfarm.net
-INITIAL: May 29 2010
-PURPOSE: To provide a means to query host information from a client
+PURPOSE: To import the standard includes and setup the package
 
 This file is part of PyFarm.
 Copyright (C) 2008-2011 Oliver Palmer
@@ -20,9 +19,19 @@ You should have received a copy of the GNU Lesser General Public License
 along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 '''
 import os
-import sys
 
-CWD    = os.path.dirname(os.path.abspath(__file__))
-PYFARM = os.path.abspath(os.path.join(CWD, "..", "..", ".."))
-MODULE = os.path.basename(__file__)
-if PYFARM not in sys.path: sys.path.append(PYFARM)
+try:
+    from includes import *
+
+except ImportError:
+    pass
+
+for filename in os.listdir(os.path.dirname(os.path.abspath(__file__))):
+    isInit    = filename.startswith("__init__")
+    isInclude = filename.startswith("includes")
+
+    if filename.endswith(".py") and not isInit and not isInclude:
+        __import__(filename.split(".")[0], locals(), globals())
+
+# cleanup extra objects
+del os, filename, isInit, isInclude
