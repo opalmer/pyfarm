@@ -1,0 +1,69 @@
+<!--
+    HOMEPAGE: www.pyfarm.net
+    INITIAL: July 22 2010
+    PURPOSE: To provide a means of adding, removing, or changing log levels
+    without modifying large amounts of source code.
+
+    This file should not be changed by an end user.
+
+    This file is part of PyFarm.
+    Copyright (C) 2008-2011 Oliver Palmer
+
+    PyFarm is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    PyFarm is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    You should have received a copy of the GNU Lesser General Public License
+    along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
+-->
+<Settings>
+    <globals>
+        <attr name="defaultSolo" value="False" />
+        <attr name="allowSolo" value="False" />
+        <attr name="defaultSolo" value="False" />
+        <attr name="defaultLevel" value="4" />
+        <attr name="forceLevel" value="False" />
+        <attr name="template" value="$level - $logger - $message" />
+        <!--<attr name="template" value="$time - $logger - $level - $message" />-->
+        <attr name="timeFormat" value="%Y-%m-%d %H:%M:%S" />
+    </globals>
+    <levels>
+        <!--
+            Attributes:
+                Name: The value to call the individual log level
+                Function: The function call to the log level (defaults: same as name)
+                Enabled: Turn an individual log level on or off (default: True)
+                Solo: Isolate the output of a level (default: False)
+        -->
+        <level name="netpacket" />
+        <level name="queue" />
+        <level name="conditional" />
+        <level name="module import" function="module" />
+        <level name="network.server" function="netserver" />
+        <level name="network.client" function="netclient" />
+        <level name="rpc.debug" function="rpcdebug" />
+        <level name="rpc.call" function="rpccall" />
+        <level name="rpc.result" function="rpcresult" />
+        <level name="rpc.error" function="rpcerror" />
+        <level name="sql.error" function="sqlerror" />
+        <level name="network" />
+        <level name="ui" />
+        <level name="fixme" />
+        <level name="not implemented" function="notimplemented" />
+        <level name="debug" />
+        <level name="info" />
+        <level name="not compatible" function="notcompatible" />
+        <level name="warning" />
+        <level name="deprecated" />
+        <level name="error" />
+        <level name="critical" />
+        <level name="fatal" />
+        <level name="terminate" />
+    </levels>
+</Settings>
