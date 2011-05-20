@@ -1,0 +1,8 @@
+#!/bin/bash
+
+SCRIPT=$(cd ${0%/*} && echo $PWD/${0##*/})
+PY_RELATIVE=`dirname "$SCRIPT"`/../../../
+PY_RESOLVED=$(readlink -f $PY_RELATIVE)
+
+echo "Copy branch files from '$1' to $PY_RESOLVED"
+git checkout $1 -- $PY_RESOLVED
