@@ -1,4 +1,3 @@
-# HOMEPAGE: www.pyfarm.net
 # INITIAL:
 # PURPOSE:
 #
@@ -19,4 +18,4 @@
 # along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
 all:
-	@echo "Running all..."
+	@echo "Valid methods:"
