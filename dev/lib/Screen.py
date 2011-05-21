@@ -29,7 +29,7 @@ USER = os.getenv('USER')
 class ScreenSession(object):
     '''Return information about a specific screen session'''
     def __init__(self, id):
-        self.pid  = id.split('.')[0]
+        self.pid = id.split('.')[0]
         self.name = id.split('.')[1]
 
     def __repr__(self):

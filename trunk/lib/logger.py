@@ -1,24 +1,24 @@
-'''
-HOMEPAGE: www.pyfarm.net
-INITIAL: May 22 2010
-PURPOSE: To provide a standard logging facility for PyFarm
+# No shebang line, this module is meant to be imported
+#
+# INITIAL: May 22 2010
+# PURPOSE: To provide a standard logging facility for PyFarm
+#
+# This file is part of PyFarm.
+# Copyright (C) 2008-2011 Oliver Palmer
+#
+# PyFarm is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# PyFarm is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
-This file is part of PyFarm.
-Copyright (C) 2008-2011 Oliver Palmer
-
-PyFarm is free software: you can redistribute it and/or modify
-it under the terms of the GNU Lesser General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-PyFarm is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU Lesser General Public License for more details.
-
-You should have received a copy of the GNU Lesser General Public License
-along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
-'''
 import os
 import sys
 import time
@@ -26,7 +26,7 @@ import string
 import inspect
 import xml.etree.ElementTree
 
-CWD    = os.path.dirname(os.path.abspath(__file__))
+CWD = os.path.dirname(os.path.abspath(__file__))
 PYFARM = os.path.abspath(os.path.join(CWD, ".."))
 MODULE = os.path.basename(__file__)
 if PYFARM not in sys.path: sys.path.append(PYFARM)
@@ -41,12 +41,12 @@ def settings(path=XML_CONFIG):
     @param path: The path to the xml configuration file
     @type  path: C{str}
     '''
-    out  = {}
+    out = {}
     try:
         if not os.path.isfile(path):
             raise IOError('%s is not a vaild file path' % path)
 
-        dom  = xml.etree.ElementTree.parse(path)
+        dom = xml.etree.ElementTree.parse(path)
         root = dom.getroot()
 
         for child in root.getchildren():
@@ -56,7 +56,7 @@ def settings(path=XML_CONFIG):
 
                 if element.tag == "attr":
                     # add global settings value to the dictionary
-                    name  = element.attrib['name']
+                    name = element.attrib['name']
                     value = element.attrib['value']
 
                     if name != 'template':
@@ -108,7 +108,7 @@ class LevelName(object):
     @type  enabled: C{bool}
     '''
     def __init__(self, name, enabled):
-        self.name    = name
+        self.name = name
         self.enabled = enabled
 
 
@@ -126,7 +126,7 @@ class Level(object):
     @type  method_name: C{str}
     '''
     def __init__(self, method, host, method_name=None):
-        self.host   = host
+        self.host = host
         self.method = method
         setattr(host, method_name or method.__name__, self)
 
@@ -153,30 +153,30 @@ class Logger(object):
     @type  writeOnly: C{bool}
     '''
     def __init__(self, name=None, level=None, log=None, writeOnly=False):
-        self.writeOnly  = writeOnly
-        self.config     = settings()
-        self.log        = log
-        self.level      = level or self.config['globals']['defaultLevel']
+        self.writeOnly = writeOnly
+        self.config = settings()
+        self.log = log
+        self.level = level or self.config['globals']['defaultLevel']
 
         # setting this property to false during execucution will
         # disable this logger
-        self.disabled   = False
+        self.disabled = False
 
         # override level and solo if they are defined above
         if eval(self.config['globals']['forceLevel']):
             self.level = int(self.config['globals']['defaultLevel'])
 
-        self.levels     = []
+        self.levels = []
         self.levelCalls = []
-        self.soloLevel  = None
+        self.soloLevel = None
         self.setName(name)
 
         for function, data in self.config['levels'].items():
-            solo                 = data['solo']
-            name                 = data['name']
-            enabled              = data['enabled']
-            function             = data['function']
-            level                = self.newLevel(name, enabled, function)
+            solo = data['solo']
+            name = data['name']
+            enabled = data['enabled']
+            function = data['function']
+            level = self.newLevel(name, enabled, function)
             vars(self)[function] = level
 
             if solo and not self.soloLevel:
@@ -219,29 +219,29 @@ class Logger(object):
         @type  msg: C{str}
         '''
         if level.name in self.levels and not self.disabled:
-            cfg         = self.config['levels'][level.name]
-            enabled     = cfg['enabled']
-            solo        = cfg['solo']
+            cfg = self.config['levels'][level.name]
+            enabled = cfg['enabled']
+            solo = cfg['solo']
             enabledSolo = solo and enabled
-            soloLevel   = self.soloLevel and enabled
+            soloLevel = self.soloLevel and enabled
 
             # stack inspection
-            stack  = inspect.stack()[2]
-            frame  = stack[0]
-            split  = stack[1].split(os.sep)
+            stack = inspect.stack()[2]
+            frame = stack[0]
+            split = stack[1].split(os.sep)
 
             if len(split) > 1:
                 head = split[-2]
             else:
                 head = split[-1]
 
-            tail   = split[-1].split(".")[0]
+            tail = split[-1].split(".")[0]
             module = '.'.join((head, tail))
 
             if head == '.':
                 module = tail
 
-            trace  = "%s:%i" % (module, frame.f_lineno)
+            trace = "%s:%i" % (module, frame.f_lineno)
 
             if enabledSolo or not soloLevel or solo and not enabled:
                 out = (

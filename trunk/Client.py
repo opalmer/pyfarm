@@ -1,34 +1,33 @@
 #!/usr/bin/env python
-'''
-HOMEPAGE: www.pyfarm.net
-INITIAL: May 26 2010
-PURPOSE: To handle and run all client connections on a remote machine
+#
+# INITIAL: May 26 2010
+# PURPOSE: To handle and run all client connections on a remote machine
+#
+# This file is part of PyFarm.
+# Copyright (C) 2008-2011 Oliver Palmer
+#
+# PyFarm is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# PyFarm is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
-This file is part of PyFarm.
-Copyright (C) 2008-2011 Oliver Palmer
-
-PyFarm is free software: you can redistribute it and/or modify
-it under the terms of the GNU Lesser General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-PyFarm is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU Lesser General Public License for more details.
-
-You should have received a copy of the GNU Lesser General Public License
-along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
-'''
 import os
 import sys
 
 from PyQt4 import QtCore
 
-CWD       = os.path.dirname(os.path.abspath(__file__))
-PYFARM    = CWD
-CFG_ROOT  = os.path.join(PYFARM, "cfg")
-CFG_GEN   = os.path.join(CFG_ROOT, "general.ini")
+CWD = os.path.dirname(os.path.abspath(__file__))
+PYFARM = CWD
+CFG_ROOT = os.path.join(PYFARM, "cfg")
+CFG_GEN = os.path.join(CFG_ROOT, "general.ini")
 
 from lib import logger, settings, session, system, net
 from lib.net import tcp, udp
@@ -38,8 +37,8 @@ logger = logger.Logger()
 class Main(QtCore.QObject):
     def __init__(self, parent=None):
         super(Main, self).__init__(parent)
-        self.master  = net.MasterAddress()
-        self.config  = settings.ReadConfig.general(CFG_GEN)
+        self.master = net.MasterAddress()
+        self.config = settings.ReadConfig.general(CFG_GEN)
         self.pidFile = session.State(context='PyFarm.Client')
 
     def handlePid(self):
@@ -78,7 +77,7 @@ class Main(QtCore.QObject):
         Step 1:
         Listen for an incoming broadcast from the master
         '''
-        portNum        = self.config['servers']['broadcast']
+        portNum = self.config['servers']['broadcast']
         self.broadcast = udp.broadcast.BroadcastReceiever(portNum, parent=self)
         self.connect(
                         self.broadcast,
@@ -94,8 +93,8 @@ class Main(QtCore.QObject):
         '''
         # master info
         hostname = response[0]
-        address  = response[1]
-        port     = int(response[2]['xmlrpc'])
+        address = response[1]
+        port = int(response[2]['xmlrpc'])
 
         if self.master.setAddress(hostname, address, port):
             # localhost name, address, and info
@@ -124,7 +123,7 @@ if __name__ == '__main__':
                     )
 
     (options, args) = parser.parse_args()
-    app  = QtCore.QCoreApplication(sys.argv)
+    app = QtCore.QCoreApplication(sys.argv)
     main = Main(app)
 
     if options.stop:

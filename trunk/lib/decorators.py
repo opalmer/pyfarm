@@ -1,27 +1,26 @@
-'''
-HOMEPAGE: www.pyfarm.net
-INITIAL: Feb 5 2011
-PURPOSE: To provide a small set of decorators for use within PyFarm.
-         Decorators are used for anything from diagnostics to debugging
-         and benchmarking.
-SOURCES: http://wiki.python.org/moin/PythonDecoratorLibrary
+# No shebang line, this module is meant to be imported
+#
+# INITIAL: Feb 5 2011
+# PURPOSE: To provide a small set of decorators for use within PyFarm.
+#          Decorators are used for anything from diagnostics to debugging
+#          and benchmarking.
+#
+# This file is part of PyFarm.
+# Copyright (C) 2008-2011 Oliver Palmer
+#
+# PyFarm is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# PyFarm is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
-This file is part of PyFarm.
-Copyright (C) 2008-2011 Oliver Palmer
-
-PyFarm is free software: you can redistribute it and/or modify
-it under the terms of the GNU Lesser General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-PyFarm is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU Lesser General Public License for more details.
-
-You should have received a copy of the GNU Lesser General Public License
-along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
-'''
 import os
 import sys
 import time
@@ -31,7 +30,7 @@ import linecache
 from threading import Thread
 from functools import wraps
 
-CWD    = os.path.dirname(os.path.abspath(__file__))
+CWD = os.path.dirname(os.path.abspath(__file__))
 PYFARM = os.path.abspath(os.path.join(CWD, ".."))
 MODULE = os.path.basename(__file__)
 
@@ -40,7 +39,7 @@ from lib import logger
 
 # disable the logger and bypass tracebacks for files in TRACE_BYPASS
 log          = logger.Logger(MODULE).disabled = True
-catch22Fail  = None
+catch22Fail = None
 TRACE_BYPASS = (
                     'string.py', 'Logger.py', 'ElementTree.py',
                     'AsyncfileSystem.py', '<string>', 'stat.py',
@@ -112,7 +111,7 @@ def trace(func):
     def localtrace(frame, why, arg):
         if why == "line":
             filename = frame.f_code.co_filename
-            lineNum  = frame.f_lineno
+            lineNum = frame.f_lineno
             basename = os.path.basename(filename)
 
             if basename not in TRACE_BYPASS:
@@ -156,8 +155,8 @@ def thread(func):
 def elapsed(func):
     '''Return the time required to run a given function'''
     def run(*args, **kwargs):
-        start   = time.time()
-        output  = func(*args, **kwargs)
+        start = time.time()
+        output = func(*args, **kwargs)
         elapsed = time.time()-start
         log.debug("%s - %f seconds elapsed" % (func, elapsed))
         return output

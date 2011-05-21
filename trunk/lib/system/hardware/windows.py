@@ -40,7 +40,7 @@ import subprocess
 from common import *
 
 kernel32 = ctypes.windll.kernel32
-mpr      = ctypes.windll.mpr
+mpr = ctypes.windll.mpr
 
 class _SysStruct(ctypes.Structure):
     _fields_ = [
@@ -102,8 +102,8 @@ class _Memory(ctypes.Structure):
 
 def _cpuInfo():
     '''Return a dictionary from the registry with cpu information'''
-    cpu    = {}
-    key    = "HARDWARE\\DESCRIPTION\\System\\CentralProcessor\\0"
+    cpu = {}
+    key = "HARDWARE\\DESCRIPTION\\System\\CentralProcessor\\0"
     regKey = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, key)
 
     for num in range(winreg.QueryInfoKey(regKey)[1]):
@@ -111,7 +111,7 @@ def _cpuInfo():
 
         # remove unicode and extra spaces
         rmUnicode = re.sub(r'''[^\x00-\x7F]+''', r'''''',  str(value)).strip()
-        strip     = re.sub(r'''\s+''', r''' ''', rmUnicode)
+        strip = re.sub(r'''\s+''', r''' ''', rmUnicode)
         cpu[name] = strip
 
     regKey.Close()
@@ -125,7 +125,7 @@ def _memoryInfo():
     return memory
 
 # setup ctype objects
-_cpu    = _cpuInfo()
+_cpu = _cpuInfo()
 _system = _System()
 _struct = _SysStruct()
 _memory = _memoryInfo()
@@ -176,8 +176,8 @@ def report():
 
     for key, value in globals().items():
         isFunction = type(value) == types.FunctionType
-        isPrivate  = key.startswith("_")
-        isReport   = key == "report"
+        isPrivate = key.startswith("_")
+        isReport = key == "report"
 
         if isFunction and not isPrivate and not isReport:
             output[key] = value()

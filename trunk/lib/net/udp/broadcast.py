@@ -1,25 +1,25 @@
-'''
-HOMEPAGE: www.pyfarm.net
-INITIAL: April 7 2008
-PURPOSE: Group of classes dedicated to the discovery and management
-of remote hosts
+# No shebang line, this module is meant to be imported
+#
+# INITIAL:  April 7 2008
+# PURPOSE: Group of classes dedicated to the discovery and management
+#          of remote hosts
+#
+# This file is part of PyFarm.
+# Copyright (C) 2008-2011 Oliver Palmer
+#
+# PyFarm is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# PyFarm is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
-    This file is part of PyFarm.
-    Copyright (C) 2008-2011 Oliver Palmer
-
-    PyFarm is free software: you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    PyFarm is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
-
-    You should have received a copy of the GNU Lesser General Public License
-    along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
-'''
 import os
 import re
 import sys
@@ -29,7 +29,7 @@ import traceback
 
 from PyQt4 import QtCore, QtNetwork
 
-CWD    = os.path.dirname(os.path.abspath(__file__))
+CWD = os.path.dirname(os.path.abspath(__file__))
 PYFARM = os.path.abspath(os.path.join(CWD, "..", "..", ".."))
 if PYFARM not in sys.path: sys.path.append(PYFARM)
 
@@ -42,17 +42,17 @@ class BroadcastSender(QtCore.QThread):
     def __init__(self, config, services, parent=None):
         super(BroadcastSender, self).__init__(parent)
         # setup some standard vars, so we dont broadcast forever
-        addresses     = []
+        addresses = []
         self.services = services
-        self.port     = config['servers']['broadcast']
+        self.port = config['servers']['broadcast']
         self.interval = config['broadcast']['interval']
         self.duration = config['broadcast']['duration']
-        self.netinfo  = system.info.Network()
+        self.netinfo = system.info.Network()
 
     def run(self):
         '''Start the broadcast thread and setup the outgoing connection'''
         logger.netclient("Starting Broadcast")
-        self.socket   = QtNetwork.QUdpSocket()
+        self.socket = QtNetwork.QUdpSocket()
         self.datagram = QtCore.QByteArray()
         self.send()
 
@@ -62,10 +62,10 @@ class BroadcastSender(QtCore.QThread):
         the above specs.
         '''
         self.stopBroadcast = False
-        services           = self.services.toString()
-        start              = time.time()
-        stop               = start + self.duration
-        broadcast          = QtNetwork.QHostAddress("255.255.255.255")
+        services = self.services.toString()
+        start = time.time()
+        stop = start + self.duration
+        broadcast = QtNetwork.QHostAddress("255.255.255.255")
 
         while time.time() < stop:
             if self.stopBroadcast:
@@ -120,14 +120,14 @@ class BroadcastReceiever(QtCore.QThread):
             datagram = QtCore.QByteArray()
             datagram.resize(self.socket.pendingDatagramSize())
 
-            sender   = QtNetwork.QHostAddress()
-            data     = self.socket.readDatagram(datagram.size())
-            packet   = str(data[0])
-            msg      = net.Services.fromString(packet)
+            sender = QtNetwork.QHostAddress()
+            data = self.socket.readDatagram(datagram.size())
+            packet = str(data[0])
+            msg = net.Services.fromString(packet)
 
             # unpacked packet
-            ip       = str(data[1].toString())
-            host     = msg[0]
+            ip = str(data[1].toString())
+            host = msg[0]
             services = msg[2]
 
         self.emit(QtCore.SIGNAL("broadcast"), (host, ip, services))

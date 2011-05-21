@@ -29,7 +29,7 @@ import tempfile
 
 from PyQt4 import QtNetwork, QtCore
 
-CWD    = os.path.dirname(os.path.abspath(__file__))
+CWD = os.path.dirname(os.path.abspath(__file__))
 PYFARM = os.path.abspath(os.path.join(CWD, "..", ".."))
 MODULE = os.path.basename(__file__)
 if PYFARM not in sys.path: sys.path.append(PYFARM)
@@ -38,16 +38,16 @@ from lib.system import includes
 from lib import logger, settings
 
 LOGLEVEL = 6
-log      = logger.Logger(MODULE, LOGLEVEL)
+log = logger.Logger(MODULE, LOGLEVEL)
 
 if os.name == "nt":
-    USER     = os.getenv('USERNAME')
-    HOME     = os.getenv('USERPROFILE', tempfile.gettempdir())
+    USER = os.getenv('USERNAME')
+    HOME = os.getenv('USERPROFILE', tempfile.gettempdir())
     HOSTNAME = os.getenv('COMPUTERNAME', socket.gethostname())
 
 else:
-    USER     = os.getenv('USER')
-    HOME     = os.getenv('HOME', tempfile.gettempdir())
+    USER = os.getenv('USER')
+    HOME = os.getenv('HOME', tempfile.gettempdir())
     HOSTNAME = os.getenv('HOSTNAME', socket.gethostname())
 
 PYFARMHOME = os.path.join(HOME, '.pyfarm')
@@ -57,15 +57,15 @@ class SystemInfo(object):
     def __init__(self, configDir, skipSoftware=True):
         if os.name == "nt":
             #process = includes.SimpleCommand("cmd.exe /C systeminfo", all=False)
-            #cache   = str(process.readAll())
+            #cache = str(process.readAll())
             log.notimplemented("SystemInfo not implemented for %s" % os.name)
             cache = None
         else:
             cache = None
 
-        self.config   = settings.ReadConfig.general(configDir)
+        self.config = settings.ReadConfig.general(configDir)
         self.hardware = Hardware(cache)
-        self.network  = Network()
+        self.network = Network()
 
     @staticmethod
     def tmpdir(children=[]):
@@ -79,7 +79,7 @@ class SystemInfo(object):
 class OperatingSystem(object):
     '''Query and return information about the operating system'''
     def __init__(self, cache):
-        self.type  = os.name
+        self.type = os.name
         self.cache = cache
 
     def version(self):
@@ -94,8 +94,8 @@ class OperatingSystem(object):
 class Hardware(object):
     '''Used to query information about the local hardware'''
     def __init__(self, cache):
-        self.cache   = cache
-        self.rammax  = 0
+        self.cache = cache
+        self.rammax = 0
         self.swapmax = 0
 
         if os.name == "posix":
@@ -105,7 +105,7 @@ class Hardware(object):
 
             except TypeError:
                 log.fixme("Hardware information (linux) not implimented for new SimpleCommand")
-                self.rammax  = None
+                self.rammax = None
                 self.swapmax = None
 
             except ValueError, e:
@@ -203,14 +203,14 @@ class Software(object):
     '''Query and return information about the software on the local system'''
     def __init__(self, config=None, cache=None):
         self.config = config
-        self.cache  = cache
+        self.cache = cache
 
 
 class Network(object):
     '''Query and return information about the local network'''
     def __init__(self, adapter=None, cache=None):
         self.adapter = adapter
-        self.cache   = cache
+        self.cache = cache
 
     def _ip(self):
         '''Return the best guess ip via qt'''
@@ -254,13 +254,13 @@ class Network(object):
 
 class Qt(object):
     '''Setup and return information about Qt'''
-    VERSION_STR   = QtCore.QT_VERSION_STR
+    VERSION_STR = QtCore.QT_VERSION_STR
     VERSION_MAJOR = int(VERSION_STR.split('.')[0])
     VERSION_MINOR = int(VERSION_STR.split('.')[1])
 
 
 class PyQt(object):
     '''Setup and return information about PyQt'''
-    VERSION_STR   = QtCore.PYQT_VERSION_STR
+    VERSION_STR = QtCore.PYQT_VERSION_STR
     VERSION_MAJOR = int(VERSION_STR.split('.')[0])
     VERSION_MINOR = int(VERSION_STR.split('.')[1])

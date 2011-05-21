@@ -1,24 +1,24 @@
-'''
-HOMEPAGE: www.pyfarm.net
-INITIAL: July 17 2010
-PURPOSE: Slot library for quick access to small actions
+# No shebang line, this module is meant to be imported
+#
+# INITIAL: July 17 2010
+# PURPOSE: Slot library for quick access to small actions
+#
+# This file is part of PyFarm.
+# Copyright (C) 2008-2011 Oliver Palmer
+#
+# PyFarm is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# PyFarm is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
-This file is part of PyFarm.
-Copyright (C) 2008-2011 Oliver Palmer
-
-PyFarm is free software: you can redistribute it and/or modify
-it under the terms of the GNU Lesser General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-PyFarm is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU Lesser General Public License for more details.
-
-You should have received a copy of the GNU Lesser General Public License
-along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
-'''
 import os
 import sys
 import time
@@ -35,7 +35,7 @@ class Help(object):
     '''Slot functions from the help menu'''
     def __init__(self,parent, config):
         self.parent = parent
-        self.ui     = parent.ui
+        self.ui = parent.ui
         self.config = config
 
 
@@ -43,14 +43,14 @@ class Host(QtCore.QObject):
     '''Host related slot functions'''
     def __init__(self, parent, config, services):
         super(Host, self).__init__(parent)
-        self.parent   = parent
-        self.ui       = parent.ui
-        self.config   = config
+        self.parent = parent
+        self.ui = parent.ui
+        self.config = config
         self.services = services
 
         # establish broadcast related variables
-        self.lastBroadcast  = 0
-        self.nextBroadcast  = 0
+        self.lastBroadcast = 0
+        self.nextBroadcast = 0
         self.broadcastDelay = self.config['broadcast']['delay']
 
     def find(self):
@@ -59,14 +59,14 @@ class Host(QtCore.QObject):
             self.lastBroadcast = time.time()
             self.nextBroadcast = self.lastBroadcast + self.broadcastDelay
             broadcast = udp.broadcast.BroadcastSender(self.config, self.services)
-            progress  = ui.dialogs.BroadcastProgress(broadcast, self.ui)
+            progress = ui.dialogs.BroadcastProgress(broadcast, self.ui)
             self.connect(progress, QtCore.SIGNAL("canceled()"), broadcast.quit)
             progress.show()
             broadcast.start()
 
         elif not time.time() >= self.nextBroadcast:
             delay = self.broadcastDelay
-            warn  = "Please wait at least %i seconds " % delay
+            warn = "Please wait at least %i seconds " % delay
             warn += "between broadcasts before attempting another another."
             QtGui.QMessageBox.warning(
                                         self.ui, "Broadcast Delayed",

@@ -30,14 +30,14 @@ import shutil
 import fnmatch
 import tempfile
 
-CWD        = os.path.dirname(os.path.abspath(__file__))
-PYFARM     = os.path.abspath(os.path.join(CWD, ".."))
-MODULE     = os.path.basename(__file__)
-START      = time.time()
-ROOT       = os.path.join(os.getenv('HOME'), 'pyfarm') # directory to start in
-PYEXTS     = ("*.py", "*.pyw")                         # edit files with these extensions ONLY
+CWD = os.path.dirname(os.path.abspath(__file__))
+PYFARM = os.path.abspath(os.path.join(CWD, ".."))
+MODULE = os.path.basename(__file__)
+START = time.time()
+ROOT = os.path.join(os.getenv('HOME'), 'pyfarm') # directory to start in
+PYEXTS = ("*.py", "*.pyw")                         # edit files with these extensions ONLY
 EXCLUSIONS = ("*.git*", "*.eric*", "*.pyc", "*~")      # DO NOT enter paths matching this
-SEARCH     = re.compile(r'''__(.+)__''')               # Search for __*__ but only capture what is inside ()
+SEARCH = re.compile(r'''__(.+)__''')               # Search for __*__ but only capture what is inside ()
 ###################################
 # See the replace function for the replacement method
 ###################################
@@ -60,7 +60,7 @@ def replace(regexMatch, line):
     '''Replace method replacing line with items from regexMatch'''
     return re.sub(regexMatch.group(0), regexMatch.group(1), line)
 
-lines        = 0
+lines = 0
 replacements = 0
 
 # make replacements
@@ -68,9 +68,9 @@ for root, dirs, files in os.walk(ROOT):
         if not isExcluded(root):
             for filename in files:
                 if isPyFile(filename):
-                    sourcePath  = os.path.join(root, filename)
-                    source      = open(sourcePath, 'r').readlines()
-                    tmpFile     = tempfile.NamedTemporaryFile(delete=False)
+                    sourcePath = os.path.join(root, filename)
+                    source = open(sourcePath, 'r').readlines()
+                    tmpFile = tempfile.NamedTemporaryFile(delete=False)
 
                     # begin processing
                     print "Reading: %s" % sourcePath

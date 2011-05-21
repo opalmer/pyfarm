@@ -19,6 +19,29 @@ PURPOSE: Ensure all modules will import properly and are included in the current
     You should have received a copy of the GNU Lesser General Public License
     along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 '''
+
+#!/usr/bin/env python
+#
+# INITIAL: Oct 07 2010
+# PURPOSE: Ensure all modules will import properly and are included in 
+#          the current installation
+#
+# This file is part of PyFarm.
+# Copyright (C) 2008-2011 Oliver Palmer
+#
+# PyFarm is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# PyFarm is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
+
 import os
 import sys
 import fnmatch
@@ -26,7 +49,7 @@ import unittest
 import modulefinder
 import ConfigParser
 
-CWD    = os.path.dirname(os.path.abspath(__file__))
+CWD = os.path.dirname(os.path.abspath(__file__))
 PYFARM = os.path.abspath(os.path.join(CWD, "..", ".."))
 MODULE = os.path.basename(__file__)
 if PYFARM not in sys.path: sys.path.append(PYFARM)
@@ -36,7 +59,7 @@ class ModuleTests(unittest.TestCase):
     def setUp(self):
         self.pyExtensions = ("py", "pyw")
         self.pyExclusions = ("*__init__*", "*tools*", "*test*")
-        self.cfg          = ConfigParser.RawConfigParser()
+        self.cfg = ConfigParser.RawConfigParser()
         self.cfg.read(os.path.join(PYFARM, 'cfg', 'versions.ini'))
 
     def _isExcluded(self, filename):
@@ -123,13 +146,13 @@ class ModuleTests(unittest.TestCase):
 
     def testPythonVersion(self):
         """Ensure the Python version meets PyFarm's requirements"""
-        module           = "python"
-        version          = self._pyVersion()
-        versionStr       = self._pyVersion(asString=True)
+        module = "python"
+        version = self._pyVersion()
+        versionStr = self._pyVersion(asString=True)
         iniMinVersionStr = self._getVersionConfig(module, 'min', asString=True)
-        iniMinVersion    = self._getVersionConfig(module, 'min')
+        iniMinVersion = self._getVersionConfig(module, 'min')
         iniMaxVersionStr = self._getVersionConfig(module, 'max', asString=True)
-        iniMaxVersion    = self._getVersionConfig(module, 'max')
+        iniMaxVersion = self._getVersionConfig(module, 'max')
 
         self.failIf(
                     version < iniMinVersion,
@@ -145,13 +168,13 @@ class ModuleTests(unittest.TestCase):
 
     def testPyQtVersion(self):
         """Ensure the PyQt version meets PyFarm's requirements"""
-        module           = "pyqt"
-        version          = self._pyqtVersion()
-        versionStr       = self._pyqtVersion(asString=True)
+        module = "pyqt"
+        version = self._pyqtVersion()
+        versionStr = self._pyqtVersion(asString=True)
         iniMinVersionStr = self._getVersionConfig(module, 'min', asString=True)
-        iniMinVersion    = self._getVersionConfig(module, 'min')
+        iniMinVersion = self._getVersionConfig(module, 'min')
         iniMaxVersionStr = self._getVersionConfig(module, 'max', asString=True)
-        iniMaxVersion    = self._getVersionConfig(module, 'max')
+        iniMaxVersion = self._getVersionConfig(module, 'max')
 
         self.failIf(
                     version < iniMinVersion,

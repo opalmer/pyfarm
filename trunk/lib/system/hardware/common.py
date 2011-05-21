@@ -78,7 +78,7 @@ def cpuSpeed():
 
     if os.path.exists(maxFreq):
         try:
-            freq  = open(maxFreq, "r")
+            freq = open(maxFreq, "r")
             speed = float(freq.read().strip()) / 1024
             freq.close()
 
@@ -163,7 +163,7 @@ def uptime():
 
     try:
         upFile = open('/proc/uptime', 'r').readlines()[0].split()
-        up     = upFile[0]
+        up = upFile[0]
     except:
         pass
 
@@ -181,7 +181,7 @@ def idletime():
 
     try:
         upFile = open('/proc/uptime', 'r').readlines()[0].split()
-        up     = upFile[1]
+        up = upFile[1]
 
     except:
         pass

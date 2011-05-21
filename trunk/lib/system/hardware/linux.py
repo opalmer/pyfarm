@@ -39,8 +39,8 @@ def report():
 
     for key, value in globals().items():
         isFunction = type(value) == types.FunctionType
-        isPrivate  = key.startswith("_")
-        isReport   = key == "report"
+        isPrivate = key.startswith("_")
+        isReport = key == "report"
 
         if isFunction and not isPrivate and not isReport:
             output[key] = value()

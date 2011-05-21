@@ -1,4 +1,5 @@
-# HOMEPAGE: www.pyfarm.net
+# This file should not be changed by the end user
+#
 # INITIAL: Oct 09 2010
 # PURPOSE: To provide general tools for use during development, deployment, and
 #          testing.

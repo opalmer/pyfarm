@@ -25,7 +25,7 @@ import sys
 from PyQt4.QtCore import Qt
 from PyQt4 import QtGui, QtNetwork, QtCore
 
-CWD    = os.path.dirname(os.path.abspath(__file__))
+CWD = os.path.dirname(os.path.abspath(__file__))
 PYFARM = os.path.abspath(os.path.join(CWD, ".."))
 MODULE = os.path.basename(__file__)
 if PYFARM not in sys.path: sys.path.append(PYFARM)

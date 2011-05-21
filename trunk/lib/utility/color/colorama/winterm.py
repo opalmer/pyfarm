@@ -36,14 +36,14 @@ from . import win32
 
 # from wincon.h
 class WinColor(object):
-    BLACK   = 0
-    BLUE    = 1
-    GREEN   = 2
-    CYAN    = 3
-    RED     = 4
+    BLACK = 0
+    BLUE = 1
+    GREEN = 2
+    CYAN = 3
+    RED = 4
     MAGENTA = 5
-    YELLOW  = 6
-    GREY    = 7
+    YELLOW = 6
+    GREY = 7
 
 # from wincon.h
 class WinStyle(object):

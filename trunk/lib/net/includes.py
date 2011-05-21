@@ -1,27 +1,27 @@
-'''
-HOMEPAGE: www.pyfarm.net
-INITIAL: August 12 2010
-PURPOSE: Primary means of local and remote network identification.  Other
-         methods can be found in libraries such as lib.system.info.  This module
-         is imported in __init_ and can be used via lib.net.<function> if you
-         import lib.net first.
+# No shebang line, this module is meant to be imported
+#
+# INITIAL: August 12 2010
+# PURPOSE: Primary means of local and remote network identification.  Other
+#          methods can be found in libraries such as lib.system.info.  This module
+#          is imported in __init_ and can be used via lib.net.<function> if you
+#          import lib.net first.
+#
+# This file is part of PyFarm.
+# Copyright (C) 2008-2011 Oliver Palmer
+#
+# PyFarm is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# PyFarm is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
-This file is part of PyFarm.
-Copyright (C) 2008-2011 Oliver Palmer
-
-PyFarm is free software: you can redistribute it and/or modify
-it under the terms of the GNU Lesser General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-PyFarm is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU Lesser General Public License for more details.
-
-You should have received a copy of the GNU Lesser General Public License
-along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
-'''
 import os
 import sys
 import struct
@@ -32,7 +32,7 @@ import UserDict
 
 from PyQt4 import QtCore, QtNetwork
 
-CWD    = os.path.dirname(os.path.abspath(__file__))
+CWD = os.path.dirname(os.path.abspath(__file__))
 PYFARM = os.path.abspath(os.path.join(CWD, "..", ".."))
 if PYFARM not in sys.path: sys.path.append(PYFARM)
 
@@ -46,16 +46,16 @@ class MasterAddress(object):
     '''Contains information about the master host'''
     def __init__(self):
         self.hostname = None
-        self.port     = None
-        self.ip       = None
+        self.port = None
+        self.ip = None
 
     def setAddress(self, hostname, ip, port):
         '''Set the hostname, ip, and port for the master address object'''
         if hostname != self.hostname or ip != self.ip or self.port != port:
             logger.netclient("Setting master: %s:%i" % (hostname, port))
             self.hostname = hostname
-            self.port     = port
-            self.ip       = ip
+            self.port = port
+            self.ip = ip
             return True
 
         return False
@@ -69,9 +69,9 @@ class Services(UserDict.UserDict):
     from potentially causing security hazards on the receiving end.
     '''
     def __init__(self, hostname='', address=''):
-        self.data     = {}
+        self.data = {}
         self.hostname = hostname
-        self.address  = address
+        self.address = address
 
     @staticmethod
     def fromString(source):
@@ -82,12 +82,12 @@ class Services(UserDict.UserDict):
         '''
         services = {}
         hostname = None
-        addr     = None
+        addr = None
         for entry in base64.standard_b64decode(source).split(","):
             if "|" in entry:
-                split    = entry.split("|")
+                split = entry.split("|")
                 hostname = split[0]
-                addr     = split[1]
+                addr = split[1]
             else:
                 split = entry.split(":")
                 services[split[0]] = int(split[1])
@@ -125,25 +125,25 @@ class AddressEntry(QtNetwork.QNetworkAddressEntry):
     '''
     def __init__(self, addressEntry):
         super(AddressEntry, self).__init__(addressEntry)
-        self.data       = addressEntry
+        self.data = addressEntry
         if addressEntry == None:
-            self._ip        = None
-            self._netmask   = None
+            self._ip = None
+            self._netmask = None
             self._broadcast = None
-            self.ip         = None
-            self.netmask    = None
-            self.broadcast  = None
+            self.ip = None
+            self.netmask = None
+            self.broadcast = None
 
         else:
-            self.data       = addressEntry
-            self._ip        = self.data.ip()
-            self._netmask   = self.data.netmask()
+            self.data = addressEntry
+            self._ip = self.data.ip()
+            self._netmask = self.data.netmask()
             self._broadcast = self.data.broadcast()
 
             # reprocessed entries
-            self.ip         = AddressEntry.toIPv4(self._ip)
-            self.netmask    = AddressEntry.toIPv4(self._netmask)
-            self.broadcast  = AddressEntry.toIPv4(self._broadcast)
+            self.ip = AddressEntry.toIPv4(self._ip)
+            self.netmask = AddressEntry.toIPv4(self._netmask)
+            self.broadcast = AddressEntry.toIPv4(self._broadcast)
 
     def __repr__(self):
         return self.ip or ''
@@ -173,22 +173,22 @@ class NetworkInterface(QtNetwork.QNetworkInterface):
     '''
     def __init__(self, interface):
         super(NetworkInterface, self).__init__(interface)
-        self.data      = interface
-        self.uid       = str(self.data.name())
-        self.name      = str(self.data.humanReadableName())
-        self.mac       = str(self.data.hardwareAddress())
+        self.data = interface
+        self.uid = str(self.data.name())
+        self.name = str(self.data.humanReadableName())
+        self.mac = str(self.data.hardwareAddress())
         self.addresses = self._addresses()
-        self.address   = self._filterAddresses(self.addresses)
+        self.address = self._filterAddresses(self.addresses)
 
         # shortcut attributes that point to the resolved address entry
         if self.address:
-            self.ip        = self.address.ip
-            self.netmask   = self.address.netmask
+            self.ip = self.address.ip
+            self.netmask = self.address.netmask
             self.broadcast = self.address.broadcast
 
         else:
-            self.ip        = None
-            self.netmask   = None
+            self.ip = None
+            self.netmask = None
             self.broadcast = None
 
     def _addresses(self):
@@ -239,8 +239,8 @@ class NetworkInterfaces(QtNetwork.QNetworkInterface):
         @param interface: The interface to test the validity of
         @type  interface: QtNetwork.QNetworkInterface
         '''
-        qtValid   = interface.isValid()
-        macValid  = self._validHardwareAddr(interface)
+        qtValid = interface.isValid()
+        macValid = self._validHardwareAddr(interface)
         validAddr = self._validAddresses(interface)
 
         if qtValid and macValid and validAddr:
@@ -281,8 +281,8 @@ def hostname(fqdn=False):
     @type  fqdn: C{bool}
     '''
     hostname = socket.gethostname()
-    fqdn     = socket.getfqdn(hostname)
-    ip       = lookupAddress(hostname)
+    fqdn = socket.getfqdn(hostname)
+    ip = lookupAddress(hostname)
 
     if lookupHostname(lookupAddress(hostname)) in (hostname, fqdn):
         if fqdn:
@@ -308,7 +308,7 @@ def interface():
     the next network adapter.
     '''
     dnsHost = hostname(fqdn=True)
-    dnsIp   = lookupAddress(dnsHost)
+    dnsIp = lookupAddress(dnsHost)
     for interface in interfaces():
         ip = interface.address.ip
         if ip == dnsIp or not AddressEntry.isLocal(ip):
@@ -321,7 +321,7 @@ def address(convert=True):
     @param convert: If true, convert to a IPv4 string
     @type  convert: C{bool}
     '''
-    ip    = INTERFACE.address.data.ip()
+    ip = INTERFACE.address.data.ip()
 
     if convert:
         ip = AddressEntry.toIPv4(ip)
@@ -345,7 +345,7 @@ def hardwareAddress(basic=False):
 def getPort():
     '''Return an open port to use'''
     ip = interface().ip
-    s  = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.bind((ip, 0))
     addr, port = s.getsockname()
     s.close()
@@ -360,7 +360,7 @@ def isOpenPort(openPort):
     '''
     ip = address()
     try:
-        s  = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.bind((ip, openPort))
         addr, port = s.getsockname()
         s.close()
@@ -381,5 +381,5 @@ del CWD, PYFARM
 
 if __name__ == "__main__":
     iface = INTERFACE
-    addr  = address()
+    addr = address()
     print "%s [%s]" %(iface.name, iface.address.ip)

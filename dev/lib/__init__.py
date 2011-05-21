@@ -9,7 +9,7 @@ try:
 except ImportError:
     pass
 
-CWD    = os.path.dirname(os.path.abspath(__file__))
+CWD = os.path.dirname(os.path.abspath(__file__))
 PYFARM = os.path.abspath(os.path.join(CWD, ".."))
 MODULE = os.path.basename(__file__)
 if PYFARM not in sys.path: sys.path.append(PYFARM)
@@ -26,11 +26,11 @@ def importFile(filename,  verbose=False):
     return imp.load_module(name, file, filename, data)
 
 for filename in os.listdir(CWD):
-    matchPy      = fnmatch.fnmatch(filename, "*.py")
-    matchPyc     = fnmatch.fnmatch(filename, "*.pyc")
-    matchInit    = fnmatch.fnmatch(filename, "*__init__*")
+    matchPy = fnmatch.fnmatch(filename, "*.py")
+    matchPyc = fnmatch.fnmatch(filename, "*.pyc")
+    matchInit = fnmatch.fnmatch(filename, "*__init__*")
     matchInclude = fnmatch.fnmatch(filename, "*includes*")
     if matchPy and not matchPyc and not matchInit and not matchInclude:
-        varName                        = filename.split('.')[0]
-        scriptPath                     = os.path.join(CWD, filename)
-        vars()[varName]                = importFile(scriptPath)
+        varName = filename.split('.')[0]
+        scriptPath = os.path.join(CWD, filename)
+        vars()[varName] = importFile(scriptPath)

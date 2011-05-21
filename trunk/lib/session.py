@@ -1,25 +1,25 @@
-'''
-HOMEPAGE: www.pyfarm.net
-INITIAL: Dec 7 2010
-PURPOSE: Store information such as process ID and other session
-dependent information as a set of files
+# No shebang line, this module is meant to be imported
+#
+# INITIAL: Dec 7 2010
+# PURPOSE: Store information such as process ID and other session
+#          dependent information as a set of files
+#
+# This file is part of PyFarm.
+# Copyright (C) 2008-2011 Oliver Palmer
+#
+# PyFarm is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# PyFarm is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
-This file is part of PyFarm.
-Copyright (C) 2008-2011 Oliver Palmer
-
-PyFarm is free software: you can redistribute it and/or modify
-it under the terms of the GNU Lesser General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-PyFarm is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU Lesser General Public License for more details.
-
-You should have received a copy of the GNU Lesser General Public License
-along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
-'''
 import os
 import sys
 import time
@@ -36,7 +36,7 @@ logger = logger.Logger()
 class AcquisitionThread(QtCore.QThread):
     def __init__(self, semaphore, parent=None):
         super(AcquisitionThread, self).__init__(parent)
-        self.ACQUIRED  = False
+        self.ACQUIRED = False
         self.semaphore = semaphore
 
 def run(semaphore):
@@ -52,9 +52,9 @@ class SystemSemaphore(QtCore.QSystemSemaphore):
     '''System level semaphore locking system with timeouts'''
     def _tryAcquire(self, timeout):
         '''Attempt to acquire a lock inside of a thread'''
-        start   = time.time()
+        start = time.time()
         maxTime = start+timeout
-        #thread  = Thread(target=run(self))
+        #thread = Thread(target=run(self))
         #thread.start()
 
         while time.time() <= maxTime and not self.acquire():
@@ -81,10 +81,10 @@ class State(object):
     be included in this file.
     '''
     def __init__(self, context):
-        self.context  = "%s.%s" % (context, system.info.HOSTNAME)
+        self.context = "%s.%s" % (context, system.info.HOSTNAME)
         self.stateDir = os.path.join(system.info.PYFARMHOME, 'state')
-        self.pidDir   = os.path.join(system.info.PYFARMHOME, 'pid')
-        self.pidFile  = os.path.join(self.pidDir, '%s.pid' % self.context)
+        self.pidDir = os.path.join(system.info.PYFARMHOME, 'pid')
+        self.pidFile = os.path.join(self.pidDir, '%s.pid' % self.context)
 
         # create directories
         fileSystem.mkdir(self.stateDir)

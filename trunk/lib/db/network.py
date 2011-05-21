@@ -1,29 +1,29 @@
-'''
-HOMEPAGE: www.pyfarm.net
-INITIAL: Dec 28 2010
-PURPOSE: To create, edit, and remove network related database entries.
+# No shebang line, this module is meant to be imported
+#
+# INITIAL: Dec 28 2010
+# PURPOSE: To create, edit, and remove network related database entries.
+#
+# This file is part of PyFarm.
+# Copyright (C) 2008-2011 Oliver Palmer
+#
+# PyFarm is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# PyFarm is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
-This file is part of PyFarm.
-Copyright (C) 2008-2011 Oliver Palmer
-
-PyFarm is free software: you can redistribute it and/or modify
-it under the terms of the GNU Lesser General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-PyFarm is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU Lesser General Public License for more details.
-
-You should have received a copy of the GNU Lesser General Public License
-along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
-'''
 import os
 import sys
 
-CWD      = os.path.dirname(os.path.abspath(__file__))
-PYFARM   = os.path.abspath(os.path.join(CWD, "..", ".."))
+CWD = os.path.dirname(os.path.abspath(__file__))
+PYFARM = os.path.abspath(os.path.join(CWD, "..", ".."))
 if PYFARM not in sys.path: sys.path.append(PYFARM)
 
 import includes
@@ -59,7 +59,7 @@ def addHost(sql, host, ip, sysinfo, status=0, fComplete=0, fFailed=0, fRendering
 
 def hostExists(sql, host):
     '''Return true if the given host is in the database'''
-    i     = 0
+    i = 0
     hosts = []
     query = includes.query(sql, "SELECT hostname FROM hosts")
 
@@ -80,7 +80,7 @@ def removeHost(sql, host):
 
     logger.debug("Removing %s from the database" % host)
     statement = "DELETE FROM hosts WHERE hostname = '%s'" % host
-    query     = includes.query(sql, statement)
+    query = includes.query(sql, statement)
     return True
 
 if __name__ == '__main__':
@@ -90,16 +90,16 @@ if __name__ == '__main__':
     import includes
 
     logger.warning("Adding useless host information for testing!!")
-    sql       = includes.connect(clean=True)
+    sql = includes.connect(clean=True)
     MAX_HOSTS = 500
-    start     = time.time()
-    times     = []
+    start = time.time()
+    times = []
 
     for i in range(MAX_HOSTS):
         # generate hostname
-        hostname   = ''
+        hostname = ''
         for i in range(random.randint(5, 8)):
-            letter    = string.ascii_lowercase[random.randint(0, 25)]
+            letter = string.ascii_lowercase[random.randint(0, 25)]
             hostname += letter
         hostname += str(random.randint(1,60)).zfill(2)
 
@@ -110,9 +110,9 @@ if __name__ == '__main__':
         ip = '.'.join(ip)
 
         # generate other usefull status
-        status    = random.randint(0, 6)
-        complete  = random.randint(0, 1000)
-        failed    = random.randint(0, 15)
+        status = random.randint(0, 6)
+        complete = random.randint(0, 1000)
+        failed = random.randint(0, 15)
         rendering = random.randint(0, 4)
 
         # add host to database

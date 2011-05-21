@@ -23,7 +23,7 @@ import sys
 import pprint
 import modulefinder
 
-CWD    = os.path.dirname(os.path.abspath(__file__))
+CWD = os.path.dirname(os.path.abspath(__file__))
 PYFARM = os.path.abspath(os.path.join(CWD, "..",  ".."))
 MODULE = os.path.basename(__file__)
 

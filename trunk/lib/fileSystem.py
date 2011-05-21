@@ -1,32 +1,32 @@
-'''
-HOMEPAGE: www.pyfarm.net
-INITIAL: Aug 25 2010
-PURPOSE: To provide a simple means for interacting with file objects while
-         providing as much functionality as possible.
+# No shebang line, this module is meant to be imported
+#
+# INITIAL: Aug 25 2010
+# PURPOSE: To provide a simple means for interacting with file objects while
+#          providing as much functionality as possible.
+#
+# This file is part of PyFarm.
+# Copyright (C) 2008-2011 Oliver Palmer
+#
+# PyFarm is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# PyFarm is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
-This file is part of PyFarm.
-Copyright (C) 2008-2011 Oliver Palmer
-
-PyFarm is free software: you can redistribute it and/or modify
-it under the terms of the GNU Lesser General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-PyFarm is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU Lesser General Public License for more details.
-
-You should have received a copy of the GNU Lesser General Public License
-along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
-'''
 import os
 import sys
 import fnmatch
 import difflib
 from PyQt4 import QtCore
 
-CWD    = os.path.dirname(os.path.abspath(__file__))
+CWD = os.path.dirname(os.path.abspath(__file__))
 PYFARM = os.path.abspath(os.path.join(CWD, ".."))
 MODULE = os.path.basename(__file__)
 if PYFARM not in sys.path: sys.path.append(PYFARM)
@@ -58,15 +58,15 @@ class Tail(QtCore.QObject):
     '''
     def __init__(self, filePath, interval=1, parent=None):
         super(Tail, self).__init__(parent)
-        self.parent    = parent
-        self.filePath  = filePath
-        self.interval  = int(float(interval) * 1000.00)
-        self.changes   = 0
+        self.parent = parent
+        self.filePath = filePath
+        self.interval = int(float(interval) * 1000.00)
+        self.changes = 0
         self.linecount = 0
-        self.lines     = []
+        self.lines = []
 
         # monitor setup
-        self.monitor   = QtCore.QFileSystemWatcher(self.parent)
+        self.monitor = QtCore.QFileSystemWatcher(self.parent)
         self.monitor.addPath(self.filePath)
         self.connect(
                          self.monitor,
@@ -96,7 +96,7 @@ class Tail(QtCore.QObject):
                                   string
                               )
             # reset variables
-            self.lines     = lines
+            self.lines = lines
             self.linecount = len(lines)
 
         f.close()
@@ -106,7 +106,7 @@ class Monitor(QtCore.QObject):
     def __init__(self, filepath, parent=None):
         super(Monitor, self).__init__(parent)
         self.linecount = 1
-        self.filepath  = filepath
+        self.filepath = filepath
 
     def runMonitor(self):
         tail = Tail(self.filepath,  parent=self)

@@ -1,24 +1,24 @@
-'''
-HOMEPAGE: www.pyfarm.net
-INITIAL: Dec 27 2010
-PURPOSE: Minor functions to be used by the entire package when lib is imported
+# No shebang line, this module is meant to be imported
+#
+# INITIAL: Dec 27 2010
+# PURPOSE: Minor functions to be used by the entire package when lib is imported
+#
+# This file is part of PyFarm.
+# Copyright (C) 2008-2011 Oliver Palmer
+#
+# PyFarm is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# PyFarm is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
-This file is part of PyFarm.
-Copyright (C) 2008-2011 Oliver Palmer
-
-PyFarm is free software: you can redistribute it and/or modify
-it under the terms of the GNU Lesser General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-PyFarm is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU Lesser General Public License for more details.
-
-You should have received a copy of the GNU Lesser General Public License
-along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
-'''
 import os
 import sys
 import types
@@ -26,10 +26,10 @@ from xml.dom import minidom
 
 from PyQt4 import QtSql, QtCore
 
-CWD      = os.path.dirname(os.path.abspath(__file__))
-PYFARM   = os.path.abspath(os.path.join(CWD, "..", ".."))
-DB_XML   = os.path.join(PYFARM, "cfg", "dbbase.xml")
-DB_SQL   = os.path.join(PYFARM, "PyFarmDB.sql")
+CWD = os.path.dirname(os.path.abspath(__file__))
+PYFARM = os.path.abspath(os.path.join(CWD, "..", ".."))
+DB_XML = os.path.join(PYFARM, "cfg", "dbbase.xml")
+DB_SQL = os.path.join(PYFARM, "PyFarmDB.sql")
 if PYFARM not in sys.path: sys.path.append(PYFARM)
 
 from lib import logger
@@ -103,11 +103,11 @@ def connect(dbFile=DB_SQL, clean=False, optimize=True):
 
     if db.open():
         logger.info("Connected to DB: %s" % dbFile)
-        xml   = minidom.parse(DB_XML)
+        xml = minidom.parse(DB_XML)
         query = QtSql.QSqlQuery(db)
 
         for element in xml.getElementsByTagName("table"):
-            script    = ""
+            script = ""
             tableName = element.getAttribute("name")
             script += "CREATE TABLE IF NOT EXISTS %s (" % tableName
 

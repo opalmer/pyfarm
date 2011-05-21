@@ -1,24 +1,24 @@
-'''
-HOMEPAGE: www.pyfarm.net
-INITIAL: April 10 2011
-PURPOSE: To provide a PyQt compatible xmlrpc server
+# No shebang line, this module is meant to be imported
+#
+# INITIAL: April 10 2011
+# PURPOSE: To provide a PyQt compatible xmlrpc server
+#
+# This file is part of PyFarm.
+# Copyright (C) 2008-2011 Oliver Palmer
+#
+# PyFarm is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# PyFarm is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
-This file is part of PyFarm.
-Copyright (C) 2008-2011 Oliver Palmer
-
-PyFarm is free software: you can redistribute it and/or modify
-it under the terms of the GNU Lesser General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-PyFarm is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU Lesser General Public License for more details.
-
-You should have received a copy of the GNU Lesser General Public License
-along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
-'''
 import os
 import re
 import sys
@@ -31,16 +31,16 @@ import xml.etree.cElementTree
 
 from PyQt4 import QtCore, QtNetwork
 
-CWD    = os.path.dirname(os.path.abspath(__file__))
+CWD = os.path.dirname(os.path.abspath(__file__))
 PYFARM = os.path.abspath(os.path.join(CWD, "..", "..", ".."))
 if PYFARM not in sys.path: sys.path.append(PYFARM)
 
 from lib import logger, net
 
-UNIT16         = 8
+UNIT16 = 8
 STREAM_VERSION = net.dataStream()
-logger         = logger.Logger('test', 'test')
-loads          = xmlrpclib.loads
+logger = logger.Logger('test', 'test')
+loads = xmlrpclib.loads
 
 def dumps(method, values):
     '''
@@ -51,7 +51,7 @@ def dumps(method, values):
 def client(hostname, port, resource, verbose=False):
     '''Return a client to the given master and resource'''
     args = (hostname, port, resource)
-    
+
     if not type(port) == types.IntType:
         try:
             port = int(port)
@@ -100,8 +100,8 @@ class Serialization(QtCore.QObject):
             raise SerializationFailure(error)
 
         self.resource = self._getResource(self.source)
-        self.rpcXml   = self._getXml(self.source)
-        self.cTree    = xml.etree.cElementTree.fromstring(self.rpcXml)
+        self.rpcXml = self._getXml(self.source)
+        self.cTree = xml.etree.cElementTree.fromstring(self.rpcXml)
         self.emit(QtCore.SIGNAL("resource"), self.resource)
 
         for child in self.cTree.getchildren():
@@ -164,8 +164,8 @@ class Deserialize(Serialization):
         @param element: The element to pull typeName and value from
         @type  element: xml.etree.cElementTree.Element
         '''
-        typeName    = element.tag
-        value       = element.text
+        typeName = element.tag
+        value = element.text
         if typeName == "struct":   return self.parsedDict(element)
         elif typeName == "array":  return self.parsedArray(element)
         elif typeName == "string": return str(value)
@@ -221,7 +221,7 @@ class BaseResource(QtCore.QObject):
     '''Base resource interited by all resource objects'''
     def __init__(self, sql=None, parent=None):
         super(BaseResource, self).__init__(parent)
-        self.sql    = sql
+        self.sql = sql
         self.parent = parent
 
 
@@ -235,10 +235,10 @@ class BaseServerThread(QtCore.QThread):
     def __init__(self, socketId, parent=None):
         super(BaseServerThread, self).__init__(parent)
         self.socketId = socketId
-        self.parent   = parent
-        self.socket   = None
-        self.peer     = None
-        self.data     = None
+        self.parent = parent
+        self.socket = None
+        self.peer = None
+        self.data = None
 
     def _getMethod(self, resource, method):
         '''Return the method for the given resource'''
@@ -252,9 +252,9 @@ class BaseServerThread(QtCore.QThread):
         TODO: Replace the eval statement
         '''
         resource = self.data.resource
-        method   = self.data.method
-        args     = self.data.parms
-        command  = "self.parent.resources['%s'].%s%s" % (resource, method, args)
+        method = self.data.method
+        args = self.data.parms
+        command = "self.parent.resources['%s'].%s%s" % (resource, method, args)
 
         return eval(command)
 
@@ -271,7 +271,7 @@ class BaseServerThread(QtCore.QThread):
         Return a list of methods being overridden in this class (methods
         that can be called via rpc)
         '''
-        methods  = []
+        methods = []
         resource = self.data.resource
 
         for name in vars(self.parent.resources[resource].__class__).keys():
@@ -300,7 +300,7 @@ class BaseServerThread(QtCore.QThread):
         Return True if the input given by the RPC call from the client matches
         the required input to the given method.
         '''
-        method     = getattr(self.parent.resources[resource].__class__, method)
+        method = getattr(self.parent.resources[resource].__class__, method)
         inspection = list(inspect.getargspec(method))
 
         # make sure all inspection output are not None
@@ -311,9 +311,9 @@ class BaseServerThread(QtCore.QThread):
             index += 1
 
         arguments = len(inspection[0][1:])
-        keywords  = len(inspection[3])
-        required  = arguments - keywords
-        argCount  = len(args)
+        keywords = len(inspection[3])
+        required = arguments - keywords
+        argCount = len(args)
 
         if argCount <= arguments and argCount >= required:
             return True
@@ -332,33 +332,33 @@ class BaseServerThread(QtCore.QThread):
         Perform the checks necessary to ensure the method we are attempting
         to call is valid
         '''
-        fault      = None
-        faultCode  = None
-        method     = self.data.method
+        fault = None
+        faultCode = None
+        method = self.data.method
         methodArgs = self.data.parms
-        resource   = self.data.resource
+        resource = self.data.resource
 
         # ensure that the resource being called exists in the parent's resources
         if not self._validResource(resource):
-            fault     = "Resource %s does not exist" % resource
+            fault = "Resource %s does not exist" % resource
             faultCode = 404
             return fault, faultCode
 
         # make sure the method calls is not private
         if not self._validMethod(method):
-            fault     = "Permission denied to private method"
+            fault = "Permission denied to private method"
             faultCode = 403
             return fault, faultCode
 
         # make sure the resource contains the method
         if not self._containsMethod(resource, method):
-            fault     = "No such method %s.%s" % (resource, method)
+            fault = "No such method %s.%s" % (resource, method)
             faultCode = 404
             return fault, faultCode
 
         # ensure our input to the method contains the proper arguments
         if not self._validateCall(resource, method, methodArgs):
-            fault     = "Invalid input to %s.%s" % (resource, method)
+            fault = "Invalid input to %s.%s" % (resource, method)
             faultCode = 400
             return fault, faultCode
 
@@ -381,8 +381,8 @@ class BaseServerThread(QtCore.QThread):
         # if the there still is not an error after validation then we
         # can query the results
         if not error:
-            reply  = (self._callMethod(self.data), )
-            dump   = xmlrpclib.dumps(
+            reply = (self._callMethod(self.data), )
+            dump = xmlrpclib.dumps(
                                         reply,
                                         methodname=self.data.method,
                                         methodresponse=True
@@ -393,7 +393,7 @@ class BaseServerThread(QtCore.QThread):
         # back to the client instead
         else:
             fault = xmlrpclib.Fault(error, errorCode)
-            dump  = xmlrpclib.dumps(fault)
+            dump = xmlrpclib.dumps(fault)
             logger.rpcerror("%s <- Error %i: %s" % (self.peer, errorCode, error))
 
         # send the rpc dump and close the connection
@@ -417,7 +417,7 @@ class BaseServerThread(QtCore.QThread):
         self.peer = str(self.socket.peerAddress().toString())
         while self.socket.state() == QtNetwork.QAbstractSocket.ConnectedState:
             nextBlockSize = 0
-            stream        = QtCore.QDataStream(self.socket)
+            stream = QtCore.QDataStream(self.socket)
             stream.setVersion(STREAM_VERSION)
 
             while True:
@@ -470,7 +470,7 @@ class BaseServer(QtNetwork.QTcpServer):
         # as the resource and for the resource name
         if type(name) not in types.StringTypes:
             resource = name
-            name     = name.__class__.__name__
+            name = name.__class__.__name__
 
         if not self.resources.has_key(name):
             logger.netserver("Added Resource: %s" % name)
@@ -490,7 +490,7 @@ class BaseServer(QtNetwork.QTcpServer):
 
 if __name__ == "__main__":
     logger.info("Starting: %i" % os.getpid())
-    app    = QtCore.QCoreApplication(sys.argv)
+    app = QtCore.QCoreApplication(sys.argv)
     server = BaseServer()
 
     try:

@@ -26,7 +26,7 @@ import subprocess
 
 from PyQt4 import QtCore
 
-CWD    = os.path.dirname(os.path.abspath(__file__))
+CWD = os.path.dirname(os.path.abspath(__file__))
 PYFARM = os.path.abspath(os.path.join(CWD, "..", ".."))
 if PYFARM not in sys.path: sys.path.append(PYFARM)
 
@@ -132,7 +132,7 @@ def memoryUsage(pid, peak=False):
     pid = int(pid)
 
     if hardware.osName() == "linux" or hardware.osName() == "cygwin":
-        path   = "/proc/%i/status" % pid
+        path = "/proc/%i/status" % pid
         search = "VmSize"
 
         if peak:
@@ -169,7 +169,7 @@ def exceedsMemoryLimit(pid, limit, terminate=False):
     @type  terminate: C{bool}
     '''
     # ensure we are only passing integers
-    pid   = int(pid)
+    pid = int(pid)
     limit = int(limit)
     usage = memoryUsage(pid)
 

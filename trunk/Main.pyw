@@ -1,25 +1,24 @@
 #!/usr/bin/env python
-'''
-HOMEPAGE: www.pyfarm.net
-INITIAL: Jan 12 2009
-PURPOSE: Main program to run and manage PyFarm
+#
+# INITIAL: Jan 12 2009
+# PURPOSE: Main program to run and manage PyFarm
+#
+# This file is part of PyFarm.
+# Copyright (C) 2008-2011 Oliver Palmer
+#
+# PyFarm is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# PyFarm is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
-This file is part of PyFarm.
-Copyright (C) 2008-2011 Oliver Palmer
-
-PyFarm is free software: you can redistribute it and/or modify
-it under the terms of the GNU Lesser General Public License as published by
-the Free Software Foundation, either __version__ 3 of the License, or
-(at your option) any later __version__.
-
-PyFarm is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU Lesser General Public License for more details.
-
-You should have received a copy of the GNU Lesser General Public License
-along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
-'''
 import os
 import sys
 import unittest
@@ -27,18 +26,18 @@ import unittest
 from PyQt4.Qt import Qt
 from PyQt4 import QtCore, QtGui, QtNetwork, uic
 
-CWD       = os.path.dirname(os.path.abspath(__file__))
-PYFARM    = CWD
-CFG_ROOT  = os.path.join(PYFARM, "cfg")
-ICN_ROOT  = os.path.join(PYFARM, "icons")
-QUE_ICN   = os.path.join(ICN_ROOT, "queue")
-CFG_GEN   = os.path.join(CFG_ROOT, "general.ini")
-UI_FILE   = os.path.join(PYFARM, "lib", "ui", "mainWindow.ui")
-PIDFILE   = None
-DEBUG     = False
+CWD = os.path.dirname(os.path.abspath(__file__))
+PYFARM = CWD
+CFG_ROOT = os.path.join(PYFARM, "cfg")
+ICN_ROOT = os.path.join(PYFARM, "icons")
+QUE_ICN = os.path.join(ICN_ROOT, "queue")
+CFG_GEN = os.path.join(CFG_ROOT, "general.ini")
+UI_FILE = os.path.join(PYFARM, "lib", "ui", "mainWindow.ui")
+PIDFILE = None
+DEBUG = False
 UNITTESTS = False
 
-__author__  = "Oliver Palmer"
+__author__ = "Oliver Palmer"
 __version__ = "0.5.0"
 
 import cfg.resources_rc
@@ -54,7 +53,7 @@ class MainWindow(QtGui.QMainWindow):
     def __init__(self):
         super(MainWindow, self).__init__()
 
-        self.pidFile     = session.State(context='PyFarm.Main')
+        self.pidFile = session.State(context='PyFarm.Main')
         self.closeForced = False
 
         if self.pidFile.running():
@@ -80,11 +79,11 @@ class MainWindow(QtGui.QMainWindow):
         # END layout
 
         # setup database
-        netTable       = self.ui.networkTable
-        jobTable       = self.ui.currentJobs
-        SqlTable       = ui.sqlTables
-        netColumns     = ("hostname", "ip", "status")
-        netSort        = "hostname"
+        netTable = self.ui.networkTable
+        jobTable = self.ui.currentJobs
+        SqlTable = ui.sqlTables
+        netColumns = ("hostname", "ip", "status")
+        netSort = "hostname"
         self.hostTable = SqlTable.Manager(
                                             SQL, netTable, "hosts",
                                             netColumns, sort=netSort
@@ -109,9 +108,9 @@ class MainWindow(QtGui.QMainWindow):
 
         # general setup and variables
         self.isClosing = False
-        self.config    = settings.ReadConfig.general(CFG_GEN)
-        self.services  = lib.net.Services()
-        self.slots     = slots.Slots(self, self.config, self.services)
+        self.config = settings.ReadConfig.general(CFG_GEN)
+        self.services = lib.net.Services()
+        self.slots = slots.Slots(self, self.config, self.services)
         self.runServers()
 
     def refreshHosts(self):
@@ -136,14 +135,14 @@ class MainWindow(QtGui.QMainWindow):
 
     def handlePid(self):
         '''Handle actions relating to the process id file'''
-        title  = "Main.pyw Is Already Running"
-        msg    = "PyFarm already seems to be open, terminate the running"
+        title = "Main.pyw Is Already Running"
+        msg = "PyFarm already seems to be open, terminate the running"
         msg   += " process if needed and continue?"
 
         logger.warning("%s: User input required" % title)
 
-        yes    = QtGui.QMessageBox.Yes
-        no     = QtGui.QMessageBox.No
+        yes = QtGui.QMessageBox.Yes
+        no = QtGui.QMessageBox.No
         msgBox = QtGui.QMessageBox.warning(self, title, msg, yes|no)
 
         if msgBox == yes:
@@ -154,7 +153,7 @@ class MainWindow(QtGui.QMainWindow):
 
     def _serverError(self, server, serverName):
         '''Format, display, and present a server error to the ui and console'''
-        msg   = (serverName, str(server.errorString()))
+        msg = (serverName, str(server.errorString()))
         error = "Could not start the %s server: %s" % msg
         self.updateConsole("server", error, color="darkblue")
         logger.fatal(error)
@@ -164,7 +163,7 @@ class MainWindow(QtGui.QMainWindow):
         Format, display, and present information about a running server to the
         interface and console
         '''
-        msg  = (serverName, server.serverPort())
+        msg = (serverName, server.serverPort())
         info = "%s running on port %i" % msg
         self.updateConsole("server", info, color="green")
         logger.netserver(info)
@@ -264,7 +263,7 @@ class MainWindow(QtGui.QMainWindow):
         @param color: Color to set the section header to
         @type  color: C{str}
         '''
-        args   = (color, section.upper(), msg)
+        args = (color, section.upper(), msg)
         status = '<font color=%s><b>%s</b></font> - %s' % args
         self.ui.status.append(status)
 
@@ -277,7 +276,7 @@ if __name__ != '__MAIN__':
     from optparse import OptionParser
 
     import lib.inputFlags as flags
-    about   = flags.About(__author__, 'GNU-LGPL_Header.txt')
+    about = flags.About(__author__, 'GNU-LGPL_Header.txt')
     sysinfo = system.info.SystemInfo(os.path.join(CFG_ROOT, "general.ini"))
 
     # handle ctrl + c signals
@@ -309,8 +308,8 @@ if __name__ != '__MAIN__':
     (options, args) = parser.parse_args()
 
     # Begin event loop
-    app  = QtGui.QApplication(sys.argv)
-    SQL  = db.connect(options.db)
+    app = QtGui.QApplication(sys.argv)
+    SQL = db.connect(options.db)
 
     # lower verbosity
     if not UNITTESTS:
