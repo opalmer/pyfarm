@@ -1,66 +1,77 @@
 #!/usr/bin/env python26
-# Copyright (c) 2007-8 Qtrac Ltd. All rights reserved.
-# This program or module is free software: you can redistribute it and/or
-# modify it under the terms of the GNU General Public License as published
-# by the Free Software Foundation, either version 2 of the License, or
-# version 3 of the License, or (at your option) any later version. It is
-# provided for educational purposes and is distributed in the hope that
-# it will be useful, but WITHOUT ANY WARRANTY; without even the implied
-# warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
-# the GNU General Public License for more details.
+#
+# PURPOSE: To import the standard includes and setup the package
+#
+# This file is part of PyFarm.
+# Copyright (C) 2008-2011 Oliver Palmer
+#
+# PyFarm is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# PyFarm is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
+
 
 import sys
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
-from PyQt4.QtNetwork import *
+
+from PyQt4 import QtGui, QtNetwork, QtCore
+from PyQt4.QtCore import Qt
 
 MAC = "qt_mac_set_native_menubar" in dir()
 
 PORT = 9407
 SIZEOF_UINT16 = 2
+STREAM_VERSION = QtCore.QDataStream.Qt_4_2
 
-
-class Client(QWidget):
+class Client(QtGui.QWidget):
 
     def __init__(self, parent=None):
         super(Client, self).__init__(parent)
 
-        self.socket = QTcpSocket()
+        self.socket = QtNetwork.QTcpSocket()
         self.nextBlockSize = 0
         self.request = None
 
-        roomLabel = QLabel("&Room")
-        self.roomEdit = QLineEdit()
+        roomLabel = QtGui.QLabel("&Room")
+        self.roomEdit = QtGui.QLineEdit()
         roomLabel.setBuddy(self.roomEdit)
-        regex = QRegExp(r"[0-9](?:0[1-9]|[12][0-9]|3[0-4])")
-        self.roomEdit.setValidator(QRegExpValidator(regex, self))
+        regex = QtCore.QRegExp(r"[0-9](?:0[1-9]|[12][0-9]|3[0-4])")
+        self.roomEdit.setValidator(QtGui.QRegExpValidator(regex, self))
         self.roomEdit.setAlignment(Qt.AlignRight|Qt.AlignVCenter)
-        dateLabel = QLabel("&Date")
-        self.dateEdit = QDateEdit()
+        dateLabel = QtGui.QLabel("&Date")
+        self.dateEdit = QtGui.QDateEdit()
         dateLabel.setBuddy(self.dateEdit)
         self.dateEdit.setAlignment(Qt.AlignRight|Qt.AlignVCenter)
-        self.dateEdit.setDate(QDate.currentDate().addDays(1))
+        self.dateEdit.setDate(QtCore.QDate.currentDate().addDays(1))
         self.dateEdit.setDisplayFormat("yyyy-MM-dd")
-        responseLabel = QLabel("Response")
-        self.responseLabel = QLabel()
-        self.responseLabel.setFrameStyle(QFrame.StyledPanel|
-                                         QFrame.Sunken)
+        responseLabel = QtGui.QLabel("Response")
+        self.responseLabel = QtGui.QLabel()
+        self.responseLabel.setFrameStyle(QtGui.QFrame.StyledPanel|
+                                         QtGui.QFrame.Sunken)
 
-        self.bookButton = QPushButton("&Book")
+        self.bookButton = QtGui.QPushButton("&Book")
         self.bookButton.setEnabled(False)
-        self.unBookButton = QPushButton("&Unbook")
+        self.unBookButton = QtGui.QPushButton("&Unbook")
         self.unBookButton.setEnabled(False)
-        quitButton = QPushButton("&Quit")
+        quitButton = QtGui.QPushButton("&Quit")
+
         if not MAC:
             self.bookButton.setFocusPolicy(Qt.NoFocus)
             self.unBookButton.setFocusPolicy(Qt.NoFocus)
 
-        buttonLayout = QHBoxLayout()
+        buttonLayout = QtGui.QHBoxLayout()
         buttonLayout.addWidget(self.bookButton)
         buttonLayout.addWidget(self.unBookButton)
         buttonLayout.addStretch()
         buttonLayout.addWidget(quitButton)
-        layout = QGridLayout()
+        layout = QtGui.QGridLayout()
         layout.addWidget(roomLabel, 0, 0)
         layout.addWidget(self.roomEdit, 0, 1)
         layout.addWidget(dateLabel, 0, 2)
@@ -70,24 +81,24 @@ class Client(QWidget):
         layout.addLayout(buttonLayout, 2, 1, 1, 4)
         self.setLayout(layout)
 
-        self.connect(self.socket, SIGNAL("connected()"),
+        self.connect(self.socket, QtCore.SIGNAL("connected()"),
                      self.sendRequest)
-        self.connect(self.socket, SIGNAL("readyRead()"),
+        self.connect(self.socket, QtCore.SIGNAL("readyRead()"),
                      self.readResponse)
-        self.connect(self.socket, SIGNAL("disconnected()"),
+        self.connect(self.socket, QtCore.SIGNAL("disconnected()"),
                      self.serverHasStopped)
         self.connect(self.socket,
-                     SIGNAL("error(QAbstractSocket::SocketError)"),
+                     QtCore.SIGNAL("error(QAbstractSocket::SocketError)"),
                      self.serverHasError)
-        self.connect(self.roomEdit, SIGNAL("textEdited(QString)"),
+        self.connect(self.roomEdit, QtCore.SIGNAL("textEdited(QString)"),
                      self.updateUi)
-        self.connect(self.dateEdit, SIGNAL("dateChanged(QDate)"),
+        self.connect(self.dateEdit, QtCore.SIGNAL("dateChanged(QDate)"),
                      self.updateUi)
-        self.connect(self.bookButton, SIGNAL("clicked()"),
+        self.connect(self.bookButton, QtCore.SIGNAL("clicked()"),
                      self.book)
-        self.connect(self.unBookButton, SIGNAL("clicked()"),
+        self.connect(self.unBookButton, QtCore.SIGNAL("clicked()"),
                      self.unBook)
-        self.connect(quitButton, SIGNAL("clicked()"), self.close)
+        self.connect(quitButton, QtCore.SIGNAL("clicked()"), self.close)
 
         self.setWindowTitle("Building Services")
 
@@ -95,7 +106,7 @@ class Client(QWidget):
     def updateUi(self):
         enabled = False
         if not self.roomEdit.text().isEmpty() and \
-           self.dateEdit.date() > QDate.currentDate():
+           self.dateEdit.date() > QtCore.QDate.currentDate():
             enabled = True
         if self.request is not None:
             enabled = False
@@ -109,19 +120,19 @@ class Client(QWidget):
 
 
     def book(self):
-        self.issueRequest(QString("BOOK"), self.roomEdit.text(),
+        self.issueRequest(QtCore.QString("BOOK"), self.roomEdit.text(),
                           self.dateEdit.date())
 
 
     def unBook(self):
-        self.issueRequest(QString("UNBOOK"), self.roomEdit.text(),
+        self.issueRequest(QtCore.QString("UNBOOK"), self.roomEdit.text(),
                           self.dateEdit.date())
 
 
     def issueRequest(self, action, room, date):
-        self.request = QByteArray()
-        stream = QDataStream(self.request, QIODevice.WriteOnly)
-        stream.setVersion(QDataStream.Qt_4_2)
+        self.request = QtCore.QByteArray()
+        stream = QtCore.QDataStream(self.request, QtCore.QIODevice.WriteOnly)
+        stream.setVersion(STREAM_VERSION)
         stream.writeUInt16(0)
         stream << action << room << date
         stream.device().seek(0)
@@ -141,8 +152,8 @@ class Client(QWidget):
 
 
     def readResponse(self):
-        stream = QDataStream(self.socket)
-        stream.setVersion(QDataStream.Qt_4_2)
+        stream = QtCore.QDataStream(self.socket)
+        stream.setVersion(STREAM_VERSION)
 
         while True:
             if self.nextBlockSize == 0:
@@ -151,20 +162,21 @@ class Client(QWidget):
                 self.nextBlockSize = stream.readUInt16()
             if self.socket.bytesAvailable() < self.nextBlockSize:
                 break
-            action = QString()
-            room = QString()
-            date = QDate()
+            action = QtCore.QString()
+            room = QtCore.QString()
+            date = QtCore.QDate()
             stream >> action >> room
             if action != "ERROR":
                 stream >> date
             if action == "ERROR":
-                msg = QString("Error: %1").arg(room)
+                msg = QtCore.QString("Error: %1").arg(room)
             elif action == "BOOK":
-                msg = QString("Booked room %1 for %2").arg(room) \
+                msg = QtCore.QString("Booked room %1 for %2").arg(room) \
                               .arg(date.toString(Qt.ISODate))
             elif action == "UNBOOK":
-                msg = QString("Unbooked room %1 for %2").arg(room) \
+                msg = QtCore.QString("Unbooked room %1 for %2").arg(room) \
                               .arg(date.toString(Qt.ISODate))
+
             self.responseLabel.setText(msg)
             self.updateUi()
             self.nextBlockSize = 0
@@ -182,7 +194,7 @@ class Client(QWidget):
         self.socket.close()
 
 
-app = QApplication(sys.argv)
+app = QtGui.QApplication(sys.argv)
 form = Client()
 form.show()
 app.exec_()
