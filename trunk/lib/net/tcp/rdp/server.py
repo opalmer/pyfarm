@@ -19,6 +19,7 @@
 # along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
 import sys
+import jsonrdp
 from PyQt4 import QtNetwork, QtCore
 from PyQt4.QtCore import Qt
 
@@ -26,10 +27,9 @@ PORT = 9407
 UINT16 = 2
 STREAM_VERSION = QtCore.QDataStream.Qt_4_2
 
-
-class Thread(QtCore.QThread):
+class ServerThread(QtCore.QThread):
     def __init__(self, socketIdent, parent):
-        super(Thread, self).__init__(parent)
+        super(ServerThread, self).__init__(parent)
         self.socketIdent = socketIdent
 
     def run(self):
@@ -41,6 +41,9 @@ class Thread(QtCore.QThread):
 
         while socket.state() == QtNetwork.QAbstractSocket.ConnectedState:
             nextBlockSize = 0
+            packet = jsonrdp.Packet(socket)
+
+            # setup the incoming stream
             stream = QtCore.QDataStream(socket)
             stream.setVersion(STREAM_VERSION)
 
@@ -48,12 +51,12 @@ class Thread(QtCore.QThread):
                 nextBlockSize = stream.readUInt16()
 
             else:
-                self.sendError(socket, "Cannot read client request")
+                packet.reply("ERROR", "Cannot read client request")
                 return
 
             if socket.bytesAvailable() < nextBlockSize:
                 if not socket.waitForReadyRead(60000) or socket.bytesAvailable() < nextBlockSize:
-                    self.sendError(socket, "Cannot read client data")
+                    packet.reply("ERROR", "Cannot read client data")
                     return
 
             header = QtCore.QString()
@@ -62,42 +65,16 @@ class Thread(QtCore.QThread):
 
             print "Incoming Header:",header
             print "Incoming Data:",data
-            self.sendReply(socket, header, data)
+            packet.reply(header, data)
             socket.waitForDisconnected()
-
-    def sendError(self, socket, msg):
-        print "Sending error"
-        reply = QtCore.QByteArray()
-        stream = QtCore.QDataStream(reply, QtCore.QIODevice.WriteOnly)
-        stream.setVersion(STREAM_VERSION)
-        stream.writeUInt16(0)
-        stream << QtCore.QString("ERROR") << QtCore.QString(msg)
-        stream.device().seek(0)
-        stream.writeUInt16(reply.size() - UINT16)
-        socket.write(reply)
-        print "error sent"
-
-
-    def sendReply(self, socket, header, data):
-        print "Sending reply"
-        reply = QtCore.QByteArray()
-        stream = QtCore.QDataStream(reply, QtCore.QIODevice.WriteOnly)
-        stream.setVersion(STREAM_VERSION)
-        stream.writeUInt16(0)
-        stream << header << data
-        stream.device().seek(0)
-        stream.writeUInt16(reply.size() - UINT16)
-        socket.write(reply)
-        print "reply sent"
-
 
 class TcpServer(QtNetwork.QTcpServer):
     def __init__(self, parent=None):
         super(TcpServer, self).__init__(parent)
 
-
     def incomingConnection(self, socketIdent):
-        thread = Thread(socketIdent, self)
+        print "incoming connection"
+        thread = ServerThread(socketIdent, self)
         self.connect(thread, QtCore.SIGNAL("finished()"),
                      thread, QtCore.SLOT("deleteLater()"))
         thread.start()

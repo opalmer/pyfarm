@@ -43,35 +43,31 @@ class Client(QtCore.QObject):
         self.connect(self.socket, QtCore.SIGNAL("readyRead()"),
                      self.readResponse)
         self.connect(self.socket, QtCore.SIGNAL("disconnected()"),
-                     self.serverHasStopped)
+                     self.serverStopped)
         self.connect(self.socket,
                      QtCore.SIGNAL("error(QAbstractSocket::SocketError)"),
-                     self.serverHasError)
+                     self.serverError)
 
-    def closeEvent(self, event):
-        self.socket.close()
-        event.accept()
-
-    def issueRequest(self, header, data):
+    def issueRequest(self, action, data):
         self.request = QtCore.QByteArray()
         stream = QtCore.QDataStream(self.request, QtCore.QIODevice.WriteOnly)
-        stream.setVersion(STREAM_VERSION)
+        stream.setVersion(QtCore.QDataStream.Qt_4_2)
         stream.writeUInt16(0)
-        stream << QtCore.QString(header) << QtCore.QString(data)
+        stream << QtCore.QString(action) << QtCore.QString(data)
         stream.device().seek(0)
         stream.writeUInt16(self.request.size() - UINT16)
         if self.socket.isOpen():
+            print 'closing socket'
             self.socket.close()
-        print "Connecting to server..."
-        self.socket.connectToHost("localhost", PORT)
 
+        print "connecting"
+        self.socket.connectToHost("localhost", PORT)
 
     def sendRequest(self):
         print "Sending request"
         self.nextBlockSize = 0
         self.socket.write(self.request)
         self.request = None
-
 
     def readResponse(self):
         stream = QtCore.QDataStream(self.socket)
@@ -92,13 +88,14 @@ class Client(QtCore.QObject):
             print "Header Reply:",header
             print "Data Reply:",data
             self.nextBlockSize = 0
+            self.socket.close()
 
 
-    def serverHasStopped(self):
+    def serverStopped(self):
         print "Connection closed by server"
         self.socket.close()
 
-    def serverHasError(self, error):
+    def serverError(self, error):
         print "Error: %s" % self.socket.errorString()
         self.socket.close()
 
@@ -107,4 +104,6 @@ signal.signal(signal.SIGINT, signal.SIG_DFL)
 app = QtCore.QCoreApplication(sys.argv)
 client = Client()
 client.issueRequest("TEST", "hello world")
+clientB = Client()
+clientB.issueRequest("TEST", "hello world2")
 app.exec_()
