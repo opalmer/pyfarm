@@ -1,6 +1,6 @@
 #!/usr/bin/env python26
 #
-# PURPOSE: To
+# PURPOSE: To handle packets, server, and json data over a TCP connection
 #
 # This file is part of PyFarm.
 # Copyright (C) 2008-2011 Oliver Palmer
@@ -18,18 +18,19 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
+import json
+
 from PyQt4 import QtNetwork, QtCore
 from PyQt4.QtCore import Qt
-
-MAC = "qt_mac_set_native_menubar" in dir()
 
 PORT = 9407
 UINT16 = 2
 STREAM_VERSION = QtCore.QDataStream.Qt_4_2
 
+
 class Packet(QtCore.QObject):
     '''Provides a common means of packing and sending data to a remote host'''
-    def __init__(self, socket, server=None, port=None):
+    def __init__(self, socket, server=None, port=PORT, parent=None):
         super(Packet, self).__init__(parent)
         self.socket = socket
         self.server = server
@@ -142,7 +143,7 @@ class ServerThread(QtCore.QThread):
             nextBlockSize = 0
 
             # setup the incoming stream and reply packet
-            packet = jsonrdp.Packet(socket)
+            packet = Packet(socket)
             stream = QtCore.QDataStream(socket)
             stream.setVersion(STREAM_VERSION)
 
@@ -162,10 +163,15 @@ class ServerThread(QtCore.QThread):
             data = QtCore.QString()
             stream >> header >> data
 
+            # unpack, repack, and send to test
+            data = json.loads(str(data))
+            data = QtCore.QString(json.dumps(data))
+
             print "Incoming Header:",header
             print "Incoming Data:",data
             packet.reply(header, data)
             socket.waitForDisconnected()
+
 
 class Server(QtNetwork.QTcpServer):
     def __init__(self, parent=None):

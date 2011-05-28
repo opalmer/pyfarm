@@ -24,75 +24,22 @@ from PyQt4 import QtNetwork, QtCore
 from PyQt4.QtCore import Qt
 
 PORT = 9407
-UINT16 = 2
-STREAM_VERSION = QtCore.QDataStream.Qt_4_2
-
-class ServerThread(QtCore.QThread):
-    def __init__(self, socketIdent, parent):
-        super(ServerThread, self).__init__(parent)
-        self.socketIdent = socketIdent
-
-    def run(self):
-        socket = QtNetwork.QTcpSocket()
-
-        if not socket.setSocketDescriptor(self.socketIdent):
-            self.emit(QtCore.SIGNAL("error(int)"), socket.error())
-            return
-
-        while socket.state() == QtNetwork.QAbstractSocket.ConnectedState:
-            nextBlockSize = 0
-            packet = jsonrdp.Packet(socket)
-
-            # setup the incoming stream
-            stream = QtCore.QDataStream(socket)
-            stream.setVersion(STREAM_VERSION)
-
-            if socket.waitForReadyRead() and socket.bytesAvailable() >= UINT16:
-                nextBlockSize = stream.readUInt16()
-
-            else:
-                packet.reply("ERROR", "Cannot read client request")
-                return
-
-            if socket.bytesAvailable() < nextBlockSize:
-                if not socket.waitForReadyRead(60000) or socket.bytesAvailable() < nextBlockSize:
-                    packet.reply("ERROR", "Cannot read client data")
-                    return
-
-            header = QtCore.QString()
-            data = QtCore.QString()
-            stream >> header >> data
-
-            print "Incoming Header:",header
-            print "Incoming Data:",data
-            packet.reply(header, data)
-            socket.waitForDisconnected()
-
-class TcpServer(QtNetwork.QTcpServer):
-    def __init__(self, parent=None):
-        super(TcpServer, self).__init__(parent)
-
-    def incomingConnection(self, socketIdent):
-        print "incoming connection"
-        thread = ServerThread(socketIdent, self)
-        self.connect(thread, QtCore.SIGNAL("finished()"),
-                     thread, QtCore.SLOT("deleteLater()"))
-        thread.start()
-
 
 class Main(QtCore.QObject):
 
     def __init__(self, parent=None):
         super(Main, self).__init__(parent)
-        self.tcpServer = TcpServer(self)
+        self.tcpServer = jsonrdp.Server(self)
 
         if not self.tcpServer.listen(QtNetwork.QHostAddress("0.0.0.0"), PORT):
             print "Error: %s" % self.tcpServer.errorString()
             self.close()
             return
 
-import signal
-signal.signal(signal.SIGINT, signal.SIG_DFL)
-app = QtCore.QCoreApplication(sys.argv)
-server = Main()
-app.exec_()
+if __name__ == "__main__":
+    import signal
+    signal.signal(signal.SIGINT, signal.SIG_DFL)
+
+    app = QtCore.QCoreApplication(sys.argv)
+    server = Main()
+    app.exec_()

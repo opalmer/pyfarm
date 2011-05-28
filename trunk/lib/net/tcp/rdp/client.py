@@ -20,6 +20,7 @@
 
 
 import sys
+import json
 
 from PyQt4 import QtNetwork, QtCore
 from PyQt4.QtCore import Qt
@@ -56,6 +57,7 @@ class Client(QtCore.QObject):
         stream << QtCore.QString(action) << QtCore.QString(data)
         stream.device().seek(0)
         stream.writeUInt16(self.request.size() - UINT16)
+
         if self.socket.isOpen():
             print 'closing socket'
             self.socket.close()
@@ -87,6 +89,7 @@ class Client(QtCore.QObject):
             stream >> header >> data
             print "Header Reply:",header
             print "Data Reply:",data
+
             self.nextBlockSize = 0
             self.socket.close()
 
@@ -99,11 +102,18 @@ class Client(QtCore.QObject):
         print "Error: %s" % self.socket.errorString()
         self.socket.close()
 
-import signal
-signal.signal(signal.SIGINT, signal.SIG_DFL)
-app = QtCore.QCoreApplication(sys.argv)
-client = Client()
-client.issueRequest("TEST", "hello world")
-clientB = Client()
-clientB.issueRequest("TEST", "hello world2")
-app.exec_()
+
+if __name__ == "__main__":
+    import os
+    import json
+    import signal
+    signal.signal(signal.SIGINT, signal.SIG_DFL)
+
+    app = QtCore.QCoreApplication(sys.argv)
+    client = Client()
+    client.issueRequest("ENV", json.dumps(dict(os.environ)))
+
+    clientB = Client()
+    clientB.issueRequest("ENV", json.dumps({"bool" : True, "int" : 10}))
+
+    app.exec_()
