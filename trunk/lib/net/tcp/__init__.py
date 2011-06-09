@@ -21,10 +21,14 @@ import site
 
 # setup root path
 cwd = os.path.abspath(os.path.dirname(__file__))
-root = os.path.abspath(os.path.join(cwd, '..'))
+root = os.path.abspath(os.path.join(cwd, '..', '..', '..'))
 
 # append PyFarm root to site
 site.addsitedir(root)
+
+# module specific imports
+import queue
+import hosts
 
 # cleanup variables
 del os, site, cwd, root
