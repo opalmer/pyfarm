@@ -1,7 +1,5 @@
 # No shebang line, this module is meant to be imported
 #
-# PURPOSE: To import the standard includes and setup the package
-#
 # This file is part of PyFarm.
 # Copyright (C) 2008-2011 Oliver Palmer
 #
@@ -19,7 +17,26 @@
 # along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
+import site
 import platform
+
+# setup root path
+cwd = os.path.abspath(os.path.dirname(__file__))
+root = os.path.abspath(os.path.join(cwd, '..'))
+
+# append PyFarm root to site
+site.addsitedir(root)
+
+# cleanup variables
+del site, cwd, root
+
+# import includes
+try: from includes import *
+except ImportError: pass
+
+# import errors
+try: from errors import *
+except ImportError: pass
 
 if os.name == 'nt':
     from windows import *
@@ -35,3 +52,5 @@ elif os.name == 'mac':
 
 else:
     raise Exception("%s is not a supported system!" % os.name)
+
+del os, platform

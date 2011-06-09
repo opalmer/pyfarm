@@ -1,7 +1,5 @@
 # No shebang line, this module is meant to be imported
 #
-# PURPOSE: To import the standard includes and setup the package
-#
 # This file is part of PyFarm.
 # Copyright (C) 2008-2011 Oliver Palmer
 #
@@ -19,20 +17,22 @@
 # along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
+import site
 
-try:
-    from includes import *
-    from errors import *
+# setup root path
+cwd = os.path.abspath(os.path.dirname(__file__))
+root = os.path.abspath(os.path.join(cwd, '..'))
 
-except ImportError:
-    pass
+# append PyFarm root to site
+site.addsitedir(root)
 
-for filename in os.listdir(os.path.dirname(os.path.abspath(__file__))):
-    isInit = filename.startswith("__init__")
-    isInclude = filename.startswith("includes")
+# cleanup variables
+del os, site, cwd, root
 
-    if filename.endswith(".py") and not isInit and not isInclude:
-        __import__(filename.split(".")[0], locals(), globals())
+# import includes
+try: from includes import *
+except ImportError: pass
 
-# cleanup extra objects
-del os, filename, isInit, isInclude
+# import errors
+try: from errors import *
+except ImportError: pass

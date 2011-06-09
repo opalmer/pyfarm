@@ -31,9 +31,29 @@
 #OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 #OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+__version__ = '0.1.18'
+
+import os
+import site
+
 from .initialise import init
 from .ansi import Fore, Back, Style
 from .ansitowin32 import AnsiToWin32
 
-__version__ = '0.1.18'
+# setup root path
+cwd = os.path.abspath(os.path.dirname(__file__))
+root = os.path.abspath(os.path.join(cwd, '..'))
 
+# append PyFarm root to site
+site.addsitedir(root)
+
+# cleanup variables
+del os, site, cwd, root
+
+# import includes
+try: from includes import *
+except ImportError: pass
+
+# import errors
+try: from errors import *
+except ImportError: pass
