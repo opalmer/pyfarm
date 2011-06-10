@@ -23,18 +23,25 @@
 # along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
-import sys
+import site
 import struct
 import socket
 import base64
 import fnmatch
 import UserDict
 
-from PyQt4 import QtCore, QtNetwork
+__all__ = [
+            "NetworkInterfaces", "Services", "addresses", "address",
+            "hardwareAddress", "getPort", "lookupAddress", "lookupHostname",
+            "interfaces", "hostname", "dataStream", "isOpenPort"
+          ]
 
-CWD = os.path.dirname(os.path.abspath(__file__))
-PYFARM = os.path.abspath(os.path.join(CWD, "..", ".."))
-if PYFARM not in sys.path: sys.path.append(PYFARM)
+# setup module path
+cwd = os.path.abspath(os.path.dirname(__file__))
+root = os.path.abspath(os.path.join(cwd, '..', '..'))
+site.addsitedir(root)
+
+from PyQt4 import QtCore, QtNetwork
 
 import errors
 from lib import system, logger
@@ -377,7 +384,6 @@ def dataStream():
 
 # establish the base object and cleanup
 INTERFACE = interface()
-del CWD, PYFARM
 
 if __name__ == "__main__":
     iface = INTERFACE

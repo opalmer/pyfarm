@@ -22,12 +22,19 @@
 import os
 import sys
 import time
+import site
+
+# setup module path
+cwd = os.path.abspath(os.path.dirname(__file__))
+root = os.path.abspath(os.path.join(cwd, '..'))
+site.addsitedir(root)
+
+__all__ = ["Slots", "Help", "Hosts"]
 
 from PyQt4 import QtGui, QtCore
 
-import ui
-import logger
-from net import udp
+from lib import ui, logger
+from lib.net import udp
 
 logger = logger.Logger()
 

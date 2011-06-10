@@ -22,16 +22,18 @@
 
 import os
 import re
-import sys
 import time
+import site
 import socket
 import traceback
 
-from PyQt4 import QtCore, QtNetwork
+__all__ = ["BroadcastSender", "BroadcastReceiever"]
 
-CWD = os.path.dirname(os.path.abspath(__file__))
-PYFARM = os.path.abspath(os.path.join(CWD, "..", "..", ".."))
-if PYFARM not in sys.path: sys.path.append(PYFARM)
+cwd = os.path.dirname(os.path.abspath(__file__))
+root = os.path.abspath(os.path.join(cwd, "..", "..", ".."))
+site.addsitedir(root)
+
+from PyQt4 import QtCore, QtNetwork
 
 from lib import logger, settings, system, net
 
@@ -136,6 +138,3 @@ class BroadcastReceiever(QtCore.QThread):
         '''Stop the broadcast receiever'''
         logger.netserver("Stopped")
         self.exit(0)
-
-# cleanup objects
-del CWD, PYFARM

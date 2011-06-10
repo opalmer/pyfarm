@@ -21,11 +21,13 @@
 
 import os
 import sys
+import site
 
 from PyQt4 import QtCore
 
-CWD = os.path.dirname(os.path.abspath(__file__))
-PYFARM = CWD
+cwd = os.path.dirname(os.path.abspath(__file__))
+site.addsitedir(cwd)
+
 CFG_ROOT = os.path.join(PYFARM, "cfg")
 CFG_GEN = os.path.join(CFG_ROOT, "general.ini")
 

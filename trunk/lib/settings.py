@@ -33,7 +33,7 @@ class ReadConfig(object):
         if os.path.isfile(filepath):
             return filepath
         else:
-            raise IOError("%s is not a valid config file" % cfgInput)
+            raise IOError("%s is not a valid config file" % filepath)
 
     @staticmethod
     def general(filepath):

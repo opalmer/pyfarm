@@ -21,24 +21,26 @@
 
 import os
 import sys
+import site
 import unittest
 
-from PyQt4.Qt import Qt
-from PyQt4 import QtCore, QtGui, QtNetwork, uic
+__author__ = "Oliver Palmer"
+__version__ = "0.5.0"
 
-CWD = os.path.dirname(os.path.abspath(__file__))
-PYFARM = CWD
-CFG_ROOT = os.path.join(PYFARM, "cfg")
-ICN_ROOT = os.path.join(PYFARM, "icons")
+cwd = os.path.dirname(os.path.abspath(__file__))
+site.addsitedir(cwd)
+
+CFG_ROOT = os.path.join(cwd, "cfg")
+ICN_ROOT = os.path.join(cwd, "icons")
 QUE_ICN = os.path.join(ICN_ROOT, "queue")
 CFG_GEN = os.path.join(CFG_ROOT, "general.ini")
-UI_FILE = os.path.join(PYFARM, "lib", "ui", "mainWindow.ui")
+UI_FILE = os.path.join(cwd, "lib", "ui", "mainWindow.ui")
 PIDFILE = None
 DEBUG = False
 UNITTESTS = False
 
-__author__ = "Oliver Palmer"
-__version__ = "0.5.0"
+from PyQt4.Qt import Qt
+from PyQt4 import QtCore, QtGui, QtNetwork, uic
 
 import cfg.resources_rc
 import lib.net, lib.net.errors
@@ -347,6 +349,12 @@ if __name__ != '__MAIN__':
     ###############################
     main = MainWindow()
     main.show()
+    logger.fixme("Continue replacement of sys.path.append with site.addsitedir")
+    logger.fixme("Continue replacement of sys.path.append with site.addsitedir")
+    logger.fixme("Continue replacement of sys.path.append with site.addsitedir")
+    logger.fixme("Continue replacement of sys.path.append with site.addsitedir")
+    logger.fixme("Continue replacement of sys.path.append with site.addsitedir")
+    logger.fixme("Continue replacement of sys.path.append with site.addsitedir")
     app.exec_()
 
     # be sure we cleanup the pid file
