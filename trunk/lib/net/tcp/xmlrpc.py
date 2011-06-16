@@ -31,15 +31,15 @@ import xml.etree.cElementTree
 
 from PyQt4 import QtCore, QtNetwork
 
-CWD = os.path.dirname(os.path.abspath(__file__))
-PYFARM = os.path.abspath(os.path.join(CWD, "..", "..", ".."))
-if PYFARM not in sys.path: sys.path.append(PYFARM)
+cwd = os.path.dirname(os.path.abspath(__file__))
+root = os.path.abspath(os.path.join(cwd, "..", "..", ".."))
+site.addsitedir(root)
 
 from lib import logger, net
 
 UNIT16 = 8
 STREAM_VERSION = net.dataStream()
-logger = logger.Logger('test', 'test')
+logger = logger.Logger()
 loads = xmlrpclib.loads
 
 def dumps(method, values):

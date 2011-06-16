@@ -19,11 +19,9 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
-
-
 import random
 import string
 
-def rand(length=24):
+def string(length=24):
     ascii = string.ascii_uppercase + string.digits
     return ''.join(random.choice(ascii) for x in range(length))

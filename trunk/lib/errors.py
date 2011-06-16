@@ -27,7 +27,7 @@ __all__ = ["BaseException"]
 
 # setup module path
 cwd = os.path.abspath(os.path.dirname(__file__))
-root = os.path.abspath(os.path.join(cwd, '..'))
+root = os.path.abspath(os.path.join(cwd, ".."))
 site.addsitedir(root)
 
 class BaseException(Exception):

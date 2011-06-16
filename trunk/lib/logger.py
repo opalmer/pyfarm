@@ -22,16 +22,16 @@
 import os
 import sys
 import time
+import site
 import string
 import inspect
 import xml.etree.ElementTree
 
-CWD = os.path.dirname(os.path.abspath(__file__))
-PYFARM = os.path.abspath(os.path.join(CWD, ".."))
-MODULE = os.path.basename(__file__)
-if PYFARM not in sys.path: sys.path.append(PYFARM)
+cwd = os.path.dirname(os.path.abspath(__file__))
+root = os.path.abspath(os.path.join(cwd, ".."))
+site.addsitedir(root)
 
-XML_CONFIG = os.path.join(PYFARM, "cfg", "logger.xml")
+XML_CONFIG = os.path.join(root, "cfg", "logger.xml")
 
 def settings(path=XML_CONFIG):
     '''

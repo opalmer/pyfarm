@@ -1,7 +1,7 @@
 # No shebang line, this module is meant to be imported
 #
-# INITIAL: 
-# PURPOSE: 
+# INITIAL:
+# PURPOSE:
 #
 # This file is part of PyFarm.
 # Copyright (C) 2008-2011 Oliver Palmer
@@ -21,14 +21,11 @@
 
 import os
 import sys
+import site
 
 from PyQt4.QtCore import Qt
 from PyQt4 import QtGui, QtNetwork, QtCore
 
-CWD = os.path.dirname(os.path.abspath(__file__))
-PYFARM = os.path.abspath(os.path.join(CWD, ".."))
-MODULE = os.path.basename(__file__)
-if PYFARM not in sys.path: sys.path.append(PYFARM)
-
-if __name__ == '__main__':
-    pass
+cwd = os.path.dirname(os.path.abspath(__file__))
+root = os.path.abspath(os.path.join(cwd, ".."))
+site.addsitedir(root)

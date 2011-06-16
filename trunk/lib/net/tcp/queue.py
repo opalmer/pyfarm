@@ -22,10 +22,11 @@
 
 import os
 import sys
+import site
 
-CWD = os.path.dirname(os.path.abspath(__file__))
-PYFARM = os.path.abspath(os.path.join(CWD, "..", "..", ".."))
-if PYFARM not in sys.path: sys.path.append(PYFARM)
+cwd = os.path.dirname(os.path.abspath(__file__))
+root = os.path.abspath(os.path.join(cwd, "..", "..", ".."))
+site.addsitedir(root)
 
 import xmlrpc
 from lib import logger

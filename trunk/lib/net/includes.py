@@ -38,7 +38,7 @@ __all__ = [
 
 # setup module path
 cwd = os.path.abspath(os.path.dirname(__file__))
-root = os.path.abspath(os.path.join(cwd, '..', '..'))
+root = os.path.abspath(os.path.join(cwd, "..", ".."))
 site.addsitedir(root)
 
 from PyQt4 import QtCore, QtNetwork

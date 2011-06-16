@@ -21,20 +21,14 @@
 
 import os
 import sys
+import site
 import fnmatch
 
 from PyQt4 import QtCore
 
-CWD = os.path.dirname(os.path.abspath(__file__))
-PYFARM = os.path.abspath(os.path.join(CWD, "..", ".."))
-MODULE = os.path.basename(__file__)
-if PYFARM not in sys.path: sys.path.append(PYFARM)
-
-LOGLEVEL = 4
-
-from lib import logger
-
-log = logger.Logger()
+cwd = os.path.dirname(os.path.abspath(__file__))
+root = os.path.abspath(os.path.join(cwd, "..", ".."))
+site.addsitedir(root)
 
 def SimpleCommand(cmd, all=False, debug=False):
     '''

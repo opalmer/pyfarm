@@ -42,9 +42,7 @@ from .ansitowin32 import AnsiToWin32
 
 # setup root path
 cwd = os.path.abspath(os.path.dirname(__file__))
-root = os.path.abspath(os.path.join(cwd, '..', '..', '..', '..'))
-
-# append PyFarm root to site
+root = os.path.abspath(os.path.join(cwd, "..", "..", "..", ".."))
 site.addsitedir(root)
 
 # cleanup variables

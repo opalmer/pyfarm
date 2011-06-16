@@ -30,15 +30,10 @@ import linecache
 from threading import Thread
 from functools import wraps
 
-CWD = os.path.dirname(os.path.abspath(__file__))
-PYFARM = os.path.abspath(os.path.join(CWD, ".."))
-MODULE = os.path.basename(__file__)
+cwd = os.path.dirname(os.path.abspath(__file__))
+root = os.path.abspath(os.path.join(cwd, ".."))
+site.addsitedir(root)
 
-if PYFARM not in sys.path: sys.path.append(PYFARM)
-from lib import logger
-
-# disable the logger and bypass tracebacks for files in TRACE_BYPASS
-log          = logger.Logger(MODULE).disabled = True
 catch22Fail = None
 TRACE_BYPASS = (
                     'string.py', 'Logger.py', 'ElementTree.py',
@@ -65,7 +60,6 @@ def catch22(func):
 
         # start processing if exception from function is caught
         except Exception, error:
-            log.error("Catch 22 - %s - Failed: %s" % (func, error))
 
             try:
                 output = failValue()
@@ -73,11 +67,7 @@ def catch22(func):
             except TypeError:
                 output = failValue
 
-        else:
-            log.debug("Catch 22 - %s: Success" % func)
-
         finally:
-            log.debug("Catch 22 - %s - Returning: %s" % (func, output))
             return output
 
     return catcher
@@ -158,6 +148,5 @@ def elapsed(func):
         start = time.time()
         output = func(*args, **kwargs)
         elapsed = time.time()-start
-        log.debug("%s - %f seconds elapsed" % (func, elapsed))
         return output
     return run

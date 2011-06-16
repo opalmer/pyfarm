@@ -21,16 +21,17 @@
 
 import os
 import sys
+import site
 import types
 from xml.dom import minidom
 
 from PyQt4 import QtSql, QtCore
 
-CWD = os.path.dirname(os.path.abspath(__file__))
-PYFARM = os.path.abspath(os.path.join(CWD, "..", ".."))
-DB_XML = os.path.join(PYFARM, "cfg", "dbbase.xml")
-DB_SQL = os.path.join(PYFARM, "PyFarmDB.sql")
-if PYFARM not in sys.path: sys.path.append(PYFARM)
+cwd = os.path.abspath(os.path.dirname(__file__))
+root = os.path.abspath(os.path.join(cwd, "..", "..", ".."))
+DB_XML = os.path.join(root, "cfg", "dbbase.xml")
+DB_SQL = os.path.join(root, "PyFarmDB.sql")
+site.addsitedir(root)
 
 from lib import logger
 

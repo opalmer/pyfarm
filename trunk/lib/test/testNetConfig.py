@@ -22,13 +22,13 @@
 
 import os
 import sys
+import site
 import unittest
 import ConfigParser
 
-CWD = os.path.dirname(os.path.abspath(__file__))
-PYFARM = os.path.abspath(os.path.join(CWD, "..", ".."))
-MODULE = os.path.basename(__file__)
-if PYFARM not in sys.path: sys.path.append(PYFARM)
+cwd = os.path.dirname(os.path.abspath(__file__))
+root = os.path.abspath(os.path.join(CWD, "..", ".."))
+site.addsitedir(root)
 
 import lib.net
 from lib.system import info

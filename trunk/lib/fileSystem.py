@@ -22,18 +22,18 @@
 
 import os
 import sys
+import site
 import fnmatch
 import difflib
 from PyQt4 import QtCore
 
-CWD = os.path.dirname(os.path.abspath(__file__))
-PYFARM = os.path.abspath(os.path.join(CWD, ".."))
-MODULE = os.path.basename(__file__)
-if PYFARM not in sys.path: sys.path.append(PYFARM)
+cwd = os.path.dirname(os.path.abspath(__file__))
+root = os.path.abspath(os.path.join(cwd, ".."))
+site.addsitedir(root)
 
 from lib import logger, system
 
-log = logger.Logger(MODULE)
+log = logger.Logger()
 
 def mkdir(path):
     '''Create a directory'''
@@ -41,9 +41,9 @@ def mkdir(path):
         try:
             os.makedirs(path)
         except:
-            log.error("Failed to create directory: %s" % path)
+            logger.error("Failed to create directory: %s" % path)
         else:
-            log.info("Created Directory: %s" % path)
+            logger.info("Created Directory: %s" % path)
 
 class Tail(QtCore.QObject):
     '''

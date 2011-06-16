@@ -1,27 +1,28 @@
-'''
-HOMEPAGE: www.pyfarm.net
-INITIAL: May 28 2010
-PURPOSE: To query and return information about the local system
+# No shebang line, this module is meant to be imported
+#
+# INITIAL: May 28 2010
+# PURPOSE: To query and return information about the local system
+#
+# This file is part of PyFarm.
+# Copyright (C) 2008-2011 Oliver Palmer
+#
+# PyFarm is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# PyFarm is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
-This file is part of PyFarm.
-Copyright (C) 2008-2011 Oliver Palmer
-
-PyFarm is free software: you can redistribute it and/or modify
-it under the terms of the GNU Lesser General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-PyFarm is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU Lesser General Public License for more details.
-
-You should have received a copy of the GNU Lesser General Public License
-along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
-'''
 import re
 import os
 import sys
+import site
 import socket
 import fnmatch
 import platform
@@ -29,16 +30,14 @@ import tempfile
 
 from PyQt4 import QtNetwork, QtCore
 
-CWD = os.path.dirname(os.path.abspath(__file__))
-PYFARM = os.path.abspath(os.path.join(CWD, "..", ".."))
-MODULE = os.path.basename(__file__)
-if PYFARM not in sys.path: sys.path.append(PYFARM)
+cwd = os.path.dirname(os.path.abspath(__file__))
+root = os.path.abspath(os.path.join(cwd, "..", ".."))
+site.addsitedir(root)
 
 from lib.system import includes
 from lib import logger, settings
 
-LOGLEVEL = 6
-log = logger.Logger(MODULE, LOGLEVEL)
+logger = logger.Logger()
 
 if os.name == "nt":
     USER = os.getenv('USERNAME')
@@ -58,7 +57,7 @@ class SystemInfo(object):
         if os.name == "nt":
             #process = includes.SimpleCommand("cmd.exe /C systeminfo", all=False)
             #cache = str(process.readAll())
-            log.notimplemented("SystemInfo not implemented for %s" % os.name)
+            logger.notimplemented("SystemInfo not implemented for %s" % os.name)
             cache = None
         else:
             cache = None
@@ -104,12 +103,12 @@ class Hardware(object):
                 self.swapmax = float(includes.SimpleCommand("free | grep Swap | awk '{print $2}'"))/1024
 
             except TypeError:
-                log.fixme("Hardware information (linux) not implimented for new SimpleCommand")
+                logger.fixme("Hardware information (linux) not implimented for new SimpleCommand")
                 self.rammax = None
                 self.swapmax = None
 
             except ValueError, e:
-                log.fixme("Invalid output from SimpleCommand")
+                logger.fixme("Invalid output from SimpleCommand")
 
         elif os.name == "nt":
             print self.cache
@@ -130,7 +129,7 @@ class Hardware(object):
         if os.name == "posix":
             results = float(includes.SimpleCommand("free | grep 'buffers/cache' | awk '{print $3}'"))/1024
         else:
-            log.notimplemented("Ram used not implemented for %s" % os.name)
+            logger.notimplemented("Ram used not implemented for %s" % os.name)
 
         return self._toGigabyte(results, toGigabyte)
 
@@ -148,7 +147,7 @@ class Hardware(object):
         if os.name == "posix":
             results = float(includes.SimpleCommand("free | grep Swap | awk '{print $3}'"))/1024
         else:
-            log.notimplemented("swap used not implemented for %s" % os.name)
+            logger.notimplemented("swap used not implemented for %s" % os.name)
 
         return self._toGigabyte(results, toGigabyte)
 
@@ -164,7 +163,7 @@ class Hardware(object):
             results = str(multiprocessing.cpu_count())
 
         except ImportError:
-            log.notimplemented("CPU Count not implemented without multiprocessing")
+            logger.notimplemented("CPU Count not implemented without multiprocessing")
 
         return results
 
@@ -174,7 +173,7 @@ class Hardware(object):
         if os.name == "posix":
             results = open('/proc/loadavg').readlines()[0].split()[:3]
         else:
-            log.notimplemented("cpuload not implemented for %s" % os.name)
+            logger.notimplemented("cpuload not implemented for %s" % os.name)
 
         return results
 
@@ -184,7 +183,7 @@ class Hardware(object):
         if os.name == "posix":
             results = float(open('/proc/uptime').readlines()[0].split()[0])
         else:
-            log.notimplemented("uptime not implemented for %s" % os.name)
+            logger.notimplemented("uptime not implemented for %s" % os.name)
 
         return results
 
@@ -194,7 +193,7 @@ class Hardware(object):
         if os.name == "posix":
             results = float(open('/proc/uptime').readlines()[0].split()[1])
         else:
-            log.notimplemented("idletime not implemented for %s" % os.name)
+            logger.notimplemented("idletime not implemented for %s" % os.name)
 
         return results
 
@@ -233,7 +232,7 @@ class Network(object):
             query = "ifconfig %s | grep 'inet addr' | gawk -F: '{print $4}' | gawk '{print $1}'" % self.adapter
             results = includes.SimpleCommand(query)
         else:
-            log.notimplemented("subnet not implemented for %s" % os.name)
+            logger.notimplemented("subnet not implemented for %s" % os.name)
 
         return results
 

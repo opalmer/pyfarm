@@ -21,17 +21,15 @@
 
 import os
 import sys
+import site
 
-CWD = os.path.dirname(os.path.abspath(__file__))
-PYFARM = os.path.abspath(os.path.join(CWD, ".."))
-MODULE = os.path.basename(__file__)
-if PYFARM not in sys.path: sys.path.append(PYFARM)
+cwd = os.path.dirname(os.path.abspath(__file__))
+root  = os.path.abspath(os.path.join(cwd, ".."))
+site.addsitedir(root)
 
 from lib import logger, system
 
-LOGLEVEL = 4
-
-log = logger.Logger(MODULE, LOGLEVEL)
+logger = logger.Logger()
 
 class SystemInfo(object):
     '''Gather and prepare to return info about the system'''
@@ -58,11 +56,11 @@ class SystemInfo(object):
         print "\t\tFree: %.2f GB" % hardware.swapfree(1)
 
         #for stat in hardware.
-        self.log.terminate("Program terminated by command line flag")
+        self.logger.terminate("Program terminated by command line flag")
 
     def software(self, option=None, opt=None, value=None, parser=None):
         '''Echo only installed software information to the command line'''
-        self.log.debug("Getting software info")
+        self.logger.debug("Getting software info")
         out = "\nInstalled Software: "
         count = 0
 
@@ -78,9 +76,9 @@ class SystemInfo(object):
                     out += "%s" % software
                 count += 1
 
-        self.log.debug("Returning software info")
+        self.logger.debug("Returning software info")
         print out
-        self.log.terminate("Program terminated by command line flag")
+        self.logger.terminate("Program terminated by command line flag")
 
 
 class SystemUtilities(object):
@@ -91,11 +89,11 @@ class SystemUtilities(object):
 
     def clean(self, option=None, opt=None, value=None, parser=None):
         '''Cleanup any extra or byte-compiled files'''
-        self.log.debug("Running clean")
+        self.logger.debug("Running clean")
         for pyc in find("*.pyc", os.getcwd()):
             os.remove(pyc)
-        self.log.debug("Clean complete")
-        self.log.terminate("Program terminated by command line flag")
+        self.logger.debug("Clean complete")
+        self.logger.terminate("Program terminated by command line flag")
 
 
 class About(object):
@@ -110,11 +108,11 @@ class About(object):
 
     def author(self, option=None, opt=None, value=None, parser=None):
         '''Return the author's name'''
-        log.info("Developed By: %s" % self.dev)
-        log.terminate("Program terminated by command line flag")
+        logger.info("Developed By: %s" % self.dev)
+        logger.terminate("Program terminated by command line flag")
 
     def license(self, option=None, opt=None, value=None, parser=None):
         '''Return the lgpl header'''
         for line in self.lgpl:
             print line.strip()
-        log.terminate("Program terminated by command line flag")
+        logger.terminate("Program terminated by command line flag")

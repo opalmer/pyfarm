@@ -27,7 +27,7 @@ __all__ = ["ServerFault", "DNSMismatch"]
 
 # setup module path
 cwd = os.path.abspath(os.path.dirname(__file__))
-root = os.path.abspath(os.path.join(cwd, '..', '..'))
+root = os.path.abspath(os.path.join(cwd, "..", ".."))
 site.addsitedir(root)
 
 import lib.errors
