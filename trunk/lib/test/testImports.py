@@ -29,7 +29,7 @@ import modulefinder
 import ConfigParser
 
 cwd = os.path.dirname(os.path.abspath(__file__))
-root = os.path.abspath(os.path.join(CWD, "..", ".."))
+root = os.path.abspath(os.path.join(cwd, "..", ".."))
 site.addsitedir(root)
 
 class ModuleTests(unittest.TestCase):

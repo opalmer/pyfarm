@@ -22,6 +22,7 @@
 import os
 import re
 import sys
+import site
 import types
 import inspect
 import httplib

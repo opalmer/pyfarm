@@ -28,7 +28,7 @@ from xml.dom import minidom
 from PyQt4 import QtSql, QtCore
 
 cwd = os.path.abspath(os.path.dirname(__file__))
-root = os.path.abspath(os.path.join(cwd, "..", "..", ".."))
+root = os.path.abspath(os.path.join(cwd, "..", ".."))
 DB_XML = os.path.join(root, "cfg", "dbbase.xml")
 DB_SQL = os.path.join(root, "PyFarmDB.sql")
 site.addsitedir(root)

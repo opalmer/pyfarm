@@ -20,7 +20,7 @@
 # along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
 __all__ = [
-            "_kBToMB", "_kbToMB", "_procInfo", "osVersion", "architecture",
+            "_procInfo", "osVersion", "architecture",
             "idletime", "uptime", "load", "cpuCount", "cpuSpeed",
             "cpuType", "ramTotal", "ramFree", "swapTotal", "swapFree"
           ]
@@ -32,9 +32,6 @@ import platform
 cwd = os.path.dirname(os.path.abspath(__file__))
 root = os.path.abspath(os.path.join(cwd, "..", "..", ".."))
 site.addsitedir(root)
-
-def _kBToMB(kB): return kB / 1024
-def _kbToMB(kb): return kb / 1024 / 1024
 
 def _procInfo(path, key):
     '''Generator object to return specific lines with CPU information'''

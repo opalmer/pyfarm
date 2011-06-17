@@ -24,7 +24,7 @@ import sys
 import site
 
 cwd = os.path.dirname(os.path.abspath(__file__))
-root  = os.path.abspath(os.path.join(CWD, "..",  ".."))
+root  = os.path.abspath(os.path.join(cwd, "..",  ".."))
 site.addsitedir(root)
 
 from PyQt4.Qt import Qt

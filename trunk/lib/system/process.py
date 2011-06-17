@@ -32,7 +32,8 @@ root = os.path.abspath(os.path.join(cwd, "..", ".."))
 site.addsitedir(root)
 
 from lib import decorators, logger
-from lib.system import hardware, convert
+from lib.system import hardware
+from lib.utility import convert
 
 logger = logger.Logger()
 

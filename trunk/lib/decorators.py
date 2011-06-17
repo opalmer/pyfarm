@@ -24,6 +24,7 @@
 import os
 import sys
 import time
+import site
 import cProfile
 import warnings
 import linecache
