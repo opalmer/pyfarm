@@ -1,5 +1,8 @@
 # No shebang line, this module is meant to be imported
 #
+# INITIAL: June 19 2011
+# PURPOSE: To import and setup the basis of the logging package
+#
 # This file is part of PyFarm.
 # Copyright (C) 2008-2011 Oliver Palmer
 #
@@ -15,24 +18,3 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
-
-import os
-import site
-
-# setup root path
-cwd = os.path.abspath(os.path.dirname(__file__))
-root = os.path.abspath(os.path.join(cwd, "..", "..", ".."))
-
-# append PyFarm root to site
-site.addsitedir(root)
-
-# cleanup variables
-del os, site, cwd, root
-
-# import includes
-try: from includes import *
-except ImportError: pass
-
-# import errors
-try: from errors import *
-except ImportError: pass

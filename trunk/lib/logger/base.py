@@ -1,7 +1,7 @@
 # No shebang line, this module is meant to be imported
 #
-# INITIAL: April 27 2011
-# PURPOSE: Color management library for formatting and returning color strings
+# INITIAL: June 19 2011
+# PURPOSE: To create an operate the logger
 #
 # This file is part of PyFarm.
 # Copyright (C) 2008-2011 Oliver Palmer
@@ -18,20 +18,3 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
-
-import os
-import sys
-
-from PyQt4 import QtCore
-from QtCore import Qt
-
-import colorama
-colorama.init()
-
-class Manager(object):
-    '''
-    Main color management class, controls input and output of color information
-    to various formats including the terminal and user interface
-    '''
-    def __init__(self):
-        pass
