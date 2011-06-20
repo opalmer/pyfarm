@@ -18,3 +18,13 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
+
+from config import ReadConfig
+
+class Logger(object):
+    '''
+    Read the logger configration and create an object to handle calls
+    to individual log levels.
+    '''
+    def __init__(self):
+        self.config = ReadConfig()
