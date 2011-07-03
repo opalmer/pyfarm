@@ -21,15 +21,20 @@
 
 import os
 import re
+import sys
 import types
 import xml.etree.ElementTree
+import ConfigParser
+
+import ltypes
 
 # root directory setup
 cwd = os.path.dirname(os.path.abspath(__file__))
-cfg = os.path.join(cwd, "cfg")
+CFG = os.path.join(cwd, "cfg")
 
 # config files
-xmlLevels = os.path.join(cfg, "levels.xml")
+CFG_LEVELS = os.path.join(CFG, "levels.xml")
+CFG_GLOBALS = os.path.join(CFG, "globals.ini")
 
 def getXml(xmlPath, root):
     '''Parse an xml file and return a list of elements matching root'''
@@ -46,6 +51,18 @@ class Levels(object):
     def __init__(self, config):
         self.config = getXml(config, "level")
         self.data = self.__data()
+
+    def __data(self):
+        '''Read and return information from the xml file'''
+        levels = []
+
+        for attrib in [ entry.attrib for entry in self.config ]:
+            self.__checkKeys(attrib)
+            self.__populateKeys(attrib)
+            self.__validateFunction(attrib)
+            levels.append(attrib)
+
+        return levels
 
     def __checkKeys(self, data):
         '''
@@ -84,28 +101,40 @@ class Levels(object):
         # ensure that we have only ascii characters/numbers in the
         # function name
         if re.search("\W", function):
-            print "Removing non-alphanumeric values from %s" % function
-            data["function"] = re.sub("\W", "_", data["function"])
-
-    def __data(self):
-        '''Read and return information from the xml file'''
-        levels = []
-
-        for attrib in [ entry.attrib for entry in self.config ]:
-            self.__checkKeys(attrib)
-            self.__populateKeys(attrib)
-            self.__validateFunction(attrib)
-            levels.append(attrib)
-
-        return levels
+            msg = "level contains non-alpha characters: %s" % function
+            raise SyntaxError(function)
 
 
 class ReadConfig(object):
     '''Read and return a configuration'''
     def __init__(self):
-        self.levels = Levels(xmlLevels).data
+        self.colors = {}
+        self.levels = self.__levels()
+        self.globals = self.__globals()
 
-# for testing purposes
-if __name__ == '__main__':
-    config = ReadConfig()
-    print config.levels
+    def __levels(self):
+        '''Get the level configuration'''
+        levels = Levels(CFG_LEVELS)
+        return levels.data
+
+    def __globals(self):
+        '''Get the global configuration'''
+        config = {}
+        parsed = ConfigParser.ConfigParser()
+        parsed.read(CFG_GLOBALS)
+
+        for option in parsed.options("LoggerGlobals"):
+            print option
+            #raise NotImplementedError("Need to get type specific values")
+            key = key.upper()
+
+            if key == "DEFAULT_STREAM":
+                config[key.upper()] = eval(value)
+
+            if key == "LEVEL":
+                config[key.upper()] = int(value)
+
+
+                config[key.upper()] = bool(value)
+
+        return ltypes.AttrDict(config)

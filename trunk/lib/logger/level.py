@@ -1,4 +1,4 @@
-    # No shebang line, this module is meant to be imported
+# No shebang line, this module is meant to be imported
 #
 # INITIAL: June 19 2011
 # PURPOSE: To create an operate the logger

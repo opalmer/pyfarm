@@ -17,11 +17,26 @@ along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 -->
 
 <levels>
-    <level name="test message" function="testMessage" />
-    <level name="debug" function="something strange" />
-    <level name="info" function="something.strange" />
+    <!--
+        General Notes:
+            - Each level specified below will end up with a properly configured
+              log level so long as the required fields are populated.
+            - The log level that is assigned to a specific logger will depend
+              on the order in which its configuration appears in levels entry.
+
+
+        Fields:
+            name (required): The name of the of the logger to create.  This
+                             string will be the display name when the log is
+                             output
+            function: The function to call on Logger.  If this value does not
+                      exist then the function name will be set to the name
+                      attribute.
+    -->
+    <level name="info" />
     <level name="warning" />
     <level name="error" />
+    <level name="exception" />
     <level name="critical" />
-    <level name="critical" />
+    <level name="test level" function="test" />
 </levels>

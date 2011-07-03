@@ -19,6 +19,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
+import sys
+
 from config import ReadConfig
 
 class Logger(object):
@@ -26,5 +28,32 @@ class Logger(object):
     Read the logger configration and create an object to handle calls
     to individual log levels.
     '''
+    # 'global' settings for all Logger instances.  These settings are typically
+    # controlled by etc/globals.ini
+    LEVEL = 0
+    ALLOW_TRACE = False
+    WARN_MISSING_LEVEL = True
+    DEFAULT_STREAM = sys.stdout
+
     def __init__(self):
         self.config = ReadConfig()
+        print type(self.config.globals.LEVEL)
+
+
+        for level in self.config.levels:
+            print level
+
+    def __getattr__(self, level):
+        '''Get an attribute from the logger object'''
+        try:
+            log = object.__getattribute__(self, level)
+
+        except AttributeError:
+            if Logger.WARN_MISSING_LEVEL:
+                print "WARNING: No such log level %s" % attr
+
+
+if __name__ == '__main__':
+    logger = Logger()
+    print Logger.WARN_MISSING_LEVEL
+    #logger.test
