@@ -124,7 +124,16 @@ class ReadConfig(object):
         parsed.read(CFG_GLOBALS)
 
         for option in parsed.options("LoggerGlobals"):
-            print option
+            optionKey = option.upper()
+
+            # USE A DICT TO TYPE MAP TO THE PROPER CALLS USING LAMBDA
+
+            if optionKey == "DEFAULT_STREAM":
+                config[option] = eval(parsed.get(option))
+
+            if optionKey == "LEVEL":
+
+
             #raise NotImplementedError("Need to get type specific values")
             key = key.upper()
 
