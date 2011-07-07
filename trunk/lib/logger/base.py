@@ -37,8 +37,7 @@ class Logger(object):
 
     def __init__(self):
         self.config = ReadConfig()
-        print type(self.config.globals.LEVEL)
-
+        print self.config
 
         for level in self.config.levels:
             print level

@@ -120,30 +120,19 @@ class ReadConfig(object):
     def __globals(self):
         '''Get the global configuration'''
         config = {}
-        parsed = ConfigParser.ConfigParser()
-        parsed.read(CFG_GLOBALS)
+        parse = ConfigParser.ConfigParser()
+        parse.read(CFG_GLOBALS)
 
-        for option in parsed.options("LoggerGlobals"):
+        s = "LoggerGlobals"
+        data = {
+            "LEVEL" : lambda option: parse.getint(s, option),
+            "ALLOW_TRACE" : lambda option: parse.getboolean(s, option),
+            "WARN_MISSING_LEVEL" : lambda option: parse.getboolean(s, option),
+            "DEFAULT_STREAM" : lambda option: eval(parse.get(s, option))
+        }
+
+        for option in parse.options("LoggerGlobals"):
             optionKey = option.upper()
-
-            # USE A DICT TO TYPE MAP TO THE PROPER CALLS USING LAMBDA
-
-            if optionKey == "DEFAULT_STREAM":
-                config[option] = eval(parsed.get(option))
-
-            if optionKey == "LEVEL":
-
-
-            #raise NotImplementedError("Need to get type specific values")
-            key = key.upper()
-
-            if key == "DEFAULT_STREAM":
-                config[key.upper()] = eval(value)
-
-            if key == "LEVEL":
-                config[key.upper()] = int(value)
-
-
-                config[key.upper()] = bool(value)
+            config[optionKey] = data[optionKey](option)
 
         return ltypes.AttrDict(config)
