@@ -21,7 +21,7 @@
 
 import sys
 
-from config import ReadConfig
+import config
 
 class Logger(object):
     '''
@@ -36,11 +36,18 @@ class Logger(object):
     DEFAULT_STREAM = sys.stdout
 
     def __init__(self):
-        self.config = ReadConfig()
-        print self.config
+        self.config = config.ReadConfig()
 
-        for level in self.config.levels:
-            print level
+        # transfer the global settings to the Logger object
+        Logger.LEVEL = self.config.globals.LEVEL
+        Logger.ALLOW_TRACE = self.config.globals.ALLOW_TRACE
+        Logger.WARN_MISSING_LEVEL = self.config.globals.WARN_MISSING_LEVEL
+        Logger.DEFAULT_STREAM = self.config.globals.DEFAULT_STREAM
+
+        # prepare the config dictionary and add any missing keys
+        for levelConfig in self.config.levels:
+            config.build(levelConfig)
+            print levelConfig
 
     def __getattr__(self, level):
         '''Get an attribute from the logger object'''
@@ -54,5 +61,3 @@ class Logger(object):
 
 if __name__ == '__main__':
     logger = Logger()
-    print Logger.WARN_MISSING_LEVEL
-    #logger.test

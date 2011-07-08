@@ -36,6 +36,25 @@ CFG = os.path.join(cwd, "cfg")
 CFG_LEVELS = os.path.join(CFG, "levels.xml")
 CFG_GLOBALS = os.path.join(CFG, "globals.ini")
 
+def build(config):
+    '''
+    Given a dictionary ensure the required data
+    exists and is properly populated
+    '''
+    # add enabled if it does not already exist
+    if not config.has_key('enabled'):
+        config['enabled'] = True
+
+    # ensure we have an output stream
+    if not config.has_key('stream'):
+        config['stream'] = 'sys.stdout'
+    config['stream'] = eval(config['stream'])
+
+    # breakdown color if it was given
+    if not config.has_key('color'):
+        config['color'] = ""
+    config['color'] = config['color'].split(";")
+
 def getXml(xmlPath, root):
     '''Parse an xml file and return a list of elements matching root'''
     tree = xml.etree.ElementTree.parse(xmlPath)
@@ -118,7 +137,7 @@ class ReadConfig(object):
         return levels.data
 
     def __globals(self):
-        '''Get the global configuration'''
+        '''Find and parse all settings from the global config'''
         config = {}
         parse = ConfigParser.ConfigParser()
         parse.read(CFG_GLOBALS)

@@ -32,10 +32,13 @@ along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
             function: The function to call on Logger.  If this value does not
                       exist then the function name will be set to the name
                       attribute.
+            output: The default stream to write to (default: sys.stdout)
+            color: Color values for string output (separated by ;).
+                   Format colors: Brackets;LevelName;Separators;LogText
     -->
     <level name="info" />
     <level name="warning" />
-    <level name="error" />
+    <level name="error" stream="sys.stderr"/>
     <level name="exception" />
     <level name="critical" />
     <level name="test level" function="test" />
