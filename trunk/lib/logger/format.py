@@ -18,3 +18,14 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
+
+import string
+
+import config
+
+def output(level, color=[]):
+    '''
+    Configure and produce a formatted string for output to
+    either a string or object.
+    '''
+    # TODO: Read in format information from config for

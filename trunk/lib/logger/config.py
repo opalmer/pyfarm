@@ -34,7 +34,40 @@ CFG = os.path.join(cwd, "cfg")
 
 # config files
 CFG_LEVELS = os.path.join(CFG, "levels.xml")
-CFG_GLOBALS = os.path.join(CFG, "globals.ini")
+INI_FORMAT = os.path.join(CFG, "format.ini")
+INI_GLOBALS = os.path.join(CFG, "globals.ini")
+
+def getIniDict(config):
+    '''Return a dictionary from an ini file'''
+    data = {}
+    parse = ConfigParser.ConfigParser()
+    parse.read(config)
+
+    # retrieve all sections
+    for section in parse.sections():
+        data[section] = {}
+
+        for key, value in parse.items(section):
+            # convert string -> float
+            if value.isdigit() and "." in value:
+                value = float(value)
+
+            # convert string -> int
+            if value.isdigit() and "." not in value:
+                value = int(value)
+
+            # convert string -> True
+            if value == "True":
+                value = True
+
+            # convert string -> False
+            if value == "False":
+                value = False
+
+            # add value to data
+            data[section][key] = value
+
+    return data
 
 def build(config):
     '''
@@ -61,6 +94,14 @@ def getXml(xmlPath, root):
 
     # return all elements with tags that match root
     return [entry for entry in tree.findall(root) if entry.tag == root]
+
+def getFormat():
+    '''Return format information from the config'''
+    data = {}
+    parse = ConfigParser.ConfigParser()
+    parse.read(INI_GLOBALS)
+
+    return data
 
 
 class Levels(object):
@@ -140,7 +181,7 @@ class ReadConfig(object):
         '''Find and parse all settings from the global config'''
         config = {}
         parse = ConfigParser.ConfigParser()
-        parse.read(CFG_GLOBALS)
+        parse.read(INI_GLOBALS)
 
         s = "LoggerGlobals"
         data = {
@@ -155,3 +196,22 @@ class ReadConfig(object):
             config[optionKey] = data[optionKey](option)
 
         return ltypes.AttrDict(config)
+
+
+class Format(object):
+    '''Parse and configure formatting information'''
+    def __init__(self):
+        self.config = getIniDict(INI_FORMAT)
+
+        # level name setup
+        level = self.config['LevelName']
+        self.LEVEL_PRE_STR = level['pre_string']
+        self.LEVEL_POST_STR = level['post_string']
+        self.LEVEL_PRE_SEP = level['pre_sep']
+        self.LEVEL_POST_SEP = level['post_sep']
+
+
+if __name__ == '__main__':
+    print "WARNING: config testing"
+    f = Format()
+    print f.LEVEL_POST_SEP, f.LEVEL_POST_STR

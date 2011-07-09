@@ -20,6 +20,7 @@
 # along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
 import sys
+import pprint
 
 import config
 
@@ -47,7 +48,7 @@ class Logger(object):
         # prepare the config dictionary and add any missing keys
         for levelConfig in self.config.levels:
             config.build(levelConfig)
-            print levelConfig
+            pprint.pprint(levelConfig)
 
     def __getattr__(self, level):
         '''Get an attribute from the logger object'''
