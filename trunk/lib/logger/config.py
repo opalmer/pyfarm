@@ -48,6 +48,9 @@ def getIniDict(config):
         data[section] = {}
 
         for key, value in parse.items(section):
+            # replace all newlines
+            value = value.replace("\n", "")
+
             # convert string -> float
             if value.isdigit() and "." in value:
                 value = float(value)
@@ -102,7 +105,6 @@ def getFormat():
     parse.read(INI_GLOBALS)
 
     return data
-
 
 class Levels(object):
     RequiredKeys = ["name"]
@@ -198,20 +200,24 @@ class ReadConfig(object):
         return ltypes.AttrDict(config)
 
 
-class Format(object):
-    '''Parse and configure formatting information'''
-    def __init__(self):
-        self.config = getIniDict(INI_FORMAT)
+def getFormat():
+    '''
+    Retrieve the default data from the ini file and resolve as much
+    data as much data as possible to save on processing
+    '''
+    config = getIniDict(INI_FORMAT)
 
-        # level name setup
-        level = self.config['LevelName']
-        self.LEVEL_PRE_STR = level['pre_string']
-        self.LEVEL_POST_STR = level['post_string']
-        self.LEVEL_PRE_SEP = level['pre_sep']
-        self.LEVEL_POST_SEP = level['post_sep']
+    for section, data in config.items():
+        for key, value in data.items():
+            # replace any numerical values with blank space
+            if type(value) == types.IntType:
+                config[section][key] = " "*value
 
+    return config
+
+FORMAT_DATA = getFormat()
 
 if __name__ == '__main__':
     print "WARNING: config testing"
-    f = Format()
-    print f.LEVEL_POST_SEP, f.LEVEL_POST_STR
+    import pprint
+    pprint.pprint(FORMAT_DATA)
