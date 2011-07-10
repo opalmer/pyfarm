@@ -215,7 +215,7 @@ def getFormat():
 
     return config
 
-FORMAT_DATA = getFormat()
+FORMAT = getFormat()
 
 if __name__ == '__main__':
     print "WARNING: config testing"

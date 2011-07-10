@@ -22,7 +22,9 @@
 import sys
 import pprint
 
+import level
 import config
+import format
 
 class Logger(object):
     '''
@@ -40,6 +42,7 @@ class Logger(object):
         self.config = config.ReadConfig()
 
         # transfer the global settings to the Logger object
+        Logger.ENABLE = True
         Logger.LEVEL = self.config.globals.LEVEL
         Logger.ALLOW_TRACE = self.config.globals.ALLOW_TRACE
         Logger.WARN_MISSING_LEVEL = self.config.globals.WARN_MISSING_LEVEL
@@ -48,12 +51,25 @@ class Logger(object):
         # prepare the config dictionary and add any missing keys
         for levelConfig in self.config.levels:
             config.build(levelConfig)
-            pprint.pprint(levelConfig)
+
+            # build the level
+            level.Base(levelConfig)
+
+
+            # TODO: Construct level object here
+            # TODO: Level object should be passed formatting information
+            print "See TODOs in logger.py"
+            setattr(self, levelConfig['function'], levelConfig)
 
     def __getattr__(self, level):
         '''Get an attribute from the logger object'''
         try:
-            log = object.__getattribute__(self, level)
+            if not Logger.ENABLE:
+                return
+
+            data = object.__getattribute__(self, level)
+            level = level.Base(data)
+
 
         except AttributeError:
             if Logger.WARN_MISSING_LEVEL:

@@ -30,14 +30,10 @@ class Base(object):
     @param name: The name of the level as text
     @param function: function to call
     '''
-    def __init__(self, level=None, name=None, function=None,
-                    output=sys.stdout):
-        self.level = None
-        self.name = None
-        self.function = None
-        self.output = output
+    def __init__(self, data):
+        self.data = data
+        print "WARNING: level object not configured"
 
-    # TODO: Look into using environment variables rather than modules/txt files
     @property
     def enabled(self):
         '''Evaluate and return if the level is truly enabled or not'''
@@ -45,6 +41,22 @@ class Base(object):
 
     def __call__(self, message, pre="", post=os.linesep, output=None):
         '''Call the log output and show the message'''
-        output = output or self.output
-        formatted = message # TODO: Use formatting from the logging config
-        output.write(pre+formatted+post)
+        if not self.enabled:
+            return
+
+        formatted = pre+formatted+post
+
+        # if an optional output device is not provided, use the
+        # preconfigured device
+        print output
+        if not output:
+            output = self.output
+
+        # we can only 'write' to the device if it's in the list below
+        if output in (sys.stdout, sys.stderr):
+            output.write(formatted)
+            return formatted
+
+        # otherwise we expect to use the object as the output itself
+        else:
+            return output(formatted)
