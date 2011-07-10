@@ -19,24 +19,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
-class StringTemplate(object):
-    '''Basic template to generate outout strings'''
-    def __init__(self, template):
-        self.template = template
-
-    def sub(self, replace, removeMissing=True):
-        '''
-        Replace items in the template with variables in replace.  If
-        removeMissing is True then remove any unmathed string in the
-        template.
-
-        >>> template = StringTemplate("$hello $world")
-        >>> template.sub(hello="hello")
-        'hello'
-        '''
-        pass
-
-
 class IAddDict(dict):
     '''
     Extension to dict add data from another dictionary
@@ -46,6 +28,7 @@ class IAddDict(dict):
         for key, value in data.items():
             self[key] = value
         return self
+
 
 class AttrDict(object):
     '''
