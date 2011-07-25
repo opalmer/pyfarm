@@ -20,26 +20,30 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
-import os
 import inspect
-import tempfile
-import subprocess
+import shutil
 
 from dev.lib import pmake
 
-def clean():
-    '''Cleanup temp files'''
-    pass
+def pre():
+    print 'running pre'
 
-def test():
+def preclean(pre):
+    '''Preparing for clean'''
+    print 'clean prep'
+
+def clean(preclean, a='a', b='b'):
+    '''Cleanup temp files'''
+    print 'ran clean'
+
+def test(a="test"):
     '''Run test code'''
-    pass
+    print "testing"
 
 def designer(clean, test):
     '''Run Qt designer with the environment necessary for custom widgets'''
     #cmd = Command()
     print "designer call"
-
 
 if __name__ == '__main__':
     methods = pmake.methods(inspect.currentframe())
@@ -51,4 +55,4 @@ if __name__ == '__main__':
         if arg not in methods.keys():
             pmake.HelpString.noSuchCall(arg)
 
-        pmake.command.execute(methods[arg], methods)
+        pmake.command.execute(methods[arg], methods, inspect.currentframe())

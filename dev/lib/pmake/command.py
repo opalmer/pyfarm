@@ -16,28 +16,65 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
+import re
 import os
 import types
 import inspect
 import includes
 
-def __isMethod(name, methods):
-    if not methods.get(name):
-        includes.HelpString.noSuchCall(name)
+def __kwargs(args, defaults):
+    '''Return a dictionary of keyword arguments'''
+    kwargs = {}
 
-def execute(method, methods):
-    # find and run all parent calls
-    for parentCall in inspect.getargspec(method).args:
-        __isMethod(parentCall, methods)
-        execute(methods[parentCall], methods)
+    # extract the keyword arguments
+    if defaults:
+        index = -1
+        for default in defaults:
+            kwargs[args[index]] = defaults[index]
+            index -= 1
 
-    #print dir(method.func_defaults)
-    #print method.func_defaults
-    print " :: Running %s" % method.func_name
-    if os.getenv('PMAKE_DRYRUN'):
-        if os.getenv('PMAKE_VERBOSE'):
-            print "printing every line of code"
-        print "NO"
+        # remove any keyword argument keys from args
+        args = args[:index+1]
+
+    return args, kwargs
+
+# TODO: Extract function code
+# TODO: Remove comments from ^
+# TODO: Remove arguments from ^
+# TODO: Inject keyword arguments into ^
+def execute(method, methods, frame):
+    '''Attempt to execute the requested method'''
+    args, varargs, varkw, defaults = inspect.getargspec(method)
+    preMethods, kwargs = __kwargs(args, defaults)
+
+    for call in preMethods:
+        childMethod = methods.get(call)
+
+        if not childMethod:
+            print "ERROR: no such method %s" % call
+            sys.exit(1)
+
+        execute(childMethod, methods)
+
+    name = method.func_name
+    print ":: Running %s" % name
+    source = inspect.getsource(method)
+    lines = source.split("\n")
+
+    keywords = []
+    for key, value in kwargs.items():
+        if type(value) in types.StringTypes:
+            keywords.append("%s='%s'" % (key, value))
+
+        else:
+            keywords.append("%s=%s" % (key, str(value)))
+
+    # replace the function call and then add the call to the execution
+    # code
+    lines[0] = "def %s(%s):" % (name, ",".join(keywords))
+    lines.append("%s()" % name)
+    source = "\n".join(lines)
+    exec source
 
 
 class System(object):
