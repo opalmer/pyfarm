@@ -33,7 +33,7 @@ class HelpString(object):
 
     def addMethod(self, name, method):
         '''Add a new doc string for the given method'''
-        doc = " -- ".join([name, method.__doc__])
+        doc = " -- ".join([name, method.__doc__ or "Not Documented"])
         self.string += "%s\t%s" % (os.linesep, doc)
 
 

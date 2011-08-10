@@ -54,7 +54,7 @@ def execute(method, methods, frame):
             print "ERROR: no such method %s" % call
             sys.exit(1)
 
-        execute(childMethod, methods)
+        execute(childMethod, methods, frame)
 
     name = method.func_name
     print ":: Running %s" % name
