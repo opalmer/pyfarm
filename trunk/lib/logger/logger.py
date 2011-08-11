@@ -59,6 +59,8 @@ class Logger(object):
             # TODO: Construct level object here
             # TODO: Level object should be passed formatting information
             print "See TODOs in logger.py"
+            print "-importing logging should setup the logger (logging.log('hi!')"
+            print "-concept of handlers/streams needs better definition"
             setattr(self, levelConfig['function'], levelConfig)
 
     def __getattr__(self, level):
