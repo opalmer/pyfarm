@@ -1,7 +1,7 @@
 # No shebang line, this module is meant to be imported
 #
 # INITIAL: Aug 11 2011
-# PURPOSE: To handle
+# PURPOSE: To handle output of logging information
 #
 # This file is part of PyFarm.
 # Copyright (C) 2008-2011 Oliver Palmer
@@ -20,6 +20,7 @@
 # along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
 import sys
+import inspector
 
 def stdout(output):
     sys.stderr.write(output)
