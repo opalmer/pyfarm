@@ -22,6 +22,12 @@
 import sys
 import inspector
 
+# classes should be setup the same and meet some requirements
+# so the config can still use handlers.FileHandler or handlers.RotatingHandler
+# TODO: Determine requirements
+class FileHandler(object): pass
+class RotatingHandler(object): pass # inherit from FileHandler???
+
 def stdout(output):
     sys.stderr.write(output)
 # END stdout

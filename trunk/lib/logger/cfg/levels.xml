@@ -18,29 +18,65 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 -->
-
-<!--
-
-Variables:
-	name (required):
-		The name of the level to be displayed
-		
-	method (required if name has whitespace):
-		The method to call on the logger object
-		
-	handler:
-		The handler to pass the output log string to (see the handlers module)
--->
-
-<LEVELS>
-	<LevelConfig>
-		<level name="deep debug" method="deepDebug" handlers="handlers.inspector" /> 
+<CONFIG>
+	<levels>
+		<!--
+			Variables:
+				name (required):
+					The name of the level to be displayed
+			
+				method(optional, see case below):
+					The name of the method to be called, this value is not optional
+					if the name contains whitespace or non-ascii characters.
+					
+				handlers:
+					A comma separated list of handlers to call when the level
+					is triggered.  If no handlers then the default will be used.
+		-->
+		<level name="deep debug" method="deepDebug" handlers="handlers.inspector" />
+		<level name="exception" handlers="handlers.exception" /> 
 		<level name="debug" />
-		<level name="error" handler="handlers.stderr" />
+		<level name="error" handlers="handlers.stderr" />
 		<level name="info" />
-	</LevelConfig>
-
-	<Handlers>
-		<handler name="test" />
-	</Handlers>
-</LEVELS>
+	</levels>
+	
+	<handlers>
+		<default format="default" stream="streams.stdout" />
+		<exception format="exception" stream="streams.exceptions" />
+		<file format="default" stream="streams.file" />
+		<debug format="debugBasic" stream="streams.stdout" />
+		<stderr format="debugFull" streams="streams.stderr" />
+	</handlers>
+	
+	<preformats>
+		<!--
+			A section of formats which are 'preconfigured'
+			and prepared at runtime.  Preformats starting with
+			timestamp can be used for timestamp configuration.
+			For preformats which begin with debug.
+			
+			Variables:
+				%var:    time formatting
+				$module: module log is being emitted from
+				$class:  class log is emitted from
+				$method: method name log is emitted from
+				$line:   line where emission occurs
+		-->
+		<timestampDefault format="%x %X" />
+		<debugBasic format="$module[$line]" />
+		<debugFull format="$module.$class.$method[$line]" />
+	</preformats>
+	
+	<formats>
+		<!--
+			Variables
+				preformat.X: value X from preformats
+				level:       name of the current level
+				levelId:     integer value of the level
+				message:     the log message
+		-->
+		<default format="$preformats.timestampDefault - [ $level ] - $message" />
+		<exception format="EXCEPTION - $preformats.debugFull - $message" />
+		<debug format="$preformats.timestampDefault - [ $level ] - $message" />
+	</formats>
+</CONFIG>
