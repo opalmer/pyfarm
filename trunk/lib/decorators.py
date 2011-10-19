@@ -25,17 +25,19 @@ import os
 import sys
 import time
 import site
+import types
 import cProfile
 import warnings
 import linecache
-from threading import Thread
+import threading
 from functools import wraps
+
+import locking
 
 cwd = os.path.dirname(os.path.abspath(__file__))
 root = os.path.abspath(os.path.join(cwd, ".."))
 site.addsitedir(root)
 
-catch22Fail = None
 TRACE_BYPASS = (
                     'string.py', 'Logger.py', 'ElementTree.py',
                     'AsyncfileSystem.py', '<string>', 'stat.py',
@@ -43,35 +45,6 @@ TRACE_BYPASS = (
                     'AsyncIO.py', 'utf_8.py', 'threading.py', 'ntpath.py',
                     'atexit.py', '__init__.py'
                 )
-
-def catch22(func):
-    '''Catch and process all possible errors in the best possible way'''
-    def catcher(*args, **kwargs):
-        failValue = None
-        if len(args):
-            failValue = args[0].__dict__.get("catch22Fail")
-
-        # use the default if it has been set
-        if catch22Fail:
-            failValue = catch22Fail
-
-        # attempt to get and return output from func
-        try:
-            output = func(*args, **kwargs)
-
-        # start processing if exception from function is caught
-        except Exception, error:
-
-            try:
-                output = failValue()
-
-            except TypeError:
-                output = failValue
-
-        finally:
-            return output
-
-    return catcher
 
 def deprecated(func):
     '''
@@ -120,7 +93,6 @@ def trace(func):
 
     return runTrace
 
-
 def profile(func):
     '''Profile the given function and print some usefull information'''
     @wraps(func)
@@ -137,7 +109,7 @@ def thread(func):
     '''Wrap a function into a python thread'''
     @wraps(func)
     def runThread(*args, **kwargs):
-        funcThread = Thread(target=func, args=args, kwargs=kwargs)
+        funcThread = threading.Thread(target=func, args=args, kwargs=kwargs)
         funcThread.start()
         return funcThread
 
@@ -151,3 +123,28 @@ def elapsed(func):
         elapsed = time.time()-start
         return output
     return run
+
+class lock(object):
+    def __init__(self, name=locking.DEFAULT_NAME):
+        if type(name) not in types.StringTypes:
+            self.func = name
+        else:
+            self.func = None
+        self.lock = locking.lock(name)
+    # END __init__
+
+    def __call__(self, *args, **kwargs):
+        func = self.func or args[0]
+        def wrapped(*args, **kwargs):
+            try:
+                self.lock.acquire()
+                return func(*args, **kwargs)
+
+            finally:
+                self.lock.release()
+
+        if self.func:
+            return wrapped(*args, **kwargs)
+        return wrapped
+    # END __call__
+# END lock

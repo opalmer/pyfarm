@@ -22,49 +22,21 @@
 import os
 import sys
 import time
-import types
 import atexit
 import signal
+import socket
 import threading
 import SocketServer
 from SimpleXMLRPCServer import SimpleXMLRPCServer, SimpleXMLRPCRequestHandler
+
+import lib.decorators
 
 PID = os.getpid()
 LOCK = threading.Lock()
 NAMED_LOCKS = {}
 PORT = 8080
-HOSTNAME = '' # TODO: get the real hostname
-ADDRESS = '' # TODO: get the real address
-
-
-class resourcelock(object):
-    def __init__(self, name=None):
-        if type(name) not in types.StringTypes:
-            self.func = name
-            self.lock = LOCK
-        else:
-            if name not in NAMED_LOCKS:
-                NAMED_LOCKS[name] = threading.Lock()
-
-            self.lock = NAMED_LOCKS[name]
-            self.func = None
-    # END __init__
-
-    def __call__(self, *args, **kwargs):
-        func = self.func or args[0]
-        def wrapped(*args, **kwargs):
-            try:
-                self.lock.acquire()
-                return func(*args, **kwargs)
-
-            finally:
-                self.lock.release()
-
-        if self.func:
-            return wrapped(*args, **kwargs)
-        return wrapped
-    # END __call__
-# END resourcelock
+HOSTNAME = socket.gethostname()
+ADDRESS = socket.gethostbyname(HOSTNAME)
 
 def exitFunction():
     print "Stopping Server"
@@ -85,7 +57,7 @@ class JobDatabase(object):
 
     # lock resource so multiple threads do not attempt to change
     # the same information
-    @resourcelock("addJob")
+    @lib.decorators.lock("addJob")
     def addJob(self, newJob):
         print "entering addJob"
         print "...adding %s" % newJob
@@ -100,11 +72,10 @@ class JobDatabase(object):
 
 
 if __name__ == '__main__':
-    # TODO: Update to use real address/hostname/etc
     print "====== Starting Job Server ======"
     print "Process: %i" % PID
-    print "Address: xxx.xxx.xxx.xxx"
-    print "Hostname: <hostname>"
+    print "Address: %s" % ADDRESS
+    print "Hostname: %s" % HOSTNAME
     print "Port: %i" % PORT
     print "================================="
 
