@@ -20,55 +20,61 @@
 # along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
-import sys
-import time
 import atexit
-import signal
 import socket
-import threading
-import SocketServer
-from SimpleXMLRPCServer import SimpleXMLRPCServer, SimpleXMLRPCRequestHandler
-
-import lib.decorators
+from twisted.web import resource, xmlrpc, server
 
 PID = os.getpid()
-LOCK = threading.Lock()
-NAMED_LOCKS = {}
 PORT = 8080
 HOSTNAME = socket.gethostname()
 ADDRESS = socket.gethostbyname(HOSTNAME)
 
+@atexit.register
 def exitFunction():
     print "Stopping Server"
     print "...dumping data structure"
 # END exitFunction
 
-class AsyncXMLRPCServer(SocketServer.ThreadingMixIn, SimpleXMLRPCServer):
-    pass
-# END AsyncXMLRPCServer
+class ClientStatus(xmlrpc.XMLRPC):
+    def xmlrpc_jobs(self, hostname):
+        print 'returning a list of jobs for %s' % hostname
+        return range(5)
 
-class JobDatabase(object):
-    def exit(self):
-        os.kill(PID, signal.SIGINT)
 
-    def echo(self, echo):
-        print echo
+class Clients(xmlrpc.XMLRPC):
+    def __init__(self):
+        resource.Resource.__init__(self)
+        self.subHandlers = {"status": ClientStatus()}
+        self.allowNone = True
+        self.useDateTime = True
+
+    def xmlrpc_add(self, name):
+        print "Adding client: %s" % name
         return True
 
-    # lock resource so multiple threads do not attempt to change
-    # the same information
-    @lib.decorators.lock("addJob")
-    def addJob(self, newJob):
-        print "entering addJob"
-        print "...adding %s" % newJob
+
+class MainServer(xmlrpc.XMLRPC):
+    """An example object to be published."""
+    def __init__(self):
+        resource.Resource.__init__(self)
+        self.subHandlers = {"clients": Clients()}
+        self.allowNone = True
+        self.useDateTime = True
+
+    def xmlrpc_echo(self, x):
+        """
+        Return all passed args.
+        """
+        print "echo: %s" % x
+        import time
         time.sleep(3)
-        print "...sleeping"
-        return True
+        return x
 
-    def queryJob(self, job):
-        print "running query for %s" % job
-        return True
-
+    def xmlrpc_fault(self):
+        """
+        Raise a Fault indicating that the procedure should not be used.
+        """
+        raise xmlrpc.Fault(123, "The fault procedure is faulty.")
 
 
 if __name__ == '__main__':
@@ -79,7 +85,8 @@ if __name__ == '__main__':
     print "Port: %i" % PORT
     print "================================="
 
-    atexit.register(exitFunction)
-    server = AsyncXMLRPCServer((HOSTNAME, PORT), SimpleXMLRPCRequestHandler)
-    server.register_instance(JobDatabase())
-    server.serve_forever()
+    from twisted.internet import reactor
+
+    rpcserver = MainServer()
+    reactor.listenTCP(PORT, server.Site(rpcserver))
+    reactor.run()
