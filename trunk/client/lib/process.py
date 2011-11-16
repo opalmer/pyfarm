@@ -22,10 +22,50 @@
 import os
 import copy
 
-from twisted.internet import protocol, reactor, defer
+import loghandler
 
-# TODO: handle output of the deferred object so the main client knows that 
-#       we have finished processing
+from twisted.internet import protocol, reactor, defer
+from twisted.python import log
+
+class ExitHandler(object):
+    '''
+    Handles the output of a process
+
+    :param Client:
+        main client class object that we will use to control
+        the number of running jobs
+
+    :param tuple host:
+        three part tuple with the hostname, address, and port
+
+    :param tuple master:
+        three part tuple with the address to the master to report our exit
+        code to
+    '''
+    def __init__(self, Client, host, master):
+        self.Client = Client
+        self.host = host # hostname, address, and port of the client
+        self.master = master
+        self.Client.JOB_COUNT += 1
+    # END __init__
+
+    def exit(self, data):
+        '''Handle the exit status data of a process'''
+        args = (data['command'],data['exit'])
+        self.Client.JOB_COUNT -= 1
+        
+        if data['exit'] != 0:
+            # TODO: send failure message to server
+            log.msg("command '%s' failed with code %i" % args)
+
+        else:
+            # TODO: send success message to server
+            log.msg("command '%s' finished with code %i" % args)
+
+    # END exit
+# END ExitHandler
+
+
 class TwistedProcess(protocol.ProcessProtocol):
     '''
     Create a Twisted process object
@@ -36,6 +76,8 @@ class TwistedProcess(protocol.ProcessProtocol):
         self.command = command
         self.env = copy.deepcopy(os.environ)
         self.deferred = defer.Deferred()
+
+        log.msg("attempting to run '%s'" % command)
         
         # construct the command list and arguments to pass 
         # to reactor.spawnProcess
@@ -69,31 +111,37 @@ class TwistedProcess(protocol.ProcessProtocol):
                 
                 if os.path.isfile(path):
                     return path
-            
-        raise OSError('command not found: %s' % name)
+
+        error = OSError("'%s' command not found" % name)
+        log.err(_stuff=error, _why='command not found')
+        raise error
     # END __findProgram
     
-    def connectionMade(self):        
+    def connectionMade(self):
+        '''write the command to standard input'''
         self.transport.write(self.command)        
         self.transport.closeStdin()
     # END connectionMade
     
     def outReceived(self, data):
-        print "stdout: %s" % data.strip()
+        '''output received on sys.stdout'''
+        log.msg(data.strip())
     # END outReceived
     
     def errReceived(self, data):
-        print "stderr: %s" % data
+        '''output received on sys.stderr'''
+        log.msg("error: %s" % data.strip())
     # END errReceived
     
     def processEnded(self, status):
+        '''Called when the process exist and returns the proper callback'''
         code = status.value.exitCode
-        print "exit %s" % code
-        
-        if code != 0:
-            self.deferred.errback(code)
-        else:
-            self.deferred.callback(self)
+        log.msg("process exit %i: %s" % (code, self.command))
+        data = {
+                    "exit" : code,
+                    "command" : self.command
+               }
+        self.deferred.callback(data)
     # END processEnded
 # END TwistedProcess
 
