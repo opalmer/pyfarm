@@ -37,6 +37,7 @@ MASTER = ()
 
 # TODO: replace JOB_COUNT_MAX with a preference
 class Client(xmlrpc.XMLRPC):
+    ONLINE = True
     JOB_COUNT = 0     # number of commands currently running
     JOB_COUNT_MAX = 2 # maximum number of jobs we can run at once (-1 for unlimited)
 
@@ -45,6 +46,31 @@ class Client(xmlrpc.XMLRPC):
         self.allowNone = True
         self.useDateTime = True
     # END __init__
+
+    def xmlrpc_shutdown(self):
+        '''Shutdown the reactor'''
+        reactor.shutdown()
+    # END xmlrpc_shutdown
+
+    def xmlrpc_online(self, state=None):
+        '''
+        Return True of the client is currently online and set
+        the online state if a valid state argument is provided
+
+        :exception xmlrpc.Fault(3):
+            raised if the new state is not in (True, False)
+        '''
+        if state != None:
+            # ensure the new client state is valid
+            if state not in (True, False):
+                error = "%s is not a valid client state" % str(state)
+                raise xmlrpc.Fault(3, error)
+
+            # set the new client state
+            Client.ONLINE = state
+
+        return Client.ONLINE
+    # END xmlrpc_online
 
     def xmlrpc_free(self):
         '''
@@ -79,9 +105,16 @@ class Client(xmlrpc.XMLRPC):
 
         :exception xmlrpc.Fault(1):
             raised if the given command could not be found
+
+        :exception xmlrpc.Fault(4):
+            raised if the host is currently offline
         '''
         free = self.xmlrpc_free()
         args = (Client.JOB_COUNT, Client.JOB_COUNT_MAX)
+
+        # client must be online in order to submit jobs
+        if not self.xmlrpc_online():
+            raise xmlrpc.Fault(4, '%s is offline' % HOSTNAME)
 
         if not force and not free:
             fault = 'client already running %i/%i jobs' % args
