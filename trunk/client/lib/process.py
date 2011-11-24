@@ -47,13 +47,13 @@ class ExitHandler(object):
         self.host = host # hostname, address, and port of the client
         self.master = master
         self.Client.JOB_COUNT += 1
-    # END __init__
+    # end __init__
 
     def exit(self, data):
         '''Handle the exit status data of a process'''
         args = (data['command'],data['exit'])
         self.Client.JOB_COUNT -= 1
-        
+
         if data['exit'] != 0:
             # TODO: send failure message to server
             log.msg("command '%s' failed with code %i" % args)
@@ -62,14 +62,14 @@ class ExitHandler(object):
             # TODO: send success message to server
             log.msg("command '%s' finished with code %i" % args)
 
-    # END exit
-# END ExitHandler
+    # end exit
+# end ExitHandler
 
 
 class TwistedProcess(protocol.ProcessProtocol):
     '''
     Create a Twisted process object
-    
+
     :param string command: The command to run
     '''
     def __init__(self, command):
@@ -78,61 +78,61 @@ class TwistedProcess(protocol.ProcessProtocol):
         self.deferred = defer.Deferred()
 
         log.msg("attempting to run '%s'" % command)
-        
-        # construct the command list and arguments to pass 
+
+        # construct the command list and arguments to pass
         # to reactor.spawnProcess
         self.commandList = command.split()
         self.commandList[0] = self.__findProgram(self.commandList[0])
         self.args = (self.commandList[0], self.commandList, self.env)
-    # END __init__
-    
+    # end __init__
+
     def __findProgram(self, name):
         '''Returns the full path to the requested program or command'''
-        # no need to search for the full command path if the a valid 
+        # no need to search for the full command path if the a valid
         # file path has already been provided to us
         if os.path.isfile(name):
             return os.path.abspath(name)
-        
+
         # create a list of possible command names
         if os.name == "nt":
             commands = (
                 name, "%s.exe" % name,
                 "%s.EXE" % name.upper(), name.upper()
             )
-            
+
         else:
             commands = (name, )
-            
+
         # loop over all paths in the system path
         # and attempt to find a file matching the given command name
         for root in os.environ['PATH'].split(os.pathsep):
             for command in commands:
                 path = os.path.join(root, command)
-                
+
                 if os.path.isfile(path):
                     return path
 
         error = OSError("'%s' command not found" % name)
         log.err(_stuff=error, _why='command not found')
         raise error
-    # END __findProgram
-    
+    # end __findProgram
+
     def connectionMade(self):
         '''write the command to standard input'''
-        self.transport.write(self.command)        
+        self.transport.write(self.command)
         self.transport.closeStdin()
-    # END connectionMade
-    
+    # end connectionMade
+
     def outReceived(self, data):
         '''output received on sys.stdout'''
         log.msg(data.strip())
-    # END outReceived
-    
+    # end outReceived
+
     def errReceived(self, data):
         '''output received on sys.stderr'''
         log.msg("error: %s" % data.strip())
-    # END errReceived
-    
+    # end errReceived
+
     def processEnded(self, status):
         '''Called when the process exist and returns the proper callback'''
         code = status.value.exitCode
@@ -142,12 +142,12 @@ class TwistedProcess(protocol.ProcessProtocol):
                     "command" : self.command
                }
         self.deferred.callback(data)
-    # END processEnded
-# END TwistedProcess
+    # end processEnded
+# end TwistedProcess
 
 # XXX: output may need to be updated to handle TODO note on TwistedProcess
 def runcmd(command):
     process = TwistedProcess(command)
     reactor.spawnProcess(process, *process.args)
     return process.deferred
-# END runcmd
+# end runcmd

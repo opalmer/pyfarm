@@ -52,12 +52,12 @@ class Client(xmlrpc.XMLRPC):
         resource.Resource.__init__(self)
         self.allowNone = True
         self.useDateTime = True
-    # END __init__
+    # end __init__
 
     def xmlrpc_shutdown(self):
         '''Shutdown the reactor'''
         reactor.shutdown()
-    # END xmlrpc_shutdown
+    # end xmlrpc_shutdown
 
     def xmlrpc_online(self, state=None):
         '''
@@ -77,7 +77,7 @@ class Client(xmlrpc.XMLRPC):
             Client.ONLINE = state
 
         return Client.ONLINE
-    # END xmlrpc_online
+    # end xmlrpc_online
 
     def xmlrpc_free(self):
         '''
@@ -92,7 +92,7 @@ class Client(xmlrpc.XMLRPC):
             return False
 
         return True
-    # END xmlrpc_acceptJobs
+    # end xmlrpc_acceptJobs
 
     def xmlrpc_ping(self):
         '''
@@ -100,7 +100,7 @@ class Client(xmlrpc.XMLRPC):
         if a connection can be opened to the server.
         '''
         return True
-    # END xmlrpc_ping
+    # end xmlrpc_ping
 
     def xmlrpc_run(self, command, force=False):
         '''
@@ -141,8 +141,8 @@ class Client(xmlrpc.XMLRPC):
         except OSError, error:
             Client.JOB_COUNT -= 1
             raise xmlrpc.Fault(1, str(error))
-    # END xmlrpc_run
-# END Client
+    # end xmlrpc_run
+# end Client
 
 client = Client()
 reactor.listenTCP(PORT, server.Site(client))
