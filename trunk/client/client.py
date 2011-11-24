@@ -23,23 +23,30 @@ import os
 import socket
 import logging
 
-from lib import process
+from lib import process, preferences
 
 from twisted.internet import reactor
 from twisted.web import resource, xmlrpc, server
 from twisted.python import log
 
 PID = os.getpid()
-PORT = 9030
+PORT = preferences.port()
 HOSTNAME = socket.gethostname()
 ADDRESS = socket.gethostbyname(HOSTNAME)
 MASTER = ()
 
-# TODO: replace JOB_COUNT_MAX with a preference
 class Client(xmlrpc.XMLRPC):
+    '''
+    Main xml rpc service.
+
+    *Class Attributes*
+        ONLINE - If true the client can accecpt and process new jobs
+        JOB_COUNT - Current number of jobs running
+        JOB_COUNT_MAX - Maximum number of jobs we are allowed to run
+    '''
     ONLINE = True
-    JOB_COUNT = 0     # number of commands currently running
-    JOB_COUNT_MAX = 2 # maximum number of jobs we can run at once (-1 for unlimited)
+    JOB_COUNT = 0
+    JOB_COUNT_MAX = preferences.cpu_count()
 
     def __init__(self):
         resource.Resource.__init__(self)

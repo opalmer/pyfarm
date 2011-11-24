@@ -24,6 +24,7 @@ ETC = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "etc"))
 CONFIG = os.path.join(ETC, "client.ini")
 CPU_COUNT = multiprocessing.cpu_count()
 
+# ensure the preference file exists
 if not os.path.isfile(CONFIG):
     raise IOError("missing client configuration %s" % CONFIG)
 
