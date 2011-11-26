@@ -32,31 +32,11 @@ if not os.path.isfile(CONFIG):
 cfg = ConfigParser.ConfigParser()
 cfg.read(CONFIG)
 
-def max_jobs():
-    '''
-    Returns the maximum number of jobs we are allowed to run
-
-    :exception NameError:
-        raised if an undefined keyword is used in PROCESSING.max_jobs
-
-    :exception ValueError:
-        raised if we cannot convert the given answer to an integer
-
-    :exception SyntaxError:
-        raised if there are syntax problems with the entry
-    '''
-    return int(eval(cfg.get('PROCESSING', 'max_jobs')))
-# end max_jobs
-
-def port():
-    '''
-    Returns the port the client expects to communicate on
-
-    :exception ValueError:
-        raised if the value provided by NETWORK.port is not an integer
-    '''
-    return cfg.getint('NETWORK', 'port')
-# end port
+# establish global preferences
+PRINT_OUTPUT = cfg.getboolean('LOGGING', 'print')
+PORT = cfg.getint('NETWORK', 'port')
+MAX_JOBS = int(eval(cfg.get('PROCESSING', 'max_jobs')))
+PATHS = cfg.get('PROCESSING', 'program_paths').split(',')
 
 if __name__ == '__main__':
     print port()

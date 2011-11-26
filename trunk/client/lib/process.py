@@ -55,11 +55,9 @@ class ExitHandler(object):
         self.Client.JOB_COUNT -= 1
 
         if data['exit'] != 0:
-            # TODO: send failure message to server
             log.msg("command '%s' failed with code %i" % args)
 
         else:
-            # TODO: send success message to server
             log.msg("command '%s' finished with code %i" % args)
 
     # end exit

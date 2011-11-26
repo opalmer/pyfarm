@@ -30,7 +30,7 @@ from twisted.web import resource, xmlrpc, server
 from twisted.python import log
 
 PID = os.getpid()
-PORT = preferences.port()
+PORT = preferences.PORT
 HOSTNAME = socket.gethostname()
 ADDRESS = socket.gethostbyname(HOSTNAME)
 MASTER = ()
@@ -46,7 +46,7 @@ class Client(xmlrpc.XMLRPC):
     '''
     ONLINE = True
     JOB_COUNT = 0
-    JOB_COUNT_MAX = preferences.cpu_count()
+    JOB_COUNT_MAX = preferences.MAX_JOBS
 
     def __init__(self):
         resource.Resource.__init__(self)
