@@ -39,4 +39,4 @@ MAX_JOBS = int(eval(cfg.get('PROCESSING', 'max_jobs')))
 PATHS = cfg.get('PROCESSING', 'program_paths').split(',')
 
 if __name__ == '__main__':
-    print port()
+    print PORT

@@ -54,10 +54,10 @@ class Client(xmlrpc.XMLRPC):
         self.useDateTime = True
     # end __init__
 
-    def xmlrpc_shutdown(self):
-        '''Shutdown the reactor'''
-        reactor.shutdown()
-    # end xmlrpc_shutdown
+    def xmlrpc_quit(self):
+        '''Shutdown the reactor and client'''
+        reactor.quit()
+    # end xmlrpc_quit
 
     def xmlrpc_online(self, state=None):
         '''
