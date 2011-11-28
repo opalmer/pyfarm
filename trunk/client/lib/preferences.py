@@ -38,5 +38,15 @@ PORT = cfg.getint('NETWORK', 'port')
 MAX_JOBS = int(eval(cfg.get('PROCESSING', 'max_jobs')))
 PATHS = cfg.get('PROCESSING', 'program_paths').split(',')
 
+CLIENT_LOG_STDOUT = cfg.getboolean('CLIENT_LOGGING', 'stdout')
+CLIENT_LOG_FILE = cfg.getboolean('CLIENT_LOGGING', 'file')
+
 if __name__ == '__main__':
-    print PORT
+    import pprint
+
+    local = {}
+    for key, value in locals().items():
+        if key.isupper():
+            local[key] = value
+
+    pprint.pprint(local)

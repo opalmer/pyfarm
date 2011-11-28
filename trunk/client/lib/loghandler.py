@@ -27,28 +27,43 @@ directories and process specific logging.
 import os
 import sys
 import time
+import uuid
 import socket
 import tempfile
 from twisted.python import log
 
+import preferences
+
 ENDLINE = os.linesep
 LOG_ROOT = os.path.join(tempfile.gettempdir(), "pyfarm", "client", "logs")
-CLIENT_LOG = os.path.join(os.path.dirname(LOG_ROOT), "client-log.log")
-CLIENT_LOG_STREAM = open(CLIENT_LOG, 'a')
-
-# TODO: add rotating file handler
-# add a break to the client log stream so we don't confuse
-# multiple client start/stops
-CLIENT_LOG_STREAM.write(
-    "------ Starting Stream %s------%s" % (time.strftime("%D %T"), os.linesep)
-)
 
 # Contains a dictionary of log files based on UUID, mappings will be
 # maintained so long as the client is running
 LOG_HANDLERS = {}
 
-log.startLogging(sys.stdout)
-log.startLogging(CLIENT_LOG_STREAM)
+# client logging to standard out to sys.stdout logging
+if preferences.CLIENT_LOG_STDOUT:
+    log.startLogging(sys.stdout)
+
+# client standard out to file logging
+if preferences.CLIENT_LOG_FILE:
+    CLIENT_LOG = os.path.join(os.path.dirname(LOG_ROOT), "client-log.log")
+    CLIENT_LOG_STREAM = open(CLIENT_LOG, 'a')
+
+    # TODO: add rotating file handler
+    # add a break to the client log stream so we don't confuse
+    # multiple client start/stops
+    CLIENT_LOG_STREAM.write(
+    "------ Starting Stream %s------%s" % (time.strftime("%D %T"), os.linesep)
+    )
+
+    log.startLogging(CLIENT_LOG_STREAM)
+
+# if client loggint to file was not selected then
+# set the relevant variables to None
+else:
+    CLIENT_LOG = None
+    CLIENT_LOG_STREAM = None
 
 # create the global log directory if
 # it does not exist
@@ -56,8 +71,23 @@ if not os.path.isdir(LOG_ROOT):
     os.makedirs(LOG_ROOT)
     log.msg("created log directory")
 
-log.msg("log directory: %s" % LOG_ROOT)
 log.msg("client log: %s" % CLIENT_LOG)
+log.msg("job log directory: %s" % LOG_ROOT)
+
+class UnknownLog(BaseException):
+    '''
+    Raised if a log was requested that
+    does not have an assigned uuid
+    '''
+    def __init__(self, uuid):
+        self.uuid = uuid
+    # end __init__
+
+    def __str__(self):
+        return "%s does not have a log handler" % str(self.uuid)
+    # end __str__
+# end UnknownLog
+
 
 def writeLine(log, line, flush=True, endline=None):
     '''
@@ -71,7 +101,20 @@ def writeLine(log, line, flush=True, endline=None):
 
     :param string endline:
         the endline to use instead of ENDLINE
+
+    :exception UnknownLog:
+        raised if the uuid in place of log does not exist in LOG_HANDLERS
+
+    :exception AttributeError:
+        raised if log does not have the required write function
     '''
+    # if we are being passed a uuid then retrive
+    # the file based on the uuid (if it exists)
+    if isinstance(log, uuid.UUID):
+        if not LOG_HANDLERS.has_key(log):
+            raise UnknownLog(log)
+        log = LOG_HANDLERS[log]
+
     log.write(line+(endline or ENDLINE))
 
     if flush:
@@ -112,6 +155,7 @@ def openLog(uuid, **headerKeywords):
                                     dir=LOG_ROOT,
                                     suffix=".log", delete=False
                                    )
+        log.msg("creating log for %s at %s" % (str(uuid), log.name))
         writeHeader(log)
 
     return LOG_HANDLERS[uuid]
