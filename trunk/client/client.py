@@ -102,6 +102,7 @@ class Client(xmlrpc.XMLRPC):
         return True
     # end xmlrpc_ping
 
+    # TODO: place uuid in dictionary so we can stop the process
     def xmlrpc_run(self, command, force=False):
         '''
         Runs the requested command
