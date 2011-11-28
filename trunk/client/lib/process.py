@@ -21,6 +21,7 @@
 
 import os
 import copy
+import uuid
 
 import loghandler
 
@@ -74,6 +75,11 @@ class TwistedProcess(protocol.ProcessProtocol):
         self.command = command
         self.env = copy.deepcopy(os.environ)
         self.deferred = defer.Deferred()
+        self.uuid = uuid.uuid1()
+        self.log = loghandler.openLog(
+                    self.uuid,
+                    Command=self.command,
+                   )
 
         log.msg("attempting to run '%s'" % command)
 
@@ -123,18 +129,20 @@ class TwistedProcess(protocol.ProcessProtocol):
 
     def outReceived(self, data):
         '''output received on sys.stdout'''
-        log.msg(data.strip())
+        loghandler.writeLine(self.log, data.strip())
     # end outReceived
 
     def errReceived(self, data):
         '''output received on sys.stderr'''
-        log.msg("error: %s" % data.strip())
+        loghandler.writeLine(self.log, data.strip())
     # end errReceived
 
     def processEnded(self, status):
         '''Called when the process exist and returns the proper callback'''
         code = status.value.exitCode
-        log.msg("process exit %i: %s" % (code, self.command))
+        msg = "process exit %i: %s" % (code, self.command)
+        loghandler.writeLine(self.log, msg)
+        log.msg(msg)
         data = {
                     "exit" : code,
                     "command" : self.command
@@ -147,5 +155,5 @@ class TwistedProcess(protocol.ProcessProtocol):
 def runcmd(command):
     process = TwistedProcess(command)
     reactor.spawnProcess(process, *process.args)
-    return process.deferred
+    return process.deferred, process.uuid
 # end runcmd

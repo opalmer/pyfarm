@@ -151,12 +151,13 @@ def openLog(uuid, **headerKeywords):
     '''
     if uuid not in LOG_HANDLERS:
         # create the log file
-        log = LOG_HANDLERS[uuid] = tempfile.NamedTemporaryFile(
-                                    dir=LOG_ROOT,
-                                    suffix=".log", delete=False
-                                   )
-        log.msg("creating log for %s at %s" % (str(uuid), log.name))
-        writeHeader(log)
+        stream = LOG_HANDLERS[uuid] = tempfile.NamedTemporaryFile(
+                                        dir=LOG_ROOT,
+                                        suffix=".log", delete=False
+                                      )
+
+        log.msg("creating log for %s at %s" % (str(uuid), stream.name))
+        writeHeader(stream, UUID=str(uuid))
 
     return LOG_HANDLERS[uuid]
 # end openLog

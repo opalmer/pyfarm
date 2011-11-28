@@ -135,8 +135,9 @@ class Client(xmlrpc.XMLRPC):
         try:
             host = (HOSTNAME, ADDRESS, PORT)
             processHandler = process.ExitHandler(Client, host, MASTER)
-            processCommand = process.runcmd(command)
+            processCommand, uuid = process.runcmd(command)
             processCommand.addCallback(processHandler.exit)
+
 
         except OSError, error:
             Client.JOB_COUNT -= 1
