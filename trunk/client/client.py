@@ -138,12 +138,18 @@ class Client(xmlrpc.XMLRPC):
             processHandler = process.ExitHandler(Client, host, MASTER)
             processCommand, uuid = process.runcmd(command)
             processCommand.addCallback(processHandler.exit)
-
+            return str(uuid)
 
         except OSError, error:
             Client.JOB_COUNT -= 1
             raise xmlrpc.Fault(1, str(error))
     # end xmlrpc_run
+
+    def xmlrpc_shutdown(self):
+        '''shutdown the client and reactor'''
+        import signal
+        signal.alarm(signal.SIGINT)
+    # end xmlrpc_shutdown
 # end Client
 
 client = Client()

@@ -37,6 +37,9 @@ import preferences
 ENDLINE = os.linesep
 LOG_ROOT = os.path.join(tempfile.gettempdir(), "pyfarm", "client", "logs")
 
+if not os.path.isdir(LOG_ROOT):
+    os.makedirs(LOG_ROOT)
+
 # Contains a dictionary of log files based on UUID, mappings will be
 # maintained so long as the client is running
 LOG_HANDLERS = {}
