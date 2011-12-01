@@ -145,10 +145,16 @@ class Client(xmlrpc.XMLRPC):
             raise xmlrpc.Fault(1, str(error))
     # end xmlrpc_run
 
+    # TODO: stop running jobs on shutdown
     def xmlrpc_shutdown(self):
         '''shutdown the client and reactor'''
-        import signal
-        signal.alarm(signal.SIGINT)
+        if Client.JOB_COUNT:
+            log.msg(
+                "reactor shutting down with jobs still running!",
+                logLevel=logging.WARNING
+            )
+
+        reactor.callLater(0.5, reactor.stop)
     # end xmlrpc_shutdown
 # end Client
 
