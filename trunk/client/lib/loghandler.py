@@ -111,7 +111,7 @@ def writeLine(log, line, endline=None):
     :exception AttributeError:
         raised if log does not have the required write function
     '''
-    # if we are being passed a uuid then retrive
+    # if we are being passed a uuid then retrieve
     # the file based on the uuid (if it exists)
     if isinstance(log, uuid.UUID):
         if not LOG_HANDLERS.has_key(log):
@@ -125,7 +125,7 @@ def writeLine(log, line, endline=None):
 def writeHeader(log, **headerKeywords):
     '''
     Writes a header to the log file, arguments passed as keywords will
-    recieve their own line.
+    receive their own line.
     '''
     timestamp = time.strftime("%D %T")
     hostname = socket.gethostname()
@@ -135,6 +135,13 @@ def writeHeader(log, **headerKeywords):
 
     for key, value in headerKeywords.items():
         writeLine(log, "%s: %s" % (key, value))
+
+    # end of header
+    spacer = "="*15
+    msg = "%s BEGIN PROCESS %s" % (spacer, spacer)
+    writeLine(log, "="*len(msg))
+    writeLine(log, msg)
+    writeLine(log, "="*len(msg))
 # end writeHeader
 
 def openLog(uuid, **headerKeywords):
@@ -162,3 +169,19 @@ def openLog(uuid, **headerKeywords):
 
     return LOG_HANDLERS[uuid]
 # end openLog
+
+def writeFooter(log, **footerKeywords):
+    '''
+    Writes a footer to the end of the log file, arguments passed as keywords will
+    receive their own line.
+    '''
+    # end of footer
+    spacer = "="*15
+    msg = "%s END PROCESS %s" % (spacer, spacer)
+    writeLine(log, "="*len(msg))
+    writeLine(log, msg)
+    writeLine(log, "="*len(msg))
+
+    for key, value in footerKeywords.items():
+        writeLine(log, "%s: %s" % (key, value))
+# end writeFooter
