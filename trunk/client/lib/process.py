@@ -80,7 +80,6 @@ class TwistedProcess(protocol.ProcessProtocol):
                     self.uuid,
                     Command=self.command,
                    )
-
         log.msg("attempting to run '%s'" % command)
 
         # construct the command list and arguments to pass
@@ -140,13 +139,16 @@ class TwistedProcess(protocol.ProcessProtocol):
     def processEnded(self, status):
         '''Called when the process exist and returns the proper callback'''
         code = status.value.exitCode
-        msg = "process exit %i: %s" % (code, self.command)
-        loghandler.writeLine(self.log, msg)
-        log.msg(msg)
+        log.msg("process exit %i: %s" % (code, self.command))
+
         data = {
                     "exit" : code,
                     "command" : self.command
                }
+
+        # write footer and call deferred
+        loghandler.writeFooter(self.log, **data)
+        self.log.close()
         self.deferred.callback(data)
     # end processEnded
 # end TwistedProcess
