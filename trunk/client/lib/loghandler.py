@@ -24,6 +24,8 @@ This module performs several functions including initial setup of log
 directories and process specific logging.
 '''
 
+from __future__ import with_statement
+
 import os
 import sys
 import time
@@ -185,3 +187,35 @@ def writeFooter(log, **footerKeywords):
     for key, value in footerKeywords.items():
         writeLine(log, "%s: %s" % (key, value))
 # end writeFooter
+
+def getLog(logid, stream=False):
+    '''
+    Returns the log for the requested uuid.  If the uuid does not exist
+    then a UnknownLog error will be raised.
+
+    :param string or uuid.UUID logid:
+        the id of the log to use, strings will be converted to uuid.UUID objects
+
+    :param boolean stream:
+        if True return the stream instead of the data
+    '''
+    # convert strings to uuids
+    if not isinstance(logid, uuid.UUID):
+        logid = uuid.UUID(logid)
+
+    # raise an error if we could not find the log file
+    if not LOG_HANDLERS.has_key(logid):
+        raise UnknownLog("failed to find handler for log id %s" % str(logid))
+
+    path = LOG_HANDLERS[logid].name
+    log.msg("returning data in %s for %s" % (path, str(logid)))
+
+    # reopen the stream so we don't close the current file handle
+    with open(path, 'r') as logstream:
+        data = logstream.read()
+
+        if not stream:
+            return data
+
+        return data.split(ENDLINE)
+# end getLog

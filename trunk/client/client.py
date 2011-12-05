@@ -23,7 +23,7 @@ import os
 import socket
 import logging
 
-from lib import process, preferences
+from lib import process, loghandler, preferences
 
 from twisted.internet import reactor
 from twisted.web import resource, xmlrpc, server
@@ -144,6 +144,38 @@ class Client(xmlrpc.XMLRPC):
             Client.JOB_COUNT -= 1
             raise xmlrpc.Fault(1, str(error))
     # end xmlrpc_run
+
+    def xmlrpc_log(self, uuidstr, split=True):
+        '''
+        Returns log file for the given uuid
+
+        :param string uuidstr:
+            the uuid to return a log file for
+
+        :param boolean split:
+            if split is True then return the log lines as a list
+
+        :exception xmlrpc.Fault(5):
+            raised if a log file does not exist for the requested log
+
+        :exception xmlrpc.Fault(6):
+            raised if we failed to convert the provided uuidstr
+            to a uuid.UUID object
+        '''
+        try:
+            data = loghandler.getLog(uuidstr, stream=split)
+
+            if not split:
+                data = str(data)
+
+            return data
+
+        except loghandler.UnknownLog, error:
+            raise xmlrpc.Fault(5, error)
+
+        except ValueError:
+            raise xmlrpc.Fault(6, "failed to convert '%s' to a uuid" % uuidstr)
+    # end xmlrpc_log
 
     # TODO: stop running jobs on shutdown
     def xmlrpc_shutdown(self):
