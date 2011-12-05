@@ -114,6 +114,10 @@ class Client(xmlrpc.XMLRPC):
         :exception xmlrpc.Fault(1):
             raised if the given command could not be found
 
+        :exception xmlrpc.Fault(2):
+            raised if the client is already running the max
+            number of jobs
+
         :exception xmlrpc.Fault(4):
             raised if the host is currently offline
         '''
@@ -125,8 +129,7 @@ class Client(xmlrpc.XMLRPC):
             raise xmlrpc.Fault(4, '%s is offline' % HOSTNAME)
 
         if not force and not free:
-            fault = 'client already running %i/%i jobs' % args
-            raise xmlrpc.Fault(2, fault)
+            raise xmlrpc.Fault(2, 'client already running %i/%i jobs' % args)
 
         # log a warning if we are over the max job count
         if force and not free:
