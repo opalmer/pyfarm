@@ -92,7 +92,7 @@ class UnknownLog(BaseException):
 # end UnknownLog
 
 
-def writeLine(log, line, flush=True, endline=None):
+def writeLine(log, line, endline=None):
     '''
     Writes a line of text to the given log file
 
@@ -119,9 +119,7 @@ def writeLine(log, line, flush=True, endline=None):
         log = LOG_HANDLERS[log]
 
     log.write(line+(endline or ENDLINE))
-
-    if flush:
-        log.flush()
+    log.flush()
 # end writeLine
 
 def writeHeader(log, **headerKeywords):
