@@ -34,6 +34,7 @@ cfg.read(CONFIG)
 
 # establish global preferences
 PRINT_OUTPUT = cfg.getboolean('LOGGING', 'print')
+TIMESTAMP = cfg.get('LOGGING', 'timestamp')
 PORT = cfg.getint('NETWORK', 'port')
 MAX_JOBS = int(eval(cfg.get('PROCESSING', 'max_jobs')))
 PATHS_ENV = []

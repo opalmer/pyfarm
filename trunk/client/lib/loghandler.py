@@ -50,6 +50,11 @@ LOG_HANDLERS = {}
 if preferences.CLIENT_LOG_STDOUT:
     log.startLogging(sys.stdout)
 
+def timestamp():
+    '''read the timestamp format from preferences and return a value'''
+    return time.strftime(preferences.TIMESTAMP)
+# end timestamp
+
 # client standard out to file logging
 if preferences.CLIENT_LOG_FILE:
     CLIENT_LOG = os.path.join(os.path.dirname(LOG_ROOT), "client-log.log")
@@ -58,9 +63,8 @@ if preferences.CLIENT_LOG_FILE:
     # TODO: add rotating file handler
     # add a break to the client log stream so we don't confuse
     # multiple client start/stops
-    timestamp = time.strftime("%m-%d-%Y %H:%M:%S")
     CLIENT_LOG_STREAM.write(
-    "------ Starting Stream %s------%s" % (timestamp, os.linesep)
+    "------ Starting Stream %s------%s" % (timestamp(), os.linesep)
     )
 
     log.startLogging(CLIENT_LOG_STREAM)
@@ -130,10 +134,9 @@ def writeHeader(log, **headerKeywords):
     Writes a header to the log file, arguments passed as keywords will
     receive their own line.
     '''
-    timestamp = time.strftime("%D %T")
     hostname = socket.gethostname()
 
-    writeLine(log, "Log Opened: %s" % timestamp)
+    writeLine(log, "Log Opened: %s" % timestamp())
     writeLine(log, "Hostname: %s" % hostname)
 
     for key, value in headerKeywords.items():
