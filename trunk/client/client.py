@@ -24,6 +24,7 @@ import socket
 import logging
 
 from lib import process, loghandler, preferences
+from lib.job import manager, Job
 
 from twisted.internet import reactor
 from twisted.web import resource, xmlrpc, server
@@ -64,6 +65,9 @@ class Client(xmlrpc.XMLRPC):
         Return True of the client is currently online and set
         the online state if a valid state argument is provided
 
+        :param boolean state:
+            the new online state to set
+
         :exception xmlrpc.Fault(3):
             raised if the new state is not in (True, False)
         '''
@@ -103,13 +107,16 @@ class Client(xmlrpc.XMLRPC):
     # end xmlrpc_ping
 
     # TODO: place uuid in dictionary so we can stop the process
-    def xmlrpc_run(self, command, force=False):
+    def xmlrpc_run(self, command, environ=None, force=False):
         '''
         Runs the requested command
 
         :param boolean force:
             If True disregard the current job count and run the command
             anyway
+
+        :param dictionary environ:
+            environment to use while running the job
 
         :exception xmlrpc.Fault(1):
             raised if the given command could not be found
@@ -138,6 +145,9 @@ class Client(xmlrpc.XMLRPC):
 
         try:
             host = (HOSTNAME, ADDRESS, PORT)
+            job = manager.newJob(command, environ=environ)
+
+            print "which %s: %s" % (command, Job.which('ping'))
             processHandler = process.ExitHandler(Client, host, MASTER)
             processCommand, uuid = process.runcmd(command)
             processCommand.addCallback(processHandler.exit)
