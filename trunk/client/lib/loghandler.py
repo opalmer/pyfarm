@@ -58,8 +58,9 @@ if preferences.CLIENT_LOG_FILE:
     # TODO: add rotating file handler
     # add a break to the client log stream so we don't confuse
     # multiple client start/stops
+    timestamp = time.strftime("%m-%d-%Y %H:%M:%S")
     CLIENT_LOG_STREAM.write(
-    "------ Starting Stream %s------%s" % (time.strftime("%D %T"), os.linesep)
+    "------ Starting Stream %s------%s" % (timestamp, os.linesep)
     )
 
     log.startLogging(CLIENT_LOG_STREAM)
