@@ -36,10 +36,20 @@ cfg.read(CONFIG)
 PRINT_OUTPUT = cfg.getboolean('LOGGING', 'print')
 PORT = cfg.getint('NETWORK', 'port')
 MAX_JOBS = int(eval(cfg.get('PROCESSING', 'max_jobs')))
-PATHS = cfg.get('PROCESSING', 'program_paths').split(',')
+PATHS_ENV = []
+PATHS_LIST = cfg.get('PATHS', 'list').split(',')
+
+# construct paths from environment variables
+for envvar in cfg.get('PATHS', 'environment').split(','):
+    if envvar in os.environ:
+        PATHS_ENV.append(envvar)
 
 CLIENT_LOG_STDOUT = cfg.getboolean('CLIENT_LOGGING', 'stdout')
 CLIENT_LOG_FILE = cfg.getboolean('CLIENT_LOGGING', 'file')
+
+# delete temp variables
+del envvar, cfg
+del ConfigParser, multiprocessing
 
 if __name__ == '__main__':
     import pprint
