@@ -141,7 +141,7 @@ class Job(object):
         # the operating system this could mean we need to 'expand'
         # upon possible names
         programs = [program]
-        if os.name == "posix":
+        if os.name == "nt":
             products = itertools.product(
                         [program, program.upper()],
                         ['.exe', '.EXE', '']
