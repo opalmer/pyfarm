@@ -24,7 +24,7 @@ import socket
 import logging
 
 from lib import process, loghandler, preferences
-from lib.job import manager, Job
+from lib import job
 
 from twisted.internet import reactor
 from twisted.web import resource, xmlrpc, server
@@ -145,9 +145,8 @@ class Client(xmlrpc.XMLRPC):
 
         try:
             host = (HOSTNAME, ADDRESS, PORT)
-            job = manager.newJob(command, environ=environ)
+            newjob = job.manager.newJob(command, environ=environ)
 
-            print "which %s: %s" % (command, Job.which('ping'))
             processHandler = process.ExitHandler(Client, host, MASTER)
             processCommand, uuid = process.runcmd(command)
             processCommand.addCallback(processHandler.exit)
