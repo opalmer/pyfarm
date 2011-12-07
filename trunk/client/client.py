@@ -106,10 +106,13 @@ class Client(xmlrpc.XMLRPC):
         return True
     # end xmlrpc_ping
 
-    # TODO: place uuid in dictionary so we can stop the process
-    def xmlrpc_run(self, command, environ=None, force=False):
+    def xmlrpc_run(self, command, arguments, environ=None, force=False):
         '''
         Runs the requested command
+
+        :param string command:
+            the name of the command to run, this can either be a full path
+            or just the name of the program
 
         :param boolean force:
             If True disregard the current job count and run the command
@@ -128,33 +131,36 @@ class Client(xmlrpc.XMLRPC):
         :exception xmlrpc.Fault(4):
             raised if the host is currently offline
         '''
-        free = self.xmlrpc_free()
-        args = (Client.JOB_COUNT, Client.JOB_COUNT_MAX)
+        newjob = job.manager.newJob(command, arguments, environ=environ)
 
-        # client must be online in order to submit jobs
-        if not self.xmlrpc_online():
-            raise xmlrpc.Fault(4, '%s is offline' % HOSTNAME)
-
-        if not force and not free:
-            raise xmlrpc.Fault(2, 'client already running %i/%i jobs' % args)
-
-        # log a warning if we are over the max job count
-        if force and not free:
-            warn = "overriding max running jobs, current job count %i/%i" % args
-            log.msg(warn, logLevel=logging.WARNING)
-
-        try:
-            host = (HOSTNAME, ADDRESS, PORT)
-            newjob = job.manager.newJob(command, environ=environ)
-
-            processHandler = process.ExitHandler(Client, host, MASTER)
-            processCommand, uuid = process.runcmd(command)
-            processCommand.addCallback(processHandler.exit)
-            return str(uuid)
-
-        except OSError, error:
-            Client.JOB_COUNT -= 1
-            raise xmlrpc.Fault(1, str(error))
+        # TODO: refactor to use job manager
+#        free = self.xmlrpc_free()
+#        args = (Client.JOB_COUNT, Client.JOB_COUNT_MAX)
+#
+#        # client must be online in order to submit jobs
+#        if not self.xmlrpc_online():
+#            raise xmlrpc.Fault(4, '%s is offline' % HOSTNAME)
+#
+#        if not force and not free:
+#            raise xmlrpc.Fault(2, 'client already running %i/%i jobs' % args)
+#
+#        # log a warning if we are over the max job count
+#        if force and not free:
+#            warn = "overriding max running jobs, current job count %i/%i" % args
+#            log.msg(warn, logLevel=logging.WARNING)
+#
+#        try:
+#            host = (HOSTNAME, ADDRESS, PORT)
+#            newjob = job.manager.newJob(command, environ=environ)
+#
+#            processHandler = process.ExitHandler(Client, host, MASTER)
+#            processCommand, uuid = process.runcmd(command)
+#            processCommand.addCallback(processHandler.exit)
+#            return str(uuid)
+#
+#        except OSError, error:
+#            Client.JOB_COUNT -= 1
+#            raise xmlrpc.Fault(1, str(error))
     # end xmlrpc_run
 
     def xmlrpc_log(self, uuidstr, split=True):
