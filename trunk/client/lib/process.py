@@ -25,6 +25,7 @@ import uuid
 import itertools
 
 import loghandler
+import preferences
 
 from twisted.internet import protocol, reactor, defer
 from twisted.python import log
@@ -182,6 +183,11 @@ def which(program, paths=None, names=None):
     :exception TypeError:
         raised if the paths or names argument is not a list
     '''
+    # simply return the absolute absolute file path
+    # if it exists
+    if os.path.isfile(program):
+        return os.path.abspath(program)
+
     if paths == None:
         paths = []
 
