@@ -50,7 +50,7 @@ CLIENT_LOG_FILE = cfg.getboolean('CLIENT_LOGGING', 'file')
 
 # delete temp variables
 del envvar, cfg
-del ConfigParser, multiprocessing
+del os, ConfigParser, multiprocessing
 
 if __name__ == '__main__':
     import pprint
