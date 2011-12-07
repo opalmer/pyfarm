@@ -150,7 +150,7 @@ def writeHeader(log, **headerKeywords):
     writeLine(log, "="*len(msg))
 # end writeHeader
 
-def openLog(uuid, **headerKeywords):
+def openLog(uid, **headerKeywords):
     '''
     Open or return a log file for the given uuid.
 
@@ -163,17 +163,12 @@ def openLog(uuid, **headerKeywords):
     :param string command:
         optional command to add to log
     '''
-    if uuid not in LOG_HANDLERS:
-        # create the log file
-        stream = LOG_HANDLERS[uuid] = tempfile.NamedTemporaryFile(
-                                        dir=LOG_ROOT,
-                                        suffix=".log", delete=False
-                                      )
-
-        log.msg("creating log for %s at %s" % (str(uuid), stream.name))
-        writeHeader(stream, UUID=str(uuid))
-
-    return LOG_HANDLERS[uuid]
+    stream = tempfile.NamedTemporaryFile(
+                dir=LOG_ROOT, suffix=".log", delete=False
+            )
+    log.msg("creating log for %s at %s" % (str(uid), stream.name))
+    writeHeader(stream, **headerKeywords)
+    return stream
 # end openLog
 
 def writeFooter(log, **footerKeywords):
