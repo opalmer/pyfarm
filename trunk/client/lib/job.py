@@ -21,9 +21,12 @@ from __future__ import with_statement
 import os
 import copy
 import uuid
+import types
 
 from twisted.python import log
 
+import process
+import loghandler
 import preferences
 
 class _Manager(object):
@@ -50,10 +53,10 @@ class _Manager(object):
         return uid
     # end __uuid
 
-    def newJob(self, command, environ=None):
+    def newJob(self, command, arguments, environ=None):
         '''setup and return instances of the job object'''
-        job = Job(command, environ=environ)
-
+        job = Job(command, arguments, environ=environ)
+        return job
     # end newJob
 
     def getJob(self, uid):
@@ -72,15 +75,35 @@ class Job(object):
     Maintains, controls, and sets up a job.  This class should always
     setup and instanced by _Manager to maintain the state of the client.
     '''
-    def __init__(self, command, environ=None):
+    def __init__(self, command, arguments, environ=None):
         self.__command = command
-        self.command = self.__command.split()
-        print self.command
+        self.__arguments = arguments
+        self.command = process.which(command)
+        self.uuid = uuid.uuid1()
+
+        # create the argument list, if we are already provided
+        # a list then do not attempt to split
+        self.arguments = arguments
+        if isinstance(arguments, types.StringTypes):
+            self.arguments = arguments.split()
 
         # create a copy of the original environment and
         # update it with custom entries if they are provided
         self.environ = copy.deepcopy(os.environ)
         if isinstance(environ, dict):
             self.environ.update(environ)
+
+        # setup logfile for process
+        header = {
+            "command" : self.command,
+            "arguments" : arguments,
+            "uuid" :self.uuid
+        }
+        self.log = loghandler.openLog(self.uuid, **header)
+
+        log.msg("Creating Job Instance %s" % self.uuid)
+        log.msg("...command: %s" % self.command)
+        log.msg("...arguments: %s" % self.arguments)
+        log.msg("...log: %s" % self.log.name)
     # end __init__
 # end Job
