@@ -23,12 +23,15 @@ import os
 import copy
 import uuid
 import itertools
+import multiprocessing
 
 import loghandler
 import preferences
 
 from twisted.internet import protocol, reactor, defer
 from twisted.python import log
+
+CPU_COUNT = multiprocessing.cpu_count()
 
 class ExitHandler(object):
     '''
