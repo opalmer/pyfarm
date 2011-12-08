@@ -39,65 +39,14 @@ import preferences
 ENDLINE = os.linesep
 LOG_ROOT = os.path.join(tempfile.gettempdir(), "pyfarm", "client", "logs")
 
-if not os.path.isdir(LOG_ROOT):
-    os.makedirs(LOG_ROOT)
-
 # Contains a dictionary of log files based on UUID, mappings will be
 # maintained so long as the client is running
 LOG_HANDLERS = {}
-
-# client logging to standard out to sys.stdout logging
-if preferences.CLIENT_LOG_STDOUT:
-    log.startLogging(sys.stdout)
 
 def timestamp():
     '''read the timestamp format from preferences and return a value'''
     return time.strftime(preferences.TIMESTAMP)
 # end timestamp
-
-# client standard out to file logging
-if preferences.CLIENT_LOG_FILE:
-    CLIENT_LOG = os.path.join(os.path.dirname(LOG_ROOT), "client-log.log")
-    CLIENT_LOG_STREAM = open(CLIENT_LOG, 'a')
-
-    # TODO: add rotating file handler
-    # add a break to the client log stream so we don't confuse
-    # multiple client start/stops
-    CLIENT_LOG_STREAM.write(
-    "------ Starting Stream %s------%s" % (timestamp(), os.linesep)
-    )
-
-    log.startLogging(CLIENT_LOG_STREAM)
-
-# if client loggint to file was not selected then
-# set the relevant variables to None
-else:
-    CLIENT_LOG = None
-    CLIENT_LOG_STREAM = None
-
-# create the global log directory if
-# it does not exist
-if not os.path.isdir(LOG_ROOT):
-    os.makedirs(LOG_ROOT)
-    log.msg("created log directory")
-
-log.msg("client log: %s" % CLIENT_LOG)
-log.msg("job log directory: %s" % LOG_ROOT)
-
-class UnknownLog(BaseException):
-    '''
-    Raised if a log was requested that
-    does not have an assigned uuid
-    '''
-    def __init__(self, uuid):
-        self.uuid = uuid
-    # end __init__
-
-    def __str__(self):
-        return "%s does not have a log handler" % str(self.uuid)
-    # end __str__
-# end UnknownLog
-
 
 def writeLine(log, line, endline=None):
     '''
@@ -129,27 +78,6 @@ def writeLine(log, line, endline=None):
     log.flush()
 # end writeLine
 
-def writeHeader(log, **headerKeywords):
-    '''
-    Writes a header to the log file, arguments passed as keywords will
-    receive their own line.
-    '''
-    hostname = socket.gethostname()
-
-    writeLine(log, "Log Opened: %s" % timestamp())
-    writeLine(log, "Hostname: %s" % hostname)
-
-    for key, value in headerKeywords.items():
-        writeLine(log, "%s: %s" % (key, value))
-
-    # end of header
-    spacer = "="*15
-    msg = "%s BEGIN PROCESS %s" % (spacer, spacer)
-    writeLine(log, "="*len(msg))
-    writeLine(log, msg)
-    writeLine(log, "="*len(msg))
-# end writeHeader
-
 def openLog(uid, **headerKeywords):
     '''
     Open or return a log file for the given uuid.
@@ -171,6 +99,27 @@ def openLog(uid, **headerKeywords):
     return stream
 # end openLog
 
+def writeHeader(log, **headerKeywords):
+    '''
+    Writes a header to the log file, arguments passed as keywords will
+    receive their own line.
+    '''
+    hostname = socket.gethostname()
+
+    writeLine(log, "Log Opened: %s" % timestamp())
+    writeLine(log, "Hostname: %s" % hostname)
+
+    for key, value in headerKeywords.items():
+        writeLine(log, "%s: %s" % (key, value))
+
+    # end of header
+    spacer = "="*15
+    msg = "%s BEGIN PROCESS %s" % (spacer, spacer)
+    writeLine(log, "="*len(msg))
+    writeLine(log, msg)
+    writeLine(log, "="*len(msg))
+# end writeHeader
+
 def writeFooter(log, **footerKeywords):
     '''
     Writes a footer to the end of the log file, arguments passed as keywords will
@@ -187,34 +136,42 @@ def writeFooter(log, **footerKeywords):
         writeLine(log, "%s: %s" % (key, value))
 # end writeFooter
 
-def getLog(logid, stream=False):
-    '''
-    Returns the log for the requested uuid.  If the uuid does not exist
-    then a UnknownLog error will be raised.
+##
+## base logging setup past this point
+##
 
-    :param string or uuid.UUID logid:
-        the id of the log to use, strings will be converted to uuid.UUID objects
+if not os.path.isdir(LOG_ROOT):
+    os.makedirs(LOG_ROOT)
 
-    :param boolean stream:
-        if True return the stream instead of the data
-    '''
-    # convert strings to uuids
-    if not isinstance(logid, uuid.UUID):
-        logid = uuid.UUID(logid)
+# client logging to standard out to sys.stdout logging
+if preferences.CLIENT_LOG_STDOUT:
+    log.startLogging(sys.stdout)
 
-    # raise an error if we could not find the log file
-    if not LOG_HANDLERS.has_key(logid):
-        raise UnknownLog("failed to find handler for log id %s" % str(logid))
+# client standard out to file logging
+if preferences.CLIENT_LOG_FILE:
+    CLIENT_LOG = os.path.join(os.path.dirname(LOG_ROOT), "client-log.log")
+    CLIENT_LOG_STREAM = open(CLIENT_LOG, 'a')
 
-    path = LOG_HANDLERS[logid].name
-    log.msg("returning data in %s for %s" % (path, str(logid)))
+    # TODO: add rotating file handler
+    # add a break to the client log stream so we don't confuse
+    # multiple client start/stops
+    CLIENT_LOG_STREAM.write(
+    "------ Starting Stream %s------%s" % (timestamp(), os.linesep)
+    )
 
-    # reopen the stream so we don't close the current file handle
-    with open(path, 'r') as logstream:
-        data = logstream.read()
+    log.startLogging(CLIENT_LOG_STREAM)
 
-        if not stream:
-            return data
+# if client loggint to file was not selected then
+# set the relevant variables to None
+else:
+    CLIENT_LOG = None
+    CLIENT_LOG_STREAM = None
 
-        return data.split(ENDLINE)
-# end getLog
+# create the global log directory if
+# it does not exist
+if not os.path.isdir(LOG_ROOT):
+    os.makedirs(LOG_ROOT)
+    log.msg("created log directory")
+
+log.msg("client log: %s" % CLIENT_LOG)
+log.msg("job log directory: %s" % LOG_ROOT)
