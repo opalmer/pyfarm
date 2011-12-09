@@ -25,14 +25,17 @@ import types
 import socket
 import logging
 
+from twisted.internet import reactor
 from twisted.python import log
-from twisted.web import xmlrpc
+from twisted.web import xmlrpc, resource
 
 import process
 import loghandler
 import preferences
 
-class Manager(object):
+MASTER = ()
+
+class Manager(xmlrpc.XMLRPC):
     '''
     Manages running or terminated jobs including starting, stopping,
     state queries, and log handling.
@@ -43,6 +46,7 @@ class Manager(object):
         for the client.
     '''
     def __init__(self):
+        resource.Resource.__init__(self)
         self.__online = True
         self.jobs = {}
         self.job_count = 0
@@ -76,12 +80,12 @@ class Manager(object):
             )
     # end __precheck
 
-    def run(self, command, arguments, environ=None):
+    def xmlrpc_run(self, command, arguments, environ=None):
         '''setup and return instances of the job object'''
         if not self.__online:
             raise xmlrpc.Fault(4, '%s is offline' % socket.getfqdn())
 
-        job = Job(command, arguments, environ=environ)
+        job = Job(self, command, arguments, environ)
         return str(job.uuid)
         # TODO: refactor to use job manager
 #        free = self.xmlrpc_free()
@@ -213,12 +217,26 @@ class Job(object):
     '''
     Maintains, controls, and sets up a job.  This class should always
     setup and instanced by _Manager to maintain the state of the client.
+
+    :param Manager manager:
+        the manager class we're we will modify the running job count, state,
+         etc.
+
+    :param string command:
+        the command to run
+
+    :param string or list arguments:
+        the arguments to provide to the command
+
+    :param dictionary environ:
+        values to update the environment with
     '''
-    def __init__(self, command, arguments, environ=None):
+    def __init__(self, manager, command, arguments, environ=None):
         self.__command = command
         self.__arguments = arguments
-        self.command = process.which(command)
         self.uuid = uuid.uuid1()
+        self.manager = manager
+        self.command = process.which(command)
 
         # create the argument list, if we are already provided
         # a list then do not attempt to split
@@ -244,5 +262,17 @@ class Job(object):
         log.msg("...command: %s" % self.command)
         log.msg("...arguments: %s" % self.arguments)
         log.msg("...log: %s" % self.log.name)
+
+        self.process = process.TwistedProcess(
+                            self.command, self.arguments,
+                            environ, self.log
+                       )
+        reactor.spawnProcess(self.process, *self.process.args)
+        self.process.deferred.addCallback(self.exit)
     # end __init__
+
+    def exit(self, data):
+        '''exit handler called when the process exits'''
+        print "===================",data
+    # end exit
 # end Job

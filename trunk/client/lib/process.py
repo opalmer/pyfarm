@@ -21,7 +21,7 @@
 
 import os
 import copy
-import uuid
+import types
 import itertools
 import multiprocessing
 
@@ -33,6 +33,7 @@ from twisted.python import log
 
 CPU_COUNT = multiprocessing.cpu_count()
 
+# TODO: repalace with job.Job.exit
 class ExitHandler(object):
     '''
     Handles the output of a process
@@ -76,54 +77,24 @@ class TwistedProcess(protocol.ProcessProtocol):
 
     :param string command: The command to run
     '''
-    def __init__(self, command):
+    def __init__(self, command, arguments, environ, logstream):
+        self.log = logstream
         self.command = command
-        self.env = copy.deepcopy(os.environ)
+        self.arguments = arguments
         self.deferred = defer.Deferred()
-        self.uuid = uuid.uuid1()
-        self.log = loghandler.openLog(
-                    self.uuid,
-                    Command=self.command,
-                   )
-        log.msg("attempting to run '%s'" % command)
+
+        # copy the current environment and then update it
+        # with any custom information
+        self.environ = copy.deepcopy(os.environ)
+        if isinstance(environ, types.DictType):
+            self.environ.update(environ)
+
+        log.msg("attempting to run %s %s" % (command, arguments))
 
         # construct the command list and arguments to pass
         # to reactor.spawnProcess
-        self.commandList = command.split()
-        self.commandList[0] = self.__findProgram(self.commandList[0])
-        self.args = (self.commandList[0], self.commandList, self.env)
+        self.args = (self.command, self.arguments, self.environ)
     # end __init__
-
-    def __findProgram(self, name):
-        '''Returns the full path to the requested program or command'''
-        # no need to search for the full command path if the a valid
-        # file path has already been provided to us
-        if os.path.isfile(name):
-            return os.path.abspath(name)
-
-        # create a list of possible command names
-        if os.name == "nt":
-            commands = (
-                name, "%s.exe" % name,
-                "%s.EXE" % name.upper(), name.upper()
-            )
-
-        else:
-            commands = (name, )
-
-        # loop over all paths in the system path
-        # and attempt to find a file matching the given command name
-        for root in os.environ['PATH'].split(os.pathsep):
-            for command in commands:
-                path = os.path.join(root, command)
-
-                if os.path.isfile(path):
-                    return path
-
-        error = OSError("'%s' command not found" % name)
-        log.err(_stuff=error, _why='command not found')
-        raise error
-    # end __findProgram
 
     def connectionMade(self):
         '''write the command to standard input'''
@@ -133,11 +104,13 @@ class TwistedProcess(protocol.ProcessProtocol):
 
     def outReceived(self, data):
         '''output received on sys.stdout'''
+        print data
         loghandler.writeLine(self.log, data.strip())
     # end outReceived
 
     def errReceived(self, data):
         '''output received on sys.stderr'''
+        print data
         loghandler.writeLine(self.log, data.strip())
     # end errReceived
 
@@ -158,7 +131,7 @@ class TwistedProcess(protocol.ProcessProtocol):
     # end processEnded
 # end TwistedProcess
 
-# XXX: output may need to be updated to handle TODO note on TwistedProcess
+# TODO: move code from inside of there to job.Job
 def runcmd(command):
     process = TwistedProcess(command)
     reactor.spawnProcess(process, *process.args)
