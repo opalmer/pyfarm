@@ -48,6 +48,8 @@ for envvar in cfg.get('PATHS', 'environment').split(','):
 CLIENT_LOG_STDOUT = cfg.getboolean('CLIENT_LOGGING', 'stdout')
 CLIENT_LOG_FILE = cfg.getboolean('CLIENT_LOGGING', 'file')
 
+RESTART_WAIT = cfg.getint('MISC', 'restart_wait')
+
 # delete temp variables
 del envvar, cfg
 del os, ConfigParser, multiprocessing
