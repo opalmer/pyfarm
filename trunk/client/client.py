@@ -20,6 +20,7 @@
 # along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
+import sys
 import socket
 import logging
 
@@ -30,6 +31,7 @@ from twisted.internet import reactor
 from twisted.web import resource, xmlrpc, server
 from twisted.python import log
 
+CWD = os.getcwd()
 PID = os.getpid()
 PORT = preferences.PORT
 HOSTNAME = socket.gethostname()
@@ -68,14 +70,14 @@ class Client(xmlrpc.XMLRPC):
     # TODO: stop running jobs on shutdown
     def xmlrpc_shutdown(self):
         '''shutdown the client and reactor'''
-        if job.manager.job_count:
+        reactor.callLater(0.5, reactor.stop)
+
+        if self.job.job_count:
             log.msg(
                 "reactor shutting down with jobs still running!",
                 logLevel=logging.WARNING
             )
-
-        reactor.callLater(0.5, reactor.stop)
-    # end xmlrpc_shutdown
+        # end xmlrpc_shutdown
 
     def xmlrpc_online(self, state=None):
         return self.job.xmlrpc_online(state)
@@ -84,6 +86,19 @@ class Client(xmlrpc.XMLRPC):
     def xmlrpc_free(self):
         return self.job.xmlrpc_free()
     # end xmlrpc_free
+
+    def xmlrpc_restart(self):
+        '''restart the client'''
+        args = sys.argv[:]
+        log.msg("restarting client")
+
+        args.insert(0, sys.executable)
+        if sys.platform == 'win32':
+            args = ['"%s"' % arg for arg in args]
+
+        os.chdir(CWD)
+        os.execv(sys.executable, args)
+    # end xmlrpc_restart
 # end Client
 
 client = Client()
