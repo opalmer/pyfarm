@@ -113,7 +113,6 @@ if RESTART:
     time.sleep(pause)
     args = sys.argv[:]
 
-
     args.insert(0, sys.executable)
     if sys.platform == 'win32':
         args = ['"%s"' % arg for arg in args]

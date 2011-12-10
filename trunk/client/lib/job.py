@@ -19,6 +19,7 @@
 from __future__ import with_statement
 
 import os
+import time
 import copy
 import uuid
 import types
@@ -232,17 +233,22 @@ class Job(object):
         values to update the environment with
     '''
     def __init__(self, manager, command, arguments, environ=None):
+        # copy of the original arguments
         self.__command = command
         self.__arguments = arguments
+
+        # state information
         self.uuid = uuid.uuid1()
         self.manager = manager
-        self.command = process.which(command)
+        self.start = time.time()
+        self.end = None
+        self._elapsed = None # caches the 'final' elapsed time
 
-        # create the argument list, if we are already provided
-        # a list then do not attempt to split
-        self.arguments = arguments
+        # setup the arguments and commands
+        self.command = process.which(command)
+        self.arguments = [command]
         if isinstance(arguments, types.StringTypes):
-            self.arguments = arguments.split()
+            self.arguments.extend(arguments.split())
 
         # create a copy of the original environment and
         # update it with custom entries if they are provided
@@ -271,8 +277,15 @@ class Job(object):
         self.process.deferred.addCallback(self.exit)
     # end __init__
 
+    @property
+    def elapsed(self):
+        '''returns either the current amount of time elapsed or the final time'''
+        return self._elapsed or time.time() - self.start
+    # end elapsed
+
     def exit(self, data):
         '''exit handler called when the process exits'''
-        print "===================",data
+        self.end = time.time()
+        self._elapsed = self.end - self.start
     # end exit
 # end Job
