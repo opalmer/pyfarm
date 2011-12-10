@@ -258,20 +258,23 @@ class Job(object):
 
         # setup logfile for process
         header = {
-            "command" : self.command,
-            "arguments" : arguments,
-            "uuid" :self.uuid
+            "Command" : " ".join(self.arguments),
+            "Id" : self.uuid,
+            "Log Opened" : loghandler.timestamp(),
+            "Hostname" : socket.getfqdn(socket.gethostname())
         }
-        self.log = loghandler.openLog(self.uuid, **header)
+        self.log = loghandler.openLog(self.uuid, **self.environ)
+        loghandler.writeHeader(self.log, header)
 
         log.msg("Creating Job Instance %s" % self.uuid)
         log.msg("...command: %s" % self.command)
         log.msg("...arguments: %s" % self.arguments)
         log.msg("...log: %s" % self.log.name)
 
+        # setup the process, attach a deferred handler to self.exit
         self.process = process.TwistedProcess(
                             self.command, self.arguments,
-                            environ, self.log
+                            self.environ, self.log
                        )
         reactor.spawnProcess(self.process, *self.process.args)
         self.process.deferred.addCallback(self.exit)
@@ -285,7 +288,16 @@ class Job(object):
 
     def exit(self, data):
         '''exit handler called when the process exits'''
+        # update some state information
         self.end = time.time()
         self._elapsed = self.end - self.start
+        self.manager.job_count -= 1
+
+        # write a footer and close the log handler
+        footer = {
+            "Log Closed" : loghandler.timestamp()
+        }
+        loghandler.writeFooter(self.log, footer)
+        self.log.close()
     # end exit
 # end Job

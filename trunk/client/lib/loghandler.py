@@ -78,62 +78,56 @@ def writeLine(log, line, endline=None):
     log.flush()
 # end writeLine
 
-def openLog(uid, **headerKeywords):
+def openLog(uid, **environ):
     '''
     Open or return a log file for the given uuid.
 
     :param uuid.UUID uuid:
         uuid object to create or open a log file for
-
-    :param string comment:
-        optional comment to add to header of log
-
-    :param string command:
-        optional command to add to log
     '''
-    stream = tempfile.NamedTemporaryFile(
+    path = None
+    if environ.get('LOGFILE'):
+       path = open(environ.get('LOGFILE'), 'w')
+
+    stream = path or tempfile.NamedTemporaryFile(
                 dir=LOG_ROOT, suffix=".log", delete=False
             )
     log.msg("creating log for %s at %s" % (str(uid), stream.name))
-    writeHeader(stream, **headerKeywords)
     return stream
 # end openLog
 
-def writeHeader(log, **headerKeywords):
+def writeMessage(log, msg):
+    '''writes a message to the log file'''
+    spacer = "="*15
+    msg = "%s %s %s" % (spacer, msg, spacer)
+    header = "="*len(msg)
+    writeLine(log, header)
+    writeLine(log, msg)
+    writeLine(log, header)
+# end writeMessage
+
+def writeKeywords(log, keywords):
+    '''writes keywords from a dictionary to the log file'''
+    for key, value in keywords.items():
+        writeLine(log, "%s: %s" % (key, value))
+# end writeKeywords
+
+def writeHeader(log, keywords):
     '''
     Writes a header to the log file, arguments passed as keywords will
     receive their own line.
     '''
-    hostname = socket.gethostname()
-
-    writeLine(log, "Log Opened: %s" % timestamp())
-    writeLine(log, "Hostname: %s" % hostname)
-
-    for key, value in headerKeywords.items():
-        writeLine(log, "%s: %s" % (key, value))
-
-    # end of header
-    spacer = "="*15
-    msg = "%s BEGIN PROCESS %s" % (spacer, spacer)
-    writeLine(log, "="*len(msg))
-    writeLine(log, msg)
-    writeLine(log, "="*len(msg))
+    writeKeywords(log, keywords)
+    writeMessage(log, "BEGIN PROCESS")
 # end writeHeader
 
-def writeFooter(log, **footerKeywords):
+def writeFooter(log, keywords):
     '''
     Writes a footer to the end of the log file, arguments passed as keywords will
     receive their own line.
     '''
-    # end of footer
-    spacer = "="*15
-    msg = "%s END PROCESS %s" % (spacer, spacer)
-    writeLine(log, "="*len(msg))
-    writeLine(log, msg)
-    writeLine(log, "="*len(msg))
-
-    for key, value in footerKeywords.items():
-        writeLine(log, "%s: %s" % (key, value))
+    writeMessage(log, "END PROCESS")
+    writeKeywords(log, keywords)
 # end writeFooter
 
 ##

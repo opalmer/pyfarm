@@ -104,13 +104,11 @@ class TwistedProcess(protocol.ProcessProtocol):
 
     def outReceived(self, data):
         '''output received on sys.stdout'''
-        print data
         loghandler.writeLine(self.log, data.strip())
     # end outReceived
 
     def errReceived(self, data):
         '''output received on sys.stderr'''
-        print data
         loghandler.writeLine(self.log, data.strip())
     # end errReceived
 
@@ -124,19 +122,10 @@ class TwistedProcess(protocol.ProcessProtocol):
                     "command" : self.command
                }
 
-        # write footer and call deferred
-        loghandler.writeFooter(self.log, **data)
-        self.log.close()
+        # call deferred
         self.deferred.callback(data)
     # end processEnded
 # end TwistedProcess
-
-# TODO: move code from inside of there to job.Job
-def runcmd(command):
-    process = TwistedProcess(command)
-    reactor.spawnProcess(process, *process.args)
-    return process.deferred, process.uuid
-# end runcmd
 
 
 # TODO: fully test, streamline and improve efficiency
