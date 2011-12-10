@@ -21,6 +21,7 @@
 
 import os
 import sys
+import time
 import socket
 import logging
 
@@ -31,6 +32,7 @@ from twisted.internet import reactor
 from twisted.web import resource, xmlrpc, server
 from twisted.python import log
 
+RESTART = False
 CWD = os.getcwd()
 PID = os.getpid()
 PORT = preferences.PORT
@@ -89,19 +91,32 @@ class Client(xmlrpc.XMLRPC):
 
     def xmlrpc_restart(self):
         '''restart the client'''
-        args = sys.argv[:]
-        log.msg("restarting client")
-
-        args.insert(0, sys.executable)
-        if sys.platform == 'win32':
-            args = ['"%s"' % arg for arg in args]
-
-        os.chdir(CWD)
-        os.execv(sys.executable, args)
+        global RESTART
+        RESTART = True
+        self.xmlrpc_shutdown()
     # end xmlrpc_restart
 # end Client
 
+# setup and run the client/reactor
 client = Client()
 reactor.listenTCP(PORT, server.Site(client))
 log.msg("running client at http://%s:%i" % (HOSTNAME, PORT))
 reactor.run()
+
+# If RESTART has been set to True then restart the client
+# script.  This must be done after the reactor and has been
+# shutdown and after we have given the port(s) a chance
+# to release.
+if RESTART:
+    pause = preferences.RESTART_WAIT
+    log.msg("preparing to restart the client, pausing %i seconds" % pause)
+    time.sleep(pause)
+    args = sys.argv[:]
+
+
+    args.insert(0, sys.executable)
+    if sys.platform == 'win32':
+        args = ['"%s"' % arg for arg in args]
+
+    os.chdir(CWD)
+    os.execv(sys.executable, args)
