@@ -91,9 +91,8 @@ class TwistedProcess(protocol.ProcessProtocol):
 
     def processEnded(self, status):
         '''Called when the process exist and returns the proper callback'''
-        code = status.value.exitCode
         data = {
-                    "exit" : code,
+                    "exit" : status.value.exitCode,
                     "command" : self.command
                }
 

@@ -234,6 +234,14 @@ class Manager(xmlrpc.XMLRPC):
         job = self.__job(job)
         return job.elapsed
     # end xmlrpc_elapsed
+
+    def xmlrpc_exit_code(self, uid):
+        '''
+        return the exit code for the given job (or None
+        if it has not been set yet
+        '''
+        job = self.__job(uid)
+        return job.exit_code
 # end Manager
 
 
@@ -264,6 +272,7 @@ class Job(object):
         self.uuid = uuid.uuid1()
         self.manager = manager
         self.start = time.time()
+        self.exit_code = None
         self.end = None
         self.running = False
         self._elapsed = None # caches the 'final' elapsed time
@@ -321,6 +330,7 @@ class Job(object):
         if not self.running:
             return False
 
+        self.exit_code = 1
         self.process.transport.signalProcess('KILL')
         return True
     # end signal
@@ -333,9 +343,14 @@ class Job(object):
         self._elapsed = self.end - self.start
         self.manager.job_count -= 1
 
+        # only set the exit code if it has not already been set
+        if self.exit_code == None:
+            self.exit_code = data['exit']
+
         # write a footer and close the log handler
         footer = {
-            "Log Closed" : loghandler.timestamp()
+            "Log Closed" : loghandler.timestamp(),
+            "exit" : self.exit_code
         }
         loghandler.writeFooter(self.log, footer)
         self.log.close()
