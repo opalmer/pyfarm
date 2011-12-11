@@ -28,7 +28,8 @@ import multiprocessing
 import loghandler
 import preferences
 
-from twisted.internet import protocol, reactor, defer
+from twisted.web import xmlrpc
+from twisted.internet import protocol, defer
 from twisted.python import log
 
 CPU_COUNT = multiprocessing.cpu_count()
@@ -214,4 +215,7 @@ def which(program, paths=None, names=None):
         path = os.path.join(root, tail)
         if os.path.isfile(path):
             return path
+
+
+    raise xmlrpc.Fault(1, "failed to find %s in %s" % (program, system_paths))
 # end which

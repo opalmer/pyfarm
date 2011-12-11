@@ -39,10 +39,6 @@ import preferences
 ENDLINE = os.linesep
 LOG_ROOT = os.path.join(tempfile.gettempdir(), "pyfarm", "client", "logs")
 
-# Contains a dictionary of log files based on UUID, mappings will be
-# maintained so long as the client is running
-LOG_HANDLERS = {}
-
 def timestamp():
     '''read the timestamp format from preferences and return a value'''
     return time.strftime(preferences.TIMESTAMP)

@@ -25,8 +25,7 @@ import time
 import socket
 import logging
 
-from lib import process, loghandler, preferences
-from lib import job, host
+from lib import loghandler, preferences, job, host
 
 from twisted.internet import reactor
 from twisted.web import resource, xmlrpc, server
