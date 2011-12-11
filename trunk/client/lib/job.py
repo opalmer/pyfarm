@@ -116,6 +116,7 @@ class Manager(xmlrpc.XMLRPC):
 
         # log a warning if we are over the max job count
         if not force and not self.xmlrpc_free():
+            args = (self.job_count, self.job_count_max)
             raise xmlrpc.Fault(2, 'client already running %i/%i jobs' % args)
 
         # create, manages, and returns information about a job
@@ -227,6 +228,12 @@ class Manager(xmlrpc.XMLRPC):
 
         return jobs
     # end xmlrpc_running
+
+    def xmlrpc_elapsed(self, job):
+        '''return the total elapsed time for a job (in seconds)'''
+        job = self.__job(job)
+        return job.elapsed
+    # end xmlrpc_elapsed
 # end Manager
 
 
@@ -290,6 +297,7 @@ class Job(object):
 
         # setup the process, attach a deferred handler to self.exit
         self.running = True
+        self.manager.job_count += 1
         self.process = process.TwistedProcess(
                             self.uuid, self.log,
                             self.command, self.arguments,
