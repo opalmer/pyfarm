@@ -39,10 +39,18 @@ class TwistedProcess(protocol.ProcessProtocol):
     Create a Twisted process object
 
     :param string command: The command to run
+
+    :exception xmlrpc.Fault(7):
+        raised if a uid was provided but not a uid
     '''
-    def __init__(self, uuid, command, arguments, environ, logstream):
+    # !!!
+    # TODO: determine if setting the path to the cwd adversely impacts the
+    #        process in an unexpected way
+    # !!!
+    def __init__(self, uuid, log, command, arguments, environ,
+                 path=os.getcwd(), uid=None, gid=None):
         self.uuid = uuid
-        self.log = logstream
+        self.log = log
         self.command = command
         self.arguments = arguments
         self.deferred = defer.Deferred()
@@ -55,7 +63,14 @@ class TwistedProcess(protocol.ProcessProtocol):
 
         # construct the command list and arguments to pass
         # to reactor.spawnProcess
-        self.args = (self.command, self.arguments, self.environ)
+        self.args = [self.command, self.arguments, self.environ]
+
+        if uid and not gid:
+            raise xmlrpc.Fault(7, "you must provide both uid and gid")
+
+        if uid:
+            self.args.append(uid)
+            self.args.append(gid)
     # end __init__
 
     def connectionMade(self):
@@ -83,7 +98,7 @@ class TwistedProcess(protocol.ProcessProtocol):
                }
 
         # call deferred
-        log.msg("process %s exited code %i" % (self.uuid, code))
+        log.msg("%s %s" % (self.uuid, status.value.message))
         self.deferred.callback(data)
     # end processEnded
 # end TwistedProcess

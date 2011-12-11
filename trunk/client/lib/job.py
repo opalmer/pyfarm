@@ -210,6 +210,23 @@ class Manager(xmlrpc.XMLRPC):
         job = self.__job(uid)
         return job.running
     # end xmlrpc_running
+
+    def xmlrpc_kill(self, uid):
+        '''Kills a running process'''
+        job = self.__job(uid)
+        return job.kill()
+    # end xmlrpc_kill
+
+    def xmlrpc_running(self):
+        '''return a list of all running jobs'''
+        jobs = []
+
+        for uid, job in self.jobs.items():
+            if job.running:
+                jobs.append(str(job.uuid))
+
+        return jobs
+    # end xmlrpc_running
 # end Manager
 
 
@@ -274,9 +291,9 @@ class Job(object):
         # setup the process, attach a deferred handler to self.exit
         self.running = True
         self.process = process.TwistedProcess(
-                            self.uuid,
+                            self.uuid, self.log,
                             self.command, self.arguments,
-                            self.environ, self.log
+                            self.environ
                        )
         reactor.spawnProcess(self.process, *self.process.args)
         self.process.deferred.addCallback(self.exit)
@@ -287,6 +304,18 @@ class Job(object):
         '''returns either the current amount of time elapsed or the final time'''
         return self._elapsed or time.time() - self.start
     # end elapsed
+
+    def kill(self):
+        '''
+        Send a kill signal to the process if it is running.  If the process
+        is not currently running return False otherwise return True
+        '''
+        if not self.running:
+            return False
+
+        self.process.transport.signalProcess('KILL')
+        return True
+    # end signal
 
     def exit(self, data):
         '''exit handler called when the process exits'''
