@@ -43,7 +43,7 @@ class Client(xmlrpc.XMLRPC):
     '''
     Main xmlrpc service which controls the client.  Most methods
     are handled entirely outside of this class for the purposes of
-    seperation of service and logic.
+    separation of service and logic.
     '''
     def __init__(self):
         resource.Resource.__init__(self)

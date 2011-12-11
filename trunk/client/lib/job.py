@@ -56,12 +56,39 @@ class Manager(xmlrpc.XMLRPC):
     # end __init__
 
     def __uuid(self, uid):
-        '''convert a string to a uuid.UUID object'''
+        '''
+        convert a string to a uuid.UUID object
+
+        :exception xmlrpc.Fault(6):
+            raised if the uid we are trying to convert to a uuid.UUID object
+            cannot be converted
+        '''
         if not isinstance(uid, uuid.UUID):
-            uid = uuid.UUID(uid)
+            try:
+                uid = uuid.UUID(uid)
+
+            except ValueError:
+                # if we fail to convert from a string to a uuid.UUID
+                # object be sure we raise an error about it
+                raise xmlrpc.Fault(6, "failed to convert '%s' to a uuid" % uid)
 
         return uid
     # end __uuid
+
+    def __job(self, uid):
+        '''
+        returns a job object if it exists
+
+        :exception xmlrpc.Fault(5):
+            raised if the uuid could not be found in the jobs dictionary
+        '''
+        uuid = self.__uuid(uid)
+
+        if uuid not in self.jobs:
+            raise xmlrpc.Fault(5, "no jobs exist for %s" % uuid)
+
+        return self.jobs[uuid]
+    # end __job
 
     def __precheck(self):
         # if the current job_count_max is greater
@@ -81,50 +108,21 @@ class Manager(xmlrpc.XMLRPC):
             )
     # end __precheck
 
-    def xmlrpc_run(self, command, arguments, environ=None):
+    def xmlrpc_run(self, command, arguments, environ=None, force=False):
         '''setup and return instances of the job object'''
+        # client must be online in order to submit jobs
         if not self.__online:
             raise xmlrpc.Fault(4, '%s is offline' % socket.getfqdn())
 
+        # log a warning if we are over the max job count
+        if not force and not self.xmlrpc_free():
+            raise xmlrpc.Fault(2, 'client already running %i/%i jobs' % args)
+
+        # create, manages, and returns information about a job
         job = Job(self, command, arguments, environ)
+        self.jobs[job.uuid] = job
         return str(job.uuid)
-        # TODO: refactor to use job manager
-#        free = self.xmlrpc_free()
-#        args = (Client.JOB_COUNT, Client.JOB_COUNT_MAX)
-#
-#        # client must be online in order to submit jobs
-#        if not self.xmlrpc_online():
-#            raise xmlrpc.Fault(4, '%s is offline' % HOSTNAME)
-#
-#        if not force and not free:
-#            raise xmlrpc.Fault(2, 'client already running %i/%i jobs' % args)
-#
-#        # log a warning if we are over the max job count
-#        if force and not free:
-#            warn = "overriding max running jobs, current job count %i/%i" % args
-#            log.msg(warn, logLevel=logging.WARNING)
-#
-#        try:
-#            host = (HOSTNAME, ADDRESS, PORT)
-#            newjob = job.manager.newJob(command, environ=environ)
-#
-#            processHandler = process.ExitHandler(Client, host, MASTER)
-#            processCommand, uuid = process.runcmd(command)
-#            processCommand.addCallback(processHandler.exit)
-#            return str(uuid)
-#
-#        except OSError, error:
-#            Client.JOB_COUNT -= 1
-#            raise xmlrpc.Fault(1, str(error))
     # end xmlrpc_run
-
-    # end newJob
-
-    def job(self, uid):
-        '''Retrieve a job and return its instance'''
-        uid = self.__uuid(uid)
-        return self.jobs(uid)
-    # end job
 
     def xmlrpc_online(self, state=None):
         '''
@@ -180,7 +178,7 @@ class Manager(xmlrpc.XMLRPC):
         return False
     # end free
 
-    def xmlrpc_log(self, uuidstr, split=True):
+    def xmlrpc_log(self, uid, split=True):
         '''
         Returns log file for the given uuid
 
@@ -197,20 +195,21 @@ class Manager(xmlrpc.XMLRPC):
             raised if we failed to convert the provided uuidstr
             to a uuid.UUID object
         '''
-        try:
-            data = loghandler.getLog(uuidstr, stream=split)
+        job = self.__job(uid)
+        log = open(job.log.name, 'r')
+        data = log.read()
 
-            if not split:
-                data = str(data)
+        if split:
+            return data.split(os.linesep)
 
-            return data
-
-        except loghandler.UnknownLog, error:
-            raise xmlrpc.Fault(5, error)
-
-        except ValueError:
-            raise xmlrpc.Fault(6, "failed to convert '%s' to a uuid" % uuidstr)
+        return data
     # end xmlrpc_log
+
+    def xmlrpc_running(self, uid):
+        '''return True if the given uuid has a running process'''
+        job = self.__job(uid)
+        return job.running
+    # end xmlrpc_running
 # end Manager
 
 
@@ -242,6 +241,7 @@ class Job(object):
         self.manager = manager
         self.start = time.time()
         self.end = None
+        self.running = False
         self._elapsed = None # caches the 'final' elapsed time
 
         # setup the arguments and commands
@@ -266,13 +266,15 @@ class Job(object):
         self.log = loghandler.openLog(self.uuid, **self.environ)
         loghandler.writeHeader(self.log, header)
 
-        log.msg("Creating Job Instance %s" % self.uuid)
-        log.msg("...command: %s" % self.command)
-        log.msg("...arguments: %s" % self.arguments)
+        log.msg("creating job instance %s" % self.uuid)
+        log.msg("...program: %s" % self.command)
+        log.msg("...command: %s" % self.arguments)
         log.msg("...log: %s" % self.log.name)
 
         # setup the process, attach a deferred handler to self.exit
+        self.running = True
         self.process = process.TwistedProcess(
+                            self.uuid,
                             self.command, self.arguments,
                             self.environ, self.log
                        )
@@ -289,6 +291,7 @@ class Job(object):
     def exit(self, data):
         '''exit handler called when the process exits'''
         # update some state information
+        self.running = False
         self.end = time.time()
         self._elapsed = self.end - self.start
         self.manager.job_count -= 1

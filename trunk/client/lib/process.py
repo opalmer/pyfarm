@@ -34,51 +34,14 @@ from twisted.python import log
 
 CPU_COUNT = multiprocessing.cpu_count()
 
-# TODO: repalace with job.Job.exit
-class ExitHandler(object):
-    '''
-    Handles the output of a process
-
-    :param Client:
-        main client class object that we will use to control
-        the number of running jobs
-
-    :param tuple host:
-        three part tuple with the hostname, address, and port
-
-    :param tuple master:
-        three part tuple with the address to the master to report our exit
-        code to
-    '''
-    def __init__(self, Client, host, master):
-        self.Client = Client
-        self.host = host # hostname, address, and port of the client
-        self.master = master
-        self.Client.JOB_COUNT += 1
-    # end __init__
-
-    def exit(self, data):
-        '''Handle the exit status data of a process'''
-        args = (data['command'],data['exit'])
-        self.Client.JOB_COUNT -= 1
-
-        if data['exit'] != 0:
-            log.msg("command '%s' failed with code %i" % args)
-
-        else:
-            log.msg("command '%s' finished with code %i" % args)
-
-    # end exit
-# end ExitHandler
-
-
 class TwistedProcess(protocol.ProcessProtocol):
     '''
     Create a Twisted process object
 
     :param string command: The command to run
     '''
-    def __init__(self, command, arguments, environ, logstream):
+    def __init__(self, uuid, command, arguments, environ, logstream):
+        self.uuid = uuid
         self.log = logstream
         self.command = command
         self.arguments = arguments
@@ -89,8 +52,6 @@ class TwistedProcess(protocol.ProcessProtocol):
         self.environ = copy.deepcopy(os.environ)
         if isinstance(environ, types.DictType):
             self.environ.update(environ)
-
-        log.msg("attempting to run %s %s" % (command, arguments))
 
         # construct the command list and arguments to pass
         # to reactor.spawnProcess
@@ -116,14 +77,13 @@ class TwistedProcess(protocol.ProcessProtocol):
     def processEnded(self, status):
         '''Called when the process exist and returns the proper callback'''
         code = status.value.exitCode
-        log.msg("process exit %i: %s" % (code, self.command))
-
         data = {
                     "exit" : code,
                     "command" : self.command
                }
 
         # call deferred
+        log.msg("process %s exited code %i" % (self.uuid, code))
         self.deferred.callback(data)
     # end processEnded
 # end TwistedProcess
