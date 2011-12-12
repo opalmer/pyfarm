@@ -206,27 +206,25 @@ class Manager(xmlrpc.XMLRPC):
         return data
     # end xmlrpc_log
 
-    def xmlrpc_running(self, uid):
-        '''return True if the given uuid has a running process'''
-        job = self.__job(uid)
-        return job.running
-    # end xmlrpc_running
-
     def xmlrpc_kill(self, uid):
         '''Kills a running process'''
         job = self.__job(uid)
         return job.kill()
     # end xmlrpc_kill
 
-    def xmlrpc_running(self):
+    def xmlrpc_running(self, job=None):
         '''return a list of all running jobs'''
-        jobs = []
+        if job == None:
+            jobs = []
 
-        for uid, job in self.jobs.items():
-            if job.running:
-                jobs.append(str(job.uuid))
+            for uid, job in self.jobs.items():
+                if job.running:
+                    jobs.append(str(job.uuid))
 
-        return jobs
+            return jobs
+
+        job = self.__job(job)
+        return job.running
     # end xmlrpc_running
 
     def xmlrpc_elapsed(self, job):
