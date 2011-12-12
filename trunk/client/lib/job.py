@@ -201,7 +201,7 @@ class Manager(xmlrpc.XMLRPC):
         data = log.read()
 
         if split:
-            return data.split(os.linesep)
+            return data.split("\n")
 
         return data
     # end xmlrpc_log
