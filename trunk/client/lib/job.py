@@ -108,6 +108,15 @@ class Manager(xmlrpc.XMLRPC):
             )
     # end __precheck
 
+    def xmlrpc_pid(self, uid):
+        '''
+        returns the process id for a given uid or None if the process
+        is not running
+        '''
+        job = self.__job(uid)
+        return job.pid
+    # end pid
+
     def xmlrpc_run(self, command, arguments, environ=None, force=False):
         '''setup and return instances of the job object'''
         # client must be online in order to submit jobs
@@ -310,8 +319,9 @@ class Job(object):
                             self.command, self.arguments,
                             self.environ
                        )
-        reactor.spawnProcess(self.process, *self.process.args)
+        proc = reactor.spawnProcess(self.process, *self.process.args)
         self.process.deferred.addCallback(self.exit)
+        self.pid = proc.pid
     # end __init__
 
     @property
