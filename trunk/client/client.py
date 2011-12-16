@@ -69,17 +69,44 @@ class Client(xmlrpc.XMLRPC):
         return True
     # end xmlrpc_ping
 
-    # TODO: stop running jobs on shutdown
-    def xmlrpc_shutdown(self):
-        '''shutdown the client and reactor'''
-        reactor.callLater(0.5, reactor.stop)
+    def xmlrpc_shutdown(self, force=False):
+        '''
+        shutdown the client and reactor
 
-        if self.job.job_count:
-            log.msg(
-                "reactor shutting down with jobs still running!",
-                logLevel=logging.WARNING
-            )
-        # end xmlrpc_shutdown
+        :param boolean force:
+            if True then terminate running jobs prior to shutdown
+
+        :exception xmlrpc.Fault(9):
+            raised if the shutdown was not forced and there are jobs running
+        '''
+        jobs = self.job.xmlrpc_running()
+
+        if jobs and not force:
+            msg = "cannot shutdown, there are still %i jobs running" % len(jobs)
+            raise xmlrpc.Fault(9, msg)
+
+        elif jobs and force:
+            log.msg("shutdown forced!", logLevel=logging.WARNING)
+            for job in jobs:
+                self.job.xmlrpc_kill(job)
+
+        reactor.callLater(1.0, reactor.stop)
+        return True
+    # end xmlrpc_shutdown
+
+    def xmlrpc_restart(self, force=False):
+        '''restart the client'''
+        if self.xmlrpc_shutdown(force):
+            global RESTART
+            RESTART = True
+    # end xmlrpc_restart
+
+    def xmlrpc_running(self):
+        '''returns True if there are jobs marked as running by the manager'''
+        if self.job.xmlrpc_running():
+            return True
+        return False
+    # end xmlrpc_running
 
     def xmlrpc_online(self, state=None):
         '''
@@ -152,13 +179,6 @@ class Client(xmlrpc.XMLRPC):
 
         return False
     # end xmlrpc_free
-
-    def xmlrpc_restart(self):
-        '''restart the client'''
-        global RESTART
-        RESTART = True
-        self.xmlrpc_shutdown()
-    # end xmlrpc_restart
 # end Client
 
 # setup and run the client/reactor
