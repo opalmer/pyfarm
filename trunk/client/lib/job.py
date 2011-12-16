@@ -25,6 +25,7 @@ import uuid
 import types
 import socket
 import logging
+import psutil
 
 from twisted.internet import reactor
 from twisted.python import log
@@ -34,23 +35,17 @@ import process
 import loghandler
 import preferences
 
-MASTER = ()
-
 class Manager(xmlrpc.XMLRPC):
     '''
     Manages running or terminated jobs including starting, stopping,
     state queries, and log handling.
-
-    .. note:
-        This class should only be used using it's module instance (Manager),
-        reloading or accessing this class directly will break job management
-        for the client.
     '''
-    def __init__(self):
+    def __init__(self, service):
         resource.Resource.__init__(self)
-        self.__online = True
+        self.online = True
         self.jobs = {}
         self.job_count = 0
+        self.service = service # connection back to main client methods
         self.job_count_max = preferences.MAX_JOBS
         log.msg("job manager initialized")
     # end __init__
@@ -90,41 +85,14 @@ class Manager(xmlrpc.XMLRPC):
         return self.jobs[uuid]
     # end __job
 
-    def __precheck(self):
-        # if the current job_count_max is greater
-        # than the processor count then send a warning to the console
-        if self.job_count_max > process.CPU_COUNT:
-            args = (self.job_count_max, process.CPU_COUNT)
-            log.msg(
-                "max job count (%i) is greater than the cpu count (%i)!" % args,
-                logLevel=logging.WARNING
-            )
-
-        # if the job count is unlimited show a warning
-        elif self.job_count_max == -1:
-            log.msg(
-                "max job count is unlimited!",
-                logLevel=logging.WARNING
-            )
-    # end __precheck
-
-    def xmlrpc_pid(self, uid):
-        '''
-        returns the process id for a given uid or None if the process
-        is not running
-        '''
-        job = self.__job(uid)
-        return job.pid
-    # end pid
-
     def xmlrpc_run(self, command, arguments, environ=None, force=False):
         '''setup and return instances of the job object'''
         # client must be online in order to submit jobs
-        if not self.__online:
+        if not self.online:
             raise xmlrpc.Fault(4, '%s is offline' % socket.getfqdn())
 
         # log a warning if we are over the max job count
-        if not force and not self.xmlrpc_free():
+        if not force and not self.service.xmlrpc_free():
             args = (self.job_count, self.job_count_max)
             raise xmlrpc.Fault(2, 'client already running %i/%i jobs' % args)
 
@@ -134,59 +102,6 @@ class Manager(xmlrpc.XMLRPC):
         return str(job.uuid)
     # end xmlrpc_run
 
-    def xmlrpc_online(self, state=None):
-        '''
-        Return True of the client is currently online or set
-        the online state if a valid state argument is provided
-
-        :param boolean state:
-            the new online state to set
-
-        :exception xmlrpc.Fault(3):
-            raised if the new state is not in (True, False)
-        '''
-        if isinstance(state, types.BooleanType):
-            self.__online = state
-            log.msg("client online state set to %s" % str(state))
-
-        elif not isinstance(state, types.NoneType):
-            raise xmlrpc.Fault(3, "%s is not a valid state" % str(state))
-
-        return self.__online
-    # end online
-
-    def xmlrpc_jobs_max(self, count=None):
-        '''
-        Much like online() this method will return self.jobs_max unless
-        a value for count is provided.
-
-        :param integer count:
-            the new value to set self.max_jobs to
-
-        :exception xmlrpc.Fault(3):
-            raised if the new count is not an integer
-        '''
-        if isinstance(count, types.IntType):
-            self.job_count_max = count
-
-        elif not isinstance(count, types.NoneType):
-            raise xmlrpc.Fault(3, "%s is not an integer" % str(count))
-
-        self.__precheck()
-
-        return self.job_count_max
-    # end jobs_max
-
-    def xmlrpc_free(self):
-        '''
-        returns True if there is additional space for processing or if
-        the max number of jobs is unlimited (-1)
-        '''
-        if self.job_count_max == -1 or self.job_count < self.job_count_max:
-            return True
-
-        return False
-    # end free
 
     def xmlrpc_log(self, uid, split=True):
         '''
@@ -236,6 +151,51 @@ class Manager(xmlrpc.XMLRPC):
         return job.running
     # end xmlrpc_running
 
+    def xmlrpc_ram_use(self, uid):
+        '''return the amount of ram being used by a job in megabytes'''
+        job = self.__job(uid)
+
+        if job.running:
+            proc = psutil.Process(job.pid)
+            rss = proc.get_memory_info()[0]
+            return rss / 1024.0 / 1024.0
+
+        return None
+    # end xmlrpc_ram_use
+
+    def xmlrpc_cpu_times(self, uid):
+        '''returns the cpu times (user, system) for the given uid'''
+        job = self.__job(uid)
+
+        if job.running:
+            proc = psutil.Process(job.pid)
+            return proc.get_cpu_times()
+
+        return [None, None]
+    # end xmlrpc_cpu_times
+
+    def xmlrpc_ram_percent(self, uid):
+        '''return the amount of ram being used as percent'''
+        job = self.__job(uid)
+
+        if job.running:
+            proc = psutil.Process(job.pid)
+            return proc.get_memory_percent()
+
+        return None
+    # end xmlrpc_ram_percent
+
+    def xmlrpc_cpu_percent(self, uid):
+        '''returns the cpu times for the given uid'''
+        job = self.__job(uid)
+
+        if job.running:
+            proc = psutil.Process(job.pid)
+            return proc.get_cpu_percent()
+
+        return None
+    # end xmlrpc_cpu_percent
+
     def xmlrpc_elapsed(self, job):
         '''return the total elapsed time for a job (in seconds)'''
         job = self.__job(job)
@@ -249,6 +209,7 @@ class Manager(xmlrpc.XMLRPC):
         '''
         job = self.__job(uid)
         return job.exit_code
+    # end xmlrpc_exit_code
 # end Manager
 
 

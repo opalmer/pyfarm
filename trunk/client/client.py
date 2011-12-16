@@ -22,10 +22,11 @@
 import os
 import sys
 import time
+import types
 import socket
 import logging
 
-from lib import loghandler, preferences, job, host
+from lib import loghandler, preferences, job, host, process
 
 from twisted.internet import reactor
 from twisted.web import resource, xmlrpc, server
@@ -52,7 +53,7 @@ class Client(xmlrpc.XMLRPC):
 
         # setup sub handlers
         self.host = host.HostServices()
-        self.job = job.Manager()
+        self.job = job.Manager(self)
 
         self.subHandlers = {
             "host": self.host,
@@ -81,11 +82,75 @@ class Client(xmlrpc.XMLRPC):
         # end xmlrpc_shutdown
 
     def xmlrpc_online(self, state=None):
-        return self.job.xmlrpc_online(state)
+        '''
+        Return True of the client is currently online or set
+        the online state if a valid state argument is provided
+
+        :param boolean state:
+            the new online state to set
+
+        :exception xmlrpc.Fault(3):
+            raised if the new state is not in (True, False)
+        '''
+        if isinstance(state, types.BooleanType):
+            self.job.online = state
+            log.msg("client online state set to %s" % str(state))
+
+        elif not isinstance(state, types.NoneType):
+            raise xmlrpc.Fault(3, "%s is not a valid state" % str(state))
+
+        return self.job.online
     # end xmlrpc_online
 
+    def xmlrpc_jobs_max(self, count=None):
+        '''
+        Much like online() this method will return self.jobs_max unless
+        a value for count is provided.
+
+        :param integer count:
+            the new value to set self.max_jobs to
+
+        :exception xmlrpc.Fault(3):
+            raised if the new count is not an integer
+        '''
+        if isinstance(count, types.IntType):
+            self.job.job_count_max = count
+
+        elif not isinstance(count, types.NoneType):
+            raise xmlrpc.Fault(3, "%s is not an integer" % str(count))
+
+        elif count == 0:
+            raise xmlrpc.Fault(8, "cannot set jobs_max to zero")
+
+        # if the current job_count_max is greater
+        # than the processor count then send a warning to the console
+        if self.job.job_count_max > process.CPU_COUNT:
+            args = (self.job.job_count_max, process.CPU_COUNT)
+            log.msg(
+                "max job count (%i) is greater than the cpu count (%i)!" % args,
+                logLevel=logging.WARNING
+            )
+
+        # if the job count is unlimited show a warning
+        elif self.job.job_count_max == -1:
+            log.msg(
+                "max job count is unlimited!",
+                logLevel=logging.WARNING
+            )
+
+        return self.job.job_count_max
+    # end xmlrpc_jobs_max
+
     def xmlrpc_free(self):
-        return self.job.xmlrpc_free()
+        '''
+        returns True if there is additional space for processing or if
+        the max number of jobs is unlimited (-1)
+        '''
+        max_count = self.job.job_count_max
+        if max_count == -1 or self.job.job_count < max_count:
+            return True
+
+        return False
     # end xmlrpc_free
 
     def xmlrpc_restart(self):
