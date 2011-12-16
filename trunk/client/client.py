@@ -33,6 +33,7 @@ from twisted.web import resource, xmlrpc, server
 from twisted.python import log
 
 RESTART = False
+TEST_MODE = False
 CWD = os.getcwd()
 PID = os.getpid()
 PORT = preferences.PORT
@@ -60,6 +61,16 @@ class Client(xmlrpc.XMLRPC):
             "job" : self.job
         }
     # end __init__
+
+    def xmlrpc_test_mode(self, value):
+        '''
+        used for testing this will prevent the client from actually restarting
+        or shutting down
+        '''
+        global TEST_MODE
+        TEST_MODE = value
+        log.msg("test mode set to %s" % TEST_MODE)
+    # end xmlrpc_test_mode
 
     def xmlrpc_ping(self):
         '''
@@ -90,13 +101,15 @@ class Client(xmlrpc.XMLRPC):
             for job in jobs:
                 self.job.xmlrpc_kill(job)
 
-        reactor.callLater(1.0, reactor.stop)
+        if not TEST_MODE:
+            reactor.callLater(1.0, reactor.stop)
+
         return True
     # end xmlrpc_shutdown
 
     def xmlrpc_restart(self, force=False):
         '''restart the client'''
-        if self.xmlrpc_shutdown(force):
+        if self.xmlrpc_shutdown(force) and not TEST_MODE:
             global RESTART
             RESTART = True
     # end xmlrpc_restart
@@ -139,15 +152,18 @@ class Client(xmlrpc.XMLRPC):
 
         :exception xmlrpc.Fault(3):
             raised if the new count is not an integer
-        '''
-        if isinstance(count, types.IntType):
-            self.job.job_count_max = count
 
-        elif not isinstance(count, types.NoneType):
+        :exception xmlrpc.Fault(8):
+            raised if we attempt to set max jobs to 0
+        '''
+        if count == 0:
+            raise xmlrpc.Fault(8, "cannot set jobs_max to zero")
+
+        if not isinstance(count, types.IntType) and not count == None:
             raise xmlrpc.Fault(3, "%s is not an integer" % str(count))
 
-        elif count == 0:
-            raise xmlrpc.Fault(8, "cannot set jobs_max to zero")
+        elif isinstance(count, types.IntType):
+            self.job.job_count_max = count
 
         # if the current job_count_max is greater
         # than the processor count then send a warning to the console

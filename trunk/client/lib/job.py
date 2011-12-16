@@ -85,6 +85,17 @@ class Manager(xmlrpc.XMLRPC):
         return self.jobs[uuid]
     # end __job
 
+    def xmlrpc_init(self):
+        '''
+        resets all job related information on the manager (mainly
+        used for testing)
+        '''
+        for job in self.xmlrpc_running():
+            self.xmlrpc_kill(job)
+
+        self.__init__(self.service)
+    # end xmlrpc_reset
+
     def xmlrpc_run(self, command, arguments, environ=None, force=False):
         '''setup and return instances of the job object'''
         # client must be online in order to submit jobs
