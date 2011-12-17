@@ -216,7 +216,7 @@ if RESTART:
     args = sys.argv[:]
 
     args.insert(0, sys.executable)
-    if sys.platform == 'win32':
+    if sys.platform == 'win32' or os.name == 'nt':
         args = ['"%s"' % arg for arg in args]
 
     os.chdir(CWD)
