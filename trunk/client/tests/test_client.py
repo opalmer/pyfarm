@@ -50,7 +50,6 @@ class Base(unittest.TestCase):
 
     def runWaitJob(self):
         job = self.rpc.job.run("python", "-c 'while True: pass'")
-        print "====",job
         self.failUnless(
             isinstance(job, types.StringType),
             'wrong type from rpc.job.run'
@@ -148,9 +147,12 @@ class Client(Base):
 
     def test_free(self):
         jobs_max = self.rpc.jobs_max()
-#        print "=======",jobs_max
-        for i in range(jobs_max+10):
+        for i in range(jobs_max):
+            self.rpc.jobs_max()
             self.runWaitJob()
+
+        self.failUnlessRaises(xmlrpc.Fault, self.runWaitJob, *[])
+    # end test_free
 # end Client
 
 if __name__ == '__main__':
