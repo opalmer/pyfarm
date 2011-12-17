@@ -56,6 +56,7 @@ class Base(unittest.TestCase):
             rpc.job.running(job),
             "%s should be running" % job
         )
+        return job
     # end runWaitJob
 # end Base
 
@@ -166,6 +167,48 @@ class Job(Base):
         except ValueError:
             self.fail("failed to convert string to uuid object")
     # end test_run
+
+    def test_run_exception(self):
+        # ensure that an exception is raised
+        # if the command is not found
+        try:
+            rpc.job.run("foobar", "")
+            self.failIf("exception not raised for missing command")
+
+        except xmlrpc.Fault, error:
+            self.failUnlessEqual(
+                error.faultCode, 1,
+                "expected fault code 1 not %i" % error.faultCode
+            )
+    # end test_run_exception
+
+    def test_kill(self):
+        uid = self.runWaitJob()
+        self.failUnlessEqual(
+            rpc.job.kill(uid), True,
+            "expected kill to return True"
+        )
+        self.failUnlessEqual(
+            rpc.job.kill(uid), False,
+            "expected kill to return False"
+        )
+    # end test_kill
+
+    def test_running(self):
+        uid = self.runWaitJob()
+        self.failUnlessEqual(
+            rpc.job.running(uid), True,
+            "job should be running"
+        )
+        self.failUnlessEqual(
+            rpc.job.kill(uid), True,
+            "expected kill to return True"
+        )
+        self.failUnlessEqual(
+            rpc.job.running(uid), False,
+            "job should not be running"
+        )
+    # end test_running
 # end Job
 
 if __name__ == '__main__':

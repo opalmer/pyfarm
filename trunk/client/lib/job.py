@@ -94,7 +94,7 @@ class Manager(xmlrpc.XMLRPC):
             self.xmlrpc_kill(job)
 
         self.__init__(self.service)
-    # end xmlrpc_reset
+    # end xmlrpc_init
 
     def xmlrpc_run(self, command, arguments, environ=None, force=False):
         '''setup and return instances of the job object'''
