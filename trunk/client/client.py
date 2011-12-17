@@ -101,7 +101,7 @@ class Client(xmlrpc.XMLRPC):
             for job in jobs:
                 self.job.xmlrpc_kill(job)
 
-        if not TEST_MODE:
+        if not TEST_MODE and not force:
             reactor.callLater(1.0, reactor.stop)
 
         return True

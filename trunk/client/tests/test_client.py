@@ -19,6 +19,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
+import uuid
 import types
 import socket
 import unittest
@@ -26,17 +27,14 @@ import xmlrpclib
 
 from twisted.web import xmlrpc
 
-class Base(unittest.TestCase):
-    SERVER = "localhost"
-    PORT = 9030
-    SERVER_STRING = "http://%s:%i" % (SERVER, PORT)
+rpc = xmlrpclib.ServerProxy("http://localhost:9030", allow_none=True)
 
+class Base(unittest.TestCase):
     def setUp(self):
-        self.rpc = xmlrpclib.ServerProxy(Base.SERVER_STRING, allow_none=True)
-        self.rpc.test_mode(True)
+        rpc.test_mode(True)
 
         try:
-            ping = lambda: self.rpc.ping()
+            ping = lambda: rpc.ping()
             self.failUnlessEqual(ping(), True, "expected ping to return True")
 
         except socket.error, error:
@@ -44,18 +42,18 @@ class Base(unittest.TestCase):
     # end setUp
 
     def tearDown(self):
-        self.rpc.job.init()
-        self.rpc.test_mode(False)
+        rpc.job.init()
+        rpc.test_mode(False)
     # end tearDown
 
     def runWaitJob(self):
-        job = self.rpc.job.run("python", "-c 'while True: pass'")
+        job = rpc.job.run("python", "-c 'while True: pass'")
         self.failUnless(
             isinstance(job, types.StringType),
             'wrong type from rpc.job.run'
         )
         self.failUnless(
-            self.rpc.job.running(job),
+            rpc.job.running(job),
             "%s should be running" % job
         )
     # end runWaitJob
@@ -63,20 +61,20 @@ class Base(unittest.TestCase):
 
 class Client(Base):
     def test_ping(self):
-        self.failUnless(self.rpc.ping(), "ping should always return True")
+        self.failUnless(rpc.ping(), "ping should always return True")
     # end test_ping
 
     def test_online(self):
-        self.failUnless(self.rpc.online(), "client reports it's not online")
-        self.failIf(self.rpc.online(False), "client should now be offline")
-        self.failIf(self.rpc.online(), "client reports it's online")
+        self.failUnless(rpc.online(), "client reports it's not online")
+        self.failIf(rpc.online(False), "client should now be offline")
+        self.failIf(rpc.online(), "client reports it's online")
     # test_online
 
     def test_online_exception(self):
-        self.failUnlessRaises(xmlrpc.Fault, self.rpc.online, -1)
+        self.failUnlessRaises(xmlrpc.Fault, rpc.online, -1)
 
         try:
-            self.rpc.online(-1)
+            rpc.online(-1)
 
         except Exception, error:
             self.failUnlessEqual(
@@ -87,10 +85,10 @@ class Client(Base):
 
     def test_shutdown(self):
         self.runWaitJob()
-        self.failUnlessRaises(xmlrpc.Fault, self.rpc.shutdown, False)
+        self.failUnlessRaises(xmlrpc.Fault, rpc.shutdown, False)
 
         try:
-            self.rpc.shutdown()
+            rpc.shutdown()
 
         except Exception, error:
             self.failUnlessEqual(
@@ -99,7 +97,7 @@ class Client(Base):
             )
 
         try:
-            self.rpc.shutdown(True)
+            rpc.shutdown(True)
 
         except xmlrpc.Fault:
             self.fail("forced shutdown failed")
@@ -107,10 +105,10 @@ class Client(Base):
 
     def test_restart(self):
         self.runWaitJob()
-        self.failUnlessRaises(xmlrpc.Fault, self.rpc.restart, False)
+        self.failUnlessRaises(xmlrpc.Fault, rpc.restart, False)
 
         try:
-            self.rpc.restart()
+            rpc.restart()
 
         except Exception, error:
             self.failUnlessEqual(
@@ -119,7 +117,7 @@ class Client(Base):
             )
 
         try:
-            self.rpc.restart(True)
+            rpc.restart(True)
 
         except xmlrpc.Fault:
             self.fail("forced restart failed")
@@ -127,7 +125,7 @@ class Client(Base):
 
     def test_jobs_max(self):
         try:
-            self.rpc.jobs_max(0)
+            rpc.jobs_max(0)
 
         except Exception, error:
             self.failUnlessEqual(
@@ -136,7 +134,7 @@ class Client(Base):
             )
 
         try:
-            self.rpc.jobs_max(True)
+            rpc.jobs_max(True)
 
         except Exception, error:
             self.failUnlessEqual(
@@ -146,14 +144,29 @@ class Client(Base):
     # end test_jobs_max
 
     def test_free(self):
-        jobs_max = self.rpc.jobs_max()
+        jobs_max = rpc.jobs_max()
         for i in range(jobs_max):
-            self.rpc.jobs_max()
+            rpc.jobs_max()
             self.runWaitJob()
 
         self.failUnlessRaises(xmlrpc.Fault, self.runWaitJob, *[])
     # end test_free
 # end Client
+
+class Job(Base):
+    def test_run(self):
+        uid = rpc.job.run("python", "-c 'print True'")
+        self.failUnless(
+            isinstance(uid, types.StringType), "uid should be a string"
+        )
+
+        try:
+            uid = uuid.UUID(uid)
+
+        except ValueError:
+            self.fail("failed to convert string to uuid object")
+    # end test_run
+# end Job
 
 if __name__ == '__main__':
     import sys
