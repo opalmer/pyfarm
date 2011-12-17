@@ -20,11 +20,46 @@
 
 import socket
 import psutil
+import netifaces
 
 from twisted.web import xmlrpc
 
 class NetworkInformation(xmlrpc.XMLRPC):
     '''Provides information about the network'''
+    def isLocal(self, ip):
+        '''return True if the ip is considered a local address'''
+        for prefix in ('127', '169', '0'):
+            if ip.startswith(prefix):
+                return True
+        return False
+    # end isLocal
+
+    def xmlrpc_interfaces(self, local=False):
+        '''Retruns all in interfaces that have an IPv4 address'''
+        interfaces = []
+
+        for name in netifaces.interfaces():
+            iface = netifaces.ifaddresses(name)
+            # skip any entires that does not have an IPv4
+            # address
+            if socket.AF_INET not in iface:
+                continue
+
+            for iface in iface[socket.AF_INET]:
+                skip = False
+
+                # if requested, check to see if this is a local
+                # interface
+                if not local:
+                    skip = self.isLocal(iface.get('addr', ''))
+
+                # only add the interface if it was not skipped
+                if not skip:
+                    interfaces.append(iface)
+
+        return interfaces
+    # end xmlrpc_interfaces
+
     def xmlrpc_fqdn(self):
         return socket.getfqdn()
     # end xmlrpc_fqdn
@@ -33,8 +68,33 @@ class NetworkInformation(xmlrpc.XMLRPC):
         return socket.gethostname()
     # end xmlrpc_hostname
 
+    def xmlrpc_addresses(self):
+        '''Retruns a list of ip addresses in use on the system'''
+        addresses = []
+
+        for iface in self.xmlrpc_interfaces():
+            addresses.append(iface['addr'])
+
+        return addresses
+    # end xmlrpc_addresses
+
+    def xmlrpc_broadcast(self, ip=None):
+        '''returns the broadcast address for a given ip address'''
+        if not ip:
+            ip = self.xmlrpc_ip()
+
+        for iface in self.xmlrpc_interfaces():
+            if iface.get('addr') == ip:
+                return iface.get('broadcast', '')
+    # end xmlrpc_broadcast
+
     def xmlrpc_ip(self):
-        raise NotImplemented()
+        '''
+        returns the first entry in the addresses list
+        or "" if it could not be found
+        '''
+        addresses = self.xmlrpc_addresses() or ['']
+        return addresses[0]
     # end xmlrpc_ip
 # end NetworkInformation
 
