@@ -22,8 +22,8 @@ import socket
 
 from twisted.web import xmlrpc
 
-class HostServices(xmlrpc.XMLRPC):
-    '''Services specific to the host platform'''
+class NetworkInformation(xmlrpc.XMLRPC):
+    '''Provides information about the network'''
     def xmlrpc_fqdn(self):
         return socket.getfqdn()
     # end xmlrpc_fqdn
@@ -35,7 +35,11 @@ class HostServices(xmlrpc.XMLRPC):
     def xmlrpc_ip(self):
         raise NotImplemented()
     # end xmlrpc_ip
+# end NetworkInformation
 
+
+class SystemInformation(xmlrpc.XMLRPC):
+    '''Provides information about the system'''
     def xmlrpc_ram(self):
         '''returns the total amount of ram on the system'''
         raise NotImplemented()
@@ -45,4 +49,4 @@ class HostServices(xmlrpc.XMLRPC):
         '''returns the total amount of ram free on the system'''
         raise NotImplemented()
     # end xmlrpc_free
-# end HostService
+# end SystemInformation

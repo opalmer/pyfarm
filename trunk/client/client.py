@@ -26,7 +26,7 @@ import types
 import socket
 import logging
 
-from lib import loghandler, preferences, job, host, process
+from lib import loghandler, preferences, job, system, process
 
 from twisted.internet import reactor
 from twisted.web import resource, xmlrpc, server
@@ -53,11 +53,13 @@ class Client(xmlrpc.XMLRPC):
         self.useDateTime = True
 
         # setup sub handlers
-        self.host = host.HostServices()
+        self.sys = system.SystemInformation()
+        self.net = system.NetworkInformation()
         self.job = job.Manager(self)
 
         self.subHandlers = {
-            "host": self.host,
+            "sys": self.sys,
+            "net" : self.net,
             "job" : self.job
         }
     # end __init__
