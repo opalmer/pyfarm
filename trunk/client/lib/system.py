@@ -16,9 +16,10 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
-'''Handles host (hardware) related information'''
+'''handles system information such as hardware and network ident'''
 
 import socket
+import psutil
 
 from twisted.web import xmlrpc
 
@@ -40,13 +41,23 @@ class NetworkInformation(xmlrpc.XMLRPC):
 
 class SystemInformation(xmlrpc.XMLRPC):
     '''Provides information about the system'''
-    def xmlrpc_ram(self):
-        '''returns the total amount of ram on the system'''
-        raise NotImplemented()
-    # end xmlrpc_ram
+    def xmlrpc_cpu_count(self):
+        '''returns the number of processors in the system'''
+        return psutil.NUM_CPUS
+    # end xmlrpc_cpu_count
 
-    def xmlrpc_free(self):
-        '''returns the total amount of ram free on the system'''
-        raise NotImplemented()
-    # end xmlrpc_free
+    def xmlrpc_load(self):
+        '''returns the current cpu load as a percent'''
+        return psutil.cpu_percent()
+    # end xmlrpc_load
+
+    def xmlrpc_ram_total(self):
+        '''returns the total amount of ram in the system'''
+        return psutil.TOTAL_PHYMEM / 1024 / 1024
+    # end xmlrpc_ram_total
+
+    def xmlrpc_ram_free(self):
+        '''returns the total amount of ram free'''
+        return psutil.avail_phymem() / 1024 / 1024
+    # end xmlrpc_ram_free
 # end SystemInformation
