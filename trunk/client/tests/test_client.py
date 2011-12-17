@@ -268,6 +268,28 @@ class Job(Base):
             "ram percent should be None"
         )
     # end test_cpu_percent
+
+    def test_elapsed(self):
+        uid = self.runWaitJob()
+        start = rpc.job.elapsed(uid)
+        end = rpc.job.elapsed(uid)
+        self.failUnless(
+            isinstance(start, types.FloatType), "expected float for start"
+        )
+        self.failUnless(
+            isinstance(end, types.FloatType), "expected float for end"
+        )
+        self.failUnless(end > start, "expected time to increase")
+    # end test_elapsed
+
+    def test_exit_code(self):
+        uid = self.runWaitJob()
+        self.stopWaitJob(uid)
+        self.failUnlessEqual(
+            rpc.job.exit_code(uid), 1,
+            "expected exit code 1"
+        )
+    # end test_exit_code
 # end Job
 
 if __name__ == '__main__':
