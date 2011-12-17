@@ -58,6 +58,21 @@ class Base(unittest.TestCase):
         )
         return job
     # end runWaitJob
+
+    def stopWaitJob(self, uid):
+        self.failUnlessEqual(
+            rpc.job.running(uid), True,
+            "job be running"
+        )
+        self.failUnlessEqual(
+            rpc.job.kill(uid), True,
+            "job.kill should return True"
+        )
+        self.failUnlessEqual(
+            rpc.job.running(uid), False,
+            "job should not be running"
+        )
+    # end stopWaitJob
 # end Base
 
 class Client(Base):
@@ -184,14 +199,7 @@ class Job(Base):
 
     def test_kill(self):
         uid = self.runWaitJob()
-        self.failUnlessEqual(
-            rpc.job.kill(uid), True,
-            "expected kill to return True"
-        )
-        self.failUnlessEqual(
-            rpc.job.kill(uid), False,
-            "expected kill to return False"
-        )
+        self.stopWaitJob(uid)
     # end test_kill
 
     def test_running(self):
@@ -200,15 +208,66 @@ class Job(Base):
             rpc.job.running(uid), True,
             "job should be running"
         )
-        self.failUnlessEqual(
-            rpc.job.kill(uid), True,
-            "expected kill to return True"
-        )
+        self.stopWaitJob(uid)
         self.failUnlessEqual(
             rpc.job.running(uid), False,
             "job should not be running"
         )
     # end test_running
+
+    def test_ram_use(self):
+        uid = self.runWaitJob()
+        self.failUnless(
+            isinstance(rpc.job.ram_use(uid), types.FloatType),
+            "value from ram is not a float"
+        )
+        self.stopWaitJob(uid)
+        self.failUnless(
+            isinstance(rpc.job.ram_use(uid), types.NoneType),
+            "value from ram is not a float"
+        )
+    # end test_ram_use
+
+    def test_cpu_times(self):
+        uid = self.runWaitJob()
+        for time in rpc.job.cpu_times(uid):
+            self.failUnless(
+                isinstance(time, types.FloatType),
+                "expected a float"
+            )
+        self.stopWaitJob(uid)
+        for time in rpc.job.cpu_times(uid):
+            self.failUnless(
+                isinstance(time, types.NoneType),
+                "expected None"
+            )
+    # end test_cpu_times
+
+    def test_ram_percent(self):
+        uid = self.runWaitJob()
+        self.failUnless(
+            isinstance(rpc.job.ram_percent(uid), types.FloatType),
+            "ram percent should be a float"
+        )
+        self.stopWaitJob(uid)
+        self.failUnless(
+            isinstance(rpc.job.ram_percent(uid), types.NoneType),
+            "ram percent should be None"
+        )
+    # end test_ram_percent
+
+    def test_cpu_percent(self):
+        uid = self.runWaitJob()
+        self.failUnless(
+            isinstance(rpc.job.cpu_percent(uid), types.FloatType),
+            "cpu percent should be a float"
+        )
+        self.stopWaitJob(uid)
+        self.failUnless(
+            isinstance(rpc.job.cpu_percent(uid), types.NoneType),
+            "ram percent should be None"
+        )
+    # end test_cpu_percent
 # end Job
 
 if __name__ == '__main__':
