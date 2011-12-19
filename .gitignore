@@ -1,6 +1,5 @@
-*.e4p
-*eric*
 *sql*
+*.db
 *.log*
 *.pyc
 *.pyo
@@ -14,5 +13,4 @@ build
 docs*
 tools*
 dev*
-/trunk/server/etc/server.ini
-/trunk/server/lib/pyfarm.db
+*server.ini
