@@ -1,7 +1,7 @@
-# No shebang line, this module is meant to be imported
+#!/usr/bin/env python
 #
-# INITIAL: Nov 13 2011
-# PURPOSE: Used to create and manage a process
+# INITIAL: Dec 18 2011
+# PURPOSE: Receive, process, and handle job requests for PyFarm
 #
 # This file is part of PyFarm.
 # Copyright (C) 2008-2011 Oliver Palmer
