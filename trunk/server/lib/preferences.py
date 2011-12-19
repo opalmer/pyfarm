@@ -45,16 +45,6 @@ def get(section, option, default=None, typecast=str):
         return default
 # end get
 
-# standard database login information
-DB_CONFIG = cfg.get('DATABASE', 'config')
-DB_HOST = get(DB_CONFIG, 'host') or 'localhost'
-DB_PORT = get(DB_CONFIG, 'port', typecast=int)
-DB_USER = get(DB_CONFIG, 'user')
-DB_PASS = get(DB_CONFIG, 'pass')
-DB_NAME = get(DB_CONFIG, 'name')
-DB_ENGINE = get(DB_CONFIG, 'engine')
-DB_DRIVER = get(DB_CONFIG, 'driver')
-
 def getUrl():
     '''returns the sql url based on preferences'''
     url = "%s" % DB_ENGINE
@@ -86,7 +76,17 @@ def getUrl():
     return url
 # end getUrl
 
+# standard database login information
+DB_CONFIG = cfg.get('DATABASE', 'config')
+DB_HOST = get(DB_CONFIG, 'host') or 'localhost'
+DB_PORT = get(DB_CONFIG, 'port', typecast=int)
+DB_USER = get(DB_CONFIG, 'user')
+DB_PASS = get(DB_CONFIG, 'pass')
+DB_NAME = get(DB_CONFIG, 'name')
+DB_ENGINE = get(DB_CONFIG, 'engine')
+DB_DRIVER = get(DB_CONFIG, 'driver')
 DB_URL = getUrl()
+DB_REBUILD = cfg.getboolean('DATABASE', 'rebuild')
 
 # delete temp variables
 del getUrl

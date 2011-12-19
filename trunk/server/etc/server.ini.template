@@ -12,4 +12,5 @@ name = pyfarm.db
 engine = sqlite
 
 [DATABASE]
-config = DATABASE-SQLITE
+config = DATABASE-SQLITE ; name of the configuration to use
+rebuild = False          ; if True then drop all existing tables
