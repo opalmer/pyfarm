@@ -22,12 +22,11 @@ import preferences
 
 # create and connect to the engine
 engine = sql.create_engine(preferences.DB_URL)
-engine.echo = True
+engine.echo = preferences.DB_ECHO
 
 # create global metadata object and bind the engine
 metadata = sql.MetaData()
 metadata.bind = engine
-
 
 # create hosts table
 hosts = sql.Table('pyfarm_hosts', metadata,
@@ -37,6 +36,21 @@ hosts = sql.Table('pyfarm_hosts', metadata,
       sql.Column('ram_max', sql.Integer),
       sql.Column('cpu_count', sql.Integer),
       sql.Column('online', sql.Boolean),
+      sql.Column('software', sql.String(256))
+)
+
+# create root jobs table
+jobs = sql.Table('pyfarm_jobs', metadata,
+      sql.Column('uuid', sql.String(36), primary_key=True, nullable=False),
+      sql.Column('state', sql.Integer, nullable=False),
+      sql.Column('priority', sql.Integer, nullable=False),
+      sql.Column('software', sql.String(256), nullable=False),
+      sql.Column('min_ram', sql.Integer),
+      sql.Column('retry', sql.Boolean, nullable=False),
+      sql.Column('max_retries', sql.Integer),
+      sql.Column('start_frame', sql.Integer, nullable=False),
+      sql.Column('end_frame', sql.Integer, nullable=False),
+      sql.Column('by_frame', sql.Integer, nullable=False)
 )
 
 # if requested drop all tables that exist
