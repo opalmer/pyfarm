@@ -1,7 +1,4 @@
-#!/usr/bin/env python
-#
-# INITIAL: Dec 18 2011
-# PURPOSE: Receive, process, and handle job requests for PyFarm
+# No shebang line, this module is meant to be imported
 #
 # This file is part of PyFarm.
 # Copyright (C) 2008-2011 Oliver Palmer
@@ -19,7 +16,5 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
-from lib import db
-
-if __name__ == '__main__':
-    db.tables.init()
+import tables
+import preferences

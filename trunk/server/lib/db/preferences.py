@@ -20,7 +20,7 @@ import os
 import types
 import ConfigParser
 
-ETC = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "etc"))
+ETC = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "etc"))
 CONFIG = os.path.join(ETC, "server.ini")
 
 # ensure the preference file exists
