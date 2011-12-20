@@ -14,3 +14,4 @@ engine = sqlite
 [DATABASE]
 config = DATABASE-SQLITE ; name of the configuration to use
 rebuild = False          ; if True then drop all existing tables
+echo = False             ; if True echo all sql commands run

@@ -87,6 +87,7 @@ DB_ENGINE = get(DB_CONFIG, 'engine')
 DB_DRIVER = get(DB_CONFIG, 'driver')
 DB_URL = getUrl()
 DB_REBUILD = cfg.getboolean('DATABASE', 'rebuild')
+DB_ECHO = cfg.getboolean('DATABASE', 'echo')
 
 # delete temp variables
 del getUrl
