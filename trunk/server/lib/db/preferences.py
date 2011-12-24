@@ -21,7 +21,8 @@ import types
 import ConfigParser
 
 ETC = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "etc"))
-CONFIG = os.path.join(ETC, "server.ini")
+CONFIG_NAME = "database.ini"
+CONFIG = os.path.join(ETC, CONFIG_NAME)
 
 # ensure the preference file exists
 if not os.path.isfile(CONFIG):

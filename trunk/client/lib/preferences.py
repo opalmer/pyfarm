@@ -21,7 +21,8 @@ import ConfigParser
 import multiprocessing
 
 ETC = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "etc"))
-CONFIG = os.path.join(ETC, "client.ini")
+CONFIG_NAME = "client.ini"
+CONFIG = os.path.join(ETC, CONFIG_NAME)
 CPU_COUNT = multiprocessing.cpu_count()
 
 # ensure the preference file exists

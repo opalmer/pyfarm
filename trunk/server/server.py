@@ -19,7 +19,31 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
-from lib import db
+import os
+
+from lib import db, preferences
+
+from twisted.internet import reactor
+from twisted.web import resource, xmlrpc, server
+from twisted.python import log
+
+CWD = os.getcwd()
+PID = os.getpid()
+PORT = preferences.PORT
+
+class Server(xmlrpc.XMLRPC):
+    '''
+    Main server class to act as an external interface to the
+    data base and job server.
+    '''
+    def __init__(self):
+        resource.Resource.__init__(self)
+        self.allowNone = True
+        self.useDateTime = True
+
+        # setup sub handlers
+    # end __init__
+# end Server
 
 if __name__ == '__main__':
     db.tables.init()
