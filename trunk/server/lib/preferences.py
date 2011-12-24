@@ -19,11 +19,18 @@
 import os
 import ConfigParser
 
-ETC = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "etc"))
-CONFIG_NAME = "server.ini"
-CONFIG = os.path.join(ETC, CONFIG_NAME)
+MODULE_CONFIG = "server.ini"
+GLOBAL_CONFIG = "common.ini"
+CWD = os.path.dirname(__file__)
+ETC = os.path.abspath(os.path.join(CWD, "..", "etc"))
+ETC_GLOBAL = os.path.abspath(os.path.join(CWD, "..", "..", "etc"))
+CONFIG = os.path.join(ETC, MODULE_CONFIG)
+CONFIG_GLOBAL = os.path.join(ETC_GLOBAL, GLOBAL_CONFIG)
 
-# ensure the preference file exists
+# ensure the preference files exists
+if not os.path.isfile(CONFIG_GLOBAL):
+    raise IOError("missing global configuration %s" % CONFIG_GLOBAL)
+
 if not os.path.isfile(CONFIG):
     raise IOError("missing server configuration %s" % CONFIG)
 
