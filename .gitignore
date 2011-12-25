@@ -13,4 +13,4 @@ build
 docs*
 tools*
 dev*
-*server.ini
+*database.ini
