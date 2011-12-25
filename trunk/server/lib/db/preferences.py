@@ -17,34 +17,18 @@
 # along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
+import site
 import types
-import ConfigParser
 
-ETC = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "etc"))
-CONFIG_NAME = "database.ini"
-CONFIG = os.path.join(ETC, CONFIG_NAME)
+cwd = os.path.abspath(os.path.dirname(__file__))
+root = os.path.abspath(os.path.join(cwd, "..", "..", ".."))
+package = os.path.abspath(os.path.join(cwd, "..", ".."))
+site.addsitedir(root)
 
-# ensure the preference file exists
-if not os.path.isfile(CONFIG):
-    error = "Missing server configuration file %s.  " %  CONFIG
-    error += "Please create one from the template."
-    raise IOError(error)
-
-# read configuration
-cfg = ConfigParser.ConfigParser()
-cfg.read(CONFIG)
-
-def get(section, option, default=None, typecast=str):
-    '''
-    attempt to get the option from the given section, return default
-    if the option does not exist
-    '''
-    try:
-        return typecast(cfg.get(section, option))
-
-    except ConfigParser.NoOptionError:
-        return default
-# end get
+# setup and load preferences object
+import common.preferences as comprefs
+prefs = comprefs.Preferences(root, package)
+prefs.addPackage('database')
 
 def getUrl():
     '''returns the sql url based on preferences'''
@@ -77,22 +61,21 @@ def getUrl():
     return url
 # end getUrl
 
-# standard database login information
-DB_CONFIG = cfg.get('DATABASE', 'config')
-DB_HOST = get(DB_CONFIG, 'host') or 'localhost'
-DB_PORT = get(DB_CONFIG, 'port', typecast=int)
-DB_USER = get(DB_CONFIG, 'user')
-DB_PASS = get(DB_CONFIG, 'pass')
-DB_NAME = get(DB_CONFIG, 'name')
-DB_ENGINE = get(DB_CONFIG, 'engine')
-DB_DRIVER = get(DB_CONFIG, 'driver')
+DB_CONFIG = prefs.get('DATABASE', 'config')
+DB_HOST = prefs.get(DB_CONFIG, 'host', default='localhost')
+DB_PORT = prefs.getint(DB_CONFIG, 'port')
+DB_USER = prefs.get(DB_CONFIG, 'user')
+DB_PASS = prefs.get(DB_CONFIG, 'pass')
+DB_NAME = prefs.get(DB_CONFIG, 'name')
+DB_ENGINE = prefs.get(DB_CONFIG, 'engine')
+DB_DRIVER = prefs.get(DB_CONFIG, 'driver')
 DB_URL = getUrl()
-DB_REBUILD = cfg.getboolean('DATABASE', 'rebuild')
-DB_ECHO = cfg.getboolean('DATABASE', 'echo')
+DB_REBUILD = prefs.getboolean('DATABASE', 'rebuild')
+DB_ECHO = prefs.getboolean('DATABASE', 'echo')
 
 # delete temp variables
-del getUrl
-del os, types, ConfigParser
+del os, types
+del getUrl, cwd, root, package, prefs
 
 if __name__ == '__main__':
     import pprint

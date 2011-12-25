@@ -21,17 +21,22 @@ import site
 
 import loghandler
 
-CWD = os.path.dirname(os.path.abspath(__file__))
-ROOT = os.path.abspath(os.path.join(CWD, "..", ".."))
-site.addsitedir(ROOT)
+cwd = os.path.abspath(os.path.dirname(__file__))
+root = os.path.abspath(os.path.join(cwd, "..", ".."))
+package = os.path.abspath(os.path.join(cwd, ".."))
+site.addsitedir(root)
 
 # setup and load preferences object
 import common.preferences as comprefs
-prefs = comprefs.Preferences(CWD)
+prefs = comprefs.Preferences(root, package)
 prefs.addRoot('common')
 prefs.addPackage('server')
 
-del CWD, ROOT
+PORT = prefs.getint('NETWORK', 'port')
+RESTART_ENABLED = prefs.getboolean('RESTART', 'enabled')
+RESTART_TIMEOUT = prefs.getint('RESTART', 'wait')
+
+del cwd, root, package, prefs
 
 if __name__ == '__main__':
     comprefs.debug(locals())
