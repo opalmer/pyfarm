@@ -30,13 +30,9 @@ class Preferences(object):
         raised if we have trouble finding the configuration
         directories or files
     '''
-    def __init__(self, cwd):
-        self.__package = os.path.abspath(os.path.join(
-            cwd, ".."
-        ))
-        self.__root = os.path.abspath(os.path.join(
-            self.__package, ".."
-        ))
+    def __init__(self, root, package):
+        self.__root = root
+        self.__package = package
 
         # main configuration directories
         self.CFG_ROOT = os.path.join(self.__root, "etc")
