@@ -15,23 +15,3 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
-
-import os
-import site
-
-import loghandler
-
-CWD = os.path.dirname(os.path.abspath(__file__))
-ROOT = os.path.abspath(os.path.join(CWD, "..", ".."))
-site.addsitedir(ROOT)
-
-# setup and load preferences object
-import common.preferences as comprefs
-prefs = comprefs.Preferences(CWD)
-prefs.addRoot('common')
-prefs.addPackage('server')
-
-del CWD, ROOT
-
-if __name__ == '__main__':
-    comprefs.debug(locals())
