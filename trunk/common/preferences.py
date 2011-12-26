@@ -88,6 +88,20 @@ class Preferences(object):
             return default
     # end __call
 
+    def __getlist(self, section, option, sep):
+        values = []
+        data = self.__call(self.cfg.get, section, option, [])
+
+        if data:
+            for value in data.split(sep):
+                if value in values:
+                    continue
+
+                values.append(value)
+
+        return values
+    # end __getlist
+
     def read(self, path):
         '''
         reads a file into the config parser and
@@ -122,6 +136,24 @@ class Preferences(object):
     def getint(self, section, option, default=None):
         return self.__call(self.cfg.getint, section, option, default)
     # end getint
+
+    def getlist(self, section, option, sep=','):
+        data = []
+        for value in self.__getlist(section, option, sep):
+            if value and value not in data:
+                data.append(value)
+
+        return data
+    # end getlist
+
+    def getenvlist(self, section, option, sep=','):
+        envvars = []
+        for value in self.__getlist(section, option, sep):
+            if value not in envvars and value in os.environ:
+                envvars.append(value)
+
+        return envvars
+    # end getenvlist
 # end Preferences
 
 def debug(localVars):
