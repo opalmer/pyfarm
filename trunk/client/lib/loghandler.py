@@ -134,11 +134,11 @@ if not os.path.isdir(LOG_ROOT):
     os.makedirs(LOG_ROOT)
 
 # client logging to standard out to sys.stdout logging
-if preferences.CLIENT_LOG_STDOUT:
+if preferences.LOG_STDOUT:
     log.startLogging(sys.stdout)
 
 # client standard out to file logging
-if preferences.CLIENT_LOG_FILE:
+if preferences.LOG_FILE:
     CLIENT_LOG = os.path.join(os.path.dirname(LOG_ROOT), "client-log.log")
     CLIENT_LOG_STREAM = open(CLIENT_LOG, 'a')
 

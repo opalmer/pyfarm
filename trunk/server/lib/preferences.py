@@ -19,8 +19,6 @@
 import os
 import site
 
-import loghandler
-
 cwd = os.path.abspath(os.path.dirname(__file__))
 root = os.path.abspath(os.path.join(cwd, "..", ".."))
 package = os.path.abspath(os.path.join(cwd, ".."))
@@ -35,8 +33,6 @@ prefs.addPackage('server')
 PORT = prefs.getint('NETWORK', 'port')
 RESTART_ENABLED = prefs.getboolean('RESTART', 'enabled')
 RESTART_TIMEOUT = prefs.getint('RESTART', 'wait')
-
-del cwd, root, package, prefs
 
 if __name__ == '__main__':
     comprefs.debug(locals())

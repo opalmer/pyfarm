@@ -73,16 +73,5 @@ DB_URL = getUrl()
 DB_REBUILD = prefs.getboolean('DATABASE', 'rebuild')
 DB_ECHO = prefs.getboolean('DATABASE', 'echo')
 
-# delete temp variables
-del os, types
-del getUrl, cwd, root, package, prefs
-
 if __name__ == '__main__':
-    import pprint
-
-    local = {}
-    for key, value in locals().items():
-        if key.isupper():
-            local[key] = value
-
-    pprint.pprint(local)
+    comprefs.debug(locals())

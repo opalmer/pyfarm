@@ -17,51 +17,31 @@
 # along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
-import ConfigParser
-import multiprocessing
+import site
+import psutil
 
-CWD = os.path.dirname(__file__)
-ETC = os.path.abspath(os.path.join(CWD, "..", "etc"))
-CONFIG_NAME = "client.ini"
-CONFIG = os.path.join(ETC, CONFIG_NAME)
-CPU_COUNT = multiprocessing.cpu_count()
+cwd = os.path.abspath(os.path.dirname(__file__))
+root = os.path.abspath(os.path.join(cwd, "..", ".."))
+package = os.path.abspath(os.path.join(cwd, ".."))
+site.addsitedir(root)
 
-# ensure the preference file exists
-if not os.path.isfile(CONFIG):
-    raise IOError("missing client configuration %s" % CONFIG)
+# setup and load preferences object
+import common.preferences as comprefs
+prefs = comprefs.Preferences(root, package)
+prefs.addRoot('common')
+prefs.addPackage('client')
 
-# read configuration
-cfg = ConfigParser.ConfigParser()
-cfg.read(CONFIG)
-
-# establish global preferences
-PRINT_OUTPUT = cfg.getboolean('LOGGING', 'print')
-TIMESTAMP = cfg.get('LOGGING', 'timestamp')
-PORT = cfg.getint('NETWORK', 'port')
-MAX_JOBS = int(eval(cfg.get('PROCESSING', 'max_jobs')))
-PATHS_ENV = []
-PATHS_LIST = cfg.get('PATHS', 'list').split(',')
-
-# construct paths from environment variables
-for envvar in cfg.get('PATHS', 'environment').split(','):
-    if envvar in os.environ:
-        PATHS_ENV.append(envvar)
-
-CLIENT_LOG_STDOUT = cfg.getboolean('CLIENT_LOGGING', 'stdout')
-CLIENT_LOG_FILE = cfg.getboolean('CLIENT_LOGGING', 'file')
-
-RESTART_WAIT = cfg.getint('MISC', 'restart_wait')
-
-# delete temp variables
-del envvar, cfg
-del os, ConfigParser, multiprocessing
+CPU_COUNT = psutil.NUM_CPUS
+MAX_JOBS = int(prefs.getfloat('PROCESSING', 'cpu_mult') * CPU_COUNT)
+PRINT_OUTPUT = prefs.getboolean('LOGGING', 'print')
+TIMESTAMP = prefs.get('LOGGING', 'timestamp')
+PORT = prefs.getint('NETWORK', 'port')
+PATHS_ENV = prefs.getenvlist('PATHS', 'environment')
+PATHS_LIST = prefs.getlist('PATHS', 'list')
+LOG_STDOUT = prefs.getboolean('LOGGING', 'stdout')
+LOG_FILE = prefs.getboolean('LOGGING', 'file')
+RESTART_ENABLED = prefs.getboolean('RESTART', 'enabled')
+RESTART_DELAY = prefs.getint('RESTART', 'delay')
 
 if __name__ == '__main__':
-    import pprint
-
-    local = {}
-    for key, value in locals().items():
-        if key.isupper():
-            local[key] = value
-
-    pprint.pprint(local)
+    comprefs.debug(locals())
