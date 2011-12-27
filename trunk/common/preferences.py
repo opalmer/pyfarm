@@ -165,3 +165,22 @@ def debug(localVars):
 
     pprint.pprint(local)
 # end debug
+
+# local preferences setup
+cwd = os.path.abspath(os.path.dirname(__file__))
+root = os.path.abspath(os.path.join(cwd, ".."))
+package = os.path.abspath(os.path.join(cwd, ".."))
+prefs = Preferences(root, package)
+prefs.addRoot('common')
+
+# local preferences
+LOGGING_STDOUT = prefs.getboolean('LOGGING', 'stdout')
+LOGGING_FILE = prefs.getboolean('LOGGING', 'file')
+LOGGING_EXTENSION = prefs.get('LOGGING', 'extension')
+LOGGING_ROLLOVER = prefs.getboolean('LOGGING', 'rollover')
+LOGGING_ROLLOVER_SIZE = prefs.getint('LOGGING', 'rollover_size') * 1024
+LOGGING_ROLLOVER_COUNT = prefs.getint('LOGGING', 'rollover_count')
+
+
+if __name__ == '__main__':
+    debug(locals())
