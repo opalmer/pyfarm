@@ -180,6 +180,9 @@ LOGGING_EXTENSION = prefs.get('LOGGING', 'extension')
 LOGGING_ROLLOVER = prefs.getboolean('LOGGING', 'rollover')
 LOGGING_ROLLOVER_SIZE = prefs.getint('LOGGING', 'rollover_size') * 1024
 LOGGING_ROLLOVER_COUNT = prefs.getint('LOGGING', 'rollover_count')
+LOGGING_KEYWORD_FORMAT = prefs.get('LOGGING', 'keyword_format')
+LOGGING_DIVISION_LENGTH = prefs.getint('LOGGING', 'division_length')
+LOGGING_DIVISION_SEP = prefs.get('LOGGING', 'division_sep')
 
 
 if __name__ == '__main__':
