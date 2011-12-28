@@ -22,6 +22,7 @@ import os
 import time
 import copy
 import uuid
+import site
 import types
 import socket
 import logging
@@ -31,8 +32,14 @@ from twisted.internet import reactor
 from twisted.python import log
 from twisted.web import xmlrpc, resource
 
+# add common python package
+cwd = os.path.abspath(os.path.dirname(__file__))
+root = os.path.abspath(os.path.join(cwd, "..", ".."))
+package = os.path.abspath(os.path.join(cwd, ".."))
+site.addsitedir(root)
+
 import process
-import loghandler
+from common import loghandler
 import preferences
 
 class Manager(xmlrpc.XMLRPC):
@@ -275,8 +282,10 @@ class Job(object):
             "Log Opened" : loghandler.timestamp(),
             "Hostname" : socket.getfqdn(socket.gethostname())
         }
-        self.log = loghandler.openLog(self.uuid, **self.environ)
-        loghandler.writeHeader(self.log, header)
+
+        stream = loghandler.openStream(uuid=self.uuid, **self.environ)
+        self.log = loghandler.Stream(stream)
+        self.log.keywords(header)
 
         log.msg("creating job instance %s" % self.uuid)
         log.msg("...program: %s" % self.command)
@@ -286,11 +295,12 @@ class Job(object):
         # setup the process, attach a deferred handler to self.exit
         self.running = True
         self.manager.job_count += 1
+        self.log.division("process started")
         self.process = process.TwistedProcess(
-                            self.uuid, self.log,
-                            self.command, self.arguments,
-                            self.environ
-                       )
+            self.uuid, self.log,
+            self.command, self.arguments,
+            self.environ
+        )
         proc = reactor.spawnProcess(self.process, *self.process.args)
         self.process.deferred.addCallback(self.exit)
         self.pid = proc.pid
@@ -312,11 +322,13 @@ class Job(object):
 
         self.exit_code = 1
         self.process.transport.signalProcess('KILL')
+        self.log.division("process killed")
         return True
     # end signal
 
     def exit(self, data):
         '''exit handler called when the process exits'''
+        self.log.division("process complete")
         # update some state information
         self.running = False
         self.end = time.time()
@@ -332,7 +344,7 @@ class Job(object):
             "Log Closed" : loghandler.timestamp(),
             "exit" : self.exit_code
         }
-        loghandler.writeFooter(self.log, footer)
+        self.log.keywords(footer)
         self.log.close()
     # end exit
 # end Job

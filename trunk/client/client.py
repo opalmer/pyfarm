@@ -22,11 +22,18 @@
 import os
 import sys
 import time
+import site
 import types
 import socket
 import logging
 
-from lib import loghandler, preferences, job, system, process
+# add common python package
+cwd = os.path.abspath(os.path.dirname(__file__))
+root = os.path.abspath(os.path.join(cwd, ".."))
+site.addsitedir(root)
+
+from common import loghandler
+from lib import preferences, job, system, process
 
 from twisted.internet import reactor
 from twisted.web import resource, xmlrpc, server

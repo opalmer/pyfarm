@@ -21,18 +21,25 @@
 
 import os
 import copy
+import site
 import types
+import psutil
 import itertools
-import multiprocessing
-
-import loghandler
-import preferences
 
 from twisted.web import xmlrpc
 from twisted.internet import protocol, defer
 from twisted.python import log
 
-CPU_COUNT = multiprocessing.cpu_count()
+# add common python package
+cwd = os.path.abspath(os.path.dirname(__file__))
+root = os.path.abspath(os.path.join(cwd, "..", ".."))
+package = os.path.abspath(os.path.join(cwd, ".."))
+site.addsitedir(root)
+
+from common import loghandler
+import preferences
+
+CPU_COUNT = psutil.NUM_CPUS
 
 class TwistedProcess(protocol.ProcessProtocol):
     '''
@@ -81,12 +88,12 @@ class TwistedProcess(protocol.ProcessProtocol):
 
     def outReceived(self, data):
         '''output received on sys.stdout'''
-        loghandler.writeLine(self.log, data.strip())
+        self.log.write(data.strip())
     # end outReceived
 
     def errReceived(self, data):
         '''output received on sys.stderr'''
-        loghandler.writeLine(self.log, data.strip())
+        self.log.write(data.strip())
     # end errReceived
 
     def processEnded(self, status):
