@@ -120,7 +120,6 @@ class Manager(xmlrpc.XMLRPC):
         return str(job.uuid)
     # end xmlrpc_run
 
-
     def xmlrpc_log(self, uid, split=True):
         '''
         Returns log file for the given uuid

@@ -117,7 +117,17 @@ class Client(xmlrpc.XMLRPC):
     # end xmlrpc_shutdown
 
     def xmlrpc_restart(self, force=False):
-        '''restart the client'''
+        '''
+        restart the client
+
+        :exception xmlrpc.Fault(10):
+            raised if restart was requested when the
+            preference was set to False (and force was not used)
+        '''
+        if not preferences.RESTART_ENABLED and not force:
+            msg = "restart disabled by preference, force not used"
+            raise xmlrpc.Fault(10, msg)
+
         if self.xmlrpc_shutdown(force) and not TEST_MODE:
             global RESTART
             RESTART = True
@@ -217,7 +227,7 @@ reactor.run()
 # shutdown and after we have given the port(s) a chance
 # to release.
 if RESTART:
-    pause = preferences.RESTART_WAIT
+    pause = preferences.RESTART_DELAY
     log.msg("preparing to restart the client, pausing %i seconds" % pause)
     time.sleep(pause)
     args = sys.argv[:]

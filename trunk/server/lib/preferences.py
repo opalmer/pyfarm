@@ -32,7 +32,7 @@ prefs.addPackage('server')
 
 PORT = prefs.getint('NETWORK', 'port')
 RESTART_ENABLED = prefs.getboolean('RESTART', 'enabled')
-RESTART_TIMEOUT = prefs.getint('RESTART', 'wait')
+RESTART_WAIT = prefs.getint('RESTART', 'wait')
 
 if __name__ == '__main__':
     comprefs.debug(locals())
