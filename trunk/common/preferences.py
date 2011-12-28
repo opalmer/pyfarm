@@ -183,6 +183,7 @@ LOGGING_ROLLOVER_COUNT = prefs.getint('LOGGING', 'rollover_count')
 LOGGING_KEYWORD_FORMAT = prefs.get('LOGGING', 'keyword_format')
 LOGGING_DIVISION_LENGTH = prefs.getint('LOGGING', 'division_length')
 LOGGING_DIVISION_SEP = prefs.get('LOGGING', 'division_sep')
+LOGGING_TIMESTAMP = prefs.get('LOGGING', 'timestamp')
 
 
 if __name__ == '__main__':
