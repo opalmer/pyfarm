@@ -184,6 +184,9 @@ LOGGING_KEYWORD_FORMAT = prefs.get('LOGGING', 'keyword_format')
 LOGGING_DIVISION_LENGTH = prefs.getint('LOGGING', 'division_length')
 LOGGING_DIVISION_SEP = prefs.get('LOGGING', 'division_sep')
 LOGGING_TIMESTAMP = prefs.get('LOGGING', 'timestamp')
+SHUTDOWN_ENABLED = prefs.getboolean('SHUTDOWN', 'enabled')
+RESTART_ENABLED = prefs.getboolean('RESTART', 'enabled')
+RESTART_DELAY = prefs.getint('RESTART', 'delay')
 
 
 if __name__ == '__main__':
