@@ -20,8 +20,15 @@
 # along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
+import site
 
 from lib import db, preferences
+
+cwd = os.path.abspath(os.path.dirname(__file__))
+root = os.path.abspath(os.path.join(cwd, ".."))
+site.addsitedir(root)
+
+import common.rpc
 
 from twisted.internet import reactor
 from twisted.web import resource, xmlrpc, server
@@ -30,18 +37,15 @@ from twisted.python import log
 CWD = os.getcwd()
 PID = os.getpid()
 PORT = preferences.PORT
+RESTART = False
 
-class Server(xmlrpc.XMLRPC):
+class Server(common.rpc.Service):
     '''
     Main server class to act as an external interface to the
     data base and job server.
     '''
     def __init__(self):
-        resource.Resource.__init__(self)
-        self.allowNone = True
-        self.useDateTime = True
-
-        # setup sub handlers
+        common.rpc.Service.__init__(self)
     # end __init__
 # end Server
 
