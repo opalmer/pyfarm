@@ -26,8 +26,8 @@ package = os.path.abspath(os.path.join(cwd, ".."))
 site.addsitedir(root)
 
 # setup and load preferences object
-import common.preferences as comprefs
-prefs = comprefs.Preferences(root, package)
+import common.preferences
+prefs = common.preferences.Preferences(root, package)
 prefs.addRoot('common')
 prefs.addPackage('client')
 
@@ -40,8 +40,9 @@ PATHS_ENV = prefs.getenvlist('PATHS', 'environment')
 PATHS_LIST = prefs.getlist('PATHS', 'list')
 LOG_STDOUT = prefs.getboolean('LOGGING', 'stdout')
 LOG_FILE = prefs.getboolean('LOGGING', 'file')
+SHUTDOWN_ENABLED = prefs.getboolean('SHUTDOWN', 'enabled')
 RESTART_ENABLED = prefs.getboolean('RESTART', 'enabled')
 RESTART_DELAY = prefs.getint('RESTART', 'delay')
 
 if __name__ == '__main__':
-    comprefs.debug(locals())
+    common.preferences.debug(locals())
