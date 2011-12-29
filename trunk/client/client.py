@@ -32,6 +32,7 @@ cwd = os.path.abspath(os.path.dirname(__file__))
 root = os.path.abspath(os.path.join(cwd, ".."))
 site.addsitedir(root)
 
+import common.rpc
 from common import loghandler
 from lib import preferences, job, system, process
 
@@ -48,16 +49,14 @@ HOSTNAME = socket.gethostname()
 ADDRESS = socket.gethostbyname(HOSTNAME)
 MASTER = ()
 
-class Client(xmlrpc.XMLRPC):
+class Client(common.rpc.Service):
     '''
     Main xmlrpc service which controls the client.  Most methods
     are handled entirely outside of this class for the purposes of
     separation of service and logic.
     '''
     def __init__(self):
-        resource.Resource.__init__(self)
-        self.allowNone = True
-        self.useDateTime = True
+        common.rpc.Service.__init__(self)
 
         # setup sub handlers
         self.sys = system.SystemInformation()
@@ -71,67 +70,9 @@ class Client(xmlrpc.XMLRPC):
         }
     # end __init__
 
-    def xmlrpc_test_mode(self, value):
-        '''
-        used for testing this will prevent the client from actually restarting
-        or shutting down
-        '''
-        global TEST_MODE
-        TEST_MODE = value
-        log.msg("test mode set to %s" % TEST_MODE)
-    # end xmlrpc_test_mode
-
-    def xmlrpc_ping(self):
-        '''
-        Simply return True.  This call should be used to query
-        if a connection can be opened to the server.
-        '''
-        return True
-    # end xmlrpc_ping
-
-    def xmlrpc_shutdown(self, force=False):
-        '''
-        shutdown the client and reactor
-
-        :param boolean force:
-            if True then terminate running jobs prior to shutdown
-
-        :exception xmlrpc.Fault(9):
-            raised if the shutdown was not forced and there are jobs running
-        '''
-        jobs = self.job.xmlrpc_running()
-
-        if jobs and not force:
-            msg = "cannot shutdown, there are still %i jobs running" % len(jobs)
-            raise xmlrpc.Fault(9, msg)
-
-        elif jobs and force:
-            log.msg("shutdown forced!", logLevel=logging.WARNING)
-            for job in jobs:
-                self.job.xmlrpc_kill(job)
-
-        if not TEST_MODE and not force:
-            reactor.callLater(1.0, reactor.stop)
-
-        return True
-    # end xmlrpc_shutdown
-
-    def xmlrpc_restart(self, force=False):
-        '''
-        restart the client
-
-        :exception xmlrpc.Fault(10):
-            raised if restart was requested when the
-            preference was set to False (and force was not used)
-        '''
-        if not preferences.RESTART_ENABLED and not force:
-            msg = "restart disabled by preference, force not used"
-            raise xmlrpc.Fault(10, msg)
-
-        if self.xmlrpc_shutdown(force) and not TEST_MODE:
-            global RESTART
-            RESTART = True
-    # end xmlrpc_restart
+    def _blockShutdown(self):
+        return self.job.xmlrpc_running()
+    # end _blockShutdown
 
     def xmlrpc_running(self):
         '''returns True if there are jobs marked as running by the manager'''
