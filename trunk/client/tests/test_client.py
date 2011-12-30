@@ -27,7 +27,7 @@ import xmlrpclib
 
 from twisted.web import xmlrpc
 
-rpc = xmlrpclib.ServerProxy("http://localhost:9030", allow_none=True)
+rpc = xmlrpclib.ServerProxy("http://localhost:9031", allow_none=True)
 
 class Base(unittest.TestCase):
     def setUp(self):

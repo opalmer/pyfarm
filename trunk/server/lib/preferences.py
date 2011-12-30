@@ -28,9 +28,8 @@ site.addsitedir(root)
 import common.preferences as comprefs
 prefs = comprefs.Preferences(root, package)
 prefs.addRoot('common')
-prefs.addPackage('server')
 
-PORT = prefs.getint('NETWORK', 'port')
+PORT = prefs.getint('NETWORK', 'server_port')
 RESTART_ENABLED = prefs.getboolean('RESTART', 'enabled')
 RESTART_DELAY = prefs.getint('RESTART', 'delay')
 
