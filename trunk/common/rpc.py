@@ -16,6 +16,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
+import os
 import logging
 
 import preferences
@@ -24,7 +25,6 @@ from twisted.internet import reactor
 from twisted.web import resource, xmlrpc
 from twisted.python import log
 
-RESTART = True
 TEST_MODE = False
 
 class Service(xmlrpc.XMLRPC):
@@ -101,6 +101,7 @@ class Service(xmlrpc.XMLRPC):
         :exception xmlrpc.Fault(11):
             raised if the preferences have disabled the shutdown
         '''
+        os.environ['PYFARM_RESTART'] = 'false'
         if not preferences.SHUTDOWN_ENABLED:
             raise xmlrpc.Fault(11, "shutdown disabled")
 
@@ -112,9 +113,9 @@ class Service(xmlrpc.XMLRPC):
 
         elif block and force:
             log.msg("shutdown forced!", logLevel=logging.WARNING)
-            self._runShutdown()
 
         if not TEST_MODE:
+            self._runShutdown()
             reactor.callLater(1.0, reactor.stop)
 
         return True
@@ -131,7 +132,6 @@ class Service(xmlrpc.XMLRPC):
             raise xmlrpc.Fault(10, "restart disabled")
 
         if self.xmlrpc_shutdown(force) and not TEST_MODE:
-            global RESTART
-            RESTART = True
+            os.environ['PYFARM_RESTART'] = 'true'
     # end xmlrpc_restart
 # end Service

@@ -37,11 +37,10 @@ from common import loghandler
 from lib import preferences, job, system, process
 
 from twisted.internet import reactor
-from twisted.web import resource, xmlrpc, server
+from twisted.web import resource, xmlrpc
+from twisted.web import server as _server
 from twisted.python import log
 
-RESTART = False
-TEST_MODE = False
 CWD = os.getcwd()
 PID = os.getpid()
 PORT = preferences.PORT
@@ -73,6 +72,10 @@ class Client(common.rpc.Service):
     def _blockShutdown(self):
         return self.job.xmlrpc_running()
     # end _blockShutdown
+
+    def _blockRestart(self):
+        return self._blockShutdown()
+    # end _blockRestart
 
     def xmlrpc_running(self):
         '''returns True if there are jobs marked as running by the manager'''
@@ -159,7 +162,7 @@ class Client(common.rpc.Service):
 
 # setup and run the client/reactor
 client = Client()
-reactor.listenTCP(PORT, server.Site(client))
+reactor.listenTCP(PORT, _server.Site(client))
 log.msg("running client at http://%s:%i" % (HOSTNAME, PORT))
 reactor.run()
 

@@ -20,7 +20,10 @@
 # along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
+import sys
+import time
 import site
+import socket
 
 from lib import db, preferences
 
@@ -29,15 +32,18 @@ root = os.path.abspath(os.path.join(cwd, ".."))
 site.addsitedir(root)
 
 import common.rpc
+from common import loghandler
 
 from twisted.internet import reactor
-from twisted.web import resource, xmlrpc, server
+from twisted.web import resource, xmlrpc
+from twisted.web import server as _server
 from twisted.python import log
 
 CWD = os.getcwd()
 PID = os.getpid()
 PORT = preferences.PORT
-RESTART = False
+HOSTNAME = socket.gethostname()
+ADDRESS = socket.gethostbyname(HOSTNAME)
 
 class Server(common.rpc.Service):
     '''
@@ -49,5 +55,27 @@ class Server(common.rpc.Service):
     # end __init__
 # end Server
 
-if __name__ == '__main__':
-    db.tables.init()
+
+# setup and run the server/reactor
+server = Server()
+reactor.listenTCP(PORT, _server.Site(server))
+log.msg("running server at http://%s:%i" % (HOSTNAME, PORT))
+reactor.run()
+
+# If RESTART has been set to True then restart the server
+# script.  This must be done after the reactor and has been
+# shutdown and after we have given the port(s) a chance
+# to release.
+if os.getenv('PYFARM_RESTART') == "true":
+    pause = preferences.RESTART_DELAY
+    log.msg("preparing to restart the server, pausing %i seconds" % pause)
+    time.sleep(pause)
+    args = sys.argv[:]
+
+    args.insert(0, sys.executable)
+
+    if sys.platform == 'win32' or os.name == 'nt':
+        args = ['"%s"' % arg for arg in args]
+
+    os.chdir(CWD)
+    os.execv(sys.executable, args)
