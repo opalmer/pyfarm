@@ -170,7 +170,7 @@ reactor.run()
 # script.  This must be done after the reactor and has been
 # shutdown and after we have given the port(s) a chance
 # to release.
-if RESTART:
+if os.getenv('PYFARM_RESTART') == 'true':
     pause = preferences.RESTART_DELAY
     log.msg("preparing to restart the client, pausing %i seconds" % pause)
     time.sleep(pause)
