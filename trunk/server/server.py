@@ -57,6 +57,7 @@ class Server(common.rpc.Service):
 
 
 # setup and run the server/reactor
+db.tables.init()
 server = Server()
 reactor.listenTCP(PORT, _server.Site(server))
 log.msg("running server at http://%s:%i" % (HOSTNAME, PORT))
