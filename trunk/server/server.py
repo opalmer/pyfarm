@@ -32,7 +32,7 @@ root = os.path.abspath(os.path.join(cwd, ".."))
 site.addsitedir(root)
 
 import common.rpc
-from common import loghandler
+from common import loghandler, multicast
 
 from twisted.internet import reactor
 from twisted.web import resource, xmlrpc
@@ -52,7 +52,17 @@ class Server(common.rpc.Service):
     '''
     def __init__(self):
         common.rpc.Service.__init__(self)
+        self.clients = set()
     # end __init__
+
+    # TODO: test to ensure this works with multiple clients
+    def xmlrpc_multicast(self):
+        '''
+        sends a multicast packet and adds any results
+        to self.clients
+        '''
+        multicast.send(self.clients)
+    # end xmlrpc_multicast
 # end Server
 
 
