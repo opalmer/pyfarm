@@ -33,7 +33,7 @@ root = os.path.abspath(os.path.join(cwd, ".."))
 site.addsitedir(root)
 
 import common.rpc
-from common import loghandler
+from common import loghandler, multicast
 from lib import preferences, job, system, process
 
 from twisted.internet import reactor
@@ -43,10 +43,10 @@ from twisted.python import log
 
 CWD = os.getcwd()
 PID = os.getpid()
-PORT = preferences.PORT
 HOSTNAME = socket.gethostname()
 ADDRESS = socket.gethostbyname(HOSTNAME)
 MASTER = ()
+
 
 class Client(common.rpc.Service):
     '''
@@ -160,10 +160,27 @@ class Client(common.rpc.Service):
     # end xmlrpc_free
 # end Client
 
-# setup and run the client/reactor
+
+def setMaster(data):
+    '''
+    sets the master address which is used to return
+    job information back to a central host for processing
+    '''
+    global MASTER
+    MASTER = data
+    log.msg("master host set to %s:%i" % MASTER)
+# end setMaster
+
+# setup main services
 client = Client()
-reactor.listenTCP(PORT, _server.Site(client))
-log.msg("running client at http://%s:%i" % (HOSTNAME, PORT))
+multicast = multicast.Server()
+multicast.deferred.addCallback(setMaster)
+
+# bind services
+reactor.listenTCP(preferences.CLIENT_PORT, _server.Site(client))
+reactor.listenMulticast(preferences.MULTICAST_PORT, multicast)
+
+log.msg("running client at http://%s:%i" % (HOSTNAME, preferences.CLIENT_PORT))
 reactor.run()
 
 # If RESTART has been set to True then restart the client
