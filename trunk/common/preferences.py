@@ -187,7 +187,9 @@ LOGGING_TIMESTAMP = prefs.get('LOGGING', 'timestamp')
 SHUTDOWN_ENABLED = prefs.getboolean('SHUTDOWN', 'enabled')
 RESTART_ENABLED = prefs.getboolean('RESTART', 'enabled')
 RESTART_DELAY = prefs.getint('RESTART', 'delay')
-
+MULTICAST_GROUP = prefs.get('NETWORK', 'multicast_group')
+MULTICAST_PORT = prefs.getint('NETWORK', 'multicast_port')
+MULTICAST_STRING = prefs.get('NETWORK', 'multicast_string')
 
 if __name__ == '__main__':
     debug(locals())

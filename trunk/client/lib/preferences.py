@@ -35,7 +35,7 @@ CPU_COUNT = psutil.NUM_CPUS
 MAX_JOBS = int(prefs.getfloat('PROCESSING', 'cpu_mult') * CPU_COUNT)
 PRINT_OUTPUT = prefs.getboolean('LOGGING', 'print')
 TIMESTAMP = prefs.get('LOGGING', 'timestamp')
-PORT = prefs.getint('NETWORK', 'client_port')
+CLIENT_PORT = prefs.getint('NETWORK', 'client_port')
 PATHS_ENV = prefs.getenvlist('PATHS', 'environment')
 PATHS_LIST = prefs.getlist('PATHS', 'list')
 LOG_STDOUT = prefs.getboolean('LOGGING', 'stdout')
@@ -43,6 +43,7 @@ LOG_FILE = prefs.getboolean('LOGGING', 'file')
 SHUTDOWN_ENABLED = prefs.getboolean('SHUTDOWN', 'enabled')
 RESTART_ENABLED = prefs.getboolean('RESTART', 'enabled')
 RESTART_DELAY = prefs.getint('RESTART', 'delay')
+MULTICAST_PORT = prefs.getint('NETWORK', 'multicast_port')
 
 if __name__ == '__main__':
     common.preferences.debug(locals())
