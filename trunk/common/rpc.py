@@ -17,7 +17,9 @@
 # along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
+import socket
 import logging
+import xmlrpclib
 
 import preferences
 
@@ -135,3 +137,19 @@ class Service(xmlrpc.XMLRPC):
             os.environ['PYFARM_RESTART'] = 'true'
     # end xmlrpc_restart
 # end Service
+
+def ping(host):
+    '''
+    returns True if we can connect and ping
+    the remote host
+    '''
+    rpc = xmlrpclib.ServerProxy("http://%s" % host, allow_none=True)
+
+    try:
+        rpc.ping()
+        log.msg('successfully pinged %s' % host)
+
+    except socket.gaierror:
+        log.msg('failed to ping %s' % host)
+        return False
+# end ping
