@@ -29,7 +29,7 @@ import common.preferences as comprefs
 prefs = comprefs.Preferences(root, package)
 prefs.addRoot('common')
 
-PORT = prefs.getint('NETWORK', 'server_port')
+SERVER_PORT = prefs.getint('NETWORK', 'server_port')
 RESTART_ENABLED = prefs.getboolean('RESTART', 'enabled')
 RESTART_DELAY = prefs.getint('RESTART', 'delay')
 
