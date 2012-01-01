@@ -24,6 +24,7 @@ import sys
 import time
 import site
 import socket
+import xmlrpclib
 
 from lib import db, preferences
 
@@ -41,7 +42,6 @@ from twisted.python import log
 
 CWD = os.getcwd()
 PID = os.getpid()
-PORT = preferences.PORT
 HOSTNAME = socket.gethostname()
 ADDRESS = socket.gethostbyname(HOSTNAME)
 
@@ -52,7 +52,7 @@ class Server(common.rpc.Service):
     '''
     def __init__(self):
         common.rpc.Service.__init__(self)
-        self.clients = set()
+        self.hosts = set()
     # end __init__
 
     # TODO: test to ensure this works with multiple clients
@@ -61,16 +61,27 @@ class Server(common.rpc.Service):
         sends a multicast packet and adds any results
         to self.clients
         '''
-        multicast.send(self.clients)
+        multicast.send()
     # end xmlrpc_multicast
+
+    def xmlrpc_addHost(self, host):
+        '''
+        adds a host url
+        '''
+        if host not in self.hosts:
+            log.msg("adding host %s" % host)
+
+        self.hosts.add(host)
+        common.rpc.ping(host)
+    # end xmlrpc_addHost
 # end Server
 
 
 # setup and run the server/reactor
 db.tables.init()
 server = Server()
-reactor.listenTCP(PORT, _server.Site(server))
-log.msg("running server at http://%s:%i" % (HOSTNAME, PORT))
+reactor.listenTCP(preferences.SERVER_PORT, _server.Site(server))
+log.msg("running server at http://%s:%i" % (HOSTNAME, preferences.SERVER_PORT))
 reactor.run()
 
 # If RESTART has been set to True then restart the server
