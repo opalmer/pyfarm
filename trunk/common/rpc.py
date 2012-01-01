@@ -149,7 +149,7 @@ def ping(host):
         rpc.ping()
         log.msg('successfully pinged %s' % host)
 
-    except socket.gaierror:
+    except:
         log.msg('failed to ping %s' % host)
         return False
 # end ping
