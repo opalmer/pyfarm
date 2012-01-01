@@ -191,7 +191,7 @@ MULTICAST_GROUP = prefs.get('NETWORK', 'multicast_group')
 MULTICAST_PORT = prefs.getint('NETWORK', 'multicast_port')
 MULTICAST_STRING = prefs.get('NETWORK', 'multicast_string')
 SERVER_PORT = prefs.getint('NETWORK', 'server_port')
-CLIENT_PORT = prefs.getint('NETWORK', 'clien_port')
+CLIENT_PORT = prefs.getint('NETWORK', 'client_port')
 
 
 if __name__ == '__main__':
