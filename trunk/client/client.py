@@ -168,7 +168,15 @@ def setMaster(data):
     '''
     global MASTER
     MASTER = data
-    log.msg("master host set to %s:%i" % MASTER)
+
+    if MASTER:
+        try:
+            log.msg("master host set to %s:%i" % MASTER)
+
+        # the above will fail if we Ctrl+C out
+        # of the program
+        except TypeError:
+            pass
 # end setMaster
 
 # setup main services
