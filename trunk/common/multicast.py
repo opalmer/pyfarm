@@ -17,7 +17,9 @@
 # along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
 import re
+import types
 import socket
+import xmlrpclib
 
 import preferences
 
@@ -91,6 +93,10 @@ class Server(protocol.DatagramProtocol):
     # end startProtocol
 
     def datagramReceived(self, datagram, address):
+        if self.deferred.called:
+            log.msg("ignoring multicast, master already contacted")
+            return
+
         url = None
         preifx = None
 
@@ -109,15 +115,23 @@ class Server(protocol.DatagramProtocol):
         # trigger the deferred callback and reply back with
         # our hostname and port
         elif prefix == preferences.MULTICAST_STRING:
-            log.msg("incoming multicast '%s' from %s" % (url, str(address))
-            self.deferred.callback(url)
+            log.msg("incoming multicast '%s' from %s" % (datagram, str(address)))
+            url = getUrl(datagram)
 
             # create and send our reply back to the server
-            args = (preferences.MULTICAST_STRING, HOSTNAME, prefereces.CLIENT_PORT)
+            args = (preferences.MULTICAST_STRING, HOSTNAME, preferences.CLIENT_PORT)
             reply = "%s_%s:%i" % args
             log_args = (reply, str(address))
-            log.msg("sending reply '%s' to multicast address %s" % log_args)
-            self.transport.write(reply, address)
+
+            # so long as the callback has not been called yet
+            # set the master address higher up the chain
+            self.deferred.callback(url)
+
+            # send hostname and port over xmlrpc to server
+            host = "%s:%i" % (HOSTNAME, preferences.CLIENT_PORT)
+            log.msg("sending host string %s to %s" % (host, url))
+            rpc = xmlrpclib.ServerProxy("http://%s" % url, allow_none=True)
+            rpc.addHost(host)
 
         elif prefix and url:
             log.msg("prefix and url are populated but contain unexpected values")
@@ -131,18 +145,12 @@ class Client(protocol.DatagramProtocol):
     protocol to receive a multicast reply after the initial
     packet has been sent.
     '''
-    def __init__(self):
-        self.deferred = defer.Deferred()
-    # end __init__
-
     def datagramReceived(self, datagram, address):
-        url = getUrl(datagram)
-        log.msg("receieved multicast reply '%s' from %s" % (datagram, address))
-        self.deferred.callback(url)
+        pass
     # end datagramReceived
 # end Client
 
-def send(clients, hostname=None, port=None):
+def send(hostname=None, port=None):
     '''
     sends a multicast signal to all hosts that
     are part of the mulitcast group
@@ -163,11 +171,14 @@ def send(clients, hostname=None, port=None):
 
     # send the data unless we hit an error
     client = Client()
-    client.deferred.addCallback(clients.add)
     multicast = reactor.listenUDP(0, client)
     log.msg("sending multicast '%s' to %s" % (data, str(dest)))
+
+    # write data to the mulicast then close
+    # the connection, no need to listen for data
     try:
         multicast.write(data, dest)
+        multicast.stopListening()
 
     except socket.error, error:
         log.msg("error sending multicast: %s" % error)
