@@ -38,15 +38,13 @@ hosts = sql.Table('pyfarm_hosts', metadata,
       sql.Column('hostname', sql.String(36)),
       sql.Column('ip', sql.String(16)),
       sql.Column('subnet', sql.String(16)),
-      sql.Column('broadcast', sql.String(16)),
       sql.Column('ram_max', sql.Integer),
       sql.Column('cpu_count', sql.Integer),
       sql.Column('online', sql.Boolean),
       sql.Column('software', sql.String(256)),
       sql.Column('hold', sql.Boolean, default=False),
       sql.Column('running', sql.Integer, default=0),
-      sql.Column('frames', sql.String(128), default=""),
-      sql.Column('cpus', sql.Integer)
+      sql.Column('frames', sql.String(128), default="")
 )
 
 # create jobs table
