@@ -17,9 +17,9 @@
 # along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
+import types
 import socket
 import logging
-import xmlrpclib
 
 import preferences
 
@@ -138,6 +138,81 @@ class Service(xmlrpc.XMLRPC):
     # end xmlrpc_restart
 # end Service
 
+class Connection(object):
+    '''
+    Generic rpc object which implements the Twisted xmlrpc
+    proxy object.  The constructor for this class will
+    either except a hostname and port or a hostname with
+    the port included.
+
+    >>> a = RPC('hostname', 9030)
+    >>> b = RPC('hostname:9030')
+
+    :param string hostname:
+        the hostname or hostname and port to connect to
+
+    :param integer port:
+        the port to connect to
+
+    :param callable success:
+        method or function to call on a successfull result
+
+    :param callable failure
+    method or function to call failed call
+
+    :exception RuntimeError:
+        raised if we somehow end up without a hostname
+        and/port port
+    '''
+    def __init__(self, hostname,
+                    port=None, success=None, failure=None, timeout=30.0):
+        # split the hostname into port and hostname if
+        # port is None and ":" in hostname
+        if isinstance(port, types.NoneType) and ':' in hostname:
+            hostname, port = hostname.split(":")
+
+        # be sure everything was setup properly
+        if not hostname or not port:
+            raise RuntimeError("hostname or port not passed to RPC")
+
+        self.hostname = hostname
+        self.port = int(port)
+        self.__success = success
+        self.__failure = failure
+        self.__timeout = timeout
+
+        # construct the proxy object
+        self.url = "http://%s:%i" % (self.hostname, self.port)
+        self.proxy = xmlrpc.Proxy(
+            self.url,
+            allowNone=True,
+            timeout=self.__timeout
+        )
+    # end __init__
+
+    def __fail(self, *args):
+        '''
+        If no other deferred error handlers are defined, this will
+        be the default
+        '''
+        log.msg("rpc call to %s failed: %s" % (self.url, str(args)))
+    # end __fail
+
+    def call(self, method, *args, success=None, failure=None):
+        success = success or self.__success
+        failure = failure or self.__failure or self.__fail
+
+        remote = self.proxy.callRemote(method, *args)
+
+        if success:
+            remote.addCallback(success)
+
+        if failure:
+            remote.addErrback(failure)
+    # end call
+# end Connection
+
+
 def ping(host):
     '''
     returns True if we can connect and ping
@@ -153,3 +228,7 @@ def ping(host):
         log.msg('failed to ping %s' % host)
         return False
 # end ping
+
+if __name__ == '__main__':
+    con = Connection('test', 9030)
+    print con.test
