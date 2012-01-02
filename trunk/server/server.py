@@ -66,13 +66,34 @@ class Server(common.rpc.Service):
 
     def xmlrpc_addHost(self, host):
         '''
-        adds a host url
+        adds a host url and sets up the
+        host in the database
         '''
         if host not in self.hosts:
             log.msg("adding host %s" % host)
 
+        # if the host is not online, do nothing
+        #if not common.rpc.ping(host):
+            #return False
+
         self.hosts.add(host)
-        common.rpc.ping(host)
+        hostname, port = host.split(":")
+        #rpc = xmlrpclib.ServerProxy("http://%s" % host, allow_none=True)
+        #print "============", rpc.net.fqdn()
+        #data = {
+            #"hostname" : rpc.net.fqdn(),
+            #"ip" : rpc.net.ip(),
+            #"subnet" : rpc.net.subnet(),
+            #"ram_max" : rpc.sys.ram_total(),
+            #"cpu_count" : rpc.sys.cpu_count(),
+            #"online" : rpc.online(),
+            #"software" : ""
+        #}
+        #print data
+
+        #insert = db.tables.hosts.insert()
+        #insert.execute(data)
+
     # end xmlrpc_addHost
 # end Server
 
