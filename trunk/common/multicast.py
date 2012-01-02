@@ -24,6 +24,7 @@ import xmlrpclib
 import preferences
 
 from twisted.python import log
+from twisted.web.xmlrpc import Proxy
 from twisted.internet import protocol, reactor, defer
 
 HOSTNAME = socket.getfqdn(socket.gethostname())
@@ -128,10 +129,14 @@ class Server(protocol.DatagramProtocol):
             self.deferred.callback(url)
 
             # send hostname and port over xmlrpc to server
-            host = "%s:%i" % (HOSTNAME, preferences.CLIENT_PORT)
+            host = "%s:%i" % (HOSTNAME, preferences.SERVER_PORT)
             log.msg("sending host string %s to %s" % (host, url))
-            rpc = xmlrpclib.ServerProxy("http://%s" % url, allow_none=True)
-            rpc.addHost(host)
+            proxy = Proxy("http://%s" % host)
+            proxy.callRemote('addHost', host)
+
+
+            #rpc = xmlrpclib.ServerProxy("http://%s" % url, allow_none=True, verbose=True)
+            #rpc.addHost(host)
 
         elif prefix and url:
             log.msg("prefix and url are populated but contain unexpected values")
