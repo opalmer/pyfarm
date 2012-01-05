@@ -22,32 +22,36 @@ import ConfigParser
 
 from twisted.python import log
 
+cwd = os.path.dirname(os.path.abspath(__file__))
+root = os.path.abspath(os.path.join(cwd, ".."))
+
+FILES = []
+FILENAMES = []
+
+# ensure there are not any duplicate configuration file names
+# and build a list of all configuration files
+for root, dirs, files in os.walk(root):
+    for filename in files:
+        path = os.path.join(root, filename)
+        if path.endswith(".ini"):
+            name = os.path.basename(path)
+
+            # raise an exception if we find two files with the same name
+            if name in FILENAMES:
+                raise RuntimeError("duplicate config name '%s'" % name)
+
+            FILES.append(path)
+            FILENAMES.append(name)
+
+
 class Preferences(object):
     '''
     Loads multiple preference files onto a single object
 
     :exception IOError:
-        raised if we have trouble finding the configuration
-        directories or files
+        raised if we can't find requested preferences
     '''
-    def __init__(self, root, package):
-        self.__root = root
-        self.__package = package
-
-        # main configuration directories
-        self.CFG_ROOT = os.path.join(self.__root, "etc")
-        self.CFG_PACKAGE = os.path.join(self.__package, "etc")
-
-        # ensure the main configuration directory exists
-        if not os.path.isdir(self.CFG_ROOT):
-            raise IOError("root etc directory %s" % self.CFG_ROOT)
-
-        # ensure the package configuration directory exists
-        if not os.path.isdir(self.CFG_PACKAGE):
-            error = "package etc directory does not exist %s" % self.CFG_PACKAGE
-            raise IOError(error)
-
-        # setup global config parser
+    def __init__(self):
         self.cfg = ConfigParser.ConfigParser()
     # end __init__
 
@@ -63,18 +67,21 @@ class Preferences(object):
         return name
     # end __name
 
-    def __find(self, root, name):
+    def __find(self, name):
         '''
-        returns the path to the file or raises an
-        OSError if it cannot be found
+        returns the full path to the configuration file matching
+        name
+
+        :exception OSError:
+            raised if we fail to find a file matching name
         '''
         name = self.__name(name)
-        path = os.path.join(root, name)
 
-        if not os.path.isfile(path):
-            raise OSError("no such configuration %s" % path)
+        for path in FILES:
+            if path.endswith(name):
+                return path
 
-        return path
+        raise OSError("no configuration file '%s'" % name)
     # end __find
 
     def __call(self, call, section, option, default):
@@ -102,24 +109,16 @@ class Preferences(object):
         return values
     # end __getlist
 
-    def read(self, path):
+    def read(self, name):
         '''
         reads a file into the config parser and
-        logs the entry
+        logs the entry or raises an exception if the
+        file cannot be found
         '''
+        path = self.__find(name)
         self.cfg.read(path)
         log.msg("loaded config %s" % path)
     # end read
-
-    def addRoot(self, name):
-        path = self.__find(self.CFG_ROOT, name)
-        self.read(path)
-    # end addRoot
-
-    def addPackage(self, name):
-        path = self.__find(self.CFG_PACKAGE, name)
-        self.read(path)
-    # end addPackage
 
     def get(self, section, option, default=None):
         return self.__call(self.cfg.get, section, option, default)
@@ -160,18 +159,15 @@ def debug(localVars):
     '''pretty prints the current preferences'''
     local = {}
     for key, value in localVars.items():
-        if key.isupper():
+        if key.isupper() and key not in ('FILES', 'FILENAMES'):
             local[key] = value
 
     pprint.pprint(local)
 # end debug
 
 # local preferences setup
-cwd = os.path.abspath(os.path.dirname(__file__))
-root = os.path.abspath(os.path.join(cwd, ".."))
-package = os.path.abspath(os.path.join(cwd, ".."))
-prefs = Preferences(root, package)
-prefs.addRoot('common')
+prefs = Preferences()
+prefs.read('common')
 
 # local preferences
 LOGGING_STDOUT = prefs.getboolean('LOGGING', 'stdout')
