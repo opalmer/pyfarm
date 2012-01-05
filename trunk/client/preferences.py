@@ -17,13 +17,11 @@
 # along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
-import site
 import psutil
 
 cwd = os.path.abspath(os.path.dirname(__file__))
 root = os.path.abspath(os.path.join(cwd, "..", ".."))
 package = os.path.abspath(os.path.join(cwd, ".."))
-site.addsitedir(root)
 
 # setup and load preferences object
 import common.preferences

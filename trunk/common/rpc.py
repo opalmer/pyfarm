@@ -198,7 +198,7 @@ class Connection(object):
         log.msg("rpc call to %s failed: %s" % (self.url, str(args)))
     # end __fail
 
-    def call(self, method, *args, success=None, failure=None):
+    def call(self, method, args, success=None, failure=None):
         success = success or self.__success
         failure = failure or self.__failure or self.__fail
 

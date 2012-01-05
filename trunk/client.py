@@ -22,19 +22,12 @@
 import os
 import sys
 import time
-import site
 import types
 import socket
 import logging
 
-# add common python package
-cwd = os.path.abspath(os.path.dirname(__file__))
-root = os.path.abspath(os.path.join(cwd, ".."))
-site.addsitedir(root)
-
-import common.rpc
-from common import loghandler, multicast
-from lib import preferences, job, system, process
+from client import preferences, job, system, process
+from common import loghandler, multicast, rpc
 
 from twisted.internet import reactor
 from twisted.web import resource, xmlrpc
@@ -48,14 +41,14 @@ ADDRESS = socket.gethostbyname(HOSTNAME)
 MASTER = ()
 
 
-class Client(common.rpc.Service):
+class Client(rpc.Service):
     '''
     Main xmlrpc service which controls the client.  Most methods
     are handled entirely outside of this class for the purposes of
     separation of service and logic.
     '''
     def __init__(self):
-        common.rpc.Service.__init__(self)
+        rpc.Service.__init__(self)
 
         # setup sub handlers
         self.sys = system.SystemInformation()
