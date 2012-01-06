@@ -16,18 +16,10 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
-import os
-import site
+import common.preferences
 
-cwd = os.path.abspath(os.path.dirname(__file__))
-root = os.path.abspath(os.path.join(cwd, "..", ".."))
-package = os.path.abspath(os.path.join(cwd, ".."))
-site.addsitedir(root)
-
-# setup and load preferences object
-import common.preferences as comprefs
-prefs = comprefs.Preferences(root, package)
-prefs.addRoot('common')
+prefs = common.preferences.Preferences('server')
+prefs.read('common')
 
 SERVER_PORT = prefs.getint('NETWORK', 'server_port')
 RESTART_ENABLED = prefs.getboolean('RESTART', 'enabled')

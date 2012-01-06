@@ -19,9 +19,8 @@
 import os
 import psutil
 
-
-# setup and load preferences object
 import common.preferences
+
 prefs = common.preferences.Preferences('client')
 prefs.read('common')
 prefs.read('client')

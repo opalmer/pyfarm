@@ -16,19 +16,12 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
-import os
-import site
 import types
 
-cwd = os.path.abspath(os.path.dirname(__file__))
-root = os.path.abspath(os.path.join(cwd, "..", "..", ".."))
-package = os.path.abspath(os.path.join(cwd, "..", ".."))
-site.addsitedir(root)
+import common.preferences
 
-# setup and load preferences object
-import common.preferences as comprefs
-prefs = comprefs.Preferences(root, package)
-prefs.addPackage('database')
+prefs = common.preferences.Preferences('database')
+prefs.read('database')
 
 def getUrl():
     '''returns the sql url based on preferences'''

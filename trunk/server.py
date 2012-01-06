@@ -22,15 +22,9 @@
 import os
 import sys
 import time
-import site
 import socket
-import xmlrpclib
 
-from lib import db, preferences
-
-cwd = os.path.abspath(os.path.dirname(__file__))
-root = os.path.abspath(os.path.join(cwd, ".."))
-site.addsitedir(root)
+from server import db, preferences
 
 import common.rpc
 from common import loghandler, multicast
