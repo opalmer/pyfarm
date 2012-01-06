@@ -17,10 +17,14 @@
 # along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
+import sys
 import pprint
 import ConfigParser
 
 from twisted.python import log
+
+if not os.getenv('PYFARM_DISABLE_STD_LOGGING'):
+    log.startLogging(sys.stdout)
 
 cwd = os.path.dirname(os.path.abspath(__file__))
 root = os.path.abspath(os.path.join(cwd, ".."))
@@ -43,7 +47,6 @@ for root, dirs, files in os.walk(root):
             FILES.append(path)
             FILENAMES.append(name)
 
-
 class Preferences(object):
     '''
     Loads multiple preference files onto a single object
@@ -51,8 +54,9 @@ class Preferences(object):
     :exception IOError:
         raised if we can't find requested preferences
     '''
-    def __init__(self):
+    def __init__(self, name='default'):
         self.cfg = ConfigParser.ConfigParser()
+        self.name = name
     # end __init__
 
     def __name(self, name):
@@ -117,7 +121,7 @@ class Preferences(object):
         '''
         path = self.__find(name)
         self.cfg.read(path)
-        log.msg("loaded config %s" % path)
+        log.msg("%s loaded config %s" % (self.name, path))
     # end read
 
     def get(self, section, option, default=None):
@@ -166,7 +170,7 @@ def debug(localVars):
 # end debug
 
 # local preferences setup
-prefs = Preferences()
+prefs = Preferences('common')
 prefs.read('common')
 
 # local preferences
