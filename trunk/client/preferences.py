@@ -19,15 +19,12 @@
 import os
 import psutil
 
-cwd = os.path.abspath(os.path.dirname(__file__))
-root = os.path.abspath(os.path.join(cwd, "..", ".."))
-package = os.path.abspath(os.path.join(cwd, ".."))
 
 # setup and load preferences object
 import common.preferences
-prefs = common.preferences.Preferences(root, package)
-prefs.addRoot('common')
-prefs.addPackage('client')
+prefs = common.preferences.Preferences()
+prefs.read('common')
+prefs.read('client')
 
 CPU_COUNT = psutil.NUM_CPUS
 MAX_JOBS = int(prefs.getfloat('PROCESSING', 'cpu_mult') * CPU_COUNT)
@@ -36,8 +33,8 @@ TIMESTAMP = prefs.get('LOGGING', 'timestamp')
 CLIENT_PORT = prefs.getint('NETWORK', 'client_port')
 PATHS_ENV = prefs.getenvlist('PATHS', 'environment')
 PATHS_LIST = prefs.getlist('PATHS', 'list')
-LOG_STDOUT = prefs.getboolean('LOGGING', 'stdout')
-LOG_FILE = prefs.getboolean('LOGGING', 'file')
+LOGGING_STDOUT = prefs.getboolean('LOGGING', 'stdout')
+LOGGING_FILE = prefs.getboolean('LOGGING', 'file')
 SHUTDOWN_ENABLED = prefs.getboolean('SHUTDOWN', 'enabled')
 RESTART_ENABLED = prefs.getboolean('RESTART', 'enabled')
 RESTART_DELAY = prefs.getint('RESTART', 'delay')
