@@ -46,7 +46,6 @@ for root, dirs, files in os.walk(root):
 
             FILES.append(path)
             FILENAMES.append(name)
-            print path
 
 class Preferences(object):
     '''
