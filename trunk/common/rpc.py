@@ -165,7 +165,7 @@ class Connection(object):
         and/port port
     '''
     def __init__(self, hostname,
-                    port=None, success=None, failure=None, timeout=30.0):
+                    port=None, success=None, failure=None):
         # split the hostname into port and hostname if
         # port is None and ":" in hostname
         if isinstance(port, types.NoneType) and ':' in hostname:
@@ -179,14 +179,12 @@ class Connection(object):
         self.port = int(port)
         self.__success = success
         self.__failure = failure
-        self.__timeout = timeout
 
         # construct the proxy object
         self.url = "http://%s:%i" % (self.hostname, self.port)
         self.proxy = xmlrpc.Proxy(
             self.url,
-            allowNone=True,
-            timeout=self.__timeout
+            allowNone=True
         )
     # end __init__
 
@@ -198,7 +196,8 @@ class Connection(object):
         log.msg("rpc call to %s failed: %s" % (self.url, str(args)))
     # end __fail
 
-    def call(self, method, args, success=None, failure=None):
+    def call(self, method, args=None, success=None, failure=None):
+        args = args or []
         success = success or self.__success
         failure = failure or self.__failure or self.__fail
 

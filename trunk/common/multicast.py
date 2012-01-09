@@ -106,7 +106,7 @@ class Server(protocol.DatagramProtocol):
             prefix, url = datagram.split("_")
 
         else:
-            raise RuntimeError("unexpected type in datagram")
+            raise TypeError("unexpected type in datagram")
 
         # if the prefix or url is not populated...then we have a problem
         if prefix == None or url == None:
@@ -118,25 +118,21 @@ class Server(protocol.DatagramProtocol):
         elif prefix == preferences.MULTICAST_STRING:
             log.msg("incoming multicast '%s' from %s" % (datagram, str(address)))
             url = getUrl(datagram)
+            self.deferred.callback(url)
 
             # create and send our reply back to the server
             args = (preferences.MULTICAST_STRING, HOSTNAME, preferences.CLIENT_PORT)
             reply = "%s_%s:%i" % args
             log_args = (reply, str(address))
 
-            # so long as the callback has not been called yet
-            # set the master address higher up the chain
-            self.deferred.callback(url)
-
             # send hostname and port over xmlrpc to server
-            host = "%s:%i" % (HOSTNAME, preferences.SERVER_PORT)
-            log.msg("sending host string %s to %s" % (host, url))
-            proxy = Proxy("http://%s" % host)
-            proxy.callRemote('addHost', host)
+            client = "%s:%i" % (HOSTNAME, preferences.CLIENT_PORT)
+            server = "%s:%i" % (address[0], preferences.SERVER_PORT)
+            log.msg("sending host string %s to %s" % (client, server))
 
-
-            #rpc = xmlrpclib.ServerProxy("http://%s" % url, allow_none=True, verbose=True)
-            #rpc.addHost(host)
+            # connect to and call the remote method
+            proxy = Proxy("http://%s" % server)
+            proxy.callRemote('addHost', (client))
 
         elif prefix and url:
             log.msg("prefix and url are populated but contain unexpected values")
@@ -144,16 +140,6 @@ class Server(protocol.DatagramProtocol):
     # end datagramReceived
 # end Server
 
-
-class Client(protocol.DatagramProtocol):
-    '''
-    protocol to receive a multicast reply after the initial
-    packet has been sent.
-    '''
-    def datagramReceived(self, datagram, address):
-        pass
-    # end datagramReceived
-# end Client
 
 def send(hostname=None, port=None):
     '''
@@ -175,7 +161,7 @@ def send(hostname=None, port=None):
     dest = (preferences.MULTICAST_GROUP, preferences.MULTICAST_PORT)
 
     # send the data unless we hit an error
-    client = Client()
+    client = protocol.DatagramProtocol()
     multicast = reactor.listenUDP(0, client)
     log.msg("sending multicast '%s' to %s" % (data, str(dest)))
 

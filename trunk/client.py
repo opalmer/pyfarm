@@ -154,26 +154,44 @@ class Client(rpc.Service):
 # end Client
 
 
-def setMaster(data):
+def setMaster(data, force=False):
     '''
     sets the master address which is used to return
     job information back to a central host for processing
     '''
+    # ensure we will be able to split the incoming data
+    if not ":" in data:
+        raise RuntimeError("expected host separator ':' is not in '%s'" % data)
+
+    # once we attempt the split ensure it sets the values to the expected
+    # data
+    try:
+        hostname, port = data.split(":")
+
+    except ValueError:
+        raise ValueError("failed to split data '%s' into two components" % data)
+
+    # ensure the port variable can be converted to an integer
+    if not port.isdigit():
+        raise TypeError("value '%s' for port argument is not an integer" % port)
+    else:
+        port = int(port)
+
+    # query and/or set the master address
     global MASTER
-    MASTER = data
+    if not MASTER:
+        MASTER = (hostname, port)
+        print "master is now",MASTER
+    elif MASTER == (hostname, port):
+        print "master already set to",MASTER
 
-    if MASTER:
-        try:
-            log.msg("master host set to %s:%i" % MASTER)
-
-        # the above will fail if we Ctrl+C out
-        # of the program
-        except TypeError:
-            pass
+    elif not force:
+        print "cannot new master without using force"
 # end setMaster
 
 # setup main services
 client = Client()
+
 multicast = multicast.Server()
 multicast.deferred.addCallback(setMaster)
 
