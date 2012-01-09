@@ -30,6 +30,7 @@ def getUrl():
     # add the driver if it was provided in the preferences
     if DB_DRIVER:
         url += "+%s" % DB_DRIVER
+        print "====",url
 
     # the start of the url changes slightly for sqlite connections
     url += "://"
@@ -66,5 +67,6 @@ DB_URL = getUrl()
 DB_REBUILD = prefs.getboolean('DATABASE', 'rebuild')
 DB_ECHO = prefs.getboolean('DATABASE', 'echo')
 
+
 if __name__ == '__main__':
-    comprefs.debug(locals())
+    common.preferences.debug(locals())
