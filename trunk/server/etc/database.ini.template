@@ -15,13 +15,13 @@
 ; along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
 [DATABASE-PGSQL]
-host = ; host to connect to for database, if none is provided localhost is used
-port = ; port which database is served on
+host = # host to connect to for database, if none is provided localhost is used
+port = # port which database is served on
 user = <user to authenticate>
 pass = <password to authenticate>
 name = <name of database to use>
 engine = <database engine to use (mysql, postgresql, etc)>
-driver = ; used to specify the python module to drive the connection and queries
+driver = # used to specify the python module to drive the connection and queries
 
 [DATABASE-SQLITE]
 name = pyfarm.db
