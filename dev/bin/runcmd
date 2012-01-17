@@ -1,0 +1,68 @@
+#!/usr/bin/env python
+#
+# This file is part of PyFarm.
+# Copyright (C) 2008-2012 Oliver Palmer
+#
+# PyFarm is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# PyFarm is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
+
+from __future__ import with_statement
+
+import os
+import sys
+import shutil
+import socket
+import paramiko
+import tempfile
+
+HOSTS = []
+
+root = os.path.abspath(os.path.join(os.path.abspath(__file__), '..', '..'))
+hostlist = os.path.join(root, 'etc', 'push_hosts')
+pyfarm = os.path.abspath(os.path.join(root, '..'))
+sys.path.append(root)
+
+# get hosts to push code to (LINUX only [for now])
+with open(hostlist, 'r') as hosts:
+    for line in hosts:
+        HOSTS.append(line.strip())
+
+def execute(ssh, hostname, command):
+    '''executes a command via the provided ssh connection'''
+    stdin, stdout, stderr = ssh.exec_command(command)
+    hostname = hostname.upper()
+
+    print "="*50
+    for line in stdout:
+        yield "%s: %s" % (hostname, line.split("\n")[:-1][0])
+# end line
+
+for hostname in HOSTS:
+    try:
+        ip = socket.gethostbyname(hostname) # attempt to get the ip from hostname
+        if not ip.startswith("10"):
+            print "skipping %s, wrong ip from dns" % hostname
+            continue
+
+    except socket.gaierror:
+        print "skipping %s, no such host" % hostname
+        continue
+
+    ssh = paramiko.SSHClient()
+    ssh.load_system_host_keys()
+    ssh.connect(hostname, username='render', password='123')
+
+    for line in execute(ssh, hostname, " ".join(sys.argv[1:])):
+        print line
+
+    ssh.close()
