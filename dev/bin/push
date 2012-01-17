@@ -1,0 +1,111 @@
+#!/usr/bin/env python
+#
+# This file is part of PyFarm.
+# Copyright (C) 2008-2012 Oliver Palmer
+#
+# PyFarm is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# PyFarm is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+from __future__ import with_statement
+
+import os
+import sys
+import shutil
+import socket
+import paramiko
+import tempfile
+
+HOSTS = []
+EXCLUSIONS = ("deprecated", ".git", "dev", ".idea", ".pyc")
+TEMPDIR = tempfile.gettempdir()
+LOCAL_TAR = os.path.join(TEMPDIR, 'pyfarm.tar')
+LOCAL_DIR = os.path.join(TEMPDIR, 'pyfarm')
+
+root = os.path.abspath(os.path.join(os.path.abspath(__file__), '..', '..'))
+hostlist = os.path.join(root, 'etc', 'push_hosts')
+pyfarm = os.path.abspath(os.path.join(root, '..'))
+sys.path.append(root)
+
+from lib import sftp
+
+def exclude(name):
+    for exclusion in EXCLUSIONS:
+        if exclusion in name:
+            return True
+    return False
+# end exclude
+
+def ssh(hostname):
+    '''creates and returns a ssh connection'''
+    client = paramiko.SSHClient()
+    client.load_system_host_keys()
+    client.connect(hostname, username='render', password='123')
+    return client
+# end ssh
+
+
+# get hosts to push code to (LINUX only [for now])
+with open(hostlist, 'r') as hosts:
+    for line in hosts:
+        HOSTS.append(line.strip())
+
+# clear the existing directory
+if os.path.isdir(LOCAL_DIR):
+    shutil.rmtree(LOCAL_DIR, ignore_errors=True)
+
+os.makedirs(LOCAL_DIR)
+for root, dirs, files in os.walk(pyfarm):
+    if exclude(root):
+        continue
+
+    for name in files:
+        if exclude(name):
+            continue
+
+        src = os.path.join(root, name)
+        dst = src.replace(pyfarm, LOCAL_DIR)
+        dstroot = os.path.dirname(dst)
+
+        if not os.path.isdir(dstroot):
+            os.makedirs(dstroot)
+
+        shutil.copy(src, dst)
+
+os.system("cd %s && rm -f pyfarm.tar && tar cf pyfarm.tar pyfarm" % (TEMPDIR))
+
+for hostname in HOSTS:
+    try:
+        ip = socket.gethostbyname(hostname) # attempt to get the ip from hostname
+        if not ip.startswith("10"):
+            print "skipping %s, wrong ip from dns" % hostname
+            continue
+
+    except socket.gaierror:
+        print "skipping %s, no such host" % hostname
+        continue
+
+    remote = ssh(hostname)
+
+    # remove old files
+    stdin, stdout, stderr = remote.exec_command("rm -rf pyfarm*")
+
+    # upload new files
+    with sftp.Server('render', '123', hostname) as server:
+        server.upload(LOCAL_TAR, 'pyfarm.tar')
+
+    # extra new files
+    stdin, stdout, stderr = remote.exec_command("tar xf pyfarm.tar; rm -f pyfarm.tar")
+    print "pushed %s to %s" % (pyfarm, hostname)
+
+    remote.close()
