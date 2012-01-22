@@ -22,15 +22,17 @@ import os
 import time
 import atexit
 import psutil
+import signal
 import tempfile
 
 from loghandler import log
 
-# establish and create LOCK_ROOT if it does not exist
+KILL_SLEEP = 2
 LOCK_ROOT = os.path.join(tempfile.gettempdir(), 'pyfarm', 'lock')
+
+# create root lock folder if it does not exist
 if not os.path.isdir(LOCK_ROOT):
     os.makedirs(LOCK_ROOT)
-
 
 class ProcessLockError(Exception):
     '''raised when we had trouble acquiring a lock'''
@@ -126,6 +128,10 @@ class ProcessLock(object):
     :param boolean force:
         forces a process to unlock on creation of the ProcessLock
 
+    :param boolean kill:
+        kills any currently running process before attempting to acquire
+        a lock
+
     :param boolean register:
         registers an exit handler which will remove the lock file
         with Python exits
@@ -133,9 +139,18 @@ class ProcessLock(object):
     :exception ProcessLockError:
         raised if we failed to acquire a lock
     '''
-    def __init__(self, name, pid=None, force=False, wait=False, register=True):
+    def __init__(self, name, pid=None, force=False, wait=False, kill=False,
+                 register=True):
         self.name = name
-        self.lock = LockFile(name, pid or os.getpid())
+        self.pid = pid or os.getpid()
+        self.lock = LockFile(name, self.pid)
+
+        if kill and self.lock.locked():
+            pid = self.lock.filepid()
+            process = psutil.Process(pid)
+            process.kill(signal.SIGTERM)
+            log.msg("killed %s, pausing for %i seconds" % (pid, KILL_SLEEP))
+            time.sleep(KILL_SLEEP)
 
         # wait for process to finish if wait is True
         if wait and self.lock.locked():

@@ -27,7 +27,7 @@ import socket
 from server import db, preferences
 
 import common.rpc
-from common import loghandler, multicast, lock
+from common import loghandler, multicast, lock, cmdoptions
 
 from twisted.internet import reactor
 from twisted.web import resource, xmlrpc
@@ -92,7 +92,13 @@ class Server(common.rpc.Service):
     # end xmlrpc_addHost
 # end Server
 
-LOCK = lock.ProcessLock('server')
+# parse command line arguments
+options, args = cmdoptions.parser.parse_args()
+
+# process locking
+LOCK = lock.ProcessLock('server',
+    kill=options.force_kill, wait=options.wait
+)
 
 # setup and run the server/reactor
 db.tables.init()
