@@ -27,7 +27,7 @@ import socket
 import logging
 
 from client import preferences, job, system, process
-from common import loghandler, multicast, rpc
+from common import loghandler, multicast, rpc, lock
 
 from twisted.internet import reactor
 from twisted.web import resource, xmlrpc
@@ -39,6 +39,7 @@ PID = os.getpid()
 HOSTNAME = socket.gethostname()
 ADDRESS = socket.gethostbyname(HOSTNAME)
 MASTER = ()
+LOCK = None # established after getting command line arguments
 
 
 class Client(rpc.Service):
@@ -189,7 +190,12 @@ def setMaster(data, force=False):
         print "cannot new master without using force"
 # end setMaster
 
+# get command line arguments
+cmdopts
+
+
 # setup main services
+LOCK = lock.ProcessLock('client')
 client = Client()
 
 multicast = multicast.Server()
