@@ -19,6 +19,9 @@
 from __future__ import with_statement
 
 import os
+import time
+import copy
+import atexit
 import psutil
 import tempfile
 
@@ -28,6 +31,7 @@ from loghandler import log
 LOCK_ROOT = os.path.join(tempfile.gettempdir(), 'pyfarm', 'lock')
 if not os.path.isdir(LOCK_ROOT):
     os.makedirs(LOCK_ROOT)
+
 
 class ProcessLockError(Exception):
     '''raised when we had trouble acquiring a lock'''
@@ -45,10 +49,19 @@ class LockFile(object):
 
     def remove(self):
         '''removes the lock file on disk'''
-        if os.path.isdir(self.path):
+        if os.path.isfile(self.path):
             os.remove(self.path)
             log.msg("removed lock file %s" % self.path)
     # end remove
+
+    def filepid(self):
+        '''returns the pid in the file or None'''
+        if not os.path.isfile(self.path):
+            return None
+
+        with open(self.path, 'r') as stream:
+            return int(stream.read())
+    # end filepid
 
     def locked(self):
         '''
@@ -59,6 +72,9 @@ class LockFile(object):
 
         with open(self.path, 'r') as stream:
             data = stream.read()
+
+            # return False if the data in the file
+            # cannot be converted to a number
             if not data.isdigit():
                 return False
 
@@ -67,7 +83,6 @@ class LockFile(object):
                 return process.is_running()
 
             except psutil.NoSuchProcess:
-                log.msg("removing stale lock file %s" % stream.name)
                 self.remove()
                 return False
     # end locked
@@ -97,6 +112,7 @@ class LockFile(object):
             lockfile.write(str(self.pid))
             args = (self.name, self.pid)
             log.msg("wrote lock file for '%s' with pid %s" % args)
+    # end lock
 # end LockFile
 
 
@@ -104,17 +120,52 @@ class ProcessLock(object):
     '''
     provides a locking mechanism when provided a name and process id
 
-    :exception :
+    :param boolean wait:
+        blocks unlock the current lock releases
+
+    :param boolean force:
+        forces a process to unlock on creation of the ProcessLock
+
+    :param boolean register:
+        registers an exit handler which will remove the lock file
+        with Python exits
+
+    :exception ProcessLockError:
+        raised if we failed to acquire a lock
     '''
-    def __init__(self, name, pid, force=False):
-        self.lock = LockFile(name, pid)
+    def __init__(self, name, pid=None, force=False, wait=False, register=True):
+        self.name = name
+        self.lock = LockFile(name, pid or os.getpid())
+
+        # wait for process to finish if wait is True
+        if wait and self.lock.locked():
+            filepid = self.lock.filepid()
+            log.msg("waiting for process %s to release the lock" % filepid)
+            while self.lock.locked():
+                time.sleep(1)
+
         self.lock.lock(force)
+
+        if register:
+            atexit.register(self.lock.remove)
     # end __int__
+
+    def __enter__(self):
+        # if the lock.remove function has been registered as an exit
+        # handler then we should remove it if we are using the context
+        # manager on ProcessLock
+        for function, args, kwargs in atexit._exithandlers:
+            # only remove exit handlers that match this
+            # ProcessLock's self.lock.remove method
+            if function == self.lock.remove:
+                atexit._exithandlers.remove((function, args, kwargs))
+                log.msg("removed exit handler ProcessLock(%s)" % self.name)
+        return self.lock
+    # end __enter__
+
+    def __exit__(self, type, value, trackback):
+        if self.lock.locked():
+            self.lock.remove()
+    # end __exit__
 # end ProcessLock
 
-
-if __name__ == '__main__':
-    import time
-
-    lock = ProcessLock('test', os.getpid())
-    time.sleep(3600)
