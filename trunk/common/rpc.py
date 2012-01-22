@@ -18,7 +18,6 @@
 
 import os
 import types
-import socket
 import logging
 
 import preferences
