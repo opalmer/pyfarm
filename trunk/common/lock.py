@@ -20,7 +20,6 @@ from __future__ import with_statement
 
 import os
 import time
-import copy
 import atexit
 import psutil
 import tempfile
