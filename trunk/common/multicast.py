@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+# No shebang line, this module is meant to be imported
 #
 # This file is part of PyFarm.
 # Copyright (C) 2008-2012 Oliver Palmer

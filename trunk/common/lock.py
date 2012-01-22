@@ -101,7 +101,8 @@ class LockFile(object):
         # an exception otherwise remove the file
         if self.locked():
             if not force:
-                msg = "'%s' is already running with pid %s" % (self.name, self.pid)
+                pid = self.filepid()
+                msg = "'%s' is already running with pid %s" % (self.name, pid)
                 raise ProcessLockError(msg)
 
             log.msg("force overwriting lock file %s!" % self.path)
@@ -167,4 +168,3 @@ class ProcessLock(object):
             self.lock.remove()
     # end __exit__
 # end ProcessLock
-
