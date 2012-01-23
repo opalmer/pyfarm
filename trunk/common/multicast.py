@@ -111,26 +111,6 @@ class DiscoveryServer(protocol.DatagramProtocol):
             self.resetCallback()
 
         self.deferred.callback((hostname, port, force))
-        return
-
-
-        # if the prefix is equal to the expected prefix
-        # trigger the deferred callback and reply back with
-        # our hostname and port
-        if prefix == preferences.MULTICAST_DISCOVERY_STRING:
-            url = getUrl(datagram)
-
-            # reset the callback if it has already been called
-            if self.deferred.called:
-                self.resetCallback()
-
-            log.msg("incoming multicast from %s" % address[0])
-            self.deferred.callback(url)
-
-        elif prefix and url:
-            log.msg("prefix and url are populated but contain unexpected values")
-            log.msg("...data: (%s, %s)" % (str(prefix), str(url)))
-    # end datagramReceived
 # end Server
 
 
