@@ -50,13 +50,17 @@ class Server(common.rpc.Service):
         self.hosts = set()
     # end __init__
 
-    def xmlrpc_multicast(self):
+    def xmlrpc_discoverClients(self, force=False):
         '''
-        sends a multicast packet and adds any results
-        to self.clients
+        Sends a multicast packet across the network.  Hosts
+        listening on the proper group will respond with
+        an addHost request.
+
+        :param boolean force:
+            forces the client to reset its master server
         '''
-        multicast.send()
-    # end xmlrpc_multicast
+        multicast.send(force)
+    # end xmlrpc_discoverClients
 
     def xmlrpc_addHost(self, host):
         '''
