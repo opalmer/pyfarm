@@ -201,7 +201,7 @@ LOCK = lock.ProcessLock('client',
 # setup main services
 client = Client()
 multicast = multicast.Server()
-multicast.deferred.addCallback(setMaster)
+multicast.addCallback(setMaster)
 
 # bind services
 reactor.listenTCP(preferences.CLIENT_PORT, _server.Site(client))

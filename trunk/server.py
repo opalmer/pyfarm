@@ -50,7 +50,6 @@ class Server(common.rpc.Service):
         self.hosts = set()
     # end __init__
 
-    # TODO: test to ensure this works with multiple clients
     def xmlrpc_multicast(self):
         '''
         sends a multicast packet and adds any results

@@ -21,26 +21,22 @@ import types
 import socket
 import xmlrpclib
 
-import preferences
+import preferences, rpc
 
 from twisted.python import log
 from twisted.web.xmlrpc import Proxy
 from twisted.internet import protocol, reactor, defer
 
 HOSTNAME = socket.getfqdn(socket.gethostname())
-RE_ISIP = re.compile(r'''\d{1,3}[.]\d{1,3}[.]\d{1,3}[.]\d{1,3}''')
+RE_ADDRESS = re.compile(r'''\d{1,3}[.]\d{1,3}[.]\d{1,3}[.]\d{1,3}''')
+RE_HOSTPORT = re.compile(r'''(.+):(.+)''')
 
 def containsAddress(url):
     '''
     returns True if the given url contains an ip address
     otherwise returns False
     '''
-    if ":" not in url:
-        return False
-
-    hostname, port = url.split(":")
-
-    return bool(RE_ISIP.match(hostname))
+    return bool(RE_ADDRESS.match(url))
 # end isAddress
 
 def getUrl(datagram):
@@ -86,7 +82,27 @@ class Server(protocol.DatagramProtocol):
     '''
     def __init__(self):
         self.deferred = defer.Deferred()
+        self.callback = None
     # end __init__
+
+    def resetCallback(self):
+        '''resets the callback so it can be called again'''
+        if self.callback is None:
+            raise RuntimeError("cannot reset callback, self.callback is None")
+
+        self.deferred = defer.Deferred()
+        self.addCallback(self.callback)
+    # end resetCallback
+
+    def addCallback(self, callback=None):
+        '''sets the internal callback and the callback on self.deferred'''
+        if self.callback is None:
+            self.callback = callback
+            name = callback.func_name
+            log.msg("set callback for multicast.Server to %s" % name)
+
+        self.deferred.addCallback(callback)
+    # end addCallback
 
     def startProtocol(self):
         log.msg("joining multicast group %s" % preferences.MULTICAST_GROUP)
@@ -94,10 +110,6 @@ class Server(protocol.DatagramProtocol):
     # end startProtocol
 
     def datagramReceived(self, datagram, address):
-        if self.deferred.called:
-            log.msg("ignoring multicast, master already contacted")
-            return
-
         url = None
         preifx = None
 
@@ -109,15 +121,20 @@ class Server(protocol.DatagramProtocol):
             raise TypeError("unexpected type in datagram")
 
         # if the prefix or url is not populated...then we have a problem
-        if prefix == None or url == None:
+        if prefix is None or url is None:
             log.msg("failed to acquire prefix and/or url")
 
         # if the prefix is equal to the expected prefix
         # trigger the deferred callback and reply back with
         # our hostname and port
         elif prefix == preferences.MULTICAST_STRING:
-            log.msg("incoming multicast '%s' from %s" % (datagram, str(address)))
             url = getUrl(datagram)
+
+            # reset the callback if it has already been called
+            if self.deferred.called:
+                self.resetCallback()
+
+            log.msg("incoming multicast '%s' from %s" % (datagram, str(address)))
             self.deferred.callback(url)
 
             # create and send our reply back to the server
@@ -131,8 +148,8 @@ class Server(protocol.DatagramProtocol):
             log.msg("sending host string %s to %s" % (client, server))
 
             # connect to and call the remote method
-            proxy = Proxy("http://%s" % server)
-            proxy.callRemote('addHost', (client))
+            proxy = rpc.Connection("http://%s" % server)
+            proxy.call('addHost', (client))
 
         elif prefix and url:
             log.msg("prefix and url are populated but contain unexpected values")
