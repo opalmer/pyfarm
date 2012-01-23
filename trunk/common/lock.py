@@ -33,6 +33,7 @@ LOCK_ROOT = os.path.join(tempfile.gettempdir(), 'pyfarm', 'lock')
 # create root lock folder if it does not exist
 if not os.path.isdir(LOCK_ROOT):
     os.makedirs(LOCK_ROOT)
+    log.msg("created directory: %s" % LOCK_ROOT)
 
 class ProcessLockError(Exception):
     '''raised when we had trouble acquiring a lock'''
