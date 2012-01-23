@@ -38,6 +38,7 @@ SHUTDOWN_ENABLED = prefs.getboolean('SHUTDOWN', 'enabled')
 RESTART_ENABLED = prefs.getboolean('RESTART', 'enabled')
 RESTART_DELAY = prefs.getint('RESTART', 'delay')
 MULTICAST_PORT = prefs.getint('NETWORK', 'multicast_port')
+SERVER_PORT = prefs.getint('NETWORK', 'server_port')
 
 if __name__ == '__main__':
     common.preferences.debug(locals())
