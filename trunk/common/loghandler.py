@@ -86,7 +86,7 @@ def openStream(path=None, mode='a', uuid=None, **environ):
     return stream
 # end openStream
 
-def startLogging(name, mode='a'):
+def startLogging(name, dest=None, mode='a'):
     '''
     Starts logging to a named file.
 
@@ -94,6 +94,8 @@ def startLogging(name, mode='a'):
         the path to store the log file, defaults to
         the temp directory path
     '''
+    dest = dest or ''
+
     # do not log to file if the preferences
     # are setup not to
     if not preferences.LOGGING_FILE:
@@ -103,9 +105,9 @@ def startLogging(name, mode='a'):
     if not name.endswith(preferences.LOGGING_EXTENSION):
         name += preferences.LOGGING_EXTENSION
 
-        path = os.path.join(LOGS_STANDARD, dest, name)
-        stream = openStream(path)
-        log.startLogging(stream)
+    path = os.path.join(LOGS_STANDARD, dest, name)
+    stream = openStream(path)
+    log.startLogging(stream)
 # end startLogging
 
 

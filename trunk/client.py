@@ -26,8 +26,11 @@ import types
 import socket
 import logging
 
+import common.loghandler
+common.loghandler.startLogging('client')
+
 from client import preferences, job, system, process
-from common import loghandler, multicast, rpc, lock, cmdoptions
+from common import multicast, rpc, lock, cmdoptions
 
 from twisted.internet import reactor
 from twisted.web import resource, xmlrpc

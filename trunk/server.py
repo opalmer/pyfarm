@@ -24,18 +24,19 @@ import sys
 import time
 import socket
 
-from server import db, preferences
+# setup and configure logging first
+import common.loghandler
+common.loghandler.startLogging('server')
 
 import common.rpc
-from common import loghandler, multicast, lock, cmdoptions
+from server import db, preferences
+from common import multicast, lock, cmdoptions
 
 from twisted.internet import reactor
-from twisted.web import resource, xmlrpc
 from twisted.web import server as _server
 from twisted.python import log
 
 CWD = os.getcwd()
-PID = os.getpid()
 HOSTNAME = socket.gethostname()
 ADDRESS = socket.gethostbyname(HOSTNAME)
 LOCK = None # established after getting command line arguments
