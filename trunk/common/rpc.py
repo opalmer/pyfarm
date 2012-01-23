@@ -17,8 +17,10 @@
 # along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
+import re
 import types
 import logging
+import xmlrpclib
 
 import preferences
 
@@ -27,6 +29,7 @@ from twisted.web import resource, xmlrpc
 from twisted.python import log
 
 TEST_MODE = False
+RE_ADDR = re.compile(r'''http://(.+):(\d+)''')
 
 class Service(xmlrpc.XMLRPC):
     '''
@@ -144,8 +147,8 @@ class Connection(object):
     either except a hostname and port or a hostname with
     the port included.
 
-    >>> a = RPC('hostname', 9030)
-    >>> b = RPC('hostname:9030')
+    >>> a = Connection('hostname', 9030)
+    >>> b = Connection('hostname:9030')
 
     :param string hostname:
         the hostname or hostname and port to connect to
@@ -154,10 +157,10 @@ class Connection(object):
         the port to connect to
 
     :param callable success:
-        method or function to call on a successfull result
+        method or function to call on a successful result
 
     :param callable failure
-    method or function to call failed call
+        method or function to call failed call
 
     :exception RuntimeError:
         raised if we somehow end up without a hostname
@@ -168,11 +171,11 @@ class Connection(object):
         # split the hostname into port and hostname if
         # port is None and ":" in hostname
         if isinstance(port, types.NoneType) and ':' in hostname:
-            hostname, port = hostname.split(":")
+            hostname, port = RE_ADDR.match(hostname).groups()
 
         # be sure everything was setup properly
         if not hostname or not port:
-            raise RuntimeError("hostname or port not passed to RPC")
+            raise RuntimeError("hostname or port not passed to rpc.Connection")
 
         self.hostname = hostname
         self.port = int(port)
@@ -181,10 +184,7 @@ class Connection(object):
 
         # construct the proxy object
         self.url = "http://%s:%i" % (self.hostname, self.port)
-        self.proxy = xmlrpc.Proxy(
-            self.url,
-            allowNone=True
-        )
+        self.proxy = xmlrpc.Proxy(self.url, allowNone=True)
     # end __init__
 
     def __fail(self, *args):
@@ -192,15 +192,21 @@ class Connection(object):
         If no other deferred error handlers are defined, this will
         be the default
         '''
-        log.msg("rpc call to %s failed: %s" % (self.url, str(args)))
+        log.msg("rpc call to %s failed, iterating over failure below" % self.url)
+
+        for error in args:
+            if isinstance(error, types.InstanceType):
+                if error.type == xmlrpclib.Fault:
+                    error.printTraceback()
+            else:
+                print str(error)
     # end __fail
 
     def call(self, method, args=None, success=None, failure=None):
         args = args or []
         success = success or self.__success
         failure = failure or self.__failure or self.__fail
-
-        remote = self.proxy.callRemote(method, *args)
+        remote = self.proxy.callRemote(method, args)
 
         if success:
             remote.addCallback(success)
