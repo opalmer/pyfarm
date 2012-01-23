@@ -16,64 +16,18 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
-import re
 import types
 import socket
-import xmlrpclib
+import logging
 
-import preferences, rpc
+import preferences
 
 from twisted.python import log
-from twisted.web.xmlrpc import Proxy
 from twisted.internet import protocol, reactor, defer
 
 HOSTNAME = socket.getfqdn(socket.gethostname())
-RE_ADDRESS = re.compile(r'''\d{1,3}[.]\d{1,3}[.]\d{1,3}[.]\d{1,3}''')
-RE_HOSTPORT = re.compile(r'''(.+):(.+)''')
 
-def containsAddress(url):
-    '''
-    returns True if the given url contains an ip address
-    otherwise returns False
-    '''
-    return bool(RE_ADDRESS.match(url))
-# end isAddress
-
-def getUrl(datagram):
-    '''
-    returns the the url enclosed in the datagram
-    or None if it could not be found/properly
-    processed
-    '''
-    if not isinstance(datagram, types.StringTypes):
-        log.msg("incoming datagram does not contain the proper type")
-        return
-
-    # try out best to split the string
-    # into two parts...failing that return None
-    try:
-        prefix, url = datagram.split("_")
-
-    except ValueError:
-        log.msg("failed to break '%s' into two parts" % datagram)
-        return
-
-    # Check to see if we can resolve the hostname.
-    # This is more for debugging purposes since
-    # we assume the network will be able to
-    # resolve the hostname later on
-    if not containsAddress(url):
-        try:
-            hostname, port = url.split(":")
-            socket.gethostbyname(hostname)
-
-        except socket.gaierror:
-            log.msg("failed to resolve hostname '%s'" % hostname)
-
-    return url
-# end getUrl
-
-class Server(protocol.DatagramProtocol):
+class DiscoveryServer(protocol.DatagramProtocol):
     '''
     Base multicast server used to receieve and respond to a
     multicast request.  Once a datagram is receieved it is split
@@ -84,6 +38,27 @@ class Server(protocol.DatagramProtocol):
         self.deferred = defer.Deferred()
         self.callback = None
     # end __init__
+
+    def __data(self, datagram):
+        '''returns data from the datagram with the correct types'''
+        typename, force, readd, hostname, port = datagram.split("_")
+
+        # convert force to a boolean value
+        if force == "True":
+            force = True
+        else:
+            force = False
+
+        # convert port to an integer if possible
+        if port.isdigit():
+            port = int(port)
+        else:
+            log.msg(
+                "failed to convert %s to an integer!",
+                logLevel=logging.ERROR
+            )
+        return typename, force, hostname, port
+    # end __data
 
     def resetCallback(self):
         '''resets the callback so it can be called again'''
@@ -111,11 +86,33 @@ class Server(protocol.DatagramProtocol):
 
     def datagramReceived(self, datagram, address):
         # ensure the incoming datatypes matches what we expect
-        if isinstance(datagram, types.StringTypes) and "_" in datagram:
-            prefix, url = datagram.split("_")
-
-        else:
+        if not isinstance(datagram, types.StringTypes):
             raise TypeError("unexpected type in datagram")
+
+        # ensure the data is the correct structure
+        if not datagram.count("_") != 4:
+            return
+
+        # get all arguments and proper types from the datagram, skip
+        # any datagram that is not the correct typename
+        typename, force, hostname, port = self.__data(datagram)
+
+        # ignore any multicasts that are not what we're looking for
+        if typename != preferences.MULTICAST_DISCOVERY_STRING:
+            warn = "ignoring multicast from %s:%i, " % (hostname, port)
+            warn += "%s is not a valid typename" % typename
+            log.msg(warn, logLevel=logging.WARNING)
+            return
+
+        log.msg("incoming discovery multicast from %s:%i" % (hostname, port))
+
+        # reset the callback if it has already been called
+        if self.deferred.called:
+            self.resetCallback()
+
+        self.deferred.callback((hostname, port, force))
+        return
+
 
         # if the prefix is equal to the expected prefix
         # trigger the deferred callback and reply back with
@@ -154,23 +151,26 @@ def sendDiscovery(hostname, port, force):
         determines if we should inform the clients to replace
         their master server address
     '''
+
+    args = (
+        preferences.MULTICAST_DISCOVERY_STRING,
+        preferences.MULTICAST_GROUP, preferences.MULTICAST_PORT
+    )
+    log.msg("sending '%s' to group %s:%i" % args)
+
     # prepare the data to send
-    name = hostname or HOSTNAME
-    port = port or preferences.SERVER_PORT
-    data = "%s_%s:%i" % (preferences.MULTICAST_DISCOVERY_STRING, name, port)
-    dest = (preferences.MULTICAST_GROUP, preferences.MULTICAST_PORT)
+    address = (preferences.MULTICAST_GROUP, preferences.MULTICAST_PORT)
+    data = "_".join([
+        preferences.MULTICAST_DISCOVERY_STRING, str(force),
+        hostname, str(port)
+    ])
 
-    # send the data unless we hit an error
-    client = protocol.DatagramProtocol()
-    multicast = reactor.listenUDP(0, client)
-    log.msg("sending multicast '%s' to %s" % (data, str(dest)))
-
-    # write data to the mulicast then close
-    # the connection, no need to listen for data
+    # write data to the mulicast then close the connection
     try:
-        multicast.write(data, dest)
-        multicast.stopListening()
+        udp = reactor.listenUDP(0, protocol.DatagramProtocol())
+        udp.write(data, address)
+        udp.stopListening()
 
     except socket.error, error:
         log.msg("error sending multicast: %s" % error)
-# end send
+# end sendDiscovery

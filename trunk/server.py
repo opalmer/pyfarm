@@ -69,6 +69,8 @@ class Server(common.rpc.Service):
         '''
         if host not in self.hosts:
             log.msg("adding host %s" % host)
+        else:
+            log.msg("already added host %s" % host)
 
         # if the host is not online, do nothing
         #if not common.rpc.ping(host):

@@ -155,34 +155,17 @@ class Client(rpc.Service):
 # end Client
 
 
-def setMaster(data, force=False):
+def setMaster(data):
     '''
     sets the master address which is used to return
     job information back to a central host for processing
     '''
-    # ensure we will be able to split the incoming data
-    if not ":" in data:
-        raise RuntimeError("expected host separator ':' is not in '%s'" % data)
+    hostname, port, force, readd = data
 
-    # once we attempt the split ensure it sets the values to the expected
-    # data
-    try:
-        hostname, port = data.split(":")
-
-    except ValueError:
-        raise ValueError("failed to split data '%s' into two components" % data)
-
-    # ensure the port variable can be converted to an integer
-    if not port.isdigit():
-        raise TypeError("value '%s' for port argument is not an integer" % port)
-    else:
-        port = int(port)
-
-    # query and/or set the master address
     global MASTER
-    if not MASTER:
+    if force or not MASTER:
         MASTER = (hostname, port)
-        print "master is now",MASTER
+        log.msg("master is now %s:%i" % MASTER)
 
         # send hostname and port over xmlrpc to server
         client = "%s:%i" % (HOSTNAME, preferences.CLIENT_PORT)
@@ -193,11 +176,15 @@ def setMaster(data, force=False):
         proxy = rpc.Connection("http://%s" % server)
         proxy.call('addHost', (client))
 
-    elif MASTER == (hostname, port):
-        print "master already set to",MASTER
+    elif MASTER != (hostname, port) and not force:
+        args = (MASTER[0], MASTER[1], hostname, port)
+        log.msg(
+            "master already set to %s:%i, cannot set to %s:%i without force" % args,
+            logLevel=logging.WARNING
+        )
 
-    elif not force:
-        print "cannot new master without using force"
+    else:
+        log.msg("master already set to", MASTER)
 # end setMaster
 
 # parse command line arguments
@@ -210,12 +197,12 @@ LOCK = lock.ProcessLock('client',
 
 # setup main services
 client = Client()
-multicast = multicast.Server()
-multicast.addCallback(setMaster)
+discovery = multicast.DiscoveryServer()
+discovery.addCallback(setMaster)
 
 # bind services
 reactor.listenTCP(preferences.CLIENT_PORT, _server.Site(client))
-reactor.listenMulticast(preferences.MULTICAST_PORT, multicast)
+reactor.listenMulticast(preferences.MULTICAST_PORT, discovery)
 
 log.msg("running client at http://%s:%i" % (HOSTNAME, preferences.CLIENT_PORT))
 reactor.run()
