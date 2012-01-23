@@ -59,7 +59,7 @@ class Server(common.rpc.Service):
         :param boolean force:
             forces the client to reset its master server
         '''
-        multicast.send(force)
+        multicast.sendDiscovery(HOSTNAME, preferences.SERVER_PORT, force)
     # end xmlrpc_discoverClients
 
     def xmlrpc_addHost(self, host):

@@ -137,18 +137,22 @@ class Server(protocol.DatagramProtocol):
 # end Server
 
 
-def send(hostname=None, port=None):
+def sendDiscovery(hostname, port, force):
     '''
     sends a multicast signal to all hosts that
     are part of the mulitcast group
 
     :param string server:
         name of the server to send, defaults to the
-        current hostnanme
+        current hostname
 
     :param integer port:
         port the server is operating on, defaults to
         preferences.SERVER_PORT
+
+    :param boolean force:
+        determines if we should inform the clients to replace
+        their master server address
     '''
     # prepare the data to send
     name = hostname or HOSTNAME
