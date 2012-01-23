@@ -110,46 +110,25 @@ class Server(protocol.DatagramProtocol):
     # end startProtocol
 
     def datagramReceived(self, datagram, address):
-        url = None
-        preifx = None
-
         # ensure the incoming datatypes matches what we expect
-        if isinstance(datagram, types.StringTypes):
+        if isinstance(datagram, types.StringTypes) and "_" in datagram:
             prefix, url = datagram.split("_")
 
         else:
             raise TypeError("unexpected type in datagram")
 
-        # if the prefix or url is not populated...then we have a problem
-        if prefix is None or url is None:
-            log.msg("failed to acquire prefix and/or url")
-
         # if the prefix is equal to the expected prefix
         # trigger the deferred callback and reply back with
         # our hostname and port
-        elif prefix == preferences.MULTICAST_STRING:
+        if prefix == preferences.MULTICAST_DISCOVERY_STRING:
             url = getUrl(datagram)
 
             # reset the callback if it has already been called
             if self.deferred.called:
                 self.resetCallback()
 
-            log.msg("incoming multicast '%s' from %s" % (datagram, str(address)))
+            log.msg("incoming multicast from %s" % address[0])
             self.deferred.callback(url)
-
-            # create and send our reply back to the server
-            args = (preferences.MULTICAST_STRING, HOSTNAME, preferences.CLIENT_PORT)
-            reply = "%s_%s:%i" % args
-            log_args = (reply, str(address))
-
-            # send hostname and port over xmlrpc to server
-            client = "%s:%i" % (HOSTNAME, preferences.CLIENT_PORT)
-            server = "%s:%i" % (address[0], preferences.SERVER_PORT)
-            log.msg("sending host string %s to %s" % (client, server))
-
-            # connect to and call the remote method
-            proxy = rpc.Connection("http://%s" % server)
-            proxy.call('addHost', (client))
 
         elif prefix and url:
             log.msg("prefix and url are populated but contain unexpected values")
@@ -174,7 +153,7 @@ def send(hostname=None, port=None):
     # prepare the data to send
     name = hostname or HOSTNAME
     port = port or preferences.SERVER_PORT
-    data = "%s_%s:%i" % (preferences.MULTICAST_STRING, name, port)
+    data = "%s_%s:%i" % (preferences.MULTICAST_DISCOVERY_STRING, name, port)
     dest = (preferences.MULTICAST_GROUP, preferences.MULTICAST_PORT)
 
     # send the data unless we hit an error

@@ -183,6 +183,16 @@ def setMaster(data, force=False):
     if not MASTER:
         MASTER = (hostname, port)
         print "master is now",MASTER
+
+        # send hostname and port over xmlrpc to server
+        client = "%s:%i" % (HOSTNAME, preferences.CLIENT_PORT)
+        server = "%s:%i" % (hostname, preferences.SERVER_PORT)
+        log.msg("sending host string %s to %s" % (client, server))
+
+        # connect to and call the remote method
+        proxy = rpc.Connection("http://%s" % server)
+        proxy.call('addHost', (client))
+
     elif MASTER == (hostname, port):
         print "master already set to",MASTER
 
