@@ -20,6 +20,7 @@ import os
 import re
 import types
 import logging
+import socket
 import xmlrpclib
 
 import preferences
@@ -140,6 +141,7 @@ class Service(xmlrpc.XMLRPC):
     # end xmlrpc_restart
 # end Service
 
+
 class Connection(object):
     '''
     Generic rpc object which implements the Twisted xmlrpc
@@ -217,22 +219,17 @@ class Connection(object):
 # end Connection
 
 
-def ping(host):
-    '''
-    returns True if we can connect and ping
-    the remote host
-    '''
-    rpc = xmlrpclib.ServerProxy("http://%s" % host, allow_none=True)
-
+def ping(hostname, port):
+    '''return True if we can connect to the remote xmlrpc service'''
     try:
+        rpc = xmlrpclib.ServerProxy(
+            "http://%s:%i" % (hostname, port), allow_none=True
+        )
         rpc.ping()
-        log.msg('successfully pinged %s' % host)
+        log.msg("successfully received ping from %s" % hostname)
+        return True
 
-    except:
-        log.msg('failed to ping %s' % host)
+    except socket.error:
+        log.msg("failed to ping %s" % hostname, logLevel=logging.WARNING)
         return False
 # end ping
-
-if __name__ == '__main__':
-    con = Connection('test', 9030)
-    print con.test
