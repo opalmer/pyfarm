@@ -138,8 +138,8 @@ class Manager(xmlrpc.XMLRPC):
             to a uuid.UUID object
         '''
         job = self.__job(uid)
-        log = open(job.log.name, 'r')
-        data = log.read()
+        with open(job.log.name, 'r') as log:
+            data = log.read()
 
         if split:
             return data.split("\n")
