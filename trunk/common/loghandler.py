@@ -108,6 +108,7 @@ def startLogging(name, dest=None, mode='a'):
     path = os.path.join(LOGS_STANDARD, dest, name)
     stream = openStream(path)
     log.startLogging(stream)
+    return stream
 # end startLogging
 
 
