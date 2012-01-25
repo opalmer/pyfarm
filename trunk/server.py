@@ -26,7 +26,7 @@ import socket
 
 # setup and configure logging first
 import common.loghandler
-common.loghandler.startLogging('server')
+SERVICE_LOG = common.loghandler.startLogging('server')
 
 import common.rpc
 from server import db, preferences
@@ -39,15 +39,14 @@ from twisted.python import log
 CWD = os.getcwd()
 HOSTNAME = socket.gethostname()
 ADDRESS = socket.gethostbyname(HOSTNAME)
-LOCK = None # established after getting command line arguments
 
 class Server(common.rpc.Service):
     '''
     Main server class to act as an external interface to the
     data base and job server.
     '''
-    def __init__(self):
-        common.rpc.Service.__init__(self)
+    def __init__(self, log_stream):
+        common.rpc.Service.__init__(self, log_stream)
         self.hosts = set()
     # end __init__
 
@@ -101,17 +100,19 @@ class Server(common.rpc.Service):
 # parse command line arguments
 options, args = cmdoptions.parser.parse_args()
 
-# process locking
-LOCK = lock.ProcessLock('server',
-    kill=options.force_kill, wait=options.wait
-)
+# create a lock for the process so we can't run two clients
+# at once
+with lock.ProcessLock('server', kill=options.force_kill, wait=options.wait):
+    # setup and run the server/reactor
+    db.tables.init()
+    server = Server(SERVICE_LOG)
 
-# setup and run the server/reactor
-db.tables.init()
-server = Server()
-reactor.listenTCP(preferences.SERVER_PORT, _server.Site(server))
-log.msg("running server at http://%s:%i" % (HOSTNAME, preferences.SERVER_PORT))
-reactor.run()
+    # bind services
+    reactor.listenTCP(preferences.SERVER_PORT, _server.Site(server))
+
+    # start reactor
+    log.msg("running server at http://%s:%i" % (HOSTNAME, preferences.SERVER_PORT))
+    reactor.run()
 
 # If RESTART has been set to True then restart the server
 # script.  This must be done after the reactor and has been
@@ -130,3 +131,5 @@ if os.getenv('PYFARM_RESTART') == "true":
 
     os.chdir(CWD)
     os.execv(sys.executable, args)
+
+

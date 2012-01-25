@@ -27,10 +27,11 @@ import socket
 import logging
 
 import common.loghandler
-common.loghandler.startLogging('client')
+SERVICE_LOG = common.loghandler.startLogging('client')
 
+import common.rpc
 from client import preferences, job, system, process
-from common import multicast, rpc, lock, cmdoptions
+from common import multicast, lock, cmdoptions
 
 from twisted.internet import reactor
 from twisted.web import resource, xmlrpc
@@ -38,21 +39,18 @@ from twisted.web import server as _server
 from twisted.python import log
 
 CWD = os.getcwd()
-PID = os.getpid()
 HOSTNAME = socket.gethostname()
 ADDRESS = socket.gethostbyname(HOSTNAME)
 MASTER = ()
-LOCK = None # established after getting command line arguments
 
-
-class Client(rpc.Service):
+class Client(common.rpc.Service):
     '''
     Main xmlrpc service which controls the client.  Most methods
     are handled entirely outside of this class for the purposes of
     separation of service and logic.
     '''
-    def __init__(self):
-        rpc.Service.__init__(self)
+    def __init__(self, log_stream):
+        common.rpc.Service.__init__(self, log_stream)
 
         # setup sub handlers
         self.sys = system.SystemInformation()
@@ -193,22 +191,21 @@ def setMaster(data):
 # parse command line arguments
 options, args = cmdoptions.parser.parse_args()
 
-# process locking
-LOCK = lock.ProcessLock('client',
-    kill=options.force_kill, wait=options.wait
-)
+# create a lock for the process so we can't run two clients
+# at once
+with lock.ProcessLock('client', kill=options.force_kill, wait=options.wait):
+    # setup client
+    client = Client(SERVICE_LOG)
+    discovery = multicast.DiscoveryServer()
+    discovery.addCallback(setMaster)
 
-# setup main services
-client = Client()
-discovery = multicast.DiscoveryServer()
-discovery.addCallback(setMaster)
+    # bind services
+    reactor.listenTCP(preferences.CLIENT_PORT, _server.Site(client))
+    reactor.listenMulticast(preferences.MULTICAST_PORT, discovery)
 
-# bind services
-reactor.listenTCP(preferences.CLIENT_PORT, _server.Site(client))
-reactor.listenMulticast(preferences.MULTICAST_PORT, discovery)
-
-log.msg("running client at http://%s:%i" % (HOSTNAME, preferences.CLIENT_PORT))
-reactor.run()
+    # start reactor
+    log.msg("running client at http://%s:%i" % (HOSTNAME, preferences.CLIENT_PORT))
+    reactor.run()
 
 # If RESTART has been set to True then restart the client
 # script.  This must be done after the reactor and has been

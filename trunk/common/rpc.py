@@ -16,6 +16,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import with_statement
+
 import os
 import re
 import types
@@ -37,10 +39,20 @@ class Service(xmlrpc.XMLRPC):
     Base twisted xmlrpc service, contains the stand methods
     and attributes to be inherited by all xmlrpc instances
     '''
-    def __init__(self):
+    def __init__(self, log_stream):
         resource.Resource.__init__(self)
         self.allowNone = True
         self.useDateTime = True
+        self.log_stream = log_stream
+
+        # do not setup the log stream if what was passed
+        # in was not actually a file stream
+        if not isinstance(log_stream, types.FileType):
+            self.log_stream = None
+            log.msg(
+                "service log stream established, some method will not function",
+                logLevel=logging.WARNING
+            )
     # end __init__
 
     def _blockShutdown(self):
@@ -139,6 +151,20 @@ class Service(xmlrpc.XMLRPC):
         if self.xmlrpc_shutdown(force) and not TEST_MODE:
             os.environ['PYFARM_RESTART'] = 'true'
     # end xmlrpc_restart
+
+    def xmlrpc_service_log(self, split=True):
+        '''returns the current contents of the service log'''
+        if not self.log_stream:
+            return None
+
+        with open(self.log_stream.name, 'r') as log:
+            data = log.read()
+
+        if split:
+            return data.split("\n")
+
+        return data
+    # end xmlrpc_service_log
 # end Service
 
 
