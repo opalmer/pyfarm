@@ -43,6 +43,10 @@ HOSTNAME = socket.gethostname()
 ADDRESS = socket.gethostbyname(HOSTNAME)
 MASTER = ()
 
+# PYFARM_RESTART should not start out in the environment
+if 'PYFARM_RESTART' in os.environ:
+    del os.environ['PYFARM_RESTART']
+
 class Client(common.rpc.Service):
     '''
     Main xmlrpc service which controls the client.  Most methods

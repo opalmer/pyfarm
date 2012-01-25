@@ -40,6 +40,10 @@ CWD = os.getcwd()
 HOSTNAME = socket.gethostname()
 ADDRESS = socket.gethostbyname(HOSTNAME)
 
+# PYFARM_RESTART should not start out in the environment
+if 'PYFARM_RESTART' in os.environ:
+    del os.environ['PYFARM_RESTART']
+
 class Server(common.rpc.Service):
     '''
     Main server class to act as an external interface to the
