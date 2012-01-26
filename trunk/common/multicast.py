@@ -41,7 +41,7 @@ class DiscoveryServer(protocol.DatagramProtocol):
 
     def __data(self, datagram):
         '''returns data from the datagram with the correct types'''
-        typename, force, readd, hostname, port = datagram.split("_")
+        typename, force, hostname, port = datagram.split("_")
 
         # convert force to a boolean value
         if force == "True":
@@ -57,6 +57,7 @@ class DiscoveryServer(protocol.DatagramProtocol):
                 "failed to convert %s to an integer!",
                 logLevel=logging.ERROR
             )
+
         return typename, force, hostname, port
     # end __data
 
