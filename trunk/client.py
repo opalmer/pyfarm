@@ -188,7 +188,7 @@ def setMaster(data):
 
         # connect to and call the remote method
         proxy = common.rpc.Connection("http://%s" % server)
-        proxy.call('addHost', client, hostinfo)
+        proxy.call('addHost', client, hostinfo, force)
 
     elif MASTER != (hostname, port) and not force:
         args = (MASTER[0], MASTER[1], hostname, port)
