@@ -55,6 +55,15 @@ class Server(common.rpc.Service):
         self.hosts = set()
     # end __init__
 
+    def __enter__(self):
+        self.discoverClients(force=True)
+    # end __enter__
+
+    # NOTE: should we even do this (how well does it scale)?
+    def __exit__(self, type, value, trackback):
+        log.msg("NOT IMPLEMENTED: send master shutdown to clients")
+    # end __exit___
+
     def xmlrpc_discoverClients(self, force=False):
         '''
         Sends a multicast packet across the network.  Hosts
@@ -84,6 +93,12 @@ class Server(common.rpc.Service):
         insert = db.tables.hosts.insert()
         insert.execute(dbdata)
     # end xmlrpc_addHost
+
+    def discoverClients(self, force=False):
+        log.msg("Searching for clients (force: %s)" % force)
+        self.xmlrpc_discoverClients(force)
+        reactor.callLater(10, self.discoverClients)
+    # end discoverClients
 # end Server
 
 # parse command line arguments
@@ -92,17 +107,19 @@ options, args = cmdoptions.parser.parse_args()
 # create a lock for the process so we can't run two clients
 # at once
 with lock.ProcessLock('server', kill=options.force_kill, wait=options.wait):
-    # setup and run the server/reactor
-    db.tables.init()
-    server = Server(SERVICE_LOG)
-    SERVICE = server
+    with Server(SERVICE_LOG) as server:
+        SERVICE = server
 
-    # bind services
-    reactor.listenTCP(preferences.SERVER_PORT, _server.Site(server))
+        # setup and run the server/reactor
+        db.tables.init()
 
-    # start reactor
-    log.msg("running server at http://%s:%i" % (HOSTNAME, preferences.SERVER_PORT))
-    reactor.run()
+        # bind services
+        reactor.listenTCP(preferences.SERVER_PORT, _server.Site(server))
+
+        # start reactor and start client discovery
+        args = (HOSTNAME, preferences.SERVER_PORT)
+        log.msg("running server at http://%s:%i" % args)
+        reactor.run()
 
 # If RESTART has been set to True then restart the server
 # script.  This must be done after the reactor and has been

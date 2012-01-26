@@ -70,6 +70,15 @@ class Client(common.rpc.Service):
         }
     # end __init__
 
+    def __enter__(self):
+        pass
+    # end __enter__
+
+    # NOTE: should we even do this (how well does it scale)?
+    def __exit__(self, type, value, trackback):
+        log.msg("NOT IMPLEMENTED: send client shutdown to master")
+    # end __exit___
+
     def _blockShutdown(self):
         return self.job.xmlrpc_running()
     # end _blockShutdown
@@ -207,19 +216,19 @@ options, args = cmdoptions.parser.parse_args()
 # create a lock for the process so we can't run two clients
 # at once
 with lock.ProcessLock('client', kill=options.force_kill, wait=options.wait):
-    # setup client
-    client = Client(SERVICE_LOG)
-    SERVICE = client
-    discovery = multicast.DiscoveryServer()
-    discovery.addCallback(setMaster)
+    with Client(SERVICE_LOG) as client:
+        SERVICE = client
+        discovery = multicast.DiscoveryServer()
+        discovery.addCallback(setMaster)
 
-    # bind services
-    reactor.listenTCP(preferences.CLIENT_PORT, _server.Site(client))
-    reactor.listenMulticast(preferences.MULTICAST_PORT, discovery)
+        # bind services
+        reactor.listenTCP(preferences.CLIENT_PORT, _server.Site(client))
+        reactor.listenMulticast(preferences.MULTICAST_PORT, discovery)
 
-    # start reactor
-    log.msg("running client at http://%s:%i" % (HOSTNAME, preferences.CLIENT_PORT))
-    reactor.run()
+        # start reactor
+        args = (HOSTNAME, preferences.CLIENT_PORT)
+        log.msg("running client at http://%s:%i" % args)
+        reactor.run()
 
 # If RESTART has been set to True then restart the client
 # script.  This must be done after the reactor and has been
