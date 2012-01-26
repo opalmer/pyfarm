@@ -230,11 +230,10 @@ class Connection(object):
                 print str(error)
     # end __fail
 
-    def call(self, method, args=None, success=None, failure=None):
-        args = args or []
-        success = success or self.__success
-        failure = failure or self.__failure or self.__fail
-        remote = self.proxy.callRemote(method, args)
+    def call(self, *args):
+        success = self.__success
+        failure = self.__failure or self.__fail
+        remote = self.proxy.callRemote(args[0], *args[1:])
 
         if success:
             remote.addCallback(success)
