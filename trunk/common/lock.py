@@ -176,6 +176,7 @@ class ProcessLock(object):
             if function == self.lock.remove:
                 atexit._exithandlers.remove((function, args, kwargs))
                 log.msg("removed exit handler ProcessLock(%s)" % self.name)
+
         return self.lock
     # end __enter__
 

@@ -27,6 +27,7 @@ import socket
 import logging
 
 import common.loghandler
+
 SERVICE_LOG = common.loghandler.startLogging('client')
 
 import common.rpc
@@ -42,6 +43,7 @@ CWD = os.getcwd()
 HOSTNAME = socket.gethostname()
 ADDRESS = socket.gethostbyname(HOSTNAME)
 MASTER = ()
+SERVICE = None
 
 # PYFARM_RESTART should not start out in the environment
 if 'PYFARM_RESTART' in os.environ:
@@ -165,12 +167,19 @@ def setMaster(data):
     sets the master address which is used to return
     job information back to a central host for processing
     '''
-    hostname, port, force, readd = data
-
+    # global variables to access
     global MASTER
+    global SERVICE
+
+    hostname, port, force = data
+
     if force or not MASTER:
         MASTER = (hostname, port)
         log.msg("master is now %s:%i" % MASTER)
+
+        # create an assembly of information about the host
+        hostinfo_sources = {"system" : SERVICE.sys, "network" : SERVICE.net}
+        hostinfo = system.report(hostinfo_sources)
 
         # send hostname and port over xmlrpc to server
         client = "%s:%i" % (HOSTNAME, preferences.CLIENT_PORT)
@@ -178,8 +187,8 @@ def setMaster(data):
         log.msg("sending host string %s to %s" % (client, server))
 
         # connect to and call the remote method
-        proxy = rpc.Connection("http://%s" % server)
-        proxy.call('addHost', (client))
+        proxy = common.rpc.Connection("http://%s" % server)
+        proxy.call('addHost', client, hostinfo)
 
     elif MASTER != (hostname, port) and not force:
         args = (MASTER[0], MASTER[1], hostname, port)
@@ -200,6 +209,7 @@ options, args = cmdoptions.parser.parse_args()
 with lock.ProcessLock('client', kill=options.force_kill, wait=options.wait):
     # setup client
     client = Client(SERVICE_LOG)
+    SERVICE = client
     discovery = multicast.DiscoveryServer()
     discovery.addCallback(setMaster)
 

@@ -121,3 +121,29 @@ class SystemInformation(xmlrpc.XMLRPC):
         return psutil.avail_phymem() / 1024 / 1024
     # end xmlrpc_ram_free
 # end SystemInformation
+
+
+def report(data):
+    '''
+    returns a dictionary of data with the values of all xmlrpc
+    methods
+    '''
+    output = {}
+
+    for instance_name, instance in data.items():
+        output[instance_name] = {}
+        for attr in dir(instance):
+            # skip all non xmlrpc methods
+            if not attr.startswith("xmlrpc_"):
+                continue
+
+            # only allow callable methods
+            method = getattr(instance, attr)
+            if not callable(method):
+                continue
+
+            value_name = attr.split("xmlrpc_")[1]
+            output[instance_name][value_name] = method()
+
+    return output
+# end report
