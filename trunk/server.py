@@ -39,6 +39,7 @@ from twisted.python import log
 CWD = os.getcwd()
 HOSTNAME = socket.gethostname()
 ADDRESS = socket.gethostbyname(HOSTNAME)
+SERVICE = None
 
 # PYFARM_RESTART should not start out in the environment
 if 'PYFARM_RESTART' in os.environ:
@@ -66,38 +67,22 @@ class Server(common.rpc.Service):
         multicast.sendDiscovery(HOSTNAME, preferences.SERVER_PORT, force)
     # end xmlrpc_discoverClients
 
-    def xmlrpc_addHost(self, host):
+    def xmlrpc_addHost(self, host, host_data, force=False):
         '''
         adds a host url and sets up the
         host in the database
         '''
-        if host not in self.hosts:
-            log.msg("adding host %s" % host)
-        else:
+        if not force and host in self.hosts:
             log.msg("already added host %s" % host)
+            return
 
-        # if the host is not online, do nothing
-        #if not common.rpc.ping(host):
-            #return False
-
+        log.msg("adding host %s" % host)
         self.hosts.add(host)
         hostname, port = host.split(":")
-        #rpc = xmlrpclib.ServerProxy("http://%s" % host, allow_none=True)
-        #print "============", rpc.net.fqdn()
-        #data = {
-            #"hostname" : rpc.net.fqdn(),
-            #"ip" : rpc.net.ip(),
-            #"subnet" : rpc.net.subnet(),
-            #"ram_max" : rpc.sys.ram_total(),
-            #"cpu_count" : rpc.sys.cpu_count(),
-            #"online" : rpc.online(),
-            #"software" : ""
-        #}
-        #print data
 
-        #insert = db.tables.hosts.insert()
-        #insert.execute(data)
-
+        dbdata =  db.utility.hostToTableData(host_data)
+        insert = db.tables.hosts.insert()
+        insert.execute(dbdata)
     # end xmlrpc_addHost
 # end Server
 
@@ -110,6 +95,7 @@ with lock.ProcessLock('server', kill=options.force_kill, wait=options.wait):
     # setup and run the server/reactor
     db.tables.init()
     server = Server(SERVICE_LOG)
+    SERVICE = server
 
     # bind services
     reactor.listenTCP(preferences.SERVER_PORT, _server.Site(server))
