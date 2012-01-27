@@ -145,6 +145,7 @@ class ProcessLock(object):
         self.name = name
         self.pid = pid or os.getpid()
         self.lock = LockFile(name, self.pid)
+        self.actions = []
 
         if kill and self.lock.locked():
             pid = self.lock.filepid()
@@ -177,11 +178,21 @@ class ProcessLock(object):
                 atexit._exithandlers.remove((function, args, kwargs))
                 log.msg("removed exit handler ProcessLock(%s)" % self.name)
 
-        return self.lock
+        return self
     # end __enter__
 
     def __exit__(self, type, value, trackback):
+        # run all exit actions
+        for action, args, kwargs in self.actions:
+            action(*args, **kwargs)
+
         if self.lock.locked():
             self.lock.remove()
     # end __exit__
+
+    def addExitAction(self, method, args=(), kwargs={}):
+        '''adds a method to be called on exit'''
+        self.actions.append((method, args, kwargs))
+        log.msg("added exit action - %s" % method.func_name)
+    # end addExitAction
 # end ProcessLock
