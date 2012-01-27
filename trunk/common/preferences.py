@@ -187,11 +187,11 @@ LOGGING_TIMESTAMP = prefs.get('LOGGING', 'timestamp')
 SHUTDOWN_ENABLED = prefs.getboolean('SHUTDOWN', 'enabled')
 RESTART_ENABLED = prefs.getboolean('RESTART', 'enabled')
 RESTART_DELAY = prefs.getint('RESTART', 'delay')
-MULTICAST_GROUP = prefs.get('NETWORK', 'multicast_group')
-MULTICAST_PORT = prefs.getint('NETWORK', 'multicast_port')
-MULTICAST_DISCOVERY_STRING = prefs.get('NETWORK', 'multicast_discovery_string')
 SERVER_PORT = prefs.getint('NETWORK', 'server_port')
 CLIENT_PORT = prefs.getint('NETWORK', 'client_port')
+MULTICAST_GROUP = prefs.get('MULTICAST', 'group')
+MULTICAST_HEARTBEAT_PORT = prefs.getint('MULTICAST', 'heartbeat_port')
+MULTICAST_HEARTBEAT_STRING = prefs.get('MULTICAST', 'heartbeat_string')
 
 
 if __name__ == '__main__':

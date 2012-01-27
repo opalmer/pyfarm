@@ -18,16 +18,44 @@
 
 import types
 import socket
-import logging
 
 import preferences
 
 from twisted.python import log
-from twisted.internet import protocol, reactor, defer
+from twisted.internet import protocol, reactor, defer, error
 
 HOSTNAME = socket.getfqdn(socket.gethostname())
 
-class DiscoveryServer(protocol.DatagramProtocol):
+class MulticastServer(protocol.DatagramProtocol):
+    '''General multicast server'''
+    JOINED_GROUP = False
+
+    def __init__(self, name):
+        self.name = name
+        self.deferred = defer.Deferred()
+        self.callback = None
+    # end __init__
+
+    def startProtocol(self):
+        '''
+        starts the protocol and joins the multicast group if it has
+        not done so already
+        '''
+        if not MulticastServer.JOINED_GROUP:
+            self.transport.joinGroup(preferences.MULTICAST_GROUP)
+            log.msg("joined multicast group %s" % preferences.MULTICAST_GROUP)
+            MulticastServer.JOINED_GROUP = True
+
+        else:
+            group = preferences.MULTICAST_GROUP
+            log.msg("already a member of the %s multicast group" % group)
+
+        log.msg("started multicast server - %s" % self.name)
+    # end startProtocol
+# end MulticastServer
+
+
+class HeartbeatServer(MulticastServer):
     '''
     Base multicast server used to receieve and respond to a
     multicast request.  Once a datagram is receieved it is split
@@ -35,13 +63,15 @@ class DiscoveryServer(protocol.DatagramProtocol):
     the master host.
     '''
     def __init__(self):
+        MulticastServer.__init__(self, 'heartbeat')
         self.deferred = defer.Deferred()
         self.callback = None
     # end __init__
 
-    def __data(self, datagram):
+    def __data(self, data):
         '''returns data from the datagram with the correct types'''
-        typename, force, hostname, port = datagram.split("_")
+        hostname = data[1]
+        force = data[2]
 
         # convert force to a boolean value
         if force == "True":
@@ -49,16 +79,7 @@ class DiscoveryServer(protocol.DatagramProtocol):
         else:
             force = False
 
-        # convert port to an integer if possible
-        if port.isdigit():
-            port = int(port)
-        else:
-            log.msg(
-                "failed to convert %s to an integer!",
-                logLevel=logging.ERROR
-            )
-
-        return typename, force, hostname, port
+        return hostname, force
     # end __data
 
     def resetCallback(self):
@@ -80,78 +101,30 @@ class DiscoveryServer(protocol.DatagramProtocol):
         self.deferred.addCallback(callback)
     # end addCallback
 
-    def startProtocol(self):
-        log.msg("joining multicast group %s" % preferences.MULTICAST_GROUP)
-        self.transport.joinGroup(preferences.MULTICAST_GROUP)
-    # end startProtocol
-
     def datagramReceived(self, datagram, address):
         # ensure the incoming datatypes matches what we expect
         if not isinstance(datagram, types.StringTypes):
             raise TypeError("unexpected type in datagram")
 
-        # ensure the data is the correct structure
-        if not datagram.count("_") != 4:
+        data = datagram.split("_")
+
+        # skip multicast packats that do not match
+        # the hearbeat preference
+        if data[0] != preferences.MULTICAST_HEARTBEAT_STRING:
+            return
+
+        # ignore packages that are the wrong length
+        if not len(data) == 3:
             return
 
         # get all arguments and proper types from the datagram, skip
         # any datagram that is not the correct typename
-        typename, force, hostname, port = self.__data(datagram)
-
-        # ignore any multicasts that are not what we're looking for
-        if typename != preferences.MULTICAST_DISCOVERY_STRING:
-            warn = "ignoring multicast from %s:%i, " % (hostname, port)
-            warn += "%s is not a valid typename" % typename
-            log.msg(warn, logLevel=logging.WARNING)
-            return
-
-        log.msg("incoming discovery multicast from %s:%i" % (hostname, port))
+        hostname, force = self.__data(data)
+        log.msg("incoming heartbeat from %s" % hostname)
 
         # reset the callback if it has already been called
         if self.deferred.called:
             self.resetCallback()
 
-        self.deferred.callback((hostname, port, force))
-# end Server
-
-
-def sendDiscovery(hostname, port, force):
-    '''
-    sends a multicast signal to all hosts that
-    are part of the mulitcast group
-
-    :param string server:
-        name of the server to send, defaults to the
-        current hostname
-
-    :param integer port:
-        port the server is operating on, defaults to
-        preferences.SERVER_PORT
-
-    :param boolean force:
-        determines if we should inform the clients to replace
-        their master server address
-    '''
-
-    args = (
-        preferences.MULTICAST_DISCOVERY_STRING,
-        preferences.MULTICAST_GROUP, preferences.MULTICAST_PORT
-    )
-    log.msg("sending '%s' to group %s:%i" % args)
-
-    # prepare the data to send
-    address = (preferences.MULTICAST_GROUP, preferences.MULTICAST_PORT)
-    data = "_".join([
-        preferences.MULTICAST_DISCOVERY_STRING, str(force),
-        hostname, str(port)
-    ])
-
-    # write data to the mulicast then close the connection
-    try:
-        udp = reactor.listenUDP(0, protocol.DatagramProtocol())
-        udp.write(data, address)
-        udp.stopListening()
-
-    except socket.error, error:
-        log.msg("error sending multicast: %s" % error)
-# end sendDiscovery
+        self.deferred.callback((hostname, force))
+# end HeartbeatServer

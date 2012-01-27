@@ -23,6 +23,8 @@ import os
 import sys
 import time
 import socket
+import logging
+import xmlrpclib
 
 # setup and configure logging first
 import common.loghandler
@@ -34,6 +36,7 @@ from common import multicast, lock, cmdoptions
 
 from twisted.internet import reactor
 from twisted.web import server as _server
+from twisted.web import xmlrpc
 from twisted.python import log
 
 CWD = os.getcwd()
@@ -55,71 +58,90 @@ class Server(common.rpc.Service):
         self.hosts = set()
     # end __init__
 
-    def __enter__(self):
-        self.discoverClients(force=True)
-    # end __enter__
-
-    # NOTE: should we even do this (how well does it scale)?
-    def __exit__(self, type, value, trackback):
-        log.msg("NOT IMPLEMENTED: send master shutdown to clients")
-    # end __exit___
-
-    def xmlrpc_discoverClients(self, force=False):
+    def resetClientMasters(self):
         '''
-        Sends a multicast packet across the network.  Hosts
-        listening on the proper group will respond with
-        an addHost request.
-
-        :param boolean force:
-            forces the client to reset its master server
+        Informs all clients to reset their master servers to ().  By
+        this point the event loop should have terminated but we
+        make sure to handle either case.
         '''
-        multicast.sendDiscovery(HOSTNAME, preferences.SERVER_PORT, force)
-    # end xmlrpc_discoverClients
+        for host in self.hosts:
+            if not reactor.running:
+                rpc = xmlrpclib.ServerProxy('http://%s' % host, allow_none=True)
+                if rpc.setMaster('', True):
+                    log.msg("reset master on %s" % host)
 
-    def xmlrpc_addHost(self, host, host_data, force=False):
+                else:
+                    log.msg(
+                        "%s failed to reset master" % host,
+                        logLevel=logging.ERROR
+                    )
+            else:
+                rpc = common.rpc.Connection(host)
+                rpc.call('setMaster', '', True)
+                log.msg("called setMaster on %s" % host)
+    # end resetClientMasters
+
+    def xmlrpc_addHost(self, hostname, host_data, force=False):
         '''
         adds a host url and sets up the
         host in the database
         '''
+        host = "%s:%i" % (hostname, preferences.CLIENT_PORT)
         if not force and host in self.hosts:
             log.msg("already added host %s" % host)
             return
 
         log.msg("adding host %s" % host)
         self.hosts.add(host)
-        hostname, port = host.split(":")
 
         dbdata =  db.utility.hostToTableData(host_data)
         insert = db.tables.hosts.insert()
         insert.execute(dbdata)
     # end xmlrpc_addHost
-
-    def discoverClients(self, force=False):
-        log.msg("Searching for clients (force: %s)" % force)
-        self.xmlrpc_discoverClients(force)
-        reactor.callLater(10, self.discoverClients)
-    # end discoverClients
 # end Server
+
+
+def incoming_host(data):
+    '''
+    callback for multicast server, runs whenever a new client
+    contacts the server
+    '''
+    hostname, force = data
+    log.msg("incoming heartbeat from %s" % hostname)
+    rpc = common.rpc.Connection(hostname, preferences.CLIENT_PORT)
+    rpc.call('setMaster', HOSTNAME)
+# end incoming_host
 
 # parse command line arguments
 options, args = cmdoptions.parser.parse_args()
 
 # create a lock for the process so we can't run two clients
 # at once
-with lock.ProcessLock('server', kill=options.force_kill, wait=options.wait):
-    with Server(SERVICE_LOG) as server:
-        SERVICE = server
+with lock.ProcessLock('server', kill=options.force_kill, wait=options.wait) \
+    as context:
+    server = Server(SERVICE_LOG)
+    SERVICE = server
 
-        # setup and run the server/reactor
-        db.tables.init()
+    # add exit actions to lock's exit context
+    context.addExitAction(server.resetClientMasters)
 
-        # bind services
-        reactor.listenTCP(preferences.SERVER_PORT, _server.Site(server))
+    # multicast server which listens for new clients
+    heartbeat_server = multicast.HeartbeatServer()
+    heartbeat_server.addCallback(incoming_host)
 
-        # start reactor and start client discovery
-        args = (HOSTNAME, preferences.SERVER_PORT)
-        log.msg("running server at http://%s:%i" % args)
-        reactor.run()
+    # setup and run the server/reactor
+    db.tables.init()
+
+    # bind services
+    reactor.listenTCP(preferences.SERVER_PORT, _server.Site(server))
+    reactor.listenMulticast(
+        preferences.HEARTBEAT_SERVER_PORT, heartbeat_server
+    )
+
+    # start reactor and start client discovery
+    args = (HOSTNAME, preferences.SERVER_PORT)
+    log.msg("running server at http://%s:%i" % args)
+    reactor.run()
 
 # If RESTART has been set to True then restart the server
 # script.  This must be done after the reactor and has been

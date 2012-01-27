@@ -22,8 +22,10 @@ prefs = common.preferences.Preferences('server')
 prefs.read('common')
 
 SERVER_PORT = prefs.getint('NETWORK', 'server_port')
+CLIENT_PORT = prefs.getint('NETWORK', 'client_port')
 RESTART_ENABLED = prefs.getboolean('RESTART', 'enabled')
 RESTART_DELAY = prefs.getint('RESTART', 'delay')
+HEARTBEAT_SERVER_PORT = prefs.getint('MULTICAST', 'heartbeat_port')
 
 if __name__ == '__main__':
     comprefs.debug(locals())

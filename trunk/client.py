@@ -34,7 +34,7 @@ import common.rpc
 from client import preferences, job, system, process
 from common import multicast, lock, cmdoptions
 
-from twisted.internet import reactor
+from twisted.internet import reactor, protocol
 from twisted.web import resource, xmlrpc
 from twisted.web import server as _server
 from twisted.python import log
@@ -55,6 +55,7 @@ class Client(common.rpc.Service):
     are handled entirely outside of this class for the purposes of
     separation of service and logic.
     '''
+    # provides a location to store our call to reactor.callLater
     def __init__(self, log_stream):
         common.rpc.Service.__init__(self, log_stream)
 
@@ -70,14 +71,80 @@ class Client(common.rpc.Service):
         }
     # end __init__
 
-    def __enter__(self):
-        pass
-    # end __enter__
+    def xmlrpc_setMaster(self, master, force=False):
+        '''
+        sets the master server address
 
-    # NOTE: should we even do this (how well does it scale)?
-    def __exit__(self, type, value, trackback):
-        log.msg("NOT IMPLEMENTED: send client shutdown to master")
-    # end __exit___
+        :param boolean force:
+            if provided then the value in master will
+        '''
+        global MASTER
+
+        # if a master address is not provided assume
+        # that we are trying to set the master to ()
+        if master:
+            master = (master, preferences.SERVER_PORT)
+        else:
+            master = ()
+
+        # if new address is the current address do nothing
+        if master == MASTER:
+            log.msg("master is already set to %s" % str(master))
+            return False
+
+        # if master is already set and force is not use do nothing
+        if MASTER and not force:
+            log.msg("master is already set, use force to override")
+            return False
+
+        MASTER = master
+        log.msg("master set to %s" % str(master))
+
+        if MASTER:
+            log.msg("sending host information to %s" % str(MASTER))
+            # generate information about this system and send it to
+            # the master
+            hostinfo_sources = {"system" : self.sys, "network" : self.net}
+            hostinfo = system.report(hostinfo_sources)
+            rpc = common.rpc.Connection(MASTER[0], MASTER[1])
+            rpc.call('addHost', HOSTNAME, hostinfo, force)
+
+        return True
+    # end xmlrpc_setMaster
+
+    def xmlrpc_heartbeat(self, force=False):
+        '''Sends out a multicast heartbeat in search of a master server'''
+        interval = preferences.HEARTBEAT_INTERVAL
+        Client.HEARTBEAT = reactor.callLater(interval, self.xmlrpc_heartbeat)
+
+        if not force and MASTER:
+            log.msg("skipping heartbeat")
+            return False
+
+        log.msg("sending heartbeat")
+        # prepare the data to send
+        address = (
+            preferences.MULTICAST_GROUP,
+            preferences.MULTICAST_HEARTBEAT_PORT
+        )
+        data = "_".join([
+            preferences.MULTICAST_HEARTBEAT_STRING,
+            HOSTNAME, str(force)
+        ])
+
+        # write data to the mulicast then close the connection
+        try:
+            udp = reactor.listenUDP(0, protocol.DatagramProtocol())
+            udp.write(data, address)
+            udp.stopListening()
+
+        except socket.error, error:
+            log.msg("error sending multicast: %s" % error)
+            return False
+
+        else:
+            return True
+    # end xmlrpc_heartbeat
 
     def _blockShutdown(self):
         return self.job.xmlrpc_running()
@@ -170,65 +237,23 @@ class Client(common.rpc.Service):
     # end xmlrpc_free
 # end Client
 
-
-def setMaster(data):
-    '''
-    sets the master address which is used to return
-    job information back to a central host for processing
-    '''
-    # global variables to access
-    global MASTER
-    global SERVICE
-
-    hostname, port, force = data
-
-    if force or not MASTER:
-        MASTER = (hostname, port)
-        log.msg("master is now %s:%i" % MASTER)
-
-        # create an assembly of information about the host
-        hostinfo_sources = {"system" : SERVICE.sys, "network" : SERVICE.net}
-        hostinfo = system.report(hostinfo_sources)
-
-        # send hostname and port over xmlrpc to server
-        client = "%s:%i" % (HOSTNAME, preferences.CLIENT_PORT)
-        server = "%s:%i" % (hostname, preferences.SERVER_PORT)
-        log.msg("sending host string %s to %s" % (client, server))
-
-        # connect to and call the remote method
-        proxy = common.rpc.Connection("http://%s" % server)
-        proxy.call('addHost', client, hostinfo, force)
-
-    elif MASTER != (hostname, port) and not force:
-        args = (MASTER[0], MASTER[1], hostname, port)
-        log.msg(
-            "master already set to %s:%i, cannot set to %s:%i without force" % args,
-            logLevel=logging.WARNING
-        )
-
-    else:
-        log.msg("master already set to", MASTER)
-# end setMaster
-
 # parse command line arguments
 options, args = cmdoptions.parser.parse_args()
 
 # create a lock for the process so we can't run two clients
 # at once
 with lock.ProcessLock('client', kill=options.force_kill, wait=options.wait):
-    with Client(SERVICE_LOG) as client:
-        SERVICE = client
-        discovery = multicast.DiscoveryServer()
-        discovery.addCallback(setMaster)
+    client = Client(SERVICE_LOG)
+    SERVICE = client
 
-        # bind services
-        reactor.listenTCP(preferences.CLIENT_PORT, _server.Site(client))
-        reactor.listenMulticast(preferences.MULTICAST_PORT, discovery)
+    # bind and start services
+    client.xmlrpc_heartbeat()
+    reactor.listenTCP(preferences.CLIENT_PORT, _server.Site(client))
 
-        # start reactor
-        args = (HOSTNAME, preferences.CLIENT_PORT)
-        log.msg("running client at http://%s:%i" % args)
-        reactor.run()
+    # start reactor
+    args = (HOSTNAME, preferences.CLIENT_PORT)
+    log.msg("running client at http://%s:%i" % args)
+    reactor.run()
 
 # If RESTART has been set to True then restart the client
 # script.  This must be done after the reactor and has been

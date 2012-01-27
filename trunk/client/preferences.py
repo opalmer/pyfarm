@@ -37,8 +37,11 @@ LOGGING_FILE = prefs.getboolean('LOGGING', 'file')
 SHUTDOWN_ENABLED = prefs.getboolean('SHUTDOWN', 'enabled')
 RESTART_ENABLED = prefs.getboolean('RESTART', 'enabled')
 RESTART_DELAY = prefs.getint('RESTART', 'delay')
-MULTICAST_PORT = prefs.getint('NETWORK', 'multicast_port')
 SERVER_PORT = prefs.getint('NETWORK', 'server_port')
+HEARTBEAT_INTERVAL = prefs.getint('MULTICAST', 'heartbeat_interval')
+MULTICAST_GROUP = prefs.get('MULTICAST', 'group')
+MULTICAST_HEARTBEAT_PORT = prefs.getint('MULTICAST', 'heartbeat_port')
+MULTICAST_HEARTBEAT_STRING = prefs.get('MULTICAST', 'heartbeat_string')
 
 if __name__ == '__main__':
     common.preferences.debug(locals())
