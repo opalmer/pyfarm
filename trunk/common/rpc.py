@@ -19,7 +19,6 @@
 from __future__ import with_statement
 
 import os
-import re
 import types
 import logging
 import socket
@@ -32,7 +31,6 @@ from twisted.web import resource, xmlrpc
 from twisted.python import log
 
 TEST_MODE = False
-RE_ADDR = re.compile(r'''http://(.+):(\d+)''')
 
 class Service(xmlrpc.XMLRPC):
     '''
@@ -199,7 +197,7 @@ class Connection(object):
         # split the hostname into port and hostname if
         # port is None and ":" in hostname
         if isinstance(port, types.NoneType) and ':' in hostname:
-            hostname, port = RE_ADDR.match(hostname).groups()
+            hostname, port = hostname.split(":")
 
         # be sure everything was setup properly
         if not hostname or not port:
