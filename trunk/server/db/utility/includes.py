@@ -26,6 +26,8 @@ def hostToTableData(data):
     address = None
     broadcast = None
     netmask = None
+
+    # find interface data for our current ip address
     for interface in data['network']['interfaces']:
         if interface['addr'] == data['network']['ip']:
             address = interface['addr']
@@ -38,6 +40,7 @@ def hostToTableData(data):
         'ip' : data['network']['ip'],
         'subnet' : netmask,
         'ram_total' : data['system']['ram_total'],
+        'swap_total' : data['system']['swap_total'],
         'cpu_count' : data['system']['cpu_count'],
         'online' : True,
         'software' : "NOT_IMPLEMENTED"

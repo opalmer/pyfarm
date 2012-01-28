@@ -101,6 +101,10 @@ class NetworkInformation(xmlrpc.XMLRPC):
 
 class SystemInformation(xmlrpc.XMLRPC):
     '''Provides information about the system'''
+    def __toMB(self, value):
+        return value / 1024 / 1024
+    # end __toMB
+
     def xmlrpc_cpu_count(self):
         '''returns the number of processors in the system'''
         return psutil.NUM_CPUS
@@ -113,13 +117,23 @@ class SystemInformation(xmlrpc.XMLRPC):
 
     def xmlrpc_ram_total(self):
         '''returns the total amount of ram in the system'''
-        return psutil.TOTAL_PHYMEM / 1024 / 1024
+        return self.__toMB(psutil.TOTAL_PHYMEM)
     # end xmlrpc_ram_total
 
     def xmlrpc_ram_free(self):
         '''returns the total amount of ram free'''
-        return psutil.avail_phymem() / 1024 / 1024
+        return self.__toMB(psutil.avail_phymem())
     # end xmlrpc_ram_free
+
+    def xmlrpc_swap_total(self):
+        '''returns the total amount of swap on the system'''
+        return self.__toMB(psutil.total_virtmem())
+    # end xmlrpc_swap_total
+
+    def xmlrpc_swap_free(self):
+        '''returns the total amount of swap free'''
+        return self.__toMB(psutil.avail_virtmem())
+    # end xmlrpc_swap_free
 # end SystemInformation
 
 
