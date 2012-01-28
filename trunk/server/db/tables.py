@@ -28,80 +28,90 @@ engine.echo = preferences.DB_ECHO
 metadata = sql.MetaData()
 metadata.bind = engine
 
-# create hosts table
+# HOSTS TABLE ATTRIBUTES
 # hold - if True the given client cannot accept jobs until hold is False again
-# running - number of jobs running
 # frames - csv list of frames current running (from frames.c.id)
 # cpus - number of cpus on the system
+# online - True if we are able to reach and communicate with the host.  This
+#          value can only be set if:
+#           - the host shuts down
+#           - an operation times out and we are unable to ping the host
+#             after an exception is raised
+# software - csv list of software that the host can run
+# jobtypes - csv list of jobtypes that the host can run
+# os - the operating system of the host
+#      0 - linux
+#      1 - mac
+#      2 - window
+#      3 - other/unknown
 hosts = sql.Table('pyfarm_hosts', metadata,
-      sql.Column('id', sql.Integer, autoincrement=True, primary_key=True),
-      sql.Column('hostname', sql.String(36)),
-      sql.Column('ip', sql.String(16)),
-      sql.Column('subnet', sql.String(16)),
-      sql.Column('ram_total', sql.Integer),
-      sql.Column('swap_total', sql.Integer),
-      sql.Column('cpu_count', sql.Integer),
-      sql.Column('online', sql.Boolean),
-      sql.Column('software', sql.String(256)),
-      sql.Column('hold', sql.Boolean, default=False),
-      sql.Column('running', sql.Integer, default=0),
-      sql.Column('frames', sql.String(128), default="")
+    sql.Column('id', sql.Integer, autoincrement=True, primary_key=True),
+    sql.Column('hostname', sql.String(36)),
+    sql.Column('ip', sql.String(16)),
+    sql.Column('subnet', sql.String(16)),
+    sql.Column('os', sql.Integer),
+    sql.Column('ram_total', sql.Integer),
+    sql.Column('swap_total', sql.Integer),
+    sql.Column('cpu_count', sql.Integer),
+    sql.Column('online', sql.Boolean),
+    sql.Column('jobtypes', sql.String(256), defult="*"),
+    sql.Column('software', sql.String(256), defailt="*"),
+    sql.Column('hold', sql.Boolean, default=False),
+    sql.Column('frames', sql.String(128), default="")
 )
 
 # create jobs table
 jobs = sql.Table('pyfarm_jobs', metadata,
-      sql.Column('id', sql.Integer, autoincrement=True, primary_key=True),
-      sql.Column('state', sql.Integer, default=0),
-      sql.Column('priority', sql.Integer, default=0),
+    sql.Column('id', sql.Integer, autoincrement=True, primary_key=True),
+    sql.Column('state', sql.Integer, default=0),
+    sql.Column('priority', sql.Integer, default=0),
 
-      # frame range declaration
-      sql.Column('start_frame', sql.Integer, nullable=False),
-      sql.Column('end_frame', sql.Integer, nullable=False),
-      sql.Column('by_frame', sql.Integer, nullable=False),
+    # frame range declaration
+    sql.Column('start_frame', sql.Integer),
+    sql.Column('end_frame', sql.Integer),
+    sql.Column('by_frame', sql.Integer),
 
-      # frame statistics
-      sql.Column('count_success', sql.Integer, default=0),
-      sql.Column('count_failed', sql.Integer, default=0),
-      sql.Column('count_running', sql.Integer, default=0),
-      sql.Column('frame_longest', sql.Float, default=0),
-      sql.Column('frame_shortest', sql.Float, default=0),
-      sql.Column('frame_average', sql.Float, default=0),
+    # frame statistics
+    sql.Column('count_success', sql.Integer, default=0),
+    sql.Column('count_failed', sql.Integer, default=0),
+    sql.Column('count_running', sql.Integer, default=0),
+    sql.Column('frame_longest', sql.Float, default=0),
+    sql.Column('frame_shortest', sql.Float, default=0),
+    sql.Column('frame_average', sql.Float, default=0),
 
-      # timers
-      sql.Column('time_start', sql.Float),
-      sql.Column('time_end', sql.Float),
-      sql.Column('time_elapsed', sql.Float),
+    # timers
+    sql.Column('time_start', sql.Float),
+    sql.Column('time_end', sql.Float),
+    sql.Column('time_elapsed', sql.Float),
 
-      # job setup
-      # isolate - if True this job must run by itself (no other jobs on host)
-      # template - the template command to use
-      # cpus - number of cpus required to be free on the client
-      # enviro - pickle of an environment dictionary
-      sql.Column('isolate', sql.Boolean, default=False),
-      sql.Column('template', sql.Text),
-      sql.Column('enviro', sql.PickleType, nullable=False),
-      sql.Column('user', sql.String(256)),
-      sql.Column('software', sql.String(256), nullable=False),
-      sql.Column('ram', sql.Integer),
-      sql.Column('cpus', sql.Integer, default=-1),
-      sql.Column('requeue_failed', sql.Boolean, default=False),
-      sql.Column('requeue_max', sql.Integer),
-)
+    # job setup
+    # isolate - if True this job must run by itself (no other jobs on host)
+    # cpus - number of cpus required to be free on the client
+    # enviro - pickle of an environment dictionary
+    sql.Column('enviro', sql.PickleType),
+    sql.Column('user', sql.String(256)),
+    sql.Column('software', sql.Integer),
+    sql.Column('jobtype', sql.Integer),
+    sql.Column('ram', sql.Integer),
+    sql.Column('cpus', sql.Integer, default=-1),
+    sql.Column('requeue_failed', sql.Boolean, default=False),
+    sql.Column('requeue_max', sql.Integer)
+    )
 
 # create frames table
 # uuid - uuid of job on client
 frames = sql.Table('pyfarm_frames', metadata,
-      sql.Column('id', sql.Integer, autoincrement=True, primary_key=True),
-      sql.Column('parent_id', sql.Integer, sql.ForeignKey(jobs.c.id), nullable=False),
-      sql.Column('host', sql.Integer, sql.ForeignKey(hosts.c.id)),
-      sql.Column('frame', sql.Integer),
-      sql.Column('state', sql.Integer, default=0),
-      sql.Column('attempts', sql.Integer, default=0),
-      sql.Column('ram', sql.Integer),
-      sql.Column('time_start', sql.Float),
-      sql.Column('time_end', sql.Float),
-      sql.Column('time_elapsed', sql.Float),
-      sql.Column('uuid', sql.String(36))
+    sql.Column('id', sql.Integer, autoincrement=True, primary_key=True),
+    sql.Column('parent_id', sql.Integer, sql.ForeignKey(jobs.c.id)),
+    sql.Column('host', sql.Integer, sql.ForeignKey(hosts.c.id)),
+    sql.Column('frame', sql.Integer),
+    sql.Column('state', sql.Integer, default=0),
+    sql.Column('attempts', sql.Integer, default=0),
+    sql.Column('ram', sql.Integer),
+    sql.Column('time_start', sql.Float),
+    sql.Column('time_end', sql.Float),
+    sql.Column('time_elapsed', sql.Float),
+    sql.Column('uuid', sql.String(36))
 )
 
 def init():
