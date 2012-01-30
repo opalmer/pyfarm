@@ -44,4 +44,15 @@ class OperatingSystem:
         '''resolves the incoming string to a value'''
         return OperatingSystem.get(data)
     # end resolve
-# end OperatingsYSTEM
+# end OperatingSystem
+
+
+# TODO: add method for list resolution
+class Software:
+    pass
+# end Software
+
+
+# TODO: add method for list resolution
+class JobType:
+# end JobType
