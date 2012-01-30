@@ -32,11 +32,10 @@ SERVICE_LOG = common.loghandler.startLogging('server')
 
 import common.rpc
 from server import db, preferences
-from common import multicast, lock, cmdoptions
+from common import multicast, lock, cmdargs
 
 from twisted.internet import reactor
 from twisted.web import server as _server
-from twisted.web import xmlrpc
 from twisted.python import log
 
 CWD = os.getcwd()
@@ -113,7 +112,7 @@ def incoming_host(data):
 # end incoming_host
 
 # parse command line arguments
-options, args = cmdoptions.parser.parse_args()
+options, args = cmdargs.parser.parse_args()
 
 # create a lock for the process so we can't run two clients
 # at once
