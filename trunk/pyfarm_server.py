@@ -22,6 +22,7 @@
 import os
 import sys
 import time
+import pprint
 import socket
 import logging
 import xmlrpclib
@@ -98,6 +99,7 @@ class Server(common.rpc.Service):
         self.hosts.add(host)
 
         dbdata =  db.utility.hostToTableData(host_data)
+        pprint.pprint(dbdata)
         insert = db.tables.hosts.insert()
         insert.execute(dbdata)
     # end xmlrpc_addHost
