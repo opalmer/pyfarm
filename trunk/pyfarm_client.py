@@ -29,6 +29,7 @@ import logging
 # parse command line arguments (before we setup logging)
 from client import cmdargs
 options, args = cmdargs.parser.parse_args()
+cmdargs.processOptions(options)
 
 # setup the main log
 import common.loghandler
