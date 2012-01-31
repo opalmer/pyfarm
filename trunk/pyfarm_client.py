@@ -109,8 +109,20 @@ class Client(common.rpc.Service):
             log.msg("sending host information to %s" % str(MASTER))
             # generate information about this system and send it to
             # the master
-            hostinfo_sources = {"system" : self.sys, "network" : self.net}
+
+            hostinfo_sources = {
+                "system" : self.sys,
+                "network" : self.net
+            }
+
             hostinfo = system.report(hostinfo_sources)
+
+            # update host info with options arguments
+            hostinfo['options'] = {
+                "host_groups" : options.host_groups,
+                "software" : options.host_software
+            }
+
             rpc = common.rpc.Connection(MASTER[0], MASTER[1])
             rpc.call('addHost', HOSTNAME, hostinfo, force)
 
