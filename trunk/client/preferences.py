@@ -16,17 +16,15 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
-import os
 import psutil
 
-import common.preferences
+from common.preferences import *
 
-prefs = common.preferences.Preferences('client')
+prefs = Preferences('client')
 prefs.read('common')
 prefs.read('client')
 
-CPU_COUNT = psutil.NUM_CPUS
-MAX_JOBS = int(prefs.getfloat('PROCESSING', 'cpu_mult') * CPU_COUNT)
+MAX_JOBS = int(prefs.getfloat('PROCESSING', 'cpu_mult') * psutil.NUM_CPUS)
 PRINT_OUTPUT = prefs.getboolean('LOGGING', 'print')
 TIMESTAMP = prefs.get('LOGGING', 'timestamp')
 CLIENT_PORT = prefs.getint('NETWORK', 'client_port')
@@ -42,6 +40,8 @@ HEARTBEAT_INTERVAL = prefs.getint('MULTICAST', 'heartbeat_interval')
 MULTICAST_GROUP = prefs.get('MULTICAST', 'group')
 MULTICAST_HEARTBEAT_PORT = prefs.getint('MULTICAST', 'heartbeat_port')
 MULTICAST_HEARTBEAT_STRING = prefs.get('MULTICAST', 'heartbeat_string')
+DB_ALLOW_REMOTE = prefs.getboolean('CLIENT_DATABASE', 'allow_remote_updates')
+DB_ECHO = prefs.getboolean('CLIENT_DATABASE', 'echo')
 
 if __name__ == '__main__':
     common.preferences.debug(locals())

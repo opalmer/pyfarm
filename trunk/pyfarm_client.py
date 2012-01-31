@@ -27,7 +27,7 @@ import socket
 import logging
 
 # parse command line arguments (before we setup logging)
-from client import cmdargs
+from client import cmdargs, db
 options, args = cmdargs.parser.parse_args()
 cmdargs.processOptions(options)
 
@@ -75,6 +75,14 @@ class Client(common.rpc.Service):
             "job" : self.job
         }
     # end __init__
+
+    def xmlrpc_master(self):
+        '''returns the current master'''
+        return MASTER
+    # end xmlrpc_master
+
+    def xmlrpc_foo(self):
+        self.resource_updates.trigger()
 
     def xmlrpc_setMaster(self, master, force=False):
         '''
@@ -125,6 +133,7 @@ class Client(common.rpc.Service):
 
             rpc = common.rpc.Connection(MASTER[0], MASTER[1])
             rpc.call('addHost', HOSTNAME, hostinfo, force)
+            db.updateHostInfo(self)
 
         return True
     # end xmlrpc_setMaster
