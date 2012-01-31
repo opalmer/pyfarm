@@ -21,13 +21,13 @@ import sys
 import types
 
 class OperatingSystem:
-    MAPPINGS = {
-        "win32" : OperatingSystem.WINDOWS,
-        "cygwin" : OperatingSystem.WINDOWS,
-        "darwin" : OperatingSystem.MAC,
-        "mac" : OperatingSystem.MAC
-    }
     LINUX, WINDOWS, MAC, OTHER = range(4)
+    MAPPINGS = {
+        "win32" : WINDOWS,
+        "cygwin" : WINDOWS,
+        "darwin" : MAC,
+        "mac" : MAC
+    }
 
     @staticmethod
     def get():
@@ -55,4 +55,8 @@ class Software:
 
 # TODO: add method for list resolution
 class JobType:
+    pass
 # end JobType
+
+
+OPERATING_SYSTEM = OperatingSystem.get()
