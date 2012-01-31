@@ -18,4 +18,4 @@
 
 import tables
 import utility
-import preferences
+from common import preferences

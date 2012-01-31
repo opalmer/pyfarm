@@ -169,9 +169,42 @@ def debug(localVars):
     pprint.pprint(local)
 # end debug
 
+def getUrl():
+    '''returns the sql url based on preferences'''
+    url = "%s" % DB_ENGINE
+
+    # add the driver if it was provided in the preferences
+    if DB_DRIVER:
+        url += "+%s" % DB_DRIVER
+        print "====",url
+
+    # the start of the url changes slightly for sqlite connections
+    url += "://"
+    if DB_ENGINE == "sqlite":
+        url += "/"
+
+    # server and login related preferences do not
+    # apply to sqlite
+    if DB_ENGINE == "sqlite":
+        return url + DB_NAME
+
+    # add username, password, and host
+    url += "%s:%s@%s" % (DB_USER, DB_PASS, DB_HOST)
+
+    # add port if it was provided
+    if DB_PORT and isinstance(DB_PORT, types.IntType):
+        url += ":%i" % DB_PORT
+
+    # finally, add the database name
+    url += "/%s" % DB_NAME
+
+    return url
+# end getUrl
+
 # local preferences setup
 prefs = Preferences('common')
 prefs.read('common')
+prefs.read('database')
 
 # local preferences
 LOGGING_STDOUT = prefs.getboolean('LOGGING', 'stdout')
@@ -193,6 +226,18 @@ MULTICAST_GROUP = prefs.get('MULTICAST', 'group')
 MULTICAST_HEARTBEAT_PORT = prefs.getint('MULTICAST', 'heartbeat_port')
 MULTICAST_HEARTBEAT_STRING = prefs.get('MULTICAST', 'heartbeat_string')
 
+# database preferences
+DB_CONFIG = prefs.get('DATABASE', 'config')
+DB_HOST = prefs.get(DB_CONFIG, 'host', default='localhost')
+DB_PORT = prefs.getint(DB_CONFIG, 'port')
+DB_USER = prefs.get(DB_CONFIG, 'user')
+DB_PASS = prefs.get(DB_CONFIG, 'pass')
+DB_NAME = prefs.get(DB_CONFIG, 'name')
+DB_ENGINE = prefs.get(DB_CONFIG, 'engine')
+DB_DRIVER = prefs.get(DB_CONFIG, 'driver')
+DB_URL = getUrl()
+DB_REBUILD = prefs.getboolean('DATABASE', 'rebuild')
+DB_ECHO = prefs.getboolean('DATABASE', 'echo')
 
 if __name__ == '__main__':
     debug(locals())

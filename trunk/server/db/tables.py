@@ -18,7 +18,7 @@
 
 import sqlalchemy as sql
 
-import preferences
+from common import preferences
 
 # create and connect to the engine
 engine = sql.create_engine(preferences.DB_URL)
@@ -51,7 +51,9 @@ hosts = sql.Table('pyfarm_hosts', metadata,
     sql.Column('subnet', sql.String(16)),
     sql.Column('os', sql.Integer),
     sql.Column('ram_total', sql.Integer),
+    sql.Column('ram_usage', sql.Integer),
     sql.Column('swap_total', sql.Integer),
+    sql.Column('swap_usage', sql.Integer),
     sql.Column('cpu_count', sql.Integer),
     sql.Column('online', sql.Boolean),
     sql.Column('groups', sql.String(128), default='*'),
