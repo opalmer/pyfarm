@@ -36,8 +36,12 @@ parser.add_option(
     help='sets the total number of cpus available to the farm'
 )
 parser.add_option(
-    '--host-groups', default='',
+    '--host-groups', default='*',
     help='comma separated list of groups thos host belongs to'
+)
+parser.add_option(
+    '--host-software', default='*',
+    help='comma separated list of software the host can run'
 )
 
 def processOptions(options):
@@ -77,7 +81,7 @@ def __setHostRAM(option):
         '--host-ram'
     )
 
-    if isinstance(value, types.IntType):
+    if isinstance(value, types.IntType) and not isinstance(value, types.BooleanType):
         psutil.TOTAL_PHYMEM = value * 1024 * 1024
 # end __setHostRAM
 
@@ -89,6 +93,6 @@ def __setHostCPU(option):
         '--host-cpus'
     )
 
-    if isinstance(value, types.IntType):
+    if isinstance(value, types.IntType) and not isinstance(value, types.BooleanType):
         psutil.NUM_CPUS = value
 # end __setHostCPU
