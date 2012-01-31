@@ -26,12 +26,16 @@ import types
 import socket
 import logging
 
-import common.loghandler
+# parse command line arguments (before we setup logging)
+from client import cmdargs
+options, args = cmdargs.parser.parse_args()
 
+# setup the main log
+import common.loghandler
 SERVICE_LOG = common.loghandler.startLogging('client')
 
 import common.rpc
-from client import preferences, job, system, process, cmdargs
+from client import preferences, job, system, process
 from common import lock
 
 from twisted.internet import reactor, protocol
@@ -236,9 +240,6 @@ class Client(common.rpc.Service):
         return False
     # end xmlrpc_free
 # end Client
-
-# parse command line arguments
-options, args = cmdargs.parser.parse_args()
 
 # create a lock for the process so we can't run two clients
 # at once

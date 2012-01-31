@@ -26,13 +26,17 @@ import socket
 import logging
 import xmlrpclib
 
-# setup and configure logging first
+# parse command line arguments (before we setup logging)
+from common import cmdargs
+options, args = cmdargs.parser.parse_args()
+
+# setup the main log
 import common.loghandler
 SERVICE_LOG = common.loghandler.startLogging('server')
 
 import common.rpc
 from server import db, preferences
-from common import multicast, lock, cmdargs
+from common import multicast, lock
 
 from twisted.internet import reactor
 from twisted.web import server as _server
@@ -110,9 +114,6 @@ def incoming_host(data):
     rpc = common.rpc.Connection(hostname, preferences.CLIENT_PORT)
     rpc.call('setMaster', HOSTNAME)
 # end incoming_host
-
-# parse command line arguments
-options, args = cmdargs.parser.parse_args()
 
 # create a lock for the process so we can't run two clients
 # at once
