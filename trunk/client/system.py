@@ -24,6 +24,8 @@ import netifaces
 
 from twisted.web import xmlrpc
 
+import common.datatypes
+
 class NetworkInformation(xmlrpc.XMLRPC):
     '''Provides information about the network'''
     def isLocal(self, ip):
@@ -104,6 +106,11 @@ class SystemInformation(xmlrpc.XMLRPC):
     def __toMB(self, value):
         return value / 1024 / 1024
     # end __toMB
+
+    def xmlrpc_os(self):
+        '''returns the operating system integer'''
+        return common.datatypes.OPERATING_SYSTEM
+    # end xmlrpc_os
 
     def xmlrpc_cpu_count(self):
         '''returns the number of processors in the system'''
