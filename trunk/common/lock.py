@@ -80,13 +80,13 @@ class LockFile(object):
             if not data.isdigit():
                 return False
 
-            try:
-                process = psutil.Process(int(data))
-                return process.is_running()
+            data = int(data)
 
-            except psutil.NoSuchProcess:
+            if not psutil.pid_exists(data):
                 self.remove()
                 return False
+
+            return True
     # end locked
 
     def lock(self, force=False):
