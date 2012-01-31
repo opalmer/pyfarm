@@ -43,7 +43,9 @@ def hostToTableData(data):
         'swap_total' : data['system']['swap_total'],
         'cpu_count' : data['system']['cpu_count'],
         'online' : True,
-        'software' : "NOT_IMPLEMENTED"
+        'software' : data['options']['software'],
+        'groups' : data['options']['host_groups'],
+        'os' : data['system']['os']
     }
 # end hostToTableData
 

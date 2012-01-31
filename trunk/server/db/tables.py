@@ -54,7 +54,7 @@ hosts = sql.Table('pyfarm_hosts', metadata,
     sql.Column('swap_total', sql.Integer),
     sql.Column('cpu_count', sql.Integer),
     sql.Column('online', sql.Boolean),
-    sql.Column('groups', sql.String(128)),
+    sql.Column('groups', sql.String(128), default='*'),
     sql.Column('software', sql.String(256), default="*"),
     sql.Column('hold', sql.Boolean, default=False),
     sql.Column('frames', sql.String(128), default="")
