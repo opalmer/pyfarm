@@ -76,6 +76,40 @@ class Client(common.rpc.Service):
         }
     # end __init__
 
+    def heartbeat(self, force=False):
+        '''Sends out a multicast heartbeat in search of a master server'''
+        interval = preferences.HEARTBEAT_INTERVAL
+        Client.HEARTBEAT = reactor.callLater(interval, self.heartbeat)
+
+        if not force and MASTER:
+            log.msg("skipping heartbeat")
+            return False
+
+        log.msg("sending heartbeat")
+        # prepare the data to send
+        address = (
+            preferences.MULTICAST_GROUP,
+            preferences.MULTICAST_HEARTBEAT_PORT
+            )
+        data = "_".join([
+            preferences.MULTICAST_HEARTBEAT_STRING,
+            HOSTNAME, str(force)
+        ])
+
+        # write data to the mulicast then close the connection
+        try:
+            udp = reactor.listenUDP(0, protocol.DatagramProtocol())
+            udp.write(data, address)
+            udp.stopListening()
+
+        except socket.error, error:
+            log.msg("error sending multicast: %s" % error)
+            return False
+
+        else:
+            return True
+        # end heartbeat
+
     def xmlrpc_master(self):
         '''returns the current master'''
         return MASTER
@@ -137,40 +171,6 @@ class Client(common.rpc.Service):
 
         return True
     # end xmlrpc_setMaster
-
-    def xmlrpc_heartbeat(self, force=False):
-        '''Sends out a multicast heartbeat in search of a master server'''
-        interval = preferences.HEARTBEAT_INTERVAL
-        Client.HEARTBEAT = reactor.callLater(interval, self.xmlrpc_heartbeat)
-
-        if not force and MASTER:
-            log.msg("skipping heartbeat")
-            return False
-
-        log.msg("sending heartbeat")
-        # prepare the data to send
-        address = (
-            preferences.MULTICAST_GROUP,
-            preferences.MULTICAST_HEARTBEAT_PORT
-        )
-        data = "_".join([
-            preferences.MULTICAST_HEARTBEAT_STRING,
-            HOSTNAME, str(force)
-        ])
-
-        # write data to the mulicast then close the connection
-        try:
-            udp = reactor.listenUDP(0, protocol.DatagramProtocol())
-            udp.write(data, address)
-            udp.stopListening()
-
-        except socket.error, error:
-            log.msg("error sending multicast: %s" % error)
-            return False
-
-        else:
-            return True
-    # end xmlrpc_heartbeat
 
     def _blockShutdown(self):
         return self.job.xmlrpc_running()
@@ -270,7 +270,7 @@ with lock.ProcessLock('client', kill=options.force_kill, wait=options.wait):
     SERVICE = client
 
     # bind and start services
-    client.xmlrpc_heartbeat()
+    client.heartbeat()
     reactor.listenTCP(preferences.CLIENT_PORT, _server.Site(client))
 
     # start reactor
