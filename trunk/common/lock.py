@@ -25,7 +25,7 @@ import psutil
 import signal
 import tempfile
 
-from loghandler import log
+from logger import log
 
 KILL_SLEEP = 2
 LOCK_ROOT = os.path.join(tempfile.gettempdir(), 'pyfarm', 'lock')
