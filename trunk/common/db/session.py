@@ -18,7 +18,7 @@
 
 '''
 Retains the global instance of the session maker object and returns new
-sessions for use in transactions
+sessions for use in transactions and other procedures
 '''
 
 import sqlalchemy as sql
@@ -28,9 +28,3 @@ from common import preferences
 
 ENGINE = sql.create_engine(preferences.DB_URL)
 Session = orm.sessionmaker(bind=ENGINE)
-
-def session():
-    '''creates and returns a new session'''
-    return Session()
-# end session
-
