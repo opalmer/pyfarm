@@ -21,7 +21,6 @@
 
 import os
 import copy
-import site
 import types
 import psutil
 import itertools
@@ -29,12 +28,6 @@ import itertools
 from twisted.web import xmlrpc
 from twisted.internet import protocol, defer
 from twisted.python import log
-
-# add common python package
-cwd = os.path.abspath(os.path.dirname(__file__))
-root = os.path.abspath(os.path.join(cwd, "..", ".."))
-package = os.path.abspath(os.path.join(cwd, ".."))
-site.addsitedir(root)
 
 from common import logger
 import preferences

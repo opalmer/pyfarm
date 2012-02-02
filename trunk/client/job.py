@@ -22,24 +22,16 @@ import os
 import time
 import copy
 import uuid
-import site
 import types
 import socket
-import logging
 import psutil
 
 from twisted.internet import reactor
 from twisted.python import log
 from twisted.web import xmlrpc, resource
 
-# add common python package
-cwd = os.path.abspath(os.path.dirname(__file__))
-root = os.path.abspath(os.path.join(cwd, "..", ".."))
-package = os.path.abspath(os.path.join(cwd, ".."))
-site.addsitedir(root)
-
 import process
-from common import loghandler
+from common import logger
 import preferences
 
 class Manager(xmlrpc.XMLRPC):
