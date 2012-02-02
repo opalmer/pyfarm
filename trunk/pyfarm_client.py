@@ -32,8 +32,8 @@ options, args = cmdargs.parser.parse_args()
 cmdargs.processOptions(options)
 
 # setup the main log
-import common.loghandler
-SERVICE_LOG = common.loghandler.startLogging('client')
+import common.logger
+SERVICE_LOG = common.logger.startLogging('client')
 
 import common.rpc
 from client import preferences, job, system, process
