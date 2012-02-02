@@ -36,6 +36,7 @@ import common.logger
 SERVICE_LOG = common.logger.startLogging('server')
 
 import common.rpc
+from common.db import tables
 from server import db, preferences
 from common import multicast, lock
 
@@ -100,7 +101,7 @@ class Server(common.rpc.Service):
 
         dbdata =  db.utility.hostToTableData(host_data)
         pprint.pprint(dbdata)
-        insert = db.tables.hosts.insert()
+        insert = tables.hosts.insert()
         insert.execute(dbdata)
     # end xmlrpc_addHost
 # end Server
@@ -132,7 +133,7 @@ with lock.ProcessLock('server', kill=options.force_kill, wait=options.wait) \
     heartbeat_server.addCallback(incoming_host)
 
     # setup and run the server/reactor
-    db.tables.init()
+    tables.init()
 
     # bind services
     reactor.listenTCP(preferences.SERVER_PORT, _server.Site(server))
