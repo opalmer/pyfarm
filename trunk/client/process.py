@@ -36,7 +36,7 @@ root = os.path.abspath(os.path.join(cwd, "..", ".."))
 package = os.path.abspath(os.path.join(cwd, ".."))
 site.addsitedir(root)
 
-from common import loghandler
+from common import logger
 import preferences
 
 CPU_COUNT = psutil.NUM_CPUS
