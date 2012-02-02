@@ -32,8 +32,8 @@ from common import cmdargs
 options, args = cmdargs.parser.parse_args()
 
 # setup the main log
-import common.loghandler
-SERVICE_LOG = common.loghandler.startLogging('server')
+import common.logger
+SERVICE_LOG = common.logger.startLogging('server')
 
 import common.rpc
 from server import db, preferences
