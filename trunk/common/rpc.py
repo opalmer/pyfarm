@@ -95,11 +95,20 @@ class Service(xmlrpc.XMLRPC):
         log.msg("test mode set to %s" % TEST_MODE)
     # end xmlrpc_test_mode
 
-    def xmlrpc_ping(self):
+    def xmlrpc_ping(self, hostname=None, port=None):
         '''
-        Simply return True.  This call should be used to query
-        if a connection can be opened to the server.
+        by default this function will return True however a hostname
+        and port could also be provided so we can ping remote hosts
+
+        :param string hostname:
+            the remote host to ping
+
+        :param integer port:
+            the remote port to ping the given hostname on
         '''
+        if hostname and port:
+            return ping(hostname, port)
+
         return True
     # end xmlrpc_ping
 
@@ -241,18 +250,49 @@ class Connection(object):
     # end call
 # end Connection
 
+def ping(hostname, port, success=None, failure=None):
+    '''
+    Attempts to run the xmlrpc ping method on the host and port.
+    When not running in a reactor this will attempt to call the
+    respective callback (although they are not required.
 
-def ping(hostname, port):
-    '''return True if we can connect to the remote xmlrpc service'''
-    try:
-        rpc = xmlrpclib.ServerProxy(
-            "http://%s:%i" % (hostname, port), allow_none=True
-        )
-        rpc.ping()
-        log.msg("successfully received ping from %s" % hostname)
-        return True
+    .. note::
+        When running under the reactor this method will require
+        at least a success method.  If a failure method is not provided
+        then one will be constructed to log the failure
 
-    except socket.error:
-        log.msg("failed to ping %s" % hostname, logLevel=logging.WARNING)
-        return False
+    '''
+    ident = "%s:%i" % (hostname, port)
+    url = "http://%s" % ident
+
+    if not reactor.running:
+        try:
+            rpc = xmlrpclib.ServerProxy(url, allow_none=True)
+            rpc.ping()
+            log.msg("successfully received ping from %s" % ident)
+
+            if callable(success):
+                success(hostname, port)
+
+            return True
+
+        except socket.error:
+            log.msg("failed to ping %s" % ident, logLevel=logging.WARNING)
+
+            if callable(failure):
+                failure(hostname, port)
+
+            return False
+
+    else:
+        if not callable(success):
+            raise TypeError("reactor is running, success must be callable")
+
+        if not callable(failure):
+            def failure(value):
+                log.msg('failed to ping %s' % ident)
+
+
+        rpc = xmlrpc.Proxy(url)
+        return rpc.callRemote('ping').addCallbacks(success, failure)
 # end ping
