@@ -95,7 +95,7 @@ class Service(xmlrpc.XMLRPC):
         log.msg("test mode set to %s" % TEST_MODE)
     # end xmlrpc_test_mode
 
-    def xmlrpc_ping(self, hostname=None, port=None):
+    def xmlrpc_ping(self, hostname=None, port=None, success=None, failure=None):
         '''
         by default this function will return True however a hostname
         and port could also be provided so we can ping remote hosts
@@ -107,7 +107,7 @@ class Service(xmlrpc.XMLRPC):
             the remote port to ping the given hostname on
         '''
         if hostname and port:
-            return ping(hostname, port)
+            return ping(hostname, port, success, failure)
 
         return True
     # end xmlrpc_ping
