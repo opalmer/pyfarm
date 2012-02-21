@@ -172,6 +172,73 @@ class Service(xmlrpc.XMLRPC):
 
         return data
     # end xmlrpc_service_log
+
+    def xmlrpc_resources(self, hostname=None, update=False, data=None):
+        '''
+        Updates the host table with resource information.  Depending
+        on the database type this will either access the database directory
+        or send the host information to the server for processing
+        '''
+        _hostname = socket.gethostname() # local host name
+        classname = self.__class__.__name__.upper()
+        engine = preferences.DB_ENGINE == "sqlite"
+        url = "http://%s:%i"
+
+        if classname == "SERVER":
+            if hostname is not None and update and data is not None:
+                log.msg("updating %s's host data in table" % hostname)
+                log.msg("host data -- ")
+                log.msg(data)
+
+                # return True when complete
+                return True
+
+            # if data is None them we first have to retrieve data for the
+            # remote host
+            if hostname is not None and data is None:
+                log.msg("retrieving resources for %s" % hostname)
+                url = 'http://%s:%i' % (hostname, preferences.CLIENT_PORT)
+                rpc = xmlrpclib.ServerProxy(url)
+                resources = rpc.resources()
+
+                if not update:
+                    return resources
+
+                return self.xmlrpc_resources(hostname, update, resources)
+
+        if classname == "CLIENT":
+            from client import system
+            sysinfo = system.report(
+                {
+                    "system" : self.sys,
+                    "network" : self.net
+                }
+            )
+
+            if not update:
+                return sysinfo
+
+            if update and engine == "sqlite":
+                def success(*values):
+                    print values
+                    log.msg("updated host resources on remote server")
+                # end success
+
+                def failure(*values):
+                    print values
+                    log.msg("failed to update resources remotely")
+                # end failure
+
+                log.msg("updating host resource information using master")
+                master, port = self.xmlrpc_master()
+                rpc = Connection(master, port, success, failure)
+                rpc.call('resources', _hostname, True, sysinfo)
+
+            elif update and engine != "sqlite":
+                log.msg("updating resources in table")
+
+
+        raise NotImplementedError("unhandled usage")
 # end Service
 
 

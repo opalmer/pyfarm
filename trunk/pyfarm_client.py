@@ -167,7 +167,11 @@ class Client(common.rpc.Service):
 
             rpc = common.rpc.Connection(MASTER[0], MASTER[1])
             rpc.call('addHost', HOSTNAME, hostinfo, force)
+
+            # TODO: see todo below
+            print "="*25, 'TODO: update to use resources function'
             db.updateHostInfo(self)
+            print "="*25, 'TODO: update to use resources function'
 
         return True
     # end xmlrpc_setMaster

@@ -102,13 +102,14 @@ class Server(common.rpc.Service):
             log.msg("already added host %s" % host)
             return
 
-        log.msg("adding host %s" % host)
-        self.hosts.add(host)
-
-        dbdata =  db.utility.hostToTableData(host_data)
-        pprint.pprint(dbdata)
-        insert = tables.hosts.insert()
-        insert.execute(dbdata)
+        raise DeprecationWarning("use the resources function")
+#        log.msg("adding host %s" % host)
+#        self.hosts.add(host)
+#
+#        dbdata =  db.utility.hostToTableData(host_data)
+#        pprint.pprint(dbdata)
+#        insert = tables.hosts.insert()
+#        insert.execute(dbdata)
     # end xmlrpc_addHost
 # end Server
 
