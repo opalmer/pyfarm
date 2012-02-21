@@ -22,7 +22,7 @@ import socket
 import preferences
 
 from twisted.python import log
-from twisted.internet import protocol, reactor, defer, error
+from twisted.internet import protocol, defer
 
 HOSTNAME = socket.getfqdn(socket.gethostname())
 
