@@ -70,6 +70,12 @@ class Server(common.rpc.Service):
         make sure to handle either case.
         '''
         for host in self.hosts:
+            hostname, port = host.split(":")
+
+            if not self.xmlrpc_ping(hostname, int(port)):
+                log.msg("%s does not appear to be up, skipping" % host)
+                continue
+
             if not reactor.running:
                 rpc = xmlrpclib.ServerProxy('http://%s' % host, allow_none=True)
                 if rpc.setMaster('', True):
