@@ -29,7 +29,7 @@ import socket
 import logging
 
 # parse command line arguments (before we setup logging)
-from client import cmdargs, db
+from client import cmdargs
 options, args = cmdargs.parser.parse_args()
 cmdargs.processOptions(options)
 
@@ -40,6 +40,7 @@ SERVICE_LOG = common.logger.startLogging('client')
 import common.rpc
 from client import preferences, job, system, process
 from common import lock
+from common.db import hosts
 
 from twisted.internet import reactor, protocol
 from twisted.web import xmlrpc
@@ -170,10 +171,16 @@ class Client(common.rpc.Service):
             rpc = common.rpc.Connection(MASTER[0], MASTER[1])
             rpc.call('addHost', HOSTNAME, hostinfo, force)
 
-            # TODO: see todo below
-            print "="*25, 'TODO: update to use resources function'
-            db.updateHostInfo(self)
-            print "="*25, 'TODO: update to use resources function'
+            # if we are using sqlite inform master to update our resource
+            # in the database
+            if preferences.DB_ENGINE == "sqlite":
+                log.msg("informing master to update our resources")
+                rpc.call('resources', HOSTNAME, True)
+
+            # otherwise we update resource information ourselves
+            else:
+                log.msg("updating our own resource information")
+                self.xmlrpc_resources('', True)
 
         return True
     # end xmlrpc_setMaster
