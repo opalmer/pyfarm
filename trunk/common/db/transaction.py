@@ -19,10 +19,14 @@
 '''Provides functions and classes for transaction management'''
 
 import types
-from sqlalchemy import orm
+import time
+
+import sqlalchemy
+import sqlalchemy.orm
 from twisted.python import log
 
-from session import Session
+from session import ENGINE, Session
+from common import preferences
 
 class Transaction(object):
     '''
@@ -39,13 +43,22 @@ class Transaction(object):
             pass
         # end Base
 
+        self.start = time.time()
         self.base = base or Base
         self.table = table
         self.tablename = self.table.fullname
 
+        # engine per transaction (buggy)
+#        self.engine = sqlalchemy.create_engine(preferences.DB_URL)
+#        self.Session = sqlalchemy.orm.sessionmaker(bind=self.engine)
+
+        # single engine per run (this MAY be needed later)
+        self.engine = ENGINE
+        self.Session = Session
+
         # map the object and prepare the session
-        orm.mapper(self.base, self.table)
-        self.session = Session()
+        sqlalchemy.orm.mapper(self.base, self.table)
+        self.session = self.Session()
         self.query = self.session.query(self.base)
     # end __init__
 
@@ -57,15 +70,23 @@ class Transaction(object):
     def __exit__(self, type, value, trackback):
         # roll back the transaction in the event of an error
         if not isinstance(type, types.NoneType):
-            log.msg("rolling back database transaction: %s" % value)
+            log.msg("...rolling back database transaction: %s" % value)
             self.session.rollback()
-            return
 
         # commit changes if there are any pending
-        if self.session.dirty or self.session.new:
-            self.session.commit()
-            log.msg("committing database entry to %s" % self.tablename)
+        else:
+            if self.session.dirty or self.session.new:
+                self.session.commit()
+                log.msg("...committing database entry to %s" % self.tablename)
 
-        log.msg("closed database transaction on %s" % self.tablename)
+        # cleanup connections if requested
+        if preferences.DB_CLOSE_CONNECTIONS:
+            log.msg("...closing connections")
+            self.query.session.close_all()
+            self.query.session.bind.dispose()
+
+        self.end = time.time()
+        args = (self.tablename, self.end-self.start)
+        log.msg("closed database transaction on %s (%ss)" % args)
     # end __exit__
 # end Transaction

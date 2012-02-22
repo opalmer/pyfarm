@@ -238,6 +238,7 @@ DB_DRIVER = prefs.get(DB_CONFIG, 'driver')
 DB_URL = getUrl()
 DB_REBUILD = prefs.getboolean('DATABASE', 'rebuild')
 DB_ECHO = prefs.getboolean('DATABASE', 'echo')
+DB_CLOSE_CONNECTIONS = prefs.getboolean('DB-CONNECTIONS', 'close_transactions')
 
 if __name__ == '__main__':
     debug(locals())

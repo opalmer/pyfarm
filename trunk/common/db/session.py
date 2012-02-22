@@ -24,7 +24,10 @@ sessions for use in transactions and other procedures
 import sqlalchemy as sql
 from sqlalchemy import orm
 
+from twisted.python import log
+
 from common import preferences
 
 ENGINE = sql.create_engine(preferences.DB_URL)
 Session = orm.sessionmaker(bind=ENGINE)
+log.msg("created engine: %s" % preferences.DB_URL)
