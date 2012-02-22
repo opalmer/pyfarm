@@ -103,3 +103,22 @@ def update_resources(hostname, data):
 
             return fields
 # end update_resources
+
+
+def hostlist(online=True):
+    '''
+    Returns a lists of hosts currently in the database.  Depending
+    on the input keyword this function will either return the online hosts,
+    offline hosts, or all hosts if [None] is given as a value.
+    '''
+    results = []
+    with Transaction(hosts) as trans:
+        if online is None:
+            for instance in trans.query:
+                results.append(instance.hostname)
+        else:
+            for instance in trans.query.filter_by(online=online):
+                results.append(instance.hostname)
+
+    return results
+# end hostlist
