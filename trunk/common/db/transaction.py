@@ -41,6 +41,7 @@ class Transaction(object):
 
         self.base = base or Base
         self.table = table
+        self.tablename = self.table.fullname
 
         # map the object and prepare the session
         orm.mapper(self.base, self.table)
@@ -49,7 +50,7 @@ class Transaction(object):
     # end __init__
 
     def __enter__(self):
-        log.msg("opening database transaction")
+        log.msg("opening database transaction on %s" % self.tablename)
         return self
     # end __enter__
 
@@ -63,8 +64,8 @@ class Transaction(object):
         # commit changes if there are any pending
         if self.session.dirty or self.session.new:
             self.session.commit()
-            log.msg("committing database entry")
+            log.msg("committing database entry to %s" % self.tablename)
 
-        log.msg("closed database transaction")
+        log.msg("closed database transaction on %s" % self.tablename)
     # end __exit__
 # end Transaction
