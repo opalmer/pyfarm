@@ -41,6 +41,7 @@ import common.rpc
 from common.db import tables
 from server import db, preferences
 from common import multicast, lock
+from common.db import hosts
 
 from twisted.internet import reactor
 from twisted.web import server as _server
@@ -71,15 +72,15 @@ class Server(common.rpc.Service):
         this point the event loop should have terminated but we
         make sure to handle either case.
         '''
-        for host in self.hosts:
-            hostname, port = host.split(":")
-
-            if not self.xmlrpc_ping(hostname, int(port)):
+        for host in hosts.hostlist(online=True):
+            port = preferences.CLIENT_PORT
+            if not self.xmlrpc_ping(host, int(port)):
                 log.msg("%s does not appear to be up, skipping" % host)
                 continue
 
             if not reactor.running:
-                rpc = xmlrpclib.ServerProxy('http://%s' % host, allow_none=True)
+                url = "http://%s:%i" % (host, port)
+                rpc = xmlrpclib.ServerProxy(url, allow_none=True)
                 if rpc.setMaster('', True):
                     log.msg("reset master on %s" % host)
 
@@ -89,29 +90,19 @@ class Server(common.rpc.Service):
                         logLevel=logging.ERROR
                     )
             else:
-                rpc = common.rpc.Connection(host)
+                rpc = common.rpc.Connection(host, port)
                 rpc.call('setMaster', '', True)
                 log.msg("called setMaster on %s" % host)
     # end resetClientMasters
 
     def xmlrpc_addHost(self, hostname, host_data, force=False):
         '''
-        adds a host url and sets up the
-        host in the database
+        adds a host url and sets up the host in the database
         '''
         host = "%s:%i" % (hostname, preferences.CLIENT_PORT)
         if not force and host in self.hosts:
             log.msg("already added host %s" % host)
             return
-
-        raise DeprecationWarning("use the resources function")
-#        log.msg("adding host %s" % host)
-#        self.hosts.add(host)
-#
-#        dbdata =  db.utility.hostToTableData(host_data)
-#        pprint.pprint(dbdata)
-#        insert = tables.hosts.insert()
-#        insert.execute(dbdata)
     # end xmlrpc_addHost
 # end Server
 
