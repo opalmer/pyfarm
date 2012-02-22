@@ -25,6 +25,7 @@ import socket
 import xmlrpclib
 
 import preferences
+from common.db import hosts
 
 from twisted.internet import reactor
 from twisted.web import resource, xmlrpc
@@ -181,17 +182,13 @@ class Service(xmlrpc.XMLRPC):
         '''
         _hostname = socket.gethostname() # local host name
         classname = self.__class__.__name__.upper()
-        engine = preferences.DB_ENGINE == "sqlite"
-        url = "http://%s:%i"
+        engine = preferences.DB_ENGINE
 
         if classname == "SERVER":
+            # if we are provided data then we just need to update the
+            # resource information
             if hostname is not None and update and data is not None:
-                log.msg("updating %s's host data in table" % hostname)
-                log.msg("host data -- ")
-                log.msg(data)
-
-                # return True when complete
-                return True
+                return hosts.update_resources(hostname, data)
 
             # if data is None them we first have to retrieve data for the
             # remote host
@@ -200,11 +197,7 @@ class Service(xmlrpc.XMLRPC):
                 url = 'http://%s:%i' % (hostname, preferences.CLIENT_PORT)
                 rpc = xmlrpclib.ServerProxy(url)
                 resources = rpc.resources()
-
-                if not update:
-                    return resources
-
-                return self.xmlrpc_resources(hostname, update, resources)
+                return self.xmlrpc_resources(hostname, True, resources)
 
         if classname == "CLIENT":
             from client import system
@@ -215,28 +208,32 @@ class Service(xmlrpc.XMLRPC):
                 }
             )
 
+            sysinfo['system']['online'] = self.xmlrpc_online()
+
             if not update:
                 return sysinfo
 
+            # if we're using sqlite as an engine then we need to send
+            # our resource information directly to the server
             if update and engine == "sqlite":
                 def success(*values):
-                    print values
-                    log.msg("updated host resources on remote server")
+                    log.msg("updated resources fields remotely: %s" % values)
                 # end success
 
                 def failure(*values):
-                    print values
-                    log.msg("failed to update resources remotely")
+                    log.msg("failed to update resources remotely: %s" % values)
                 # end failure
 
                 log.msg("updating host resource information using master")
                 master, port = self.xmlrpc_master()
                 rpc = Connection(master, port, success, failure)
                 rpc.call('resources', _hostname, True, sysinfo)
+                return
 
+            # if we're not using sqlite then update the database directly
             elif update and engine != "sqlite":
                 log.msg("updating resources in table")
-
+                return hosts.update_resources(_hostname, sysinfo)
 
         raise NotImplementedError("unhandled usage")
 # end Service
@@ -358,7 +355,6 @@ def ping(hostname, port, success=None, failure=None):
         if not callable(failure):
             def failure(value):
                 log.msg('failed to ping %s' % ident)
-
 
         rpc = xmlrpc.Proxy(url)
         return rpc.callRemote('ping').addCallbacks(success, failure)
