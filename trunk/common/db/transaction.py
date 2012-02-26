@@ -66,7 +66,7 @@ class Transaction(object):
         return self
     # end __enter__
 
-    def __exit__(self, type, value, trackback):
+    def __exit__(self, type, value, traceback):
         # roll back the transaction in the event of an error
         if not isinstance(type, types.NoneType):
             log.msg("...rolling back database transaction: %s" % value)
