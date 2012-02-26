@@ -28,6 +28,12 @@ from twisted.python import log
 from session import ENGINE, Session
 from common import preferences
 
+class BaseObject(object):
+    '''based object used for mapping all objects in transactions'''
+    pass
+# end BaseOjbect
+
+
 class Transaction(object):
     '''
     context manager for transactions
@@ -39,31 +45,24 @@ class Transaction(object):
         optional base to map query onto
     '''
     def __init__(self, table, base=None):
-        class Base(object):
-            pass
-        # end Base
-
-        self.start = time.time()
-        self.base = base or Base
+        self.base = base or BaseObject
         self.table = table
         self.tablename = self.table.fullname
-
-        # engine per transaction (buggy)
-#        self.engine = sqlalchemy.create_engine(preferences.DB_URL)
-#        self.Session = sqlalchemy.orm.sessionmaker(bind=self.engine)
 
         # single engine per run (this MAY be needed later)
         self.engine = ENGINE
         self.Session = Session
+    # end __init__
+
+    def __enter__(self):
+        self.start = time.time()
+        log.msg("opening database transaction on %s" % self.tablename)
 
         # map the object and prepare the session
         sqlalchemy.orm.mapper(self.base, self.table)
         self.session = self.Session()
         self.query = self.session.query(self.base)
-    # end __init__
 
-    def __enter__(self):
-        log.msg("opening database transaction on %s" % self.tablename)
         return self
     # end __enter__
 
