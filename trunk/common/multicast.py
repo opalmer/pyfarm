@@ -120,7 +120,6 @@ class HeartbeatServer(MulticastServer):
         # get all arguments and proper types from the datagram, skip
         # any datagram that is not the correct typename
         hostname, force = self.__data(data)
-        log.msg("incoming heartbeat from %s" % hostname)
 
         # reset the callback if it has already been called
         if self.deferred.called:

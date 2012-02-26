@@ -112,9 +112,18 @@ def incoming_host(data):
     callback for multicast server, runs whenever a new client
     contacts the server
     '''
+    def success(*args):
+        if args[0]:
+            log.msg("successfully set master on %s" % hostname)
+        else:
+            log.msg("failed to set master on %s" % hostname)
+    # end success
+
     hostname, force = data
     log.msg("incoming heartbeat from %s" % hostname)
-    rpc = common.rpc.Connection(hostname, preferences.CLIENT_PORT)
+
+    # run setMaster on the incoming client
+    rpc = common.rpc.Connection(hostname, preferences.CLIENT_PORT, success)
     rpc.call('setMaster', HOSTNAME)
 # end incoming_host
 
