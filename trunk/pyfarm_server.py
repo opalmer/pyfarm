@@ -146,9 +146,7 @@ with lock.ProcessLock('server', kill=options.force_kill, wait=options.wait) \
 
     # bind services
     reactor.listenTCP(preferences.SERVER_PORT, _server.Site(server))
-    reactor.listenMulticast(
-        preferences.HEARTBEAT_SERVER_PORT, heartbeat_server
-    )
+    reactor.listenMulticast(preferences.HEARTBEAT_SERVER_PORT, heartbeat_server)
 
     # start reactor and start client discovery
     args = (HOSTNAME, preferences.SERVER_PORT)

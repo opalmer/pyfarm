@@ -23,7 +23,7 @@ import ConfigParser
 
 from twisted.python import log
 
-if 'PYFARM_DISABLE_STDOUT' not in os.environ:
+if os.getenv('PYFARM_STDOUT_LOGGING') != 'false':
     log.startLogging(sys.stdout)
 
 cwd = os.path.dirname(os.path.abspath(__file__))

@@ -30,7 +30,7 @@ LOGS_STANDARD = os.path.join(tempfile.gettempdir(), 'pyfarm')
 LOGS_JOBS = os.path.join(LOGS_STANDARD, 'logs')
 
 # log to sys.stdout if requested
-if 'PYFARM_DISABLE_STDOUT' not in os.environ and preferences.LOGGING_STDOUT:
+if os.getenv('PYFARM_STDOUT_LOGGING') != 'false' and preferences.LOGGING_STDOUT:
     log.startLogging(sys.stdout)
 
 # setup standard log directories
