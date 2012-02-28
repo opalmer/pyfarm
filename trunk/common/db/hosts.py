@@ -109,7 +109,7 @@ def hostlist(online=True):
     '''
     Returns a lists of hosts currently in the database.  Depending
     on the input keyword this function will either return the online hosts,
-    offline hosts, or all hosts if [None] is given as a value.
+    offline hosts, or all hosts if None is provided as a value
     '''
     results = []
     with Transaction(hosts) as trans:
