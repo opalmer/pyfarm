@@ -26,13 +26,18 @@ class OperatingSystem:
         "win32" : WINDOWS,
         "cygwin" : WINDOWS,
         "darwin" : MAC,
+        "linux" : LINUX,
         "mac" : MAC
     }
 
     @staticmethod
     def get():
         '''returns the current operating system as an integer'''
-        value = OperatingSystem.MAPPINGS.get(sys.platform)
+        platform = sys.platform
+        if platform.startswith("linux"):
+            platform = "linux"
+
+        value = OperatingSystem.MAPPINGS.get(platform)
         if isinstance(value, types.NoneType):
             return OperatingSystem.OTHER
 
