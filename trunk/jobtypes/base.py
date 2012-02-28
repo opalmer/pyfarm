@@ -35,23 +35,31 @@ class Base(object):
         The full path or name of the command to run.  If a full path is not
         proived it will based resolved prior to being set.
 
-    :param dict environ:
-        custom environment variables to pass along
+    :param string or list args:
+        arguments to provide to the command when being run
 
     :param string user:
         If a user is not provided then we assume we will run the job as the
         current user.  Providing a string will set self.user to the provided
         value but only if we have permission to run processes as other users.
-    '''
-    def __init__(self, command, environ={}, user=None):
-        self._command = command
-        self._environ = environ
-        self._user = user
 
+    :param dict environ:
+        custom environment variables to pass along
+    '''
+    def __init__(self, command, args=[], user=None, environ={}):
+        # base argumnets which are used to set the non-private
+        # class attributes
+        self._command = command
+        self._args = args
+        self._user = user
+        self._environ = environ
+
+        # performs the setup to setup the class attributes
         log.msg("Setting up jobtype: %s" % self.__class__.__name__)
         self.setupEnvironment()
-        self.setupCommand()
         self.setupUser()
+        self.setupCommand()
+        self.setupArguments()
     # end __init__
 
     def setupEnvironment(self):
@@ -86,7 +94,18 @@ class Base(object):
         # ensure the command exists
         # ensure we have access to the command
         # ensure we can execute the command
+        log.msg("...command NOT_SET")
     # end setupCommand
+
+    def setupArguments(self):
+        '''Sets of arguments to use for the command'''
+        if isinstance(self._args, types.StringTypes):
+            self.args = self._args.split()
+        else:
+            self.args = self._args[:]
+
+        log.msg("...arguments: %s" % self.args)
+    # end setupArguments
 
     def setupUser(self):
         '''

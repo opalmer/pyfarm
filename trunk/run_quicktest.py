@@ -21,4 +21,4 @@
 from common import logger
 from jobtypes import base
 
-jobtype = base.Base(user='test')
+jobtype = base.Base('hostname', user='render')
