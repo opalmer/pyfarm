@@ -270,12 +270,12 @@ class Job(object):
         header = {
             "Command" : " ".join(self.arguments),
             "Id" : self.uuid,
-            "Log Opened" : loghandler.timestamp(),
+            "Log Opened" : logger.timestamp(),
             "Hostname" : socket.getfqdn(socket.gethostname())
         }
 
-        stream = loghandler.openStream(uuid=self.uuid, **self.environ)
-        self.log = loghandler.Stream(stream)
+        stream = logger.openStream(uuid=self.uuid, **self.environ)
+        self.log = logger.Stream(stream)
         self.log.keywords(header)
 
         log.msg("creating job instance %s" % self.uuid)
@@ -332,7 +332,7 @@ class Job(object):
 
         # write a footer and close the log handler
         footer = {
-            "Log Closed" : loghandler.timestamp(),
+            "Log Closed" : logger.timestamp(),
             "exit" : self.exit_code
         }
         self.log.keywords(footer)
