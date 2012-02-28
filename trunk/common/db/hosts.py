@@ -34,6 +34,8 @@ def __convert_resources(data):
     # populate the initial results
     network = data['network']
     system = data['system']
+
+    # builds the results row from the incoming host data
     results = {
         "hostname" : network['hostname'],
         "ip" : network['ip'],

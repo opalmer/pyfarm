@@ -28,12 +28,6 @@ from twisted.python import log
 from session import ENGINE, Session
 from common import preferences
 
-class BaseObject(object):
-    '''based object used for mapping all objects in transactions'''
-    pass
-# end BaseOjbect
-
-
 class Transaction(object):
     '''
     context manager for transactions
@@ -45,6 +39,10 @@ class Transaction(object):
         optional base to map query onto
     '''
     def __init__(self, table, base=None):
+        class BaseObject(object):
+            pass
+        # end BaseOjbect
+
         self.base = base or BaseObject
         self.table = table
         self.tablename = self.table.fullname

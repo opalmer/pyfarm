@@ -38,8 +38,8 @@ import common.logger
 SERVICE_LOG = common.logger.startLogging('server')
 
 import common.rpc
-from common.db import tables
-from server import db, preferences
+from common.db import tables, hosts
+from server import preferences
 from common import multicast, lock
 from common.db import hosts
 
@@ -63,7 +63,6 @@ class Server(common.rpc.Service):
     '''
     def __init__(self, log_stream):
         common.rpc.Service.__init__(self, log_stream)
-        self.hosts = set()
     # end __init__
 
     def resetClientMasters(self):
@@ -100,7 +99,7 @@ class Server(common.rpc.Service):
         adds a host url and sets up the host in the database
         '''
         host = "%s:%i" % (hostname, preferences.CLIENT_PORT)
-        if not force and host in self.hosts:
+        if not force and host in hosts.hostlist(online=None):
             log.msg("already added host %s" % host)
             return
     # end xmlrpc_addHost
