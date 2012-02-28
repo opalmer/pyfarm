@@ -282,7 +282,7 @@ with lock.ProcessLock('client', kill=options.force_kill, wait=options.wait):
     client = Client(SERVICE_LOG)
     SERVICE = client
 
-    # bind and start services
+    # start the heartbeat service and listen client port
     client.heartbeat()
     reactor.listenTCP(preferences.CLIENT_PORT, _server.Site(client))
 

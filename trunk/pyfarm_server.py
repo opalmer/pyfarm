@@ -137,18 +137,16 @@ with lock.ProcessLock('server', kill=options.force_kill, wait=options.wait) \
     # add exit actions to lock's exit context
     context.addExitAction(server.resetClientMasters)
 
-    # multicast server which listens for new clients
+    # setup multicast server to listen for incoming clients
     heartbeat_server = multicast.HeartbeatServer()
     heartbeat_server.addCallback(incoming_host)
-
-    # setup and run the server/reactor
-    tables.init()
-
-    # bind services
-    reactor.listenTCP(preferences.SERVER_PORT, _server.Site(server))
     reactor.listenMulticast(preferences.HEARTBEAT_SERVER_PORT, heartbeat_server)
 
-    # start reactor and start client discovery
+    # setup the required tables
+    tables.init()
+
+    # start the reactor
+    reactor.listenTCP(preferences.SERVER_PORT, _server.Site(server))
     args = (HOSTNAME, preferences.SERVER_PORT)
     log.msg("running server at http://%s:%i" % args)
     reactor.run()
@@ -170,5 +168,3 @@ if os.getenv('PYFARM_RESTART') == "true":
 
     os.chdir(CWD)
     os.execv(sys.executable, args)
-
-
