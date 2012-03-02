@@ -19,13 +19,15 @@
 import os
 import copy
 import types
-import ctypes
 import getpass
+import logging
 
 from common import logger
 from common import datatypes
 
 from twisted.python import log
+
+USERNAME = getpass.getuser()
 
 class Base(object):
     '''
@@ -104,7 +106,10 @@ class Base(object):
         else:
             self.args = self._args[:]
 
-        log.msg("...arguments: %s" % self.args)
+        if not self.args:
+            log.msg("...no arguments constructed", logLevel=logging.WARNING)
+        else:
+            log.msg("...arguments: %s" % self.args)
     # end setupArguments
 
     def setupUser(self):
@@ -119,32 +124,50 @@ class Base(object):
             initializing this class will need to handle the error for the
             reactor itself.
         '''
-        if isinstance(self._user, types.NoneType):
-            self.user = getpass.getuser()
+        # setup base attributes (overridden below)
+        self.uid = None
+        self.gid = None
+        self.user = USERNAME
 
-        elif isinstance(self._user, types.StringTypes):
+        if isinstance(self._user, types.NoneType):
+            self.user = USERNAME
+
+        if isinstance(self._user, types.StringTypes):
             # if the requested user is not the current user we need
             # to see if we are running as root/admin
             log.msg("...checking for admin privileges")
-            if self._user != getpass.getuser():
-                # checking linux/mac
+            if self._user != USERNAME:
+                # setting the process owner is only supported on
+                # unix based systems
                 if datatypes.OPERATING_SYSTEM in (
                     datatypes.OperatingSystem.LINUX,
                     datatypes.OperatingSystem.MAC,
                 ):
-                    if os.getuid() == 0:
-                        self.user = self._user
-                    else:
+                    if os.getuid():
                         raise OSError("you must be root to setuid")
 
-                # checking windows
-                elif datatypes.OPERATING_SYSTEM == datatypes.OperatingSystem.WINDOWS:
-                    if ctypes.windll.shell32.IsUserAnAdmin():
+                    # if we are running at root set the user name
+                    # and retrieve the user id and group ids
+
+                    try:
+                        import pwd
+                        ids = pwd.getpwnam(self._user)
+                        self.uid = ids.pw_uid
+                        self.gid = ids.pw_gid
                         self.user = self._user
-                    else:
-                        msg = "you must be an administrator to run as another user"
-                        raise OSError(msg)
+
+                    except KeyError:
+                        log.msg(
+                            "...no such user '%s' on system" % self._user,
+                            logLevel=logging.ERROR
+                        )
+
+                else:
+                    self.user = USERNAME
 
         log.msg("...job will run as %s" % self.user)
     # end setupUser
 # end Base
+
+if __name__ == '__main__':
+    base = Base()
