@@ -24,7 +24,7 @@ import logging
 import socket
 import xmlrpclib
 
-import preferences
+from common.preferences import prefs
 from common.db import hosts
 
 from twisted.internet import reactor
@@ -127,7 +127,7 @@ class Service(xmlrpc.XMLRPC):
             raised if the preferences have disabled the shutdown
         '''
         os.environ['PYFARM_RESTART'] = 'false'
-        if not preferences.SHUTDOWN_ENABLED:
+        if not prefs.get('network.rpc.shutdown'):
             raise xmlrpc.Fault(11, "shutdown disabled")
 
         block = self._blockShutdown()
@@ -153,7 +153,7 @@ class Service(xmlrpc.XMLRPC):
         :exception xmlrpc.Fault(10):
             raised if restart is disabled via the preferences
         '''
-        if not preferences.RESTART_ENABLED:
+        if not prefs.get('network.rpc.restart'):
             raise xmlrpc.Fault(10, "restart disabled")
 
         if self.xmlrpc_shutdown(force) and not TEST_MODE:

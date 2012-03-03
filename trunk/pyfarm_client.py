@@ -303,8 +303,8 @@ with lock.ProcessLock('client', kill=options.force_kill, wait=options.wait):
 # script.  This must be done after the reactor and has been
 # shutdown and after we have given the port(s) a chance
 # to release.
-if os.getenv('PYFARM_RESTART') == 'true' and prefs.get('network.rpc-remote.restart'):
-    pause = prefs.get('network.rpc-remote.delay')
+if os.getenv('PYFARM_RESTART') == 'true' and prefs.get('network.rpc.restart'):
+    pause = prefs.get('network.rpc.delay')
     log.msg("preparing to restart the client, pausing %i seconds" % pause)
     time.sleep(pause)
     args = sys.argv[:]

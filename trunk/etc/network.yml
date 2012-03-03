@@ -19,10 +19,10 @@
 # Permissions and settings related
 # to remote access/control of RPC
 # related services
-rpc-remote:
+rpc:
   restart: true  # allows/disallows RPC to be restarted remotely
   shutdown: true # allows/disallows RPC to be shutdown remotely
-  delay: 10      # seconds between shutdown and restart
+  delay: 3       # seconds between shutdown and restart
 
 # Generally these will not need to be changed
 # unless there is already a service running on
