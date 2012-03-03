@@ -24,7 +24,6 @@ from __future__ import with_statement
 import os
 import sys
 import time
-import pprint
 import socket
 import logging
 import xmlrpclib
@@ -33,15 +32,10 @@ import xmlrpclib
 from common import cmdargs
 options, args = cmdargs.parser.parse_args()
 
-# setup the main log
-import common.logger
-SERVICE_LOG = common.logger.startLogging('server')
-
-import common.rpc
+from common import logger, multicast, lock
+from common import rpc as xmlrpc
+from common.preferences import prefs
 from common.db import tables, hosts
-from server import preferences
-from common import multicast, lock
-from common.db import hosts
 
 from twisted.internet import reactor
 from twisted.web import server as _server
@@ -56,13 +50,13 @@ SERVICE = None
 if 'PYFARM_RESTART' in os.environ:
     del os.environ['PYFARM_RESTART']
 
-class Server(common.rpc.Service):
+class Server(xmlrpc.Service):
     '''
     Main server class to act as an external interface to the
     data base and job server.
     '''
     def __init__(self, log_stream):
-        common.rpc.Service.__init__(self, log_stream)
+        xmlrpc.Service.__init__(self, log_stream)
     # end __init__
 
     def resetClientMasters(self):
@@ -72,8 +66,8 @@ class Server(common.rpc.Service):
         make sure to handle either case.
         '''
         for host in hosts.hostlist(online=True):
-            port = preferences.CLIENT_PORT
-            if not self.xmlrpc_ping(host, int(port)):
+            port = prefs.get('network.ports.client')
+            if not self.xmlrpc_ping(host, port):
                 log.msg("%s does not appear to be up, skipping" % host)
                 continue
 
@@ -89,7 +83,7 @@ class Server(common.rpc.Service):
                         logLevel=logging.ERROR
                     )
             else:
-                rpc = common.rpc.Connection(host, port)
+                rpc = xmlrpc.Connection(host, port)
                 rpc.call('setMaster', '', True)
                 log.msg("called setMaster on %s" % host)
     # end resetClientMasters
@@ -98,7 +92,7 @@ class Server(common.rpc.Service):
         '''
         adds a host url and sets up the host in the database
         '''
-        host = "%s:%i" % (hostname, preferences.CLIENT_PORT)
+        host = "%s:%i" % (hostname, prefs.get('network.ports.client'))
         if not force and host in hosts.hostlist(online=None):
             log.msg("already added host %s" % host)
             return
@@ -122,9 +116,20 @@ def incoming_host(data):
     log.msg("incoming heartbeat from %s" % hostname)
 
     # run setMaster on the incoming client
-    rpc = common.rpc.Connection(hostname, preferences.CLIENT_PORT, success)
+    rpc = xmlrpc.Connection(hostname, prefs.get('network.ports.client'), success)
     rpc.call('setMaster', HOSTNAME)
 # end incoming_host
+
+# determine the location we should log to
+if not options.log:
+    root = prefs.get('logging.locations.general')
+    SERVICE_LOG = os.path.join(root, 'client-%s.log' % HOSTNAME)
+else:
+    SERVICE_LOG = os.path.abspath(options.log)
+
+# add an observer for the service log
+observer = logger.Observer(SERVICE_LOG)
+observer.start()
 
 # create a lock for the process so we can't run two clients
 # at once
@@ -139,14 +144,14 @@ with lock.ProcessLock('server', kill=options.force_kill, wait=options.wait) \
     # setup multicast server to listen for incoming clients
     heartbeat_server = multicast.HeartbeatServer()
     heartbeat_server.addCallback(incoming_host)
-    reactor.listenMulticast(preferences.HEARTBEAT_SERVER_PORT, heartbeat_server)
+    reactor.listenMulticast(prefs.get('network.ports.heartbeat'), heartbeat_server)
 
     # setup the required tables
     tables.init()
 
     # start the reactor
-    reactor.listenTCP(preferences.SERVER_PORT, _server.Site(server))
-    args = (HOSTNAME, preferences.SERVER_PORT)
+    reactor.listenTCP(prefs.get('network.ports.server'), _server.Site(server))
+    args = (HOSTNAME, prefs.get('network.ports.server'))
     log.msg("running server at http://%s:%i" % args)
     reactor.run()
 
@@ -155,7 +160,7 @@ with lock.ProcessLock('server', kill=options.force_kill, wait=options.wait) \
 # shutdown and after we have given the port(s) a chance
 # to release.
 if os.getenv('PYFARM_RESTART') == "true":
-    pause = preferences.RESTART_DELAY
+    pause = prefs.get('network.rpc.delay')
     log.msg("preparing to restart the server, pausing %i seconds" % pause)
     time.sleep(pause)
     args = sys.argv[:]

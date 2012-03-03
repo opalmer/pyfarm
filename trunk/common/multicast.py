@@ -19,7 +19,7 @@
 import types
 import socket
 
-import preferences
+from common.preferences import prefs
 
 from twisted.python import log
 from twisted.internet import protocol, defer
@@ -41,13 +41,13 @@ class MulticastServer(protocol.DatagramProtocol):
         starts the protocol and joins the multicast group if it has
         not done so already
         '''
+        group = prefs.get('network.%s.group' % self.name)
         if not MulticastServer.JOINED_GROUP:
-            self.transport.joinGroup(preferences.MULTICAST_GROUP)
-            log.msg("joined multicast group %s" % preferences.MULTICAST_GROUP)
+            self.transport.joinGroup(group)
+            log.msg("joined multicast group %s" % group)
             MulticastServer.JOINED_GROUP = True
 
         else:
-            group = preferences.MULTICAST_GROUP
             log.msg("already a member of the %s multicast group" % group)
 
         log.msg("started multicast server - %s" % self.name)
@@ -110,7 +110,7 @@ class HeartbeatServer(MulticastServer):
 
         # skip multicast packats that do not match
         # the hearbeat preference
-        if data[0] != preferences.MULTICAST_HEARTBEAT_STRING:
+        if data[0] != prefs.get('network.%s.prefix' % self.name):
             return
 
         # ignore packages that are the wrong length

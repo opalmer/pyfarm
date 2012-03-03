@@ -16,8 +16,12 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
+import logging
 import sqlalchemy as sql
+
 from common.preferences import prefs
+
+from twisted.python import log
 
 # create and connect to the engine
 url = prefs.get('database.url')
@@ -118,7 +122,8 @@ frames = sql.Table('pyfarm_frames', metadata,
 
 def init():
     '''initializes the tables according the the preferences'''
-    if preferences.DB_REBUILD:
+    if prefs.get('database.setup.rebuild'):
+        log.msg('dropping all tables before rebuilding', level=logging.WARNING)
         metadata.drop_all()
 
     metadata.create_all()

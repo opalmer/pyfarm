@@ -34,7 +34,8 @@ options, args = cmdargs.parser.parse_args()
 cmdargs.processOptions(options)
 
 # setup the main log
-from common import logger, lock, rpc
+from common import logger, lock
+from common import rpc as xmlrpc
 from common.preferences import prefs
 from client import job, system, process
 from common.db import hosts
@@ -165,12 +166,12 @@ class Client(rpc.Service):
                 "software" : options.host_software
             }
 
-            rpc = rpc.Connection(MASTER[0], MASTER[1])
+            rpc = xmlrpc.Connection(MASTER[0], MASTER[1])
             rpc.call('addHost', HOSTNAME, hostinfo, force)
 
             # if we are using sqlite inform master to update our resource
             # in the database
-            if preferences.DB_ENGINE == "sqlite":
+            if prefs.get('database.engine') == "sqlite":
                 log.msg("informing master to update our resources")
                 rpc.call('resources', HOSTNAME, True)
 

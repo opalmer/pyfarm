@@ -26,7 +26,7 @@ import sqlalchemy.orm
 from twisted.python import log
 
 from session import ENGINE, Session
-from common import preferences
+from common.preferences import prefs
 
 class Transaction(object):
     '''
@@ -52,9 +52,13 @@ class Transaction(object):
         self.Session = Session
     # end __init__
 
+    def log(self, msg, level='dbsql'):
+        log.msg(msg, level=level, system='Transaction')
+    # end
+
     def __enter__(self):
         self.start = time.time()
-        log.msg("opening database transaction on %s" % self.tablename)
+        self.log("opening database transaction on %s" % self.tablename)
 
         # map the object and prepare the session
         sqlalchemy.orm.mapper(self.base, self.table)
@@ -67,7 +71,7 @@ class Transaction(object):
     def __exit__(self, type, value, traceback):
         # roll back the transaction in the event of an error
         if not isinstance(type, types.NoneType):
-            log.msg("...rolling back database transaction: %s" % value)
+            self.log("...rolling back database transaction: %s" % value)
             self.session.rollback()
 
         # commit changes if there are any pending
@@ -77,13 +81,13 @@ class Transaction(object):
                 log.msg("...committing database entry to %s" % self.tablename)
 
         # cleanup connections if requested
-        if preferences.DB_CLOSE_CONNECTIONS:
-            log.msg("...closing connections")
+        if prefs.get('database.setup.close-connections'):
+            self.log("...closing connections")
             self.query.session.close_all()
             self.query.session.bind.dispose()
 
         self.end = time.time()
         args = (self.tablename, self.end-self.start)
-        log.msg("closed database transaction on %s (%ss)" % args)
+        self.log("closed database transaction on %s (%ss)" % args)
     # end __exit__
 # end Transaction

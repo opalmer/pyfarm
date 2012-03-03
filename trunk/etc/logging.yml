@@ -34,11 +34,11 @@ formats:
 #   WARNING:  30
 #   INFO:     20
 #   NOTSET:    0
-level: 10
+level: 8
 
-# custom levels associated with names
+# custom levels associated with names (should be in uppcase)
 custom-levels:
-  database: 8
+  DBSQL: 8
 
 # list of observers to keep silent unless forced
 silence-observers: null
