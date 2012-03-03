@@ -19,6 +19,9 @@
 # the only type of database that is fully supported by PyFarm.  For more
 # information on the value(s) to use in the engine key please see this page:
 # http://docs.sqlalchemy.org/en/latest/core/engines.html#supported-databases
+#
+# NOTE: not all values are required to be populated, port and driver for example
+#       will be defined my sqlalchemy if they are not provided.
 db-hosted:
   host:   # hostname to connect to
   port:   # port the server is running on
