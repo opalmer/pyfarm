@@ -25,7 +25,10 @@ class OperatingSystem:
         "cygwin" : WINDOWS,
         "darwin" : MAC,
         "linux" : LINUX,
-        "mac" : MAC
+        "mac" : MAC,
+        WINDOWS : "win32",
+        LINUX : "linux",
+        MAC : "mac"
     }
 
     @staticmethod
@@ -62,4 +65,6 @@ class JobType:
 # end JobType
 
 
-OPERATING_SYSTEM = OperatingSystem.get()
+OS = OperatingSystem.get()
+OSNAME = OperatingSystem.MAPPINGS.get(OS)
+LIST_TYPES = (list, tuple, set)
