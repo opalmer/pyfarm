@@ -13,4 +13,4 @@ build
 docs*
 tools*
 dev*
-*database.ini
+database.yml
