@@ -1,0 +1,38 @@
+#
+# This file is part of PyFarm.
+# Copyright (C) 2008-2012 Oliver Palmer
+#
+# PyFarm is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# PyFarm is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
+
+# Full definition of a hosted database.  Hosted databases are currently
+# the only type of database that is fully supported by PyFarm.  For more
+# information on the value(s) to use in the engine key please see this page:
+# http://docs.sqlalchemy.org/en/latest/core/engines.html#supported-databases
+db-hosted:
+  host:   # hostname to connect to
+  port:   # port the server is running on
+  user:   # username to connect with
+  pass:   # password to connect with
+  name:   # name of database
+  engine: # type of engine (mysql, postgresql, etc)
+  driver: # specifies the python module to connect with
+
+db-sqlite:
+  name: pyfarm.db
+  engine: sqlite
+
+config:
+  config: db-sqlite # name of the configuration to use
+  rebuild: false    # if true then we drop any existing tables
+  echo: false       # if true all sql operations will be echoed
