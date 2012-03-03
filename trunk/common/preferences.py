@@ -29,6 +29,8 @@ from twisted.python import log
 
 cwd = os.path.dirname(os.path.abspath(__file__))
 root = os.path.abspath(os.path.join(cwd, ".."))
+ETC = os.path.join(root, 'etc')
+
 if not os.path.isdir(ETC):
     raise OSError("configuration directory does not exist: %s" % ETC)
 
@@ -135,6 +137,42 @@ class Preferences(object):
         return results
     # end __expandSearchPaths
 
+    def __dburl(self):
+        '''returns the url use for connecting to the database'''
+        db = self.get('database.setup.config')
+        config = self.get('database.%s' % db)
+
+        # retrieve the settings from the config
+        driver = config.get('driver')
+        engine = config.get('engine')
+        dbname = config.get('name')
+        dbuser = config.get('user')
+        dbpass = config.get('pass')
+        dbhost = config.get('host')
+        dbport = config.get('dbport')
+
+        # configure the url
+        url = engine
+
+        # adds the driver if it was found in the preferences
+        if driver:
+            url += "+%s" % driver
+
+        # the start of the url changes slightly for sqlite connections
+        url += "://"
+        if engine == "sqlite":
+            url += "/"
+            return url + dbname
+
+        # setup the username, password, host, and port
+        url += "%s:%s@%s" % (dbuser, dbpass, dbhost)
+        if isinstance(dbport, int):
+            url += ":%i" % dbport
+
+        url += "/%s" % dbname
+        return url
+    # end __dburl
+
     def get(self, key, **kwargs):
         '''
         Retrieve the preferences when provided a key.  For example
@@ -178,6 +216,10 @@ class Preferences(object):
         if kwargs.get('reload') or filename not in self.loaded:
             self.__load(name, filename)
 
+        # special case for database urls
+        if key == 'database.url':
+            return self.__dburl()
+
         # traverse the values and retrieve the data
         try:
             value = name
@@ -200,81 +242,4 @@ class Preferences(object):
     # end get
 # end Preferences
 
-ETC = os.path.join(root, 'etc')
 prefs = Preferences()
-
-def getUrl():
-    '''returns the sql url based on preferences'''
-    url = "%s" % DB_ENGINE
-
-    # add the driver if it was provided in the preferences
-    if DB_DRIVER:
-        url += "+%s" % DB_DRIVER
-        print "====",url
-
-    # the start of the url changes slightly for sqlite connections
-    url += "://"
-    if DB_ENGINE == "sqlite":
-        url += "/"
-
-    # server and login related preferences do not
-    # apply to sqlite
-    if DB_ENGINE == "sqlite":
-        return url + DB_NAME
-
-    # add username, password, and host
-    url += "%s:%s@%s" % (DB_USER, DB_PASS, DB_HOST)
-
-    # add port if it was provided
-    if DB_PORT and isinstance(DB_PORT, int):
-        url += ":%i" % DB_PORT
-
-    # finally, add the database name
-    url += "/%s" % DB_NAME
-
-    return url
-# end getUrl
-#
-## local preferences setup
-#prefs = Preferences('common')
-#prefs.read('common')
-#prefs.read('database')
-#
-#LOGROOT = prefs.get('LOGROOTS', datatypes.OSNAME)
-#
-#def logdir_jobs():
-#    '''returns the job log directory'''
-#    data = prefs.get('LOG_DIRECTORIES', 'jobs')
-#    paths = data.split("/")
-#    print path
-## local preferences
-#
-#LOGDIR_GENERAL = prefs.get('LOG_DIRECTORIES', 'general')
-##LOGDIR_JOB =
-#LOGGING_ROLLOVER_COUNT = prefs.getint('LOGGING', 'rollover_count')
-#LOGGING_TIMESTAMP = prefs.get('LOGGING', 'timestamp')
-#SHUTDOWN_ENABLED = prefs.getboolean('SHUTDOWN', 'enabled')
-#RESTART_ENABLED = prefs.getboolean('RESTART', 'enabled')
-#RESTART_DELAY = prefs.getint('RESTART', 'delay')
-#SERVER_PORT = prefs.getint('NETWORK', 'server_port')
-#CLIENT_PORT = prefs.getint('NETWORK', 'client_port')
-#MULTICAST_GROUP = prefs.get('MULTICAST', 'group')
-#MULTICAST_HEARTBEAT_PORT = prefs.getint('MULTICAST', 'heartbeat_port')
-#MULTICAST_HEARTBEAT_STRING = prefs.get('MULTICAST', 'heartbeat_string')
-#
-## database preferences
-#DB_CONFIG = prefs.get('DATABASE', 'config')
-#DB_HOST = prefs.get(DB_CONFIG, 'host', default='localhost')
-#DB_PORT = prefs.getint(DB_CONFIG, 'port')
-#DB_USER = prefs.get(DB_CONFIG, 'user')
-#DB_PASS = prefs.get(DB_CONFIG, 'pass')
-#DB_NAME = prefs.get(DB_CONFIG, 'name')
-#DB_ENGINE = prefs.get(DB_CONFIG, 'engine')
-#DB_DRIVER = prefs.get(DB_CONFIG, 'driver')
-#DB_URL = getUrl()
-#DB_REBUILD = prefs.getboolean('DATABASE', 'rebuild')
-#DB_ECHO = prefs.getboolean('DATABASE', 'echo')
-#DB_CLOSE_CONNECTIONS = prefs.getboolean('DB-CONNECTIONS', 'close_transactions')
-#
-#if __name__ == '__main__':
-#    debug(locals())
