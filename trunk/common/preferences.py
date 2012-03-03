@@ -22,6 +22,7 @@ import os
 import yaml
 import string
 import tempfile
+import logging
 
 import datatypes
 
@@ -65,7 +66,7 @@ class Preferences(object):
             data = yaml.load(stream, Loader=Preferences.LOADER)
             self.data[name] = data
             self.loaded.append(filename)
-            print "Loaded: %s" % path
+            self.log("Loaded: %s" % path)
     # end __load
 
     def __pathjoin(self, value):
@@ -173,6 +174,10 @@ class Preferences(object):
         return url
     # end __dburl
 
+    def log(self, msg):
+        log.msg(msg, system='Preferences', level=logging.INFO)
+    # end log
+
     def get(self, key, **kwargs):
         '''
         Retrieve the preferences when provided a key.  For example
@@ -241,5 +246,8 @@ class Preferences(object):
         return data
     # end get
 # end Preferences
+
+#observer = logger.Observer(None)
+#observer.start()
 
 prefs = Preferences()
