@@ -16,9 +16,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
-import os
 import sys
-import types
 
 class OperatingSystem:
     LINUX, WINDOWS, MAC, OTHER = range(4)
@@ -38,7 +36,7 @@ class OperatingSystem:
             platform = "linux"
 
         value = OperatingSystem.MAPPINGS.get(platform)
-        if isinstance(value, types.NoneType):
+        if value is None:
             return OperatingSystem.OTHER
 
         return value
