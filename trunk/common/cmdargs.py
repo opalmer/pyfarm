@@ -29,5 +29,9 @@ parser.add_option(
 )
 parser.add_option(
     '--wait', help='waits for running processes to terminate first',
-    dest='wait', action='store_true', default=False
+    action='store_true', default=False
+)
+parser.add_option(
+    '--log', help='location to send the logfile to',
+    default=None
 )
