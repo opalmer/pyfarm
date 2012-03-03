@@ -16,158 +16,192 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import with_statement
+
 import os
-import sys
-import pprint
-import ConfigParser
+import yaml
+import string
+import tempfile
+
+import datatypes
 
 from twisted.python import log
 
-if os.getenv('PYFARM_STDOUT_LOGGING') != 'false':
-    log.startLogging(sys.stdout)
-
 cwd = os.path.dirname(os.path.abspath(__file__))
 root = os.path.abspath(os.path.join(cwd, ".."))
-
-FILES = []
-FILENAMES = []
-
-# ensure there are not any duplicate configuration file names
-# and build a list of all configuration files
-for root, dirs, files in os.walk(root):
-    for filename in files:
-        path = os.path.join(root, filename)
-        if path.endswith(".ini"):
-            name = os.path.basename(path)
-
-            # raise an exception if we find two files with the same name
-            if name in FILENAMES:
-                raise RuntimeError("duplicate config name '%s'" % name)
-
-            FILES.append(path)
-            FILENAMES.append(name)
+if not os.path.isdir(ETC):
+    raise OSError("configuration directory does not exist: %s" % ETC)
 
 class Preferences(object):
     '''
-    Loads multiple preference files onto a single object
-
-    :exception IOError:
-        raised if we can't find requested preferences
+    Preferences object which handles loading of configuration
+    files and handling of specific special case (such as logging
+    directory strings)
     '''
-    def __init__(self, name='default'):
-        self.cfg = ConfigParser.ConfigParser()
-        self.name = name
+    # determine the yaml loader we should use
+    if hasattr(yaml, 'CLoader'):
+        LOADER = yaml.CLoader
+    else:
+        LOADER = yaml.SafeLoader
+
+    def __init__(self):
+        self.loaded = []
+        self.data = {}
     # end __init__
 
-    def __name(self, name):
+    def __load(self, name, filename):
         '''
-        standard method for converting a name into
-        a valid file name
+        Loads the requested filename into self.data[name] if the given
+        filename has not already been loaded
         '''
-        ext = "ini"
-        if not name.endswith(ext):
-            name = "%s.%s" % (name, ext)
+        # ensure the config exists
+        path = os.path.join(ETC, filename)
+        if not os.path.isfile(path):
+            raise OSError("configuration does not exist: %s" % path)
 
-        return name
-    # end __name
+        with open(path, 'r') as stream:
+            data = yaml.load(stream, Loader=Preferences.LOADER)
+            self.data[name] = data
+            self.loaded.append(filename)
+            print "Loaded: %s" % path
+    # end __load
 
-    def __find(self, name):
+    def __pathjoin(self, value):
         '''
-        returns the full path to the configuration file matching
-        name
-
-        :exception OSError:
-            raised if we fail to find a file matching name
+        splits the given value by / then combines the results
+        using os.path.join
         '''
-        name = self.__name(name)
+        paths = value.split("/")
+        return os.sep.join(paths)
+    # end __pathjoin
 
-        for path in FILES:
-            if path.endswith(name):
-                return path
+    def __loggingLocations(self, data, kwargs):
+        template = string.Template(data)
+        template_vars = {
+            "root" : self.get('logging.roots.%s' % datatypes.OSNAME, **kwargs),
+            "temp" : tempfile.gettempdir()
+        }
 
-        raise OSError("no configuration file '%s'" % name)
-    # end __find
+        # remove any keys that are already in kwargs so
+        # we can override the template vars
+        for key in template_vars:
+            if key in kwargs:
+                del template_vars[key]
 
-    def __call(self, call, section, option, default):
+        # update template_vars from the provided kwargs
+        template_vars.update(kwargs)
+
+        # after substituting the template split the path
+        # and recombine it using os.path.join
+        data = template.safe_substitute(template_vars)
+        return self.__pathjoin(data)
+    # end __loggingLocations
+
+    # TODO: verify behavior (esp. on windows)
+    def __expandSearchPaths(self, data, kwargs):
+        '''expands the path(s) provided by data and returns the results'''
+        paths = []
+
+        # expand all environment variables and then split on ':' to retrieve
+        # the paths from the string
+        for value in [os.path.expandvars(value) for value in data]:
+            if ":" in value:
+                for entry in value.split(":"):
+                    paths.append(entry)
+            else:
+                paths.append(value)
+
+        # finally iterate over each paths and see if anything is
+        # pointing to the farm root
+        template_vars = {
+            "root" : self.get('logging.roots.%s' % datatypes.OSNAME, **kwargs)
+        }
+
+        # remove any keys that are already in kwargs so
+        # we can override the template vars
+        for key in template_vars:
+            if key in kwargs:
+                del template_vars[key]
+
+        results =  []
+        for path in paths:
+            template = string.Template(path)
+
+            # only add paths which are not already part of results
+            path = template.safe_substitute(template_vars)
+            if path not in results:
+                results.append(path)
+
+        return results
+    # end __expandSearchPaths
+
+    def get(self, key, **kwargs):
         '''
-        returns the value of call for the given section and option
-        or returns default in the event of an error
+        Retrieve the preferences when provided a key.  For example
+        to retrieve the port setting for the client:
+
+            >>> prefs = Preferences()
+            >>> prefs.get('network.ports.client')
+            9031
+
+        :param string key:
+            The entry to retrieve from a file in etc.  Format is:
+                filename.key.key....
+
+        :param boolean reload:
+            Forces the data from the preference files to be reload.  This
+            option should be used sparingly because it will also cause
+            recursive lookups to reload their files as well.
+
+        :param dictionary kwargs:
+            extra arguments to pass to template strings
+
+        :exception ValueError:
+            raised if key does not contain the expected '.' separator or
+            if we did not find at least one key after the file name.
+
+        :exception KeyError:
+            raised if we failed to fully resolve the preference
         '''
+        if "." not in key:
+            raise ValueError("key provided does not contain the '.' separator")
+
+        values = [ value for value in key.split('.') if value ]
+
+        if len(values) < 2:
+            raise ValueError("need at least one key after the filename")
+
+        name = values[0]
+        filename = "%s.yml" % name
+
+        # load the yaml file if it as not been already
+        if kwargs.get('reload') or filename not in self.loaded:
+            self.__load(name, filename)
+
+        # traverse the values and retrieve the data
         try:
-            return call(section, option)
-        except:
-            return default
-    # end __call
+            value = name
+            data = self.data[name]
+            for value in values[1:]:
+                data = data[value]
 
-    def __getlist(self, section, option, sep):
-        values = []
-        data = self.__call(self.cfg.get, section, option, [])
+        except KeyError:
+            error =  "could not find '%s' data when searching %s" % (value, key)
+            raise KeyError(error)
 
-        if data:
-            for value in data.split(sep):
-                if value in values:
-                    continue
 
-                values.append(value)
+        if key.startswith("logging.locations."):
+            data = self.__loggingLocations(data, kwargs)
 
-        return values
-    # end __getlist
-
-    def read(self, name):
-        '''
-        reads a file into the config parser and
-        logs the entry or raises an exception if the
-        file cannot be found
-        '''
-        path = self.__find(name)
-        self.cfg.read(path)
-        log.msg("%s loaded config %s" % (self.name, path))
-    # end read
-
-    def get(self, section, option, default=None):
-        return self.__call(self.cfg.get, section, option, default)
-    # end get
-
-    def getboolean(self, section, option, default=None):
-        return self.__call(self.cfg.getboolean, section, option, default)
-    # end getboolean
-
-    def getfloat(self, section, option, default=None):
-        return self.__call(self.cfg.getfloat, section, option, default)
-    # end getfloat
-
-    def getint(self, section, option, default=None):
-        return self.__call(self.cfg.getint, section, option, default)
-    # end getint
-
-    def getlist(self, section, option, sep=','):
-        data = []
-        for value in self.__getlist(section, option, sep):
-            if value and value not in data:
-                data.append(value)
+        elif key == "jobtypes.path":
+            data = self.__expandSearchPaths(data, kwargs)
 
         return data
-    # end getlist
-
-    def getenvlist(self, section, option, sep=','):
-        envvars = []
-        for value in self.__getlist(section, option, sep):
-            if value not in envvars and value in os.environ:
-                envvars.append(value)
-
-        return envvars
-    # end getenvlist
+    # end get
 # end Preferences
 
-def debug(localVars):
-    '''pretty prints the current preferences'''
-    local = {}
-    for key, value in localVars.items():
-        if key.isupper() and key not in ('FILES', 'FILENAMES'):
-            local[key] = value
-
-    pprint.pprint(local)
-# end debug
+ETC = os.path.join(root, 'etc')
+prefs = Preferences()
 
 def getUrl():
     '''returns the sql url based on preferences'''
@@ -192,7 +226,7 @@ def getUrl():
     url += "%s:%s@%s" % (DB_USER, DB_PASS, DB_HOST)
 
     # add port if it was provided
-    if DB_PORT and isinstance(DB_PORT, types.IntType):
+    if DB_PORT and isinstance(DB_PORT, int):
         url += ":%i" % DB_PORT
 
     # finally, add the database name
@@ -200,45 +234,47 @@ def getUrl():
 
     return url
 # end getUrl
-
-# local preferences setup
-prefs = Preferences('common')
-prefs.read('common')
-prefs.read('database')
-
-# local preferences
-LOGGING_STDOUT = prefs.getboolean('LOGGING', 'stdout')
-LOGGING_FILE = prefs.getboolean('LOGGING', 'file')
-LOGGING_EXTENSION = prefs.get('LOGGING', 'extension')
-LOGGING_ROLLOVER = prefs.getboolean('LOGGING', 'rollover')
-LOGGING_ROLLOVER_SIZE = prefs.getint('LOGGING', 'rollover_size') * 1024
-LOGGING_ROLLOVER_COUNT = prefs.getint('LOGGING', 'rollover_count')
-LOGGING_KEYWORD_FORMAT = prefs.get('LOGGING', 'keyword_format')
-LOGGING_DIVISION_LENGTH = prefs.getint('LOGGING', 'division_length')
-LOGGING_DIVISION_SEP = prefs.get('LOGGING', 'division_sep')
-LOGGING_TIMESTAMP = prefs.get('LOGGING', 'timestamp')
-SHUTDOWN_ENABLED = prefs.getboolean('SHUTDOWN', 'enabled')
-RESTART_ENABLED = prefs.getboolean('RESTART', 'enabled')
-RESTART_DELAY = prefs.getint('RESTART', 'delay')
-SERVER_PORT = prefs.getint('NETWORK', 'server_port')
-CLIENT_PORT = prefs.getint('NETWORK', 'client_port')
-MULTICAST_GROUP = prefs.get('MULTICAST', 'group')
-MULTICAST_HEARTBEAT_PORT = prefs.getint('MULTICAST', 'heartbeat_port')
-MULTICAST_HEARTBEAT_STRING = prefs.get('MULTICAST', 'heartbeat_string')
-
-# database preferences
-DB_CONFIG = prefs.get('DATABASE', 'config')
-DB_HOST = prefs.get(DB_CONFIG, 'host', default='localhost')
-DB_PORT = prefs.getint(DB_CONFIG, 'port')
-DB_USER = prefs.get(DB_CONFIG, 'user')
-DB_PASS = prefs.get(DB_CONFIG, 'pass')
-DB_NAME = prefs.get(DB_CONFIG, 'name')
-DB_ENGINE = prefs.get(DB_CONFIG, 'engine')
-DB_DRIVER = prefs.get(DB_CONFIG, 'driver')
-DB_URL = getUrl()
-DB_REBUILD = prefs.getboolean('DATABASE', 'rebuild')
-DB_ECHO = prefs.getboolean('DATABASE', 'echo')
-DB_CLOSE_CONNECTIONS = prefs.getboolean('DB-CONNECTIONS', 'close_transactions')
-
-if __name__ == '__main__':
-    debug(locals())
+#
+## local preferences setup
+#prefs = Preferences('common')
+#prefs.read('common')
+#prefs.read('database')
+#
+#LOGROOT = prefs.get('LOGROOTS', datatypes.OSNAME)
+#
+#def logdir_jobs():
+#    '''returns the job log directory'''
+#    data = prefs.get('LOG_DIRECTORIES', 'jobs')
+#    paths = data.split("/")
+#    print path
+## local preferences
+#
+#LOGDIR_GENERAL = prefs.get('LOG_DIRECTORIES', 'general')
+##LOGDIR_JOB =
+#LOGGING_ROLLOVER_COUNT = prefs.getint('LOGGING', 'rollover_count')
+#LOGGING_TIMESTAMP = prefs.get('LOGGING', 'timestamp')
+#SHUTDOWN_ENABLED = prefs.getboolean('SHUTDOWN', 'enabled')
+#RESTART_ENABLED = prefs.getboolean('RESTART', 'enabled')
+#RESTART_DELAY = prefs.getint('RESTART', 'delay')
+#SERVER_PORT = prefs.getint('NETWORK', 'server_port')
+#CLIENT_PORT = prefs.getint('NETWORK', 'client_port')
+#MULTICAST_GROUP = prefs.get('MULTICAST', 'group')
+#MULTICAST_HEARTBEAT_PORT = prefs.getint('MULTICAST', 'heartbeat_port')
+#MULTICAST_HEARTBEAT_STRING = prefs.get('MULTICAST', 'heartbeat_string')
+#
+## database preferences
+#DB_CONFIG = prefs.get('DATABASE', 'config')
+#DB_HOST = prefs.get(DB_CONFIG, 'host', default='localhost')
+#DB_PORT = prefs.getint(DB_CONFIG, 'port')
+#DB_USER = prefs.get(DB_CONFIG, 'user')
+#DB_PASS = prefs.get(DB_CONFIG, 'pass')
+#DB_NAME = prefs.get(DB_CONFIG, 'name')
+#DB_ENGINE = prefs.get(DB_CONFIG, 'engine')
+#DB_DRIVER = prefs.get(DB_CONFIG, 'driver')
+#DB_URL = getUrl()
+#DB_REBUILD = prefs.getboolean('DATABASE', 'rebuild')
+#DB_ECHO = prefs.getboolean('DATABASE', 'echo')
+#DB_CLOSE_CONNECTIONS = prefs.getboolean('DB-CONNECTIONS', 'close_transactions')
+#
+#if __name__ == '__main__':
+#    debug(locals())

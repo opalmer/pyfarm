@@ -1,0 +1,58 @@
+#
+# This file is part of PyFarm.
+# Copyright (C) 2008-2012 Oliver Palmer
+#
+# PyFarm is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# PyFarm is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
+
+
+timestamp: '%m-%d-%Y %H:%M:%S'
+
+# Default level logging level, anything lower than this level
+# will not be displayed.  Level must be an integer however
+# custom level names can be mapped in the level_mappings dictionary.
+# dictionary.
+level: 10
+level_mappings:
+  database: 8
+
+# observers to keep silent unless forced
+silence-observers: null
+
+# Number of backups to keep for every logfile
+# that is created with a duplicate name
+backups: 5
+
+# Root locations for specific platforms.  These will
+# generally need to be changed for your configuration.
+roots:
+  windows: F:\
+  linux: /farm
+  mac: /farm
+
+# Root locations or templates for specific types
+# of logs.  Please note that '/' should always be used
+# as a separator regardless of platform.  Internally
+# the preferences module will these paths by '/' then
+# recombine them with os.path.join.
+#
+# Default Template Variables:
+#   %(temp)s - determined by tempfile.gettempdir()
+#   %(root)s - determined by roots[datatypes.OSNAME]
+#
+# Variables which are not defined above but included below
+# would be substituted when the log is created.  For example %(jobid)s or
+# %(jobtype)s would be included when a new job starts on a client
+locations:
+  general: '$root/log'
+  jobs: '$root/log/jobs/$jobid'
