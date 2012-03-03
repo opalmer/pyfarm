@@ -35,7 +35,7 @@ db-sqlite:
   name: pyfarm.db
   engine: sqlite
 
-config:
+setup:
   config: db-sqlite # name of the configuration to use
   rebuild: false    # if true then we drop any existing tables
   echo: false       # if true all sql operations will be echoed
