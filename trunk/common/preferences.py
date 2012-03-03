@@ -235,9 +235,14 @@ class Preferences(object):
         if kwargs.get('reload') or filename not in self.loaded:
             self.__load(name, filename)
 
-        # special case for database urls
+        # keys that will never resolve on their own but are provided for
+        # convenience
         if key == 'database.url':
             return self.__dburl()
+
+        elif key == 'database.engine':
+            config_name = self.get('database.setup.config')
+            return self.get('database.%s.engine' % config_name)
 
         # traverse the values and retrieve the data
         try:
@@ -250,14 +255,13 @@ class Preferences(object):
             error =  "could not find '%s' data when searching %s" % (value, key)
             raise KeyError(error)
 
-
-        if key.startswith("logging.locations."):
+        if key.startswith('logging.locations.'):
             data = self.__loggingLocations(data, kwargs)
 
-        elif key == "jobtypes.path":
+        elif key == 'jobtypes.path':
             data = self.__expandSearchPaths(data, kwargs)
 
-        elif key == "client.max-jobs":
+        elif key == 'client.max-jobs':
             data = self.__calculateMaxJobs(data, kwargs)
 
         return data
