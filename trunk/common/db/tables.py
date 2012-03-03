@@ -17,12 +17,12 @@
 # along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
 import sqlalchemy as sql
-
-from common import preferences
+from common.preferences import prefs
 
 # create and connect to the engine
-engine = sql.create_engine(preferences.DB_URL)
-engine.echo = preferences.DB_ECHO
+url = prefs.get('database.url')
+engine = sql.create_engine(url)
+engine.echo = prefs.get('database.setup.echo')
 
 # create global metadata object and bind the engine
 metadata = sql.MetaData()

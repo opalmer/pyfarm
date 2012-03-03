@@ -26,8 +26,9 @@ from sqlalchemy import orm
 
 from twisted.python import log
 
-from common import preferences
+from common.preferences import prefs
 
-ENGINE = sql.create_engine(preferences.DB_URL)
+url = prefs.get('database.url')
+ENGINE = sql.create_engine(url)
 Session = orm.sessionmaker(bind=ENGINE)
-log.msg("created engine: %s" % preferences.DB_URL)
+log.msg("created engine: %s" % url)

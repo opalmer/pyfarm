@@ -30,7 +30,7 @@ from twisted.internet import protocol, defer
 from twisted.python import log
 
 from common import logger
-import preferences
+from common.preferences import prefs
 
 CPU_COUNT = psutil.NUM_CPUS
 

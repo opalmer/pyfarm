@@ -30,9 +30,10 @@ from twisted.internet import reactor
 from twisted.python import log
 from twisted.web import xmlrpc, resource
 
-import process
 from common import logger
-import preferences
+from common.preferences import prefs
+import process
+
 
 class Manager(xmlrpc.XMLRPC):
     '''
@@ -45,7 +46,7 @@ class Manager(xmlrpc.XMLRPC):
         self.jobs = {}
         self.job_count = 0
         self.service = service # connection back to main client methods
-        self.job_count_max = preferences.MAX_JOBS
+        self.job_count_max = prefs.get('client.max-jobs')
         log.msg("job manager initialized")
     # end __init__
 

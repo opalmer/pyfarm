@@ -52,19 +52,6 @@ class OperatingSystem:
     # end resolve
 # end OperatingSystem
 
-
-# TODO: add method for list resolution
-class Software:
-    pass
-# end Software
-
-
-# TODO: add method for list resolution
-class JobType:
-    pass
-# end JobType
-
-
 OS = OperatingSystem.get()
 OSNAME = OperatingSystem.MAPPINGS.get(OS)
 LIST_TYPES = (list, tuple, set)
