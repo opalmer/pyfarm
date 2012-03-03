@@ -132,7 +132,7 @@ class Observer(log.FileLogObserver):
 
     def __log(self, msg, level=logging.DEBUG):
         '''used for internal calls to log'''
-        log.msg(msg, observe=True, level=level)
+        log.msg(msg, system='logger.Observer', level=level, observe=True)
     # end __log
 
     def __observable(self, eventDict):
@@ -198,7 +198,7 @@ class Observer(log.FileLogObserver):
         msg = timeStr + " " + log._safeFormat(self.format, fmtDict)
 
         if self.stream is not None:
-            log.util.untilConcludes(self.write, msg)
+            log.util.untilConcludes(self.write, msg+"\n")
             log.util.untilConcludes(self.flush)
 
         else:
@@ -229,7 +229,7 @@ class Observer(log.FileLogObserver):
                 observing = [observing]
             msg += " (observing: %s)" % ", ".join(observing)
 
-        self.__log(msg)
+        self.__log(msg, level=logging.INFO)
 
         # if the current stream name is not in STREAM we need
         # add a new entry
@@ -286,3 +286,7 @@ def timestamp():
     format = prefs.get('logging.timestamp')
     return time.strftime(format)
 # end timestamp
+
+# setup a default observer
+observer = Observer(None)
+observer.start()
