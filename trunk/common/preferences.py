@@ -21,8 +21,9 @@ from __future__ import with_statement
 import os
 import yaml
 import string
-import tempfile
+import psutil
 import logging
+import tempfile
 
 import datatypes
 
@@ -174,6 +175,19 @@ class Preferences(object):
         return url
     # end __dburl
 
+    def __calculateMaxJobs(self, data, kwargs):
+        '''calculates and returns the number of max jobs'''
+        if data is None:
+            return psutil.NUM_CPUS
+
+        elif isinstance(data, int) and data:
+            return data
+
+        elif data == "relative" or not data:
+            return psutil.NUM_CPUS / self.get('client.relative-value', **kwargs)
+
+    # end  __calculateMaxJobs
+
     def log(self, msg):
         log.msg(msg, system='Preferences', level=logging.INFO)
     # end log
@@ -242,6 +256,9 @@ class Preferences(object):
 
         elif key == "jobtypes.path":
             data = self.__expandSearchPaths(data, kwargs)
+
+        elif key == "client.max-jobs":
+            data = self.__calculateMaxJobs(data, kwargs)
 
         return data
     # end get
