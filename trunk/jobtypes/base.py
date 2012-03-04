@@ -21,15 +21,16 @@ import copy
 import types
 import getpass
 import logging
+import itertools
 
-from common import logger
-from common import datatypes
+from common.preferences import prefs
+from common import logger, datatypes
 
 from twisted.python import log
 
 USERNAME = getpass.getuser()
 
-class Base(object):
+class Base(logger.LoggingBaseClass):
     '''
     Base jobtype inherited by all other jobtypes
 
@@ -57,7 +58,10 @@ class Base(object):
         self._environ = environ
 
         # performs the setup to setup the class attributes
-        log.msg("Setting up jobtype: %s" % self.__class__.__name__)
+        self.log(
+            "Setting up jobtype: %s" % self.__class__.__name__,
+            level=logging.INFO
+        )
         self.setupEnvironment()
         self.setupUser()
         self.setupCommand()
@@ -71,13 +75,13 @@ class Base(object):
         '''
         self.environ = {}
         if isinstance(self._environ, types.DictionaryType) and self._environ:
-            log.msg("...setting up custom base environment")
+            self.log("...setting up custom base environment")
             self.environ = copy.deepcopy(self._environ)
 
         # add the native os environment if it does not match our
         # current env
         if os.environ != self.environ:
-            log.msg("...updating custom env with os environment")
+            self.log("...updating custom env with os environment")
             data = dict(os.environ)
             self.environ.update(data)
     # end setupEnvironment
@@ -91,12 +95,58 @@ class Base(object):
             to run the requested command.  Because this is being handled in the
             event loop this error will need to be handled externally.
         '''
-        # seealso: client.process.which
-        # construct the full path to the command
-        # ensure the command exists
-        # ensure we have access to the command
-        # ensure we can execute the command
-        log.msg("...command NOT_SET")
+        self.command = None
+        self.log("...setting up command")
+
+        # not much to do if the path we were provided already exists
+        if os.path.isfile(self._command):
+            self.command = os.path.abspath(self._command)
+            return
+
+        # combine any additional paths from the environment
+        # we passed in with the paths from preferences
+        paths = prefs.get('jobtypes.path')
+        for entry in self.environ.get('PATH').split(os.pathsep):
+            if entry not in paths:
+                self.log(".....inserting %s from the environment" % entry)
+                paths.insert(0, entry)
+
+        command_names = set()
+        command_names.add(self._command)
+
+        if datatypes.OS == datatypes.OperatingSystem.WINDOWS:
+            # construct a list of all possible commands
+            command_names.add(self._command.lower())
+            command_names.add(self._command.upper())
+
+            # iterate over all possible command names and extensions
+            # and construct a list of commands
+            commands = set()
+            extensions = prefs.get('jobtypes.extensions')
+            extensions.append("")
+
+            for command, extension in itertools.product(command_names, extensions):
+                if extension:
+                    commands.add(os.extsep.join((command, extension)))
+                else:
+                    commands.add(command)
+
+            for path, command in itertools.product(paths, commands):
+                path = os.path.join(path, command)
+                if os.path.isfile(path):
+                    self.command = path
+
+        else:
+            for path, command in itertools.product(paths, command_names):
+                path = os.path.join(path, command)
+                if os.path.isfile(path):
+                    self.command = path
+
+        # ensure the command was setup properly created
+        if self.command is None or not os.path.isfile(self.command):
+            raise OSError("failed to find the '%s' command" % self._command)
+
+        self.log("...command set to %s" % self.command)
     # end setupCommand
 
     def setupArguments(self):
@@ -107,9 +157,9 @@ class Base(object):
             self.args = self._args[:]
 
         if not self.args:
-            log.msg("...no arguments constructed", level=logging.WARNING)
+            self.log("...no arguments constructed", level=logging.WARNING)
         else:
-            log.msg("...arguments: %s" % self.args)
+            self.log("...arguments: %s" % self.args)
     # end setupArguments
 
     def setupUser(self):
@@ -135,7 +185,7 @@ class Base(object):
         if isinstance(self._user, types.StringTypes):
             # if the requested user is not the current user we need
             # to see if we are running as root/admin
-            log.msg("...checking for admin privileges")
+            self.log("...checking for admin privileges")
             if self._user != USERNAME:
                 # setting the process owner is only supported on
                 # unix based systems
@@ -157,7 +207,7 @@ class Base(object):
                         self.user = self._user
 
                     except KeyError:
-                        log.msg(
+                        self.log(
                             "...no such user '%s' on system" % self._user,
                             level=logging.ERROR
                         )
@@ -165,9 +215,9 @@ class Base(object):
                 else:
                     self.user = USERNAME
 
-        log.msg("...job will run as %s" % self.user)
+        self.log("...job will run as %s" % self.user)
     # end setupUser
 # end Base
 
 if __name__ == '__main__':
-    base = Base()
+    base = Base('ping')

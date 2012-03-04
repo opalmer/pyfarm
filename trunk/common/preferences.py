@@ -188,6 +188,31 @@ class Preferences(object):
 
     # end  __calculateMaxJobs
 
+    def __extensions(self, kwargs):
+        '''returns extensions for the current os'''
+        results = set()
+
+        # retrieve
+        extensions = self.get('jobtypes.extensions.common', **kwargs )
+
+        try:
+            extensions.extend(
+                self.get('jobtypes.extensions.%s' % datatypes.OSNAME, **kwargs)
+            )
+
+        except KeyError:
+            self.log('no os entry for %s in extensions' % datatypes.OSNAME)
+
+        for extension in extensions:
+            results.add(extension)
+            results.add(extension.lower())
+
+            if datatypes.OS == datatypes.OperatingSystem.WINDOWS:
+                results.add(extension.upper())
+
+        return [ result for result in results if result ]
+    # end __extensions
+
     def log(self, msg):
         log.msg(msg, system='Preferences', level=logging.INFO)
     # end log
@@ -243,6 +268,9 @@ class Preferences(object):
         elif key == 'database.engine':
             config_name = self.get('database.setup.config')
             return self.get('database.%s.engine' % config_name)
+
+        elif key == 'jobtypes.extensions':
+            return self.__extensions(kwargs)
 
         # traverse the values and retrieve the data
         try:

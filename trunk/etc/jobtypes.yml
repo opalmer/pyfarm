@@ -21,3 +21,13 @@
 path:
   - $root/bin
   - $PATH
+
+# possible extensions that the command could have (platform dependent)
+extensions:
+  common:
+    - py
+    - pyc
+
+  windows: [bat, cmd, exe]
+  linux: [sh, csh, tcsh]
+  mac: [app, sh, csh,]
