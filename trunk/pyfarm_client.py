@@ -50,6 +50,7 @@ HOSTNAME = socket.gethostname()
 ADDRESS = socket.gethostbyname(HOSTNAME)
 MASTER = ()
 SERVICE = None
+SERVICE_LOG = None
 
 # PYFARM_RESTART should not start out in the environment
 if 'PYFARM_RESTART' in os.environ:

@@ -41,8 +41,23 @@ level: 8
 custom-levels:
   DBSQL: 8
 
-# list of observers to keep silent unless forced
-silence-observers: null
+# list of system loggers we will silence logs for
+silence-systems:
+  - twisted.web.server.Site
+
+# list of
+exclude-message-filter:
+ - '*POST*HTTP*'
+ - 'St*ing protocol*'
+ - 'St*ing factory*'
+
+# list of systems to filter using the above list
+filter-systems:
+- '*HTTPChannel*'
+- '*QueryProtocol*'
+
+# enables/disables the above filtering
+enable-filtering: true
 
 # Number of backups to keep for every logfile
 # that is created with a duplicate name

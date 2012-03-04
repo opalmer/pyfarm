@@ -45,6 +45,7 @@ CWD = os.getcwd()
 HOSTNAME = socket.gethostname()
 ADDRESS = socket.gethostbyname(HOSTNAME)
 SERVICE = None
+SERVICE_LOG = None
 
 # PYFARM_RESTART should not start out in the environment
 if 'PYFARM_RESTART' in os.environ:

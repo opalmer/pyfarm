@@ -21,6 +21,7 @@ import time
 import types
 import inspect
 import logging
+import fnmatch
 from logging import handlers
 
 import datatypes
@@ -140,14 +141,30 @@ class Observer(log.FileLogObserver):
         Returns True if we should be observing the given system based on the
         value(s) in self.observe or if eventDict['observe'] is True
         '''
-        if eventDict.get('observe') or self.observe is None:
-            return True
+        # only filter if filtering is enabled
+        if prefs.get('logging.enable-filtering'):
+            for filter in prefs.get('logging.filter-systems'):
+                if not fnmatch.fnmatchcase(eventDict['system'], filter):
+                    continue
 
-        elif isinstance(self.observe, str):
+                for pattern in prefs.get('logging.exclude-message-filter'):
+                    for message in eventDict['message']:
+                        if fnmatch.fnmatchcase(message, pattern):
+                            return False
+
+        # see if the we have explicitly silenced the system
+        silenced = prefs.get('logging.silence-systems')
+        if silenced:
+            if eventDict['system'] in silenced:
+                return False
+
+        if isinstance(self.observe, str):
             return eventDict['system'] == self.observe
 
         elif isinstance(self.observe, datatypes.LIST_TYPES):
             return eventDict['system'] in self.observe
+
+        return True
     # end __observable
 
     def emit(self, eventDict):
@@ -165,6 +182,11 @@ class Observer(log.FileLogObserver):
         # then skip the rest of the function
         if not self.__observable(eventDict):
             return
+
+        # systems of HTTPChannel should really be xmlrpc in our
+        # case
+        if eventDict['system'].startswith("HTTPChannel"):
+            eventDict['system'] = 'XML-RPC'
 
         # retrieve the logging string
         level = eventDict.get('level') or\
