@@ -268,7 +268,4 @@ class Preferences(object):
     # end get
 # end Preferences
 
-#observer = logger.Observer(None)
-#observer.start()
-
 prefs = Preferences()

@@ -33,6 +33,7 @@ formats:
 #   ERROR:    40
 #   WARNING:  30
 #   INFO:     20
+#   DEBUG:    10
 #   NOTSET:    0
 level: 8
 
@@ -70,3 +71,7 @@ roots:
 locations:
   general: '$root/log'
   jobs: '$root/log/jobs/$jobid'
+
+sqlalchemy:
+  echo: false
+  pool: false
