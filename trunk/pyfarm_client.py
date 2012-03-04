@@ -35,7 +35,7 @@ cmdargs.processOptions(options)
 
 # setup the main log
 from common import logger, lock
-from common import rpc as xmlrpc
+from common import rpc as _xmlrpc
 from common.preferences import prefs
 from client import job, system, process
 from common.db import hosts
@@ -55,7 +55,7 @@ SERVICE = None
 if 'PYFARM_RESTART' in os.environ:
     del os.environ['PYFARM_RESTART']
 
-class Client(rpc.Service):
+class Client(_xmlrpc.Service):
     '''
     Main xmlrpc service which controls the client.  Most methods
     are handled entirely outside of this class for the purposes of
@@ -63,7 +63,7 @@ class Client(rpc.Service):
     '''
     # provides a location to store our call to reactor.callLater
     def __init__(self, log_stream):
-        rpc.Service.__init__(self, log_stream)
+        _xmlrpc.Service.__init__(self, log_stream)
 
         # setup sub handlers
         self.sys = system.SystemInformation()
@@ -166,7 +166,7 @@ class Client(rpc.Service):
                 "software" : options.host_software
             }
 
-            rpc = xmlrpc.Connection(MASTER[0], MASTER[1])
+            rpc = _xmlrpc.Connection(MASTER[0], MASTER[1])
             rpc.call('addHost', HOSTNAME, hostinfo, force)
 
             # if we are using sqlite inform master to update our resource
@@ -248,14 +248,14 @@ class Client(rpc.Service):
             args = (self.job.job_count_max, process.CPU_COUNT)
             log.msg(
                 "max job count (%i) is greater than the cpu count (%i)!" % args,
-                logLevel=logging.WARNING
+                level=logging.WARNING
             )
 
         # if the job count is unlimited show a warning
         elif self.job.job_count_max == -1:
             log.msg(
                 "max job count is unlimited!",
-                logLevel=logging.WARNING
+                level=logging.WARNING
             )
 
         return self.job.job_count_max

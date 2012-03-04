@@ -50,7 +50,7 @@ class Service(xmlrpc.XMLRPC):
             self.log_stream = None
             log.msg(
                 "service log stream established, some method will not function",
-                logLevel=logging.WARNING
+                level=logging.WARNING
             )
     # end __init__
 
@@ -137,7 +137,7 @@ class Service(xmlrpc.XMLRPC):
             raise xmlrpc.Fault(9, msg)
 
         elif block and force:
-            log.msg("shutdown forced!", logLevel=logging.WARNING)
+            log.msg("shutdown forced!", level=logging.WARNING)
 
         if not TEST_MODE:
             self._runShutdown()
@@ -182,7 +182,7 @@ class Service(xmlrpc.XMLRPC):
         '''
         _hostname = socket.gethostname() # local host name
         classname = self.__class__.__name__.upper()
-        engine = preferences.DB_ENGINE
+        engine = prefs.get('database.engine')
 
         if classname == "SERVER":
             # if we are provided data then we just need to update the
@@ -194,7 +194,7 @@ class Service(xmlrpc.XMLRPC):
             # remote host
             if hostname is not None and data is None:
                 log.msg("retrieving resources for %s" % hostname)
-                url = 'http://%s:%i' % (hostname, preferences.CLIENT_PORT)
+                url = 'http://%s:%i' % (hostname, prefs.get('network.ports.client'))
                 rpc = xmlrpclib.ServerProxy(url)
                 resources = rpc.resources()
                 return self.xmlrpc_resources(hostname, True, resources)
@@ -341,7 +341,7 @@ def ping(hostname, port, success=None, failure=None):
             return True
 
         except socket.error:
-            log.msg("failed to ping %s" % ident, logLevel=logging.WARNING)
+            log.msg("failed to ping %s" % ident, level=logging.WARNING)
 
             if callable(failure):
                 failure(hostname, port)

@@ -107,7 +107,7 @@ class Base(object):
             self.args = self._args[:]
 
         if not self.args:
-            log.msg("...no arguments constructed", logLevel=logging.WARNING)
+            log.msg("...no arguments constructed", level=logging.WARNING)
         else:
             log.msg("...arguments: %s" % self.args)
     # end setupArguments
@@ -139,7 +139,7 @@ class Base(object):
             if self._user != USERNAME:
                 # setting the process owner is only supported on
                 # unix based systems
-                if datatypes.OPERATING_SYSTEM in (
+                if datatypes.OS in (
                     datatypes.OperatingSystem.LINUX,
                     datatypes.OperatingSystem.MAC,
                 ):
@@ -159,7 +159,7 @@ class Base(object):
                     except KeyError:
                         log.msg(
                             "...no such user '%s' on system" % self._user,
-                            logLevel=logging.ERROR
+                            level=logging.ERROR
                         )
 
                 else:

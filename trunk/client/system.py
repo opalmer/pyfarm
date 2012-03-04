@@ -109,7 +109,7 @@ class SystemInformation(xmlrpc.XMLRPC):
 
     def xmlrpc_os(self):
         '''returns the operating system integer'''
-        return common.datatypes.OPERATING_SYSTEM
+        return common.datatypes.OS
     # end xmlrpc_os
 
     def xmlrpc_cpu_count(self):

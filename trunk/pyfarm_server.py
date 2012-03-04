@@ -33,7 +33,7 @@ from common import cmdargs
 options, args = cmdargs.parser.parse_args()
 
 from common import logger, multicast, lock
-from common import rpc as xmlrpc
+from common import rpc as _xmlrpc
 from common.preferences import prefs
 from common.db import tables, hosts
 
@@ -50,13 +50,13 @@ SERVICE = None
 if 'PYFARM_RESTART' in os.environ:
     del os.environ['PYFARM_RESTART']
 
-class Server(xmlrpc.Service):
+class Server(_xmlrpc.Service):
     '''
     Main server class to act as an external interface to the
     data base and job server.
     '''
     def __init__(self, log_stream):
-        xmlrpc.Service.__init__(self, log_stream)
+        _xmlrpc.Service.__init__(self, log_stream)
     # end __init__
 
     def resetClientMasters(self):
@@ -79,11 +79,10 @@ class Server(xmlrpc.Service):
 
                 else:
                     log.msg(
-                        "%s failed to reset master" % host,
-                        logLevel=logging.ERROR
+                        "%s failed to reset master" % host, level=logging.ERROR
                     )
             else:
-                rpc = xmlrpc.Connection(host, port)
+                rpc = _xmlrpc.Connection(host, port)
                 rpc.call('setMaster', '', True)
                 log.msg("called setMaster on %s" % host)
     # end resetClientMasters
@@ -116,7 +115,7 @@ def incoming_host(data):
     log.msg("incoming heartbeat from %s" % hostname)
 
     # run setMaster on the incoming client
-    rpc = xmlrpc.Connection(hostname, prefs.get('network.ports.client'), success)
+    rpc = _xmlrpc.Connection(hostname, prefs.get('network.ports.client'), success)
     rpc.call('setMaster', HOSTNAME)
 # end incoming_host
 
