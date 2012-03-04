@@ -275,20 +275,21 @@ class Client(_xmlrpc.Service):
     # end xmlrpc_free
 # end Client
 
-# determine the location we should log to
-if not options.log:
-    root = prefs.get('logging.locations.general')
-    SERVICE_LOG = os.path.join(root, 'client-%s.log' % HOSTNAME)
-else:
-    SERVICE_LOG = os.path.abspath(options.log)
-
-# add an observer for the service log
-observer = logger.Observer(SERVICE_LOG)
-observer.start()
 
 # create a lock for the process so we can't run two clients
 # at once
 with lock.ProcessLock('client', kill=options.force_kill, wait=options.wait):
+    # determine the location we should log to
+    if not options.log:
+        root = prefs.get('logging.locations.general')
+        SERVICE_LOG = os.path.join(root, 'client-%s.log' % HOSTNAME)
+    else:
+        SERVICE_LOG = os.path.abspath(options.log)
+
+    # add an observer for the service log
+    observer = logger.Observer(SERVICE_LOG)
+    observer.start()
+
     client = Client(SERVICE_LOG)
     SERVICE = client
 

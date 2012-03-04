@@ -57,7 +57,7 @@ filter-systems:
 - '*QueryProtocol*'
 
 # enables/disables the above filtering
-enable-filtering: true
+enable-filtering: false
 
 # Number of backups to keep for every logfile
 # that is created with a duplicate name

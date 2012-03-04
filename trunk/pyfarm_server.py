@@ -120,21 +120,21 @@ def incoming_host(data):
     rpc.call('setMaster', HOSTNAME)
 # end incoming_host
 
-# determine the location we should log to
-if not options.log:
-    root = prefs.get('logging.locations.general')
-    SERVICE_LOG = os.path.join(root, 'client-%s.log' % HOSTNAME)
-else:
-    SERVICE_LOG = os.path.abspath(options.log)
-
-# add an observer for the service log
-observer = logger.Observer(SERVICE_LOG)
-observer.start()
-
 # create a lock for the process so we can't run two clients
 # at once
 with lock.ProcessLock('server', kill=options.force_kill, wait=options.wait) \
     as context:
+    # determine the location we should log to
+    if not options.log:
+        root = prefs.get('logging.locations.general')
+        SERVICE_LOG = os.path.join(root, 'server-%s.log' % HOSTNAME)
+    else:
+        SERVICE_LOG = os.path.abspath(options.log)
+
+    # add an observer for the service log
+    observer = logger.Observer(SERVICE_LOG)
+    observer.start()
+
     server = Server(SERVICE_LOG)
     SERVICE = server
 
