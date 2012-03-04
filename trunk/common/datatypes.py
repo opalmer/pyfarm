@@ -21,12 +21,12 @@ import sys
 class OperatingSystem:
     LINUX, WINDOWS, MAC, OTHER = range(4)
     MAPPINGS = {
-        "win32" : WINDOWS,
+        "windows" : WINDOWS,
         "cygwin" : WINDOWS,
         "darwin" : MAC,
         "linux" : LINUX,
         "mac" : MAC,
-        WINDOWS : "win32",
+        WINDOWS : "windows",
         LINUX : "linux",
         MAC : "mac"
     }
@@ -37,6 +37,9 @@ class OperatingSystem:
         platform = sys.platform
         if platform.startswith("linux"):
             platform = "linux"
+
+        if platform.startswith("win"):
+            platform = "windows"
 
         value = OperatingSystem.MAPPINGS.get(platform)
         if value is None:

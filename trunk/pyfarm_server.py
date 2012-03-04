@@ -32,7 +32,7 @@ import xmlrpclib
 from common import cmdargs
 options, args = cmdargs.parser.parse_args()
 
-from common import logger, multicast, lock
+from common import logger, multicast, lock, datatypes
 from common import rpc as _xmlrpc
 from common.preferences import prefs
 from common.db import tables, hosts
@@ -167,7 +167,7 @@ if os.getenv('PYFARM_RESTART') == "true":
 
     args.insert(0, sys.executable)
 
-    if sys.platform == 'win32' or os.name == 'nt':
+    if datatypes.OS == datatypes.OperatingSystem.WINDOWS:
         args = ['"%s"' % arg for arg in args]
 
     os.chdir(CWD)

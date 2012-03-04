@@ -34,7 +34,7 @@ options, args = cmdargs.parser.parse_args()
 cmdargs.processOptions(options)
 
 # setup the main log
-from common import logger, lock
+from common import logger, lock, datatypes
 from common import rpc as _xmlrpc
 from common.preferences import prefs
 from client import job, system, process
@@ -312,7 +312,7 @@ if os.getenv('PYFARM_RESTART') == 'true' and prefs.get('network.rpc.restart'):
     args = sys.argv[:]
 
     args.insert(0, sys.executable)
-    if sys.platform == 'win32' or os.name == 'nt':
+    if datatypes.OS == datatypes.OperatingSystem.WINDOWS:
         args = ['"%s"' % arg for arg in args]
 
     os.chdir(CWD)
