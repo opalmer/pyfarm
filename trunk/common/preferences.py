@@ -109,8 +109,8 @@ class Preferences(object):
         # expand all environment variables and then split on ':' to retrieve
         # the paths from the string
         for value in [os.path.expandvars(value) for value in data]:
-            if ":" in value:
-                for entry in value.split(":"):
+            if os.pathsep in value:
+                for entry in value.split(os.pathsep):
                     paths.append(entry)
             else:
                 paths.append(value)
