@@ -20,17 +20,13 @@ import logging
 import sqlalchemy as sql
 
 from common.preferences import prefs
+from session import ENGINE
 
 from twisted.python import log
 
-# create and connect to the engine
-url = prefs.get('database.url')
-engine = sql.create_engine(url)
-engine.echo = prefs.get('database.setup.echo')
-
 # create global metadata object and bind the engine
 metadata = sql.MetaData()
-metadata.bind = engine
+metadata.bind = ENGINE
 
 # HOSTS TABLE ATTRIBUTES
 # hold - if True the given client cannot accept jobs until hold is False again
