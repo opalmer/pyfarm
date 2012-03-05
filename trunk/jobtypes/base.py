@@ -18,7 +18,7 @@
 
 import os
 import copy
-import types
+import string
 import ctypes
 import getpass
 import logging
@@ -40,6 +40,12 @@ class Base(logger.LoggingBaseClass):
     :param string or list args:
         arguments to provide to the command when being run
 
+    :param integer jobid:
+        the id of the job in the database
+
+    :param string frame:
+        the frame we will expect to be running
+
     :param string user:
         If a user is not provided then we assume we will run the job as the
         current user.  Providing a string will set self.user to the provided
@@ -48,24 +54,45 @@ class Base(logger.LoggingBaseClass):
     :param dict environ:
         custom environment variables to pass along
     '''
-    def __init__(self, command, args=[], user=None, environ={}):
-        # base argumnets which are used to set the non-private
+    def __init__(self, command, args, jobid, frame, user=None, environ=None):
+        # base arguments which are used to set the non-private
         # class attributes
         self._command = command
         self._args = args
         self._user = user
         self._environ = environ
 
+        self.jobid = jobid
+        self.frame = frame
+
+        # first setup logging so we can capture output from the
+        self.setupLog()
+
         # performs the setup to setup the class attributes
         self.log(
             "Setting up jobtype: %s" % self.__class__.__name__,
             level=logging.INFO
         )
+
         self.setupEnvironment()
         self.setupUser()
         self.setupCommand()
         self.setupArguments()
     # end __init__
+
+    def setupLog(self):
+        '''Sets up the log file and begins logging the progress of the job'''
+        self.log("...setting up log")
+        root = prefs.get('logging.locations.jobs')
+        template_vars = {
+            "jobid" : self.jobid,
+            "frame" : self.frame
+        }
+        template = string.Template(root)
+        self.logfile = template.substitute(template_vars)
+        self.observer = logger.Observer(self.logfile)
+        self.observer.start()
+    # end setupLog
 
     def setupEnvironment(self):
         '''
@@ -73,7 +100,7 @@ class Base(logger.LoggingBaseClass):
         values provided by self._environ along with the os environment.
         '''
         self.environ = {}
-        if isinstance(self._environ, types.DictionaryType) and self._environ:
+        if isinstance(self._environ, dict) and self._environ:
             self.log("...setting up custom base environment")
             self.environ = copy.deepcopy(self._environ)
 
@@ -114,7 +141,6 @@ class Base(logger.LoggingBaseClass):
 
             command_names = set()
             command_names.add(self._command)
-            self.log("......searching %i paths for %s" % (len(paths), self._command))
 
         if datatypes.OS == datatypes.OperatingSystem.WINDOWS:
             # construct a list of all possible commands
@@ -153,7 +179,7 @@ class Base(logger.LoggingBaseClass):
 
     def setupArguments(self):
         '''Sets of arguments to use for the command'''
-        if isinstance(self._args, types.StringTypes):
+        if isinstance(self._args, str):
             self.args = self._args.split()
         else:
             self.args = self._args[:]
@@ -181,10 +207,10 @@ class Base(logger.LoggingBaseClass):
         self.gid = None
         self.user = USERNAME
 
-        if isinstance(self._user, types.NoneType):
+        if self.user is None:
             self.user = USERNAME
 
-        if isinstance(self._user, types.StringTypes):
+        if isinstance(self._user, str):
             # if the requested user is not the current user we need
             # to see if we are running as root/admin
             self.log("...checking for admin privileges")
@@ -227,7 +253,52 @@ class Base(logger.LoggingBaseClass):
 
         self.log("...job will run as %s" % self.user)
     # end setupUser
+
+    def preJob(self):
+        '''Runs before the start of the job'''
+        self.log("nothing to be done for preJob")
+    # end preJob
+
+    def preFrame(self):
+        '''Runs before the start of a frame'''
+        self.log("nothing to be done for preFrame")
+    # end preFrame
+
+    def postJob(self):
+        '''Runs after a job completes, regardless of success'''
+        self.log("nothing to be done for postJob")
+    # end postJob
+
+    def postJob_success(self):
+        '''Runs after a job completes successfully'''
+        self.log("nothing to be done for postJob_success")
+    # end postJob_success
+
+    def postJob_failure(self):
+        '''Runs after a job fails'''
+        self.log("nothing to be done for postJob_failure")
+    # end postJob_failure
+
+    def postFrame(self):
+        '''Runs after a frame completes, regardless of success'''
+        self.log("nothing to be done for postFrame")
+    # end postFrame
+
+    def postFrame_success(self):
+        '''Runs after a frame completes successfully'''
+        self.log("nothing to be done for postFrame_success")
+    # end postFrame_success
+
+    def postFrame_failure(self):
+        '''Runs after a frame fails'''
+        self.log("nothing to be done for postFrame_failure")
+    # end postFrame_failure
+
+    def run(self):
+        pass
+    # end run
 # end Base
 
 if __name__ == '__main__':
-    base = Base('ping', args='-c 1 localhost')
+    base = Base('ping', '-c 1 localhost', 123, 1004)
+    base.run()
