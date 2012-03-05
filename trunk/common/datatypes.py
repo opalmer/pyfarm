@@ -47,13 +47,11 @@ class OperatingSystem:
 
         return value
     # end get
-
-    @staticmethod
-    def resolve(data):
-        '''resolves the incoming string to a value'''
-        return OperatingSystem.get(data)
-    # end resolve
 # end OperatingSystem
+
+class State:
+    PAUSED, BLOCKED, QUEUED, RUNNING, FINISHED, FAILED = range(5)
+# end State
 
 OS = OperatingSystem.get()
 OSNAME = OperatingSystem.MAPPINGS.get(OS)
