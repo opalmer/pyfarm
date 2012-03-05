@@ -29,7 +29,7 @@ from common import logger, datatypes
 
 USERNAME = getpass.getuser()
 
-class Base(logger.LoggingBaseClass):
+class Job(logger.LoggingBaseClass):
     '''
     Base jobtype inherited by all other jobtypes
 
@@ -297,8 +297,8 @@ class Base(logger.LoggingBaseClass):
     def run(self):
         pass
     # end run
-# end Base
+# end Job
 
 if __name__ == '__main__':
-    base = Base('ping', '-c 1 localhost', 123, 1004)
+    base = Job('ping', '-c 1 localhost', 123, 1004)
     base.run()
