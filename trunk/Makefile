@@ -7,7 +7,7 @@ shell:
 
 clean:
 	@find . -name "*.pyc" -exec rm -v {} \;
-	@find . -name "*.db" -exec rm -v {} \;
+	@find . -name "*.pyo" -exec rm -v {} \;
 
 db:
 	@$(PYTHON) -c 'from common.db import tables; from common import preferences;\
