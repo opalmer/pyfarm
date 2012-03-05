@@ -50,8 +50,12 @@ class OperatingSystem:
 # end OperatingSystem
 
 class State:
-    PAUSED, BLOCKED, QUEUED, RUNNING, FINISHED, FAILED = range(5)
+    PAUSED, BLOCKED, QUEUED, RUNNING, FINISHED, FAILED = range(6)
 # end State
+
+class Software:
+    MAYA, HOUDINI, VRAY, NUKE, BLENDER = range(5)
+# end Software
 
 OS = OperatingSystem.get()
 OSNAME = OperatingSystem.MAPPINGS.get(OS)
