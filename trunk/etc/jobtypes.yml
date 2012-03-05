@@ -37,3 +37,9 @@ extensions:
 # it's assumed a jobtype with the same name as the jobtype
 # exists.
 mappings: {}
+
+# default values to insert into the jobs table if none
+# are specified when submitting the job
+defaults:
+  requeue-failed: true
+  requeue-max: 5

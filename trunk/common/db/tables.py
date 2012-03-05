@@ -82,9 +82,9 @@ jobs = sql.Table('pyfarm_jobs', metadata,
     sql.Column('frame_average', sql.Float, default=0),
 
     # timers
-    sql.Column('time_start', sql.Float),
-    sql.Column('time_end', sql.Float),
-    sql.Column('time_elapsed', sql.Float),
+    sql.Column('time_start', sql.Float, default=None),
+    sql.Column('time_end', sql.Float, default=None),
+    sql.Column('time_elapsed', sql.Float, default=None),
 
     # job setup
     # isolate - if True this job must run by itself (no other jobs on host)
@@ -93,13 +93,15 @@ jobs = sql.Table('pyfarm_jobs', metadata,
     sql.Column('enviro', sql.PickleType),
     sql.Column('data', sql.PickleType),
     sql.Column('user', sql.String(256)),
-    sql.Column('software', sql.Integer),
+    sql.Column('software', sql.PickleType, default=None),
     sql.Column('jobtype', sql.String(64)),
-    sql.Column('ram', sql.Integer),
-    sql.Column('cpus', sql.Integer, default=-1),
-    sql.Column('requeue_failed', sql.Boolean, default=False),
-    sql.Column('requeue_max', sql.Integer)
-    )
+    sql.Column('ram', sql.Integer, default=None),
+    sql.Column('cpus', sql.Integer, default=None),
+    sql.Column('requeue_failed', sql.Boolean,
+               default=prefs.get('jobtypes.defaults.requeue-failed')),
+    sql.Column('requeue_max', sql.Integer,
+               default=prefs.get('jobtypes.defaults.requeue-max'))
+)
 
 # create frames table
 # uuid - uuid of job on client
