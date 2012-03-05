@@ -19,14 +19,13 @@
 import os
 import copy
 import types
+import ctypes
 import getpass
 import logging
 import itertools
 
 from common.preferences import prefs
 from common import logger, datatypes
-
-from twisted.python import log
 
 USERNAME = getpass.getuser()
 
@@ -81,7 +80,7 @@ class Base(logger.LoggingBaseClass):
         # add the native os environment if it does not match our
         # current env
         if os.environ != self.environ:
-            self.log("...updating custom env with os environment")
+            self.log("...updating environment with os environment")
             data = dict(os.environ)
             self.environ.update(data)
     # end setupEnvironment
@@ -101,18 +100,21 @@ class Base(logger.LoggingBaseClass):
         # not much to do if the path we were provided already exists
         if os.path.isfile(self._command):
             self.command = os.path.abspath(self._command)
+            self.log("...command set to %s" % self.command)
             return
 
-        # combine any additional paths from the environment
-        # we passed in with the paths from preferences
-        paths = prefs.get('jobtypes.path')
-        for entry in self.environ.get('PATH').split(os.pathsep):
-            if entry not in paths:
-                self.log(".....inserting %s from the environment" % entry)
-                paths.insert(0, entry)
+        else:
+            # combine any additional paths from the environment
+            # we passed in with the paths from preferences
+            paths = prefs.get('jobtypes.path')
+            for entry in self.environ.get('PATH').split(os.pathsep):
+                if entry not in paths:
+                    self.log(".....inserting %s from the environment" % entry)
+                    paths.insert(0, entry)
 
-        command_names = set()
-        command_names.add(self._command)
+            command_names = set()
+            command_names.add(self._command)
+            self.log("......searching %i paths for %s" % (len(paths), self._command))
 
         if datatypes.OS == datatypes.OperatingSystem.WINDOWS:
             # construct a list of all possible commands
@@ -213,6 +215,14 @@ class Base(logger.LoggingBaseClass):
                         )
 
                 else:
+                    # if we are running in windows, we should at least
+                    # produce warnings if we are not an administrator
+                    if datatypes.OS == datatypes.OperatingSystem.WINDOWS and \
+                        ctypes.windll.shell32.IsUserAnAdmin():
+                        msg = "not running as an administrator, this may produce "
+                        msg += "unexpected results in some cases"
+                        self.log(msg, level=logging.WARNING)
+
                     self.user = USERNAME
 
         self.log("...job will run as %s" % self.user)
@@ -220,4 +230,4 @@ class Base(logger.LoggingBaseClass):
 # end Base
 
 if __name__ == '__main__':
-    base = Base('ping')
+    base = Base('ping', args='-c 1 localhost')
