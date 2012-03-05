@@ -77,15 +77,15 @@ roots:
 # recombine them with os.path.join.
 #
 # Default Template Variables:
-#   %(temp)s - determined by tempfile.gettempdir()
-#   %(root)s - determined by roots[datatypes.OSNAME]
+#   $temp - determined by tempfile.gettempdir()
+#   $root - determined by roots[datatypes.OSNAME]
 #
 # Variables which are not defined above but included below
 # would be substituted when the log is created.  For example %(jobid)s or
 # %(jobtype)s would be included when a new job starts on a client
 locations:
   general: '$root/log'
-  jobs: '$root/log/jobs/$jobid'
+  jobs: '$root/log/jobs/$jobid/$frame.log'
 
 sqlalchemy:
   echo: false
