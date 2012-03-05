@@ -30,4 +30,10 @@ extensions:
 
   windows: [bat, cmd, exe]
   linux: [sh, csh, tcsh]
-  mac: [app, sh, csh,]
+  mac: [app, sh, csh]
+
+# Maps jobtypes to specific module names.  If
+# a mapping is not provided for a specific jobtype then
+# it's assumed a jobtype with the same name as the jobtype
+# exists.
+mappings: {}
