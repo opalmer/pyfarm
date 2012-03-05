@@ -71,18 +71,18 @@ class Transaction(object):
     def __exit__(self, type, value, traceback):
         # roll back the transaction in the event of an error
         if not isinstance(type, types.NoneType):
-            self.log("...rolling back database transaction: %s" % value)
+            self.log("rolling back database transaction: %s" % value)
             self.session.rollback()
 
         # commit changes if there are any pending
         else:
             if self.session.dirty or self.session.new:
                 self.session.commit()
-                log.msg("...committing database entry to %s" % self.tablename)
+                log.msg("committing database entry to %s" % self.tablename)
 
         # cleanup connections if requested
         if prefs.get('database.setup.close-connections'):
-            self.log("...closing connections")
+            self.log("closing connections")
             self.query.session.close_all()
             self.query.session.bind.dispose()
 
