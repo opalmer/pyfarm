@@ -53,7 +53,7 @@ class Transaction(object):
         self.Session = Session
     # end __init__
 
-    def log(self, msg, level='dbsql'):
+    def log(self, msg, level='SQL'):
         log.msg(msg, level=level, system=self.__system or 'Transaction')
     # end
 
