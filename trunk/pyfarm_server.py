@@ -35,7 +35,7 @@ options, args = cmdargs.parser.parse_args()
 from common import logger, multicast, lock, datatypes
 from common import rpc as _xmlrpc
 from common.preferences import prefs
-from common.db import tables, hosts
+from common.db import tables, query
 
 from twisted.internet import reactor
 from twisted.web import server as _server
@@ -66,7 +66,7 @@ class Server(_xmlrpc.Service):
         this point the event loop should have terminated but we
         make sure to handle either case.
         '''
-        for host in hosts.hostlist(online=True):
+        for host in query.hosts.hostlist(online=True):
             port = prefs.get('network.ports.client')
             if not self.xmlrpc_ping(host, port):
                 log.msg("%s does not appear to be up, skipping" % host)
@@ -93,7 +93,7 @@ class Server(_xmlrpc.Service):
         adds a host url and sets up the host in the database
         '''
         host = "%s:%i" % (hostname, prefs.get('network.ports.client'))
-        if not force and host in hosts.hostlist(online=None):
+        if not force and host in query.hosts.hostlist(online=None):
             log.msg("already added host %s" % host)
             return
     # end xmlrpc_addHost

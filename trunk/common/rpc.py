@@ -25,7 +25,7 @@ import socket
 import xmlrpclib
 
 from common.preferences import prefs
-from common.db import hosts
+from common.db import query
 
 from twisted.internet import reactor
 from twisted.web import resource, xmlrpc
@@ -188,7 +188,7 @@ class Service(xmlrpc.XMLRPC):
             # if we are provided data then we just need to update the
             # resource information
             if hostname is not None and update and data is not None:
-                return hosts.update_resources(hostname, data)
+                return query.hosts.update_resources(hostname, data)
 
             # if data is None them we first have to retrieve data for the
             # remote host
@@ -233,7 +233,7 @@ class Service(xmlrpc.XMLRPC):
             # if we're not using sqlite then update the database directly
             elif update and engine != "sqlite":
                 log.msg("updating resources in table")
-                return hosts.update_resources(_hostname, sysinfo)
+                return query.hosts.update_resources(_hostname, sysinfo)
 
         raise NotImplementedError("unhandled usage")
 # end Service
