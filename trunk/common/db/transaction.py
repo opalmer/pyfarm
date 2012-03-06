@@ -38,10 +38,11 @@ class Transaction(object):
     :param object base:
         optional base to map query onto
     '''
-    def __init__(self, table, base=None):
+    def __init__(self, table, base=None, system=None):
         class BaseObject(object):
             pass
         # end BaseOjbect
+        self.__system = system
 
         self.base = base or BaseObject
         self.table = table
@@ -53,7 +54,7 @@ class Transaction(object):
     # end __init__
 
     def log(self, msg, level='dbsql'):
-        log.msg(msg, level=level, system='Transaction')
+        log.msg(msg, level=level, system=self.__system or 'Transaction')
     # end
 
     def __enter__(self):
