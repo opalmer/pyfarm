@@ -90,6 +90,22 @@ def select(min_priority=None, max_priority=None, select=True):
     return jobids
 # end select
 
+def priority(jobid):
+    '''
+    returns the priority of the job
+
+    :exception ValueError:
+        raied if the job id does not exist
+    '''
+    with Transaction(jobs, system="query.jobs.priority") as trans:
+        trans.log("retrieving priority for job %i" % jobid)
+        for result in trans.query.filter_by(id=jobid):
+            return int(result.priority)
+
+    args = (jobid, jobs)
+    raise ValueError("jobid %i does not exist in %s" % args)
+# end priority
+
 def priority_stats():
     '''returns the min priority of the current job table'''
     with Transaction(jobs, system="query.jobs.priority_stats") as trans:
