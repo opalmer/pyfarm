@@ -27,6 +27,7 @@ class Job(base.Job):
         #   it if it does
         # - job information stored in data is retrieved and used to construct
         #   base job
+        pass
 
 
 #        super(Job, self).__init__(self, command,)

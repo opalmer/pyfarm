@@ -22,14 +22,18 @@ Used to verify and submit jobs
 
 from __future__ import with_statement
 
+import time
 import inspect
 import getpass
+import logging
 
 from common import logger, datatypes, db
 from common.preferences import prefs
-from common.db import tables
+from common.db import tables, query
+from common.db import Transaction
 
 from twisted.python import log
+
 
 def validJobtype(jobtype):
     '''ensure the jobtype exists and return its module or raise an error'''
@@ -118,26 +122,84 @@ def job(jobtype, start, end, by=1, data=None, environ=None, priority=500,
 
     # commit data to table
     log.msg("submitting job for jobtype %s" % jobtype)
-    with db.Transaction(tables.jobs) as trans:
-        insert = trans.insert()
-        trans.log("inserting %s job" % jobtype)
-        results = insert.execute(data)
 
+    # insert the job into the table
+    time_start = time.time()
+    log.msg("inserting %s job" % jobtype)
+    table = tables.jobs
+    insert = table.insert()
+    results = insert.execute(data)
     jobid = int(results.last_inserted_ids()[0])
-    log.msg("successfully submitted %s job (id: %i)" % (jobtype, jobid))
-    return jobid
+    log.msg("inserted job (id: %i)" % jobid)
+
+    # insert the frames into the table
+    count = 0
+    table = tables.frames
+    insert = table.insert()
+    frameids = []
+
+    args = (jobid, start, end, by, table)
+    log.msg("inserting frames for job %i using range(%i, %i, %i) into %s" % args)
+    for frame in range(start, end+1, by):
+        data = {"jobid" : jobid, "frame" : frame, "priority" : priority}
+        result = insert.execute(data)
+        frameids.append(int(result.last_inserted_ids()[0]))
+        count += 1
+
+    time_end = time.time()
+    args = (count, table.fullname, time_end-time_start)
+    log.msg("inserted %i frames into %s (elapsed: %s)" % args)
+
+    return jobid, frameids
 # end job
 
-def frame():
+def frames(jobid, start, end, by):
     '''
-    used to submit a frame to the frames table once a host has
-    picked up the work
-    '''
-    pass
-# end frame
+    used to submit a frame or frames to a job after submission
 
+    :exception ValueError:
+        raised if the priovided jobid does not exist
+    '''
+    frameids = []
+
+    with Transaction(tables.frames, system="db.submit.frames") as trans:
+        # ensure the parent job id exists in the database, retrieve
+        # the priority if it does
+        trans.log("ensuring job %i exists" % jobid)
+        if not trans.query.filter_by(jobid=jobid).count():
+            args = (jobid, tables.frames)
+            raise ValueError("jobid %i does not exist in %s" % args)
+        else:
+            priority = query.jobs.priority(jobid)
+
+        trans.log("iterating over frames")
+        for i in range(start, end+1, by):
+            exists = trans.query.filter_by(frame=i, jobid=jobid).count()
+
+            # skip any frames that already exist
+            if exists:
+                trans.log(
+                    "skipping frame %i, it already exists" % i,
+                    level=logging.WARNING
+                )
+                continue
+
+            data = {
+                "jobid" : jobid, "priority" : priority, "frame" : i
+            }
+            insert = trans.table.insert()
+            result = insert.execute(data)
+            frameids.append(int(result.last_inserted_ids()[0]))
+
+            print "%i does not exist" % i
+
+    log.msg(
+        "added %i frames to job %i" % (len(frameids), jobid),
+        system="db.submit.frames"
+    )
+    return frameids
+# end frames
 
 if __name__ == '__main__':
-    job_id = job(
-        'mayatomr', 1, 20, data={"scene" : "/tmp/scene.mb"}, ram=20, cpus=1
-    )
+#    job('mayatomr', 1, 10)
+    frames(1, 1, 20, 1)
