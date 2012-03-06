@@ -19,6 +19,7 @@
 import logging
 import sqlalchemy as sql
 
+from common import datatypes
 from common.preferences import prefs
 from session import ENGINE
 
@@ -108,15 +109,16 @@ jobs = sql.Table('pyfarm_jobs', metadata,
 frames = sql.Table('pyfarm_frames', metadata,
     sql.Column('id', sql.Integer, autoincrement=True, primary_key=True),
     sql.Column('jobid', sql.Integer, sql.ForeignKey(jobs.c.id)),
-    sql.Column('host', sql.Integer, sql.ForeignKey(hosts.c.id)),
+    sql.Column('priority', sql.Integer, default=None),
+    sql.Column('host', sql.Integer, sql.ForeignKey(hosts.c.id), default=None),
     sql.Column('frame', sql.Integer),
-    sql.Column('state', sql.Integer, default=0),
+    sql.Column('state', sql.Integer,
+               default=datatypes.State.QUEUED),
     sql.Column('attempts', sql.Integer, default=0),
-    sql.Column('ram', sql.Integer),
-    sql.Column('time_start', sql.Float),
-    sql.Column('time_end', sql.Float),
-    sql.Column('time_elapsed', sql.Float),
-    sql.Column('uuid', sql.String(36))
+    sql.Column('ram', sql.Integer, default=None),
+    sql.Column('time_start', sql.Float, default=None),
+    sql.Column('time_end', sql.Float, default=None),
+    sql.Column('uuid', sql.String(36), default=""),
 )
 
 def init():
