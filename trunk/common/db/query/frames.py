@@ -17,7 +17,7 @@
 # along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
 '''
-Provides common mechanisms for querying job related information
+Provides common mechanisms for querying frame related information
 '''
 
 import random
@@ -26,26 +26,28 @@ from sqlalchemy import func
 from twisted.python import log as _log
 
 import _tables
+
+import jobs
 from common import logger
 from common.db.transaction import Transaction
-from common.db.tables import jobs
+from common.db.tables import frames
 
-def priority(jobid):
+def priority(jobid, frameid=None, frame=None):
     '''
-    returns the priority of the job
+    returns the priority of the frame or frame id
 
     :exception ValueError:
-        raied if the job id does not exist
+        raised if the requed query could not be fulfilled
     '''
-    return _tables.priority(jobs, jobid)
+    return _tables.priority(frames, jobid, frameid=frameid, frame=frame)
 # end priority
 
 def priority_stats():
-    '''returns the priority stats of the current job table'''
-    return _tables.priority_stats(jobs)
+    '''returns the priority stats of the current frame table'''
+    return _tables.priority_stats(frames)
 # end priority_stats
 
-def select(min_priority=None, max_priority=None, select=True):
+def select(jobid=None, min_priority=None, max_priority=None, select=True):
     '''
     Given no input arguments return a job id to select and process
     a frame from.
@@ -60,9 +62,14 @@ def select(min_priority=None, max_priority=None, select=True):
         if False then return all jobs matching the query
     '''
     def log(msg, **kwargs):
-        kwargs.update(system="query.jobs.select")
+        kwargs.update(system="query.frames.select")
         _log.msg(msg, **kwargs)
     # end log
+
+    # select a o
+    if jobid is None:
+        log("auto selecting job id")
+        jobid = jobs.select()
 
     # TODO: move this into query._tables.select
     jobids = []
@@ -107,3 +114,6 @@ def select(min_priority=None, max_priority=None, select=True):
 
     return jobids
 # end select
+
+if __name__ == '__main__':
+    select()
