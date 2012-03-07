@@ -1,6 +1,6 @@
 DB_ECHO = True
 DB_REBUILD = True
-PYTHON = $(shell which python)
+PYTHON = python
 
 shell:
 	@env PYTHONPATH=. ipython
