@@ -46,7 +46,7 @@ def priority(jobid):
 # end priority
 
 def priority_stats():
-    '''returns the min priority of the current job table'''
+    '''returns the priority stats of the current job table'''
     with Transaction(jobs, system="query.jobs.priority_stats") as trans:
         # query for min priority
         query = trans.session.query(func.min(trans.table.c.priority))
