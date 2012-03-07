@@ -10,8 +10,7 @@ clean:
 	@find . -name "*.pyo" -exec rm -v {} \;
 
 db:
-	@$(PYTHON) -c 'from common.db import tables; from common import preferences;\
-	preferences.DB_ECHO = $(DB_ECHO); preferences.DB_REBUILD = $(DB_REBUILD); tables.init()'
+	@$(PYTHON) -c 'from common.db import tables; tables.init()'
 
 pyfarm.%: SCRIPT=pyfarm_$(subst pyfarm.,,$@.py)
 pyfarm.%:

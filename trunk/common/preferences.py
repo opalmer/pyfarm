@@ -42,6 +42,10 @@ class Preferences(object):
     files and handling of specific special case (such as logging
     directory strings)
     '''
+    # creates a 'frozen' form of the preferences to override
+    # the yaml files on disk.
+    PREFERENCES = {}
+
     # determine the yaml loader we should use
     if hasattr(yaml, 'CLoader'):
         LOADER = yaml.CLoader
@@ -213,9 +217,40 @@ class Preferences(object):
         return [ result for result in results if result ]
     # end __extensions
 
-    def log(self, msg):
-        log.msg(msg, system='Preferences', level=logging.INFO)
+    def log(self, msg, level=logging.INFO):
+        log.msg(msg, system='Preferences', level=level)
     # end log
+
+    def set(self, key, value, overwrite=True):
+        '''
+        Sets a preference to the provided value that will override the
+        yaml file.  Normally this method should not need to be used but
+        can be used by external libraries, unittests, and other processes
+        that require a specific preference.
+
+        :param string key:
+            the key to create a frozen preference for
+
+        :param value:
+            the value to set the preference to, setting this value to None
+            will remove the preference
+
+        :param boolean overwrite:
+            if false then we will not overwrite preferences that already exist
+        '''
+        if value is None and key in Preferences.PREFERENCES:
+            del Preferences.PREFERENCES[key]
+            self.log("deleted frozen preference %s" % key)
+
+        else:
+            # skip if the key already exists and overwrite is
+            # turned off
+            if key in Preferences.PREFERENCES and not overwrite:
+                return
+
+            Preferences.PREFERENCES[key] = value
+            self.log("set frozen preference %s to %s" % (key, value))
+    # end set
 
     def get(self, key, **kwargs):
         '''
@@ -245,6 +280,11 @@ class Preferences(object):
         :exception KeyError:
             raised if we failed to fully resolve the preference
         '''
+        # if the key exists in the local preference
+        # then use it instead of loading from the file
+        if key in Preferences.PREFERENCES:
+            return Preferences.PREFERENCES[key]
+
         if "." not in key:
             raise ValueError("key provided does not contain the '.' separator")
 
