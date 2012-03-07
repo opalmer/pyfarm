@@ -121,9 +121,9 @@ frames = sql.Table('pyfarm_frames', metadata,
     sql.Column('uuid', sql.String(36), default=""),
 )
 
-def init():
+def init(rebuild=False):
     '''initializes the tables according the the preferences'''
-    if prefs.get('database.setup.rebuild'):
+    if rebuild or prefs.get('database.setup.rebuild'):
         log.msg('dropping all tables before rebuilding', level=logging.WARNING)
         metadata.drop_all()
 
