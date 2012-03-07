@@ -9,8 +9,13 @@ clean:
 	@find . -name "*.pyc" -exec rm -v {} \;
 	@find . -name "*.pyo" -exec rm -v {} \;
 
+jobs:
+	@$(PYTHON) ../dev/bin/make_jobs.py
+
 db:
+	@echo "rebuilding database"
 	@$(PYTHON) -c 'from common.db import tables; tables.init(rebuild=True)'
+	$(MAKE) jobs
 
 pyfarm.%: SCRIPT=pyfarm_$(subst pyfarm.,,$@.py)
 pyfarm.%:
