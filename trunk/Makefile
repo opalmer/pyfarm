@@ -8,6 +8,7 @@ shell:
 clean:
 	@find . -name "*.pyc" -exec rm -v {} \;
 	@find . -name "*.pyo" -exec rm -v {} \;
+	@find . -name "*~" -exec rm -v {} \;
 
 jobs:
 	@$(PYTHON) ../dev/bin/make_jobs.py

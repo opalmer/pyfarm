@@ -27,7 +27,50 @@ from twisted.python import log as _log
 
 from common import logger
 from common.db.transaction import Transaction
-from common.db.tables import jobs, frames
+from common.db.tables import jobs
+
+def priority(jobid):
+    '''
+    returns the priority of the job
+
+    :exception ValueError:
+        raied if the job id does not exist
+    '''
+    with Transaction(jobs, system="query.jobs.priority") as trans:
+        trans.log("retrieving priority for job %i" % jobid)
+        for result in trans.query.filter_by(id=jobid):
+            return int(result.priority)
+
+    args = (jobid, jobs)
+    raise ValueError("jobid %i does not exist in %s" % args)
+# end priority
+
+def priority_stats():
+    '''returns the min priority of the current job table'''
+    with Transaction(jobs, system="query.jobs.priority_stats") as trans:
+        # query for min priority
+        query = trans.session.query(func.min(trans.table.c.priority))
+
+        # if we failed to retrieve the frist query then all other will
+        # fail so we return here
+        if not query.count():
+            return None, None, None
+
+        p_min = int(query.first()[0])
+
+        # query for max priority
+        query = trans.session.query(func.max(trans.table.c.priority))
+        p_max = int(query.first()[0])
+
+        # query for average priority
+        query = trans.session.query(func.avg(trans.table.c.priority))
+        p_avg = int(query.first()[0])
+
+        trans.log("p_min for %s: %s" % (trans.table, p_min))
+        trans.log("p_max for %s: %s" % (trans.table, p_max))
+        trans.log("p_avg for %s: %s" % (trans.table, p_avg))
+        return p_min, p_max, p_avg
+# end priority_stats
 
 def select(min_priority=None, max_priority=None, select=True):
     '''
@@ -50,21 +93,22 @@ def select(min_priority=None, max_priority=None, select=True):
 
     jobids = []
     if min_priority is None and max_priority is None:
-            highest_priority = priority_max()
+        with Transaction(jobs, system="query.jobs.select") as trans:
+            p_min, p_max, p_avg = priority_stats()
 
             # find all jobs matching this priority (unless we did not find
             # any jobs)
-            if highest_priority:
-                for job in trans.query.filter_by(priority=highest_priority):
+            if p_max:
+                for job in trans.query.filter_by(priority=p_max):
                     jobids.append(job.id)
 
-                args = (len(jobids), highest_priority)
+                args = (len(jobids), p_max)
                 log("found %i job(s) with priority %i" % args)
 
             else:
                 log("no jobs found")
 
-    if min_priority is not None:
+    elif min_priority is not None:
         with Transaction(jobs, system="query.jobs.select") as trans:
             query = trans.query.filter(jobs.c.priority > min_priority)
 
@@ -89,40 +133,3 @@ def select(min_priority=None, max_priority=None, select=True):
 
     return jobids
 # end select
-
-def priority(jobid):
-    '''
-    returns the priority of the job
-
-    :exception ValueError:
-        raied if the job id does not exist
-    '''
-    with Transaction(jobs, system="query.jobs.priority") as trans:
-        trans.log("retrieving priority for job %i" % jobid)
-        for result in trans.query.filter_by(id=jobid):
-            return int(result.priority)
-
-    args = (jobid, jobs)
-    raise ValueError("jobid %i does not exist in %s" % args)
-# end priority
-
-def priority_stats():
-    '''returns the min priority of the current job table'''
-    with Transaction(jobs, system="query.jobs.priority_stats") as trans:
-        # query for min priority
-        query = trans.session.query(func.min(trans.table.c.priority))
-        p_min = query.first()[0]
-
-        # query for max priority
-        query = trans.session.query(func.max(trans.table.c.priority))
-        p_max = query.first()[0]
-
-        # query for average priority
-        query = trans.session.query(func.avg(trans.table.c.priority))
-        p_avg = int(query.first()[0])
-
-        trans.log("p_min for %s: %s" % (trans.table, p_min))
-        trans.log("p_max for %s: %s" % (trans.table, p_max))
-        trans.log("p_avg for %s: %s" % (trans.table, p_avg))
-        return p_min, p_max, p_avg
-# end priority_min
