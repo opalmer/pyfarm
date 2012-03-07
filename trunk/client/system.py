@@ -129,7 +129,7 @@ class SystemInformation(xmlrpc.XMLRPC):
 
     def xmlrpc_ram_free(self):
         '''returns the total amount of ram free'''
-        return self.__toMB(psutil.avail_phymem())
+        return self.__toMB(psutil.TOTAL_PHYMEM-psutil.avail_phymem())
     # end xmlrpc_ram_free
 
     def xmlrpc_swap_total(self):
