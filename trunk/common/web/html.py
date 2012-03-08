@@ -20,6 +20,10 @@
 classes for building html pages
 '''
 
+import socket
+
+HOSTNAME = socket.getfqdn()
+
 class Tag(object):
     '''simple class for opening and closing tags'''
     def __init__(self, page, tag):
@@ -32,8 +36,10 @@ class Tag(object):
 
 class Page(object):
     '''basic class to assist in building a webpage'''
-    def __init__(self, title):
+    def __init__(self, title, port, hostname=None):
         self.content = "<html><head><title>%s</title></head><body>" % title
+        self.port = port
+        self.hostname = hostname or HOSTNAME
     # end __init__
 
     def add(self, other):
@@ -66,7 +72,7 @@ class Page(object):
     # end __enter__
 
     def __exit__(self, type, value, traceback):
-        self.link("%s:%s" % (HOSTNAME, PORT), "Home")
+        self.link("%s:%s" % (self.hostname, self.port), "Home")
         self.add("</body></html>")
     # end __exit__
 # end Page
