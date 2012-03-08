@@ -18,6 +18,8 @@
 
 '''simple tests'''
 
+from __future__ import with_statement
+
 import socket
 
 from common import logger
@@ -28,23 +30,107 @@ from twisted.internet import reactor
 
 PORT = 9025
 HOSTNAME = socket.getfqdn()
-pages = {
-    "/" :'''<html>
-    <h2>Logs</h2>
-    <a href="http://%s:%i/log/service">Service Log</a>
-    <a href="http://%s:%i/log/jobs">Job Logs</a>
-    </html>
-    ''' % (HOSTNAME, PORT, HOSTNAME, PORT)
-}
+
+class Tag(object):
+    '''simple class for opening and closing tags'''
+    def __init__(self, page, tag):
+        self.page = page
+        self.tag = tag
+
+    def __enter__(self): self.page.add("<%s>" % self.tag)
+    def __exit__(self, type, value, traceback): self.page.add("</%s>" % self.tag)
+# end Tag
+
+class Page(object):
+    '''basic class to assist in building a webpage'''
+    def __init__(self, title):
+        self.content = "<html><head><title>%s</title></head><body>" % title
+    # end __init__
+
+    def add(self, other):
+        self.__add__(other)
+    # end add
+
+    def link(self, url, name=None, br=True):
+        '''inserts a url'''
+        content = ""
+        if br:
+            content += "<br />"
+        content += '<a href="http://%s">' % url
+        if name is not None:
+            content += "%s" % name
+        else:
+            content += "%s" % url
+        content += "</a>"
+        self.add(content)
+    # end link
+
+    def br(self): self.add("<br />")
+    def header(self, msg, size="h4"): self.add("<%s>%s</%s>" % (size, msg, size))
+
+    def __add__(self, other):
+        self.content += "\n%s" % other
+    # end __init__
+
+    def __enter__(self):
+        return self
+    # end __enter__
+
+    def __exit__(self, type, value, traceback):
+        self.link("%s:%s" % (HOSTNAME, PORT), "Home")
+        self.add("</body></html>")
+    # end __exit__
+# end Page
 
 class RequestHandler(http.Request):
+    pages = {
+        "/" : "html_root",
+        "/log/service" : "html_log_service",
+        "/log/jobs" : "html_log_jobs"
+    }
+    def setPages(self, pages):
+        self.pages = pages
+
+    def html_log_jobs(self):
+        with Page("PyFarm - Job Logs - %s" % HOSTNAME) as page:
+            page.add("Nothing here yet.")
+        return page.content
+    # end html_log_jobs
+
+    def html_log_service(self):
+        with Page("PyFarm - Service Log - %s" % HOSTNAME) as page:
+            page.add("Nothing here yet.")
+        return page.content
+    # end html_log_service
+
+    def html_root(self):
+        with Page("PyFarm - Host Interface - %s" % HOSTNAME) as page:
+            with Tag(page, "p"):
+                page.link("%s:%i/log/service" % (HOSTNAME, PORT), "Service Log")
+                page.link("%s:%i/log/jobs" % (HOSTNAME, PORT), "Job Logs")
+
+        return page.content
+
     def process(self):
-        if self.path in pages:
-            self.write(pages[self.path])
+        self.setHeader('Content-Type', 'text/html')
+        if self.path in self.pages:
+            method_name = self.pages[self.path]
+
+            # ensure the method is callable
+            builder = getattr(self, method_name)
+            if callable(builder):
+                html = builder()
+                self.write(html)
+            else:
+                self.setResponseCode(
+                    http.INTERNAL_SERVER_ERROR,
+                    "%s is not callable" % method_name
+                )
 
         else:
-            self.setResponseCode(http.NOT_FOUND)
-            self.write("no such page %s" % self.path)
+            msg = "%s is not handled or does not exist" % self.path
+            self.setResponseCode(http.NOT_FOUND, msg)
+            self.write(msg)
 
         self.finish()
     # end process
