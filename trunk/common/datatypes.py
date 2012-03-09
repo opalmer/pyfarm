@@ -50,7 +50,7 @@ class OperatingSystem:
 # end OperatingSystem
 
 class State:
-    PAUSED, BLOCKED, QUEUED, RUNNING, FINISHED, FAILED = range(6)
+    PAUSED, BLOCKED, QUEUED, ASSIGN, RUNNING, FINISHED, FAILED = range(7)
 # end State
 
 class Software:
