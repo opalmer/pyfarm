@@ -71,7 +71,6 @@ def select(jobid=None, min_priority=None, max_priority=None, select=True):
         log("auto selecting job id")
         jobid = jobs.select()
 
-    # TODO: move this into query._tables.select
     jobids = []
     if min_priority is None and max_priority is None:
         with Transaction(jobs, system="query.jobs.select") as trans:

@@ -91,28 +91,3 @@ def priority_stats(table):
         trans.log("p_avg for %s: %s" % (trans.table, p_avg))
         return p_min, p_max, p_avg
 # end priority_stats
-
-def select(table, jobid=None, min_priority=None, max_priority=None, select=True):
-    '''
-    Given no input arguments return a job id to select and process
-    a frame from.
-
-    :param integer min_priority:
-        jobs lower than this priority will not be returned
-
-    :param integer max_priority:
-        if not None jobs higher than this priority will not be displayed
-
-    :param boolean select:
-        if False then return all jobs matching the query
-    '''
-    def log(msg, **kwargs):
-        kwargs.update(system="query._tables.select")
-        _log.msg(msg, **kwargs)
-    # end log
-
-    if table == tables.jobs and jobid is not None:
-        log("job id already provided, returning data", level=logging.WARNING)
-        return jobid
-
-# end select

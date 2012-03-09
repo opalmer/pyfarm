@@ -64,7 +64,6 @@ def select(min_priority=None, max_priority=None, select=True):
         _log.msg(msg, **kwargs)
     # end log
 
-    # TODO: move this into query._tables.select
     jobids = []
     if min_priority is None and max_priority is None:
         with Transaction(jobs, system="query.jobs.select") as trans:
