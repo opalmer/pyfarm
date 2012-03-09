@@ -21,12 +21,12 @@ Provides common mechanisms for querying job related information
 '''
 
 import random
-from sqlalchemy import func
 
+from sqlalchemy import func
 from twisted.python import log as _log
 
 import _tables
-from common import logger
+from common import logger, datatypes
 from common.db.transaction import Transaction
 from common.db.tables import jobs
 
@@ -45,64 +45,27 @@ def priority_stats():
     return _tables.priority_stats(jobs)
 # end priority_stats
 
-def select(min_priority=None, max_priority=None, select=True):
+def active(priority=True):
     '''
-    Given no input arguments return a job id to select and process
-    a frame from.
+    returns a list of running job id
 
-    :param integer min_priority:
-        jobs lower than this priority will not be returned
-
-    :param integer max_priority:
-        if not None jobs higher than this priority will not be displayed
-
-    :param boolean select:
-        if False then return all jobs matching the query
+    :param boolean priority:
+        only the job(s) with the higest priority will be returned
     '''
-    def log(msg, **kwargs):
-        kwargs.update(system="query.jobs.select")
-        _log.msg(msg, **kwargs)
-    # end log
+    # only retrieve jobs which have the highest priority and
+    # are currently active
+    active_jobs = []
+    with Transaction(jobs, system="query.jobs.active") as trans:
+        max_priority = trans.session.query(func.max(trans.table.c.priority))
+        query = trans.query.filter(jobs.c.priority == max_priority.first()[0])
+        query = query.filter(jobs.c.state.in_(datatypes.ACTIVE_JOB_STATES))
 
-    jobids = []
-    if min_priority is None and max_priority is None:
-        with Transaction(jobs, system="query.jobs.select") as trans:
-            p_min, p_max, p_avg = priority_stats()
+        # at this points jobs will have the same priority so we add
+        # jobs with the lowest number of running frames first
+        for job in query.order_by(jobs.c.count_running):
+            active_jobs.append(job)
 
-            # find all jobs matching this priority (unless we did not find
-            # any jobs)
-            if p_max:
-                for job in trans.query.filter_by(priority=p_max):
-                    jobids.append(job.id)
+        trans.log("found %i active jobs" % len(active_jobs))
 
-                args = (len(jobids), p_max)
-                log("found %i job(s) with priority %i" % args)
-
-            else:
-                log("no jobs found")
-
-    elif min_priority is not None:
-        with Transaction(jobs, system="query.jobs.select") as trans:
-            query = trans.query.filter(jobs.c.priority > min_priority)
-
-            # add the max priority if one was supplied
-            if max_priority is not None:
-                query = query.filter(jobs.c.priority < max_priority)
-                args = (min_priority, max_priority)
-                msg = "searching for jobs with a range of %i -> %i" % args
-
-            else:
-                msg = "searching for jobs with at least %i priority" % min_priority
-
-            log(msg)
-            for job in query:
-                jobids.append(job.id)
-
-    log("found %i jobs matching query" % len(jobids))
-
-    if jobids and select:
-        log("selecting one job from list")
-        return random.choice(jobids)
-
-    return jobids
-# end select
+    return active_jobs
+# end running
