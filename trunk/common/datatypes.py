@@ -60,3 +60,4 @@ class Software:
 OS = OperatingSystem.get()
 OSNAME = OperatingSystem.MAPPINGS.get(OS)
 LIST_TYPES = (list, tuple, set)
+ACTIVE_JOB_STATES = (State.QUEUED, State.RUNNING)
