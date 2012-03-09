@@ -20,6 +20,7 @@
 Provides common mechanisms for querying frame related information
 '''
 
+import copy
 import random
 
 from twisted.python import log as _log
@@ -46,13 +47,13 @@ def priority_stats():
     return _tables.priority_stats(frames)
 # end priority_stats
 
-def select(job=None, select=True):
+def select(job=None, assign=True):
     '''
     Given no input arguments return a job id to select and process
     a frame from.
 
-    :param boolean select:
-        if False then return all jobs matching the query
+    :param boolean assign:
+        if True then change the state of the first frame in the list to assign
     '''
     if job is None:
         active_jobs = jobs.active()
@@ -62,7 +63,7 @@ def select(job=None, select=True):
     selected_frames = []
     jobids = [job.id for job in active_jobs]
 
-    with Transaction(frames, system="query.jobs.running") as trans:
+    with Transaction(frames, system="query.frames.select") as trans:
         # construct a query to find frames that:
         # - are part of a running job
         # - are marked as waiting to run
@@ -75,8 +76,31 @@ def select(job=None, select=True):
         for frame in query:
             selected_frames.append(frame)
 
-    if select:
-        return selected_frames[0]
+        trans.log("found %s frames matching query" % len(selected_frames))
+
+        # if we are being told to assign the frame then take
+        # the first frame, switch the state to datatypes.ASSIGN
+        if assign:
+            frame = selected_frames[0]
+            frame.state = datatypes.State.ASSIGN
+
+            # create a copy of the frame in its current state
+            # so we can retrieve it later
+            frame = copy.deepcopy(frame)
+
+    # up the running count on the parent job
+    if assign:
+        sysname = "query.frames.select.set_running"
+        with Transaction(jobs.jobs, system=sysname) as trans:
+            query = trans.query.filter_by(id=frame.jobid)
+            entry = query.first()
+            running = entry.count_running + 1
+            args = (entry.id, running)
+            trans.log("setting running frame count for job %i to %i" % args)
+            entry.count_running = running
+
+        return frame
+
     return selected_frames
 # end select
 
