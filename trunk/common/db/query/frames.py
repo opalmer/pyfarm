@@ -91,6 +91,7 @@ def select(job=None, assign=True):
     # up the running count on the parent job
     if assign:
         sysname = "query.frames.select.set_running"
+
         with Transaction(jobs.jobs, system=sysname) as trans:
             query = trans.query.filter_by(id=frame.jobid)
             entry = query.first()
@@ -98,6 +99,9 @@ def select(job=None, assign=True):
             args = (entry.id, running)
             trans.log("setting running frame count for job %i to %i" % args)
             entry.count_running = running
+
+            # assign the job object to the frame
+            frame.job = copy.deepcopy(entry)
 
         return frame
 
