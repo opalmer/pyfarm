@@ -21,9 +21,6 @@ Provides common mechanisms for querying frame related information
 '''
 
 import copy
-import random
-
-from twisted.python import log as _log
 
 import _tables
 

@@ -20,10 +20,7 @@
 Provides common mechanisms for querying job related information
 '''
 
-import random
-
 from sqlalchemy import func
-from twisted.python import log as _log
 
 import _tables
 from common import logger, datatypes
