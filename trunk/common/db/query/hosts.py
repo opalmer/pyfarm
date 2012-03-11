@@ -22,8 +22,6 @@ Provides common mechanisms for manipulating host information in the database
 
 from __future__ import with_statement
 
-import types
-
 from twisted.python import log
 
 from common.db.transaction import Transaction
@@ -64,7 +62,7 @@ def exists(hostname):
     '''
     with Transaction(hosts) as trans:
         host = trans.query.filter_by(hostname=hostname).first()
-        if isinstance(host, types.NoneType):
+        if host is None:
             return False
 
         return False
@@ -84,7 +82,7 @@ def update_resources(hostname, data):
     with Transaction(hosts) as trans:
         host = trans.query.filter_by(hostname=hostname).first()
 
-        if isinstance(host, types.NoneType):
+        if host is None:
             insert = trans.table.insert()
             insert.execute(resources)
             log.msg("inserted %s into %s" % (hostname, trans.tablename))
@@ -124,3 +122,23 @@ def hostlist(online=True):
 
     return results
 # end hostlist
+
+def hostid(hostname):
+    '''
+    returns the hostid for a given hostname
+
+    :param string hostname:
+        the hostname to lookup in the database
+
+    :rtype None or string:
+    '''
+    with Transaction(hosts) as trans:
+        query = trans.query.filter(hosts.c.hostname == hostname).first()
+        if query is None:
+            return None
+
+        return query.id
+# end hostid
+
+if __name__ == '__main__':
+    hostid('test')

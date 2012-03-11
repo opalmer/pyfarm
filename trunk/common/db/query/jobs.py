@@ -51,7 +51,7 @@ def active(priority=True):
     returns a list of running job id
 
     :param boolean priority:
-        only the job(s) with the higest priority will be returned
+        only the job(s) with the highest priority will be returned
     '''
     # only retrieve jobs which have the highest priority and
     # are currently active
