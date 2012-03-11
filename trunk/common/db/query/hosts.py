@@ -22,8 +22,13 @@ Provides common mechanisms for manipulating host information in the database
 
 from __future__ import with_statement
 
+import socket
+import psutil
+import logging
+
 from twisted.python import log
 
+from common import logger
 from common.db.transaction import Transaction
 from common.db.tables import hosts
 
@@ -68,7 +73,7 @@ def exists(hostname):
         return False
 # end exists
 
-def update_resources(hostname, data):
+def update_resources(hostname=None, data=None):
     '''
     Inserts the hostname into the database if it does not exist, updates
     it if it does
@@ -76,34 +81,51 @@ def update_resources(hostname, data):
     :rtype list:
         returns the fields that were updated for the given host
     '''
-    resources = __convert_resources(data)
+    if hostname is None:
+        hostname = socket.getfqdn()
 
     log.msg("attempting to update host information for %s" % hostname)
-    with Transaction(hosts) as trans:
-        host = trans.query.filter_by(hostname=hostname).first()
+
+    with Transaction(hosts, system="query.hosts.update_resources") as trans:
+        host = trans.query.filter(hosts.c.hostname == hostname).first()
 
         if host is None:
-            insert = trans.table.insert()
-            insert.execute(resources)
-            log.msg("inserted %s into %s" % (hostname, trans.tablename))
-            return resources.keys()
+            trans.log(
+                "%s does not exist in the database",
+                level=logging.WARNING
+            )
+            return
 
-        else:
-            # iterate over all keys in the resources
-            # dictionary and update the table with
-            # new values
-            fields = [] # store a list of updated fields
-            for key, value in resources.items():
-                if getattr(host, key) != value:
-                    setattr(host, key, value)
-                    fields.append(key)
+        if data is not None:
+            resources = __convert_resources(data)
+            if host is None:
+                insert = trans.table.insert()
+                insert.execute(resources)
+                trans.log("inserted %s into %s" % (hostname, trans.tablename))
+                return resources.keys()
 
-            if fields:
-                log.msg("updated fields for %s: %s" % (hostname, fields))
+            else:
+                # iterate over all keys in the resources
+                # dictionary and update the table with
+                # new values
+                fields = [] # store a list of updated fields
+                for key, value in resources.items():
+                    if getattr(host, key) != value:
+                        setattr(host, key, value)
+                        fields.append(key)
+
+                if fields:
+                    trans.log("updated fields for %s: %s" % (hostname, fields))
 
             return fields
-# end update_resources
 
+        # if we are not provided any data then update the ram
+        # and swap usage fields
+        else:
+            trans.log("updating resource usage")
+            host.ram_usage = psutil.used_phymem() / 1024 / 1024
+            host.swap_usage = psutil.used_virtmem() / 1024 / 1024
+# end update_resources
 
 def hostlist(online=True):
     '''
@@ -132,13 +154,11 @@ def hostid(hostname):
 
     :rtype None or string:
     '''
-    with Transaction(hosts) as trans:
+    with Transaction(hosts, system="common.db.query.hosts.hostid") as trans:
         query = trans.query.filter(hosts.c.hostname == hostname).first()
         if query is None:
+            trans.log("failed to find host %s in the database" % hostname)
             return None
 
         return query.id
 # end hostid
-
-if __name__ == '__main__':
-    hostid('test')
