@@ -20,6 +20,10 @@
 Provides common mechanisms for querying job related information
 '''
 
+from __future__ import with_statement
+
+import copy
+
 from sqlalchemy import func
 
 import _tables
@@ -66,3 +70,11 @@ def active(priority=True):
 
     return active_jobs
 # end running
+
+def job(jobid):
+    '''returns a job object for the given jobid'''
+    with Transaction(jobs, system="query.jobs.job") as trans:
+        query = trans.query.filter(jobs.c.id == jobid)
+        result = query.first()
+        return copy.deepcopy(result)
+# end job
