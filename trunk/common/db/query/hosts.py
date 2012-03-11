@@ -89,13 +89,6 @@ def update_resources(hostname=None, data=None):
     with Transaction(hosts, system="query.hosts.update_resources") as trans:
         host = trans.query.filter(hosts.c.hostname == hostname).first()
 
-        if host is None:
-            trans.log(
-                "%s does not exist in the database",
-                level=logging.WARNING
-            )
-            return
-
         if data is not None:
             resources = __convert_resources(data)
             if host is None:
@@ -122,6 +115,13 @@ def update_resources(hostname=None, data=None):
         # if we are not provided any data then update the ram
         # and swap usage fields
         else:
+            if host is None:
+                trans.log(
+                    "%s does not exist in the database" % hostname,
+                    level=logging.WARNING
+                )
+                return
+
             trans.log("updating resource usage")
             host.ram_usage = psutil.used_phymem() / 1024 / 1024
             host.swap_usage = psutil.used_virtmem() / 1024 / 1024
