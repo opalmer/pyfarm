@@ -21,14 +21,12 @@ from common import logger, datatypes
 import base
 
 class Job(base.Job):
-    def __init__(self, jobid, frame):
-        # Server -> Client: pickup job and frame
-        # - client adds frame to db if it does not exist, updates
-        #   it if it does
-        # - job information stored in data is retrieved and used to construct
-        #   base job
-        pass
-
-
-#        super(Job, self).__init__(self, command,)
+    def __init__(self, jobid, frameid):
+        self._jobid = jobid
+        self._frameid = frameid
+        self.frame = self.dbsetup()
+    # end __init__
 # end Job
+
+if __name__ == '__main__':
+    Job(1, 1)

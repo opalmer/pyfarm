@@ -20,14 +20,18 @@ import os
 import copy
 import string
 import ctypes
+import socket
 import getpass
 import logging
 import itertools
 
 from common.preferences import prefs
 from common import logger, datatypes
+from common.db import Transaction, tables
+from common.db.query import hosts
 
 USERNAME = getpass.getuser()
+HOSTNAME = socket.getfqdn()
 
 class Job(logger.LoggingBaseClass):
     '''
@@ -54,15 +58,16 @@ class Job(logger.LoggingBaseClass):
     :param dict environ:
         custom environment variables to pass along
     '''
-    def __init__(self, command, args, jobid, frame, user=None, environ=None):
+    def __init__(self, command, args, frame, user=None, environ=None):
         # base arguments which are used to set the non-private
         # class attributes
+        self._jobid = None
+        self._frameid = None
         self._command = command
         self._args = args
         self._user = user
         self._environ = environ
 
-        self.jobid = jobid
         self.frame = frame
 
         # first setup logging so we can capture output from the
@@ -80,13 +85,88 @@ class Job(logger.LoggingBaseClass):
         self.setupArguments()
     # end __init__
 
+    def dbsetup(self):
+        '''
+        Performs a database lookup to retrieve the frame object.  In addition
+        this method also sets the state of the parent job, frame, and the
+        assigned hostname for the frame.
+
+        :exception RuntimeError:
+            raise if we cannot find the job and/or the host
+            in the database
+        '''
+        # ensure _frameid and _jobid have been set
+        if self._frameid is None or self._jobid is None:
+            raise AttributeError("_frameid or _jobid is None")
+
+        # lookup the parent job object
+        system = "jobtypes.base.lookup"
+        with Transaction(tables.jobs, system=system) as trans:
+            query = trans.query.filter(tables.jobs.c.id == self._jobid)
+            job = query.first()
+
+            # ensure job exists in the database
+            if job is None:
+                raise RuntimeError(
+                    "unxpected NoneType for job %s from database" % self._jobid
+                )
+
+            # ensure the state of the parent is set to running
+            state = job.state
+            not_running = state != datatypes.State.RUNNING
+            active = state in datatypes.ACTIVE_JOB_STATES
+            if active and not_running:
+                job.state = datatypes.State.RUNNING
+                trans.log("set job %i state to running" % job.id)
+
+            job = copy.deepcopy(job)
+
+        # lookup the frame object
+        with Transaction(tables.frames, system=system) as trans:
+            query = trans.query.filter(tables.frames.c.id == self._frameid)
+            frame = query.first()
+
+            # ensure the frame exists in the database
+            if frame is None:
+                raise RuntimeError(
+                    "frame id %i does not exist in the database" % self._frameid
+                )
+
+            # set the state and hostname of the frame
+            frame.state = datatypes.State.RUNNING
+
+            # retrieve the host id
+            hostid = hosts.hostid(HOSTNAME)
+            if hostid is None:
+                raise RuntimeError("%s does not exist in %s" % (HOSTNAME, trans.table))
+
+            frame.host = hostid
+            trans.log("set state and hostname for frame")
+
+            frame = copy.deepcopy(query.first())
+
+        # add the job object to the frame object
+        frame.job = job
+
+        return frame
+    # end dbsetup
+
+    def assign(self):
+        '''
+        marks the frame as assigned in the database and ensures the
+        state of the parent job is set to running
+        '''
+        system = "jobtypes.base.assign"
+
+    # end assign
+
     def setupLog(self):
         '''Sets up the log file and begins logging the progress of the job'''
         self.log("...setting up log")
         root = prefs.get('logging.locations.jobs')
         template_vars = {
-            "jobid" : self.jobid,
-            "frame" : self.frame
+            "jobid" : self.frame.job.id,
+            "frame" : self.frame.frame
         }
         template = string.Template(root)
         self.logfile = template.substitute(template_vars)
