@@ -100,7 +100,7 @@ class Job(logger.LoggingBaseClass):
             raise AttributeError("_frameid or _jobid is None")
 
         # lookup the parent job object
-        system = "jobtypes.base.lookup"
+        system = "jobtypes.base.dbsetup"
         with Transaction(tables.jobs, system=system) as trans:
             query = trans.query.filter(tables.jobs.c.id == self._jobid)
             job = query.first()
@@ -108,13 +108,14 @@ class Job(logger.LoggingBaseClass):
             # ensure job exists in the database
             if job is None:
                 raise RuntimeError(
-                    "unxpected NoneType for job %s from database" % self._jobid
+                    "unexpected NoneType for job %s from database" % self._jobid
                 )
 
             # ensure the state of the parent is set to running
             state = job.state
             not_running = state != datatypes.State.RUNNING
             active = state in datatypes.ACTIVE_JOB_STATES
+
             if active and not_running:
                 job.state = datatypes.State.RUNNING
                 trans.log("set job %i state to running" % job.id)
@@ -123,7 +124,7 @@ class Job(logger.LoggingBaseClass):
 
         # lookup the frame object
         with Transaction(tables.frames, system=system) as trans:
-            query = trans.query.filter(tables.frames.c.id == self._frameid)
+            query = trans.query.filter_by(id=self._frameid)
             frame = query.first()
 
             # ensure the frame exists in the database
@@ -134,16 +135,25 @@ class Job(logger.LoggingBaseClass):
 
             # set the state and hostname of the frame
             frame.state = datatypes.State.RUNNING
+            trans.log("set state for frame to %s" % frame.state)
 
             # retrieve the host id
             hostid = hosts.hostid(HOSTNAME)
             if hostid is None:
                 raise RuntimeError("%s does not exist in %s" % (HOSTNAME, trans.table))
 
+            # set the host id
             frame.host = hostid
-            trans.log("set state and hostname for frame")
+            trans.log("set hostid for frame to %s" % frame.host)
 
-            frame = copy.deepcopy(query.first())
+            # set the attempts count
+            frame.attempts += 1
+            trans.log(
+                "set attempt count to %s" % frame.attempts,
+                level=logging.WARNING
+            )
+
+            frame = copy.deepcopy(frame)
 
         # add the job object to the frame object
         frame.job = job
@@ -151,14 +161,56 @@ class Job(logger.LoggingBaseClass):
         return frame
     # end dbsetup
 
-    def assign(self):
+    def validateRequirements(self):
         '''
-        marks the frame as assigned in the database and ensures the
-        state of the parent job is set to running
-        '''
-        system = "jobtypes.base.assign"
+        Validates information in the job's data column if DATA_REQUIREMENTS
+        exists on the class.
 
-    # end assign
+        :exception TypeError:
+            raised if self.DATA_REQUIREMENTS is not a dictionary
+
+        :exception AttributeError:
+            raised if self.frame has not been setup
+
+        :exception KeyError:
+            raised if self.frame.job.data does not contain one
+            or more of the keys we are expecting to find when validating
+            data
+        '''
+        # do nothing but print a warning if we are missing
+        # DATA_REQUIREMENTS
+        if not hasattr(self.__class__, 'DATA_REQUIREMENTS'):
+            msg = "cannot validate requirements, class does not contain "
+            msg += "the required DATA_REQUIREMENTS"
+            self.log(msg, level=logging.WARNING)
+            return
+
+        # raise a TypeError if DATA_REQUIREMENTS exists but
+        # is of the wrong type
+        if not isinstance(self.DATA_REQUIREMENTS, dict):
+            raise TypeError("DATA_REQUIREMENTS ")
+
+        # do nothing if DATA_REQUIREMENTS is empty
+        if not self.DATA_REQUIREMENTS:
+            self.log("DATA_REQUIREMENTS is empty, skipping validateRequirements")
+            return
+
+        # ensure the frame object has been setup
+        if not hasattr(self, 'frame') or not getattr(self, 'frame'):
+            raise AttributeError
+
+        for key, expected_types in self.DATA_REQUIREMENTS.items():
+            # ensure data actually has the key we are
+            # expecting
+            if key not in self.frame.job.data:
+                raise KeyError("job data does not contain the %s key" % key)
+
+            value = self.frame.job.data[key]
+            if not isinstance(value, expected_types):
+                msg = "unexpected type for %s (%s), expected " % (key, type(value))
+                msg += "%s" % expected_types
+                raise TypeError(msg)
+        # end validateRequirements
 
     def setupLog(self):
         '''Sets up the log file and begins logging the progress of the job'''
