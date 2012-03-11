@@ -38,7 +38,7 @@ from common import logger, lock, datatypes
 from common import rpc as _xmlrpc
 from common.preferences import prefs
 from client import job, system, process
-from common.db import hosts
+from common.db.query import hosts
 
 from twisted.internet import reactor, protocol
 from twisted.web import xmlrpc
