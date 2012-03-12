@@ -149,19 +149,21 @@ def run(jobid, frameid):
     jobtype = None
 
     # retrieve the jobtype
-    with Transaction(tables.jobs) as trans:
+    with Transaction(tables.jobs, system="jobtypes.functions.run") as trans:
+        trans.log("searching for jobtype for job %i" % jobid)
         query = trans.query.filter_by(id=frameid)
         result = query.first()
         jobtype = result.jobtype
 
     if jobtype is None:
-        raise TypeError("failed to retrieve job type")
+        raise TypeError("failed to retrieve jobtype for job %i" % jobid)
 
     # load the jobtype class
     job = load(jobtype)
 
     # retrieve the job data and setup the
+    # job object.
     data = JobData(jobid, frameid)
-    instance = job(data)
-    instance.run()
+    jobtype = job(data)
+    jobtype.run()
 # end run
