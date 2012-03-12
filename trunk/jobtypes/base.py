@@ -85,82 +85,6 @@ class Job(logger.LoggingBaseClass):
         self.setupArguments()
     # end __init__
 
-    def dbsetup(self):
-        '''
-        Performs a database lookup to retrieve the frame object.  In addition
-        this method also sets the state of the parent job, frame, and the
-        assigned hostname for the frame.
-
-        :exception RuntimeError:
-            raise if we cannot find the job and/or the host
-            in the database
-        '''
-        # ensure _frameid and _jobid have been set
-        if self._frameid is None or self._jobid is None:
-            raise AttributeError("_frameid or _jobid is None")
-
-        # lookup the parent job object
-        system = "jobtypes.base.dbsetup"
-        with Transaction(tables.jobs, system=system) as trans:
-            query = trans.query.filter(tables.jobs.c.id == self._jobid)
-            job = query.first()
-
-            # ensure job exists in the database
-            if job is None:
-                raise RuntimeError(
-                    "unexpected NoneType for job %s from database" % self._jobid
-                )
-
-            # ensure the state of the parent is set to running
-            state = job.state
-            not_running = state != datatypes.State.RUNNING
-            active = state in datatypes.ACTIVE_JOB_STATES
-
-            if active and not_running:
-                job.state = datatypes.State.RUNNING
-                trans.log("set job %i state to running" % job.id)
-
-            job = copy.deepcopy(job)
-
-        # lookup the frame object
-        with Transaction(tables.frames, system=system) as trans:
-            query = trans.query.filter_by(id=self._frameid)
-            frame = query.first()
-
-            # ensure the frame exists in the database
-            if frame is None:
-                raise RuntimeError(
-                    "frame id %i does not exist in the database" % self._frameid
-                )
-
-            # set the state and hostname of the frame
-            frame.state = datatypes.State.RUNNING
-            trans.log("set state for frame to %s" % frame.state)
-
-            # retrieve the host id
-            hostid = hosts.hostid(HOSTNAME)
-            if hostid is None:
-                raise RuntimeError("%s does not exist in %s" % (HOSTNAME, trans.table))
-
-            # set the host id
-            frame.host = hostid
-            trans.log("set hostid for frame to %s" % frame.host)
-
-            # set the attempts count
-            frame.attempts += 1
-            trans.log(
-                "set attempt count to %s" % frame.attempts,
-                level=logging.WARNING
-            )
-
-            frame = copy.deepcopy(frame)
-
-        # add the job object to the frame object
-        frame.job = job
-
-        return frame
-    # end dbsetup
-
     def validateRequirements(self):
         '''
         Validates information in the job's data column if DATA_REQUIREMENTS
@@ -202,10 +126,10 @@ class Job(logger.LoggingBaseClass):
         for key, expected_types in self.DATA_REQUIREMENTS.items():
             # ensure data actually has the key we are
             # expecting
-            if key not in self.frame.job.data:
+            if key not in self.job.data:
                 raise KeyError("job data does not contain the %s key" % key)
 
-            value = self.frame.job.data[key]
+            value = self.job.data[key]
             if not isinstance(value, expected_types):
                 msg = "unexpected type for %s (%s), expected " % (key, type(value))
                 msg += "%s" % expected_types

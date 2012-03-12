@@ -21,11 +21,14 @@ from common import logger, datatypes
 import base
 
 class Job(base.Job):
-    def __init__(self, jobid, frameid):
-        self._jobid = jobid
-        self._frameid = frameid
-        self.frame = self.dbsetup()
+    DATA_REQUIREMENTS = {
+        "scene" : str,
+        "verbose" : int
+    }
+    def __init__(self, data):
+        self.data = data
     # end __init__
+
 # end Job
 
 if __name__ == '__main__':
