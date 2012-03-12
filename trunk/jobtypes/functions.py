@@ -20,16 +20,74 @@
 functions for jobtype system related queries and setup
 '''
 
+from __future__ import with_statement
+
 import os
+import copy
+import socket
 import inspect
 import logging
 
 from twisted.python import log
 
+from common import logger, datatypes
 from common.preferences import prefs
+from common.db import Transaction, tables
+from common.db.query import hosts
 
+HOSTNAME = socket.getfqdn()
 SKIP_MODULES = prefs.get('jobtypes.excluded-names')
 CWD = os.path.dirname(os.path.abspath(__file__))
+
+__all__ = ['JobData', 'jobtypes', 'load']
+
+class JobData(logger.LoggingBaseClass):
+    '''
+    base object used by jobtypes which provides information about a
+    job and frame from the database
+
+    :exception TypeError:
+        raised if the job or frame do not exist in the database
+    '''
+    TABLES = {
+        "frame" : tables.frames,
+        "job" : tables.jobs
+    }
+
+    def __init__(self, jobid, frameid):
+        self.job = self.__lookup("job", jobid)
+        self.frame = self.__lookup("frame", frameid)
+    # end __init__
+
+    def __lookup(self, name, id):
+        table = self.TABLES[name]
+        result = None
+        hostid = None
+        self.log("looking up %s (id: %i) in %s" % (name, id, table))
+
+        # get the hostid if we are about to work
+        # with the frames table
+        if name == "frame":
+            hostid = hosts.hostid(HOSTNAME)
+
+        with Transaction(table) as trans:
+            query = trans.query.filter_by(id=id)
+            result = query.first()
+
+            # ensure entry exists in the database
+            if result is None:
+                args = (name, id, table)
+                raise TypeError("%s entry (id: %i) does not exist in %s" % args)
+
+            # setup the hostname and mark the frame as
+            # running
+            if name == "frame":
+                result.host = hostid
+                result.state = datatypes.State.RUNNING
+
+        return copy.deepcopy(result)
+    # end __lookup
+# end JobData
 
 def jobtypes():
     '''returns a list of all valid jobtypes as strings'''
@@ -69,9 +127,41 @@ def load(name):
     if name not in jobtypes():
         raise NameError("no such jobtype %s" % name)
 
+    log.msg("loading jobtype %s" % name)
     module = __import__(name, locals(), globals(), fromlist=['jobtypes'])
     return module.Job
 # end load
 
-if __name__ == '__main__':
-    print load('mayatomr')
+def run(jobid, frameid):
+    '''
+    Given a job id and frame id load the proper jobtype.  Generally this
+    function should not be called directory and instead should
+    be wrapped other code to handle log setup and exceptions:
+
+        try:
+            <setup log >
+            run(<jobid>, <frameid>)
+
+        except Exception, error:
+            <mark job as failed>
+            <end error to logs>
+    '''
+    jobtype = None
+
+    # retrieve the jobtype
+    with Transaction(tables.jobs) as trans:
+        query = trans.query.filter_by(id=frameid)
+        result = query.first()
+        jobtype = result.jobtype
+
+    if jobtype is None:
+        raise TypeError("failed to retrieve job type")
+
+    # load the jobtype class
+    job = load(jobtype)
+
+    # retrieve the job data and setup the
+    data = JobData(jobid, frameid)
+    instance = job(data)
+    instance.run()
+# end run
