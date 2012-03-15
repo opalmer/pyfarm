@@ -26,6 +26,7 @@ import xmlrpclib
 
 from common.preferences import prefs
 from common.db import query
+from common import logger
 
 from twisted.internet import reactor
 from twisted.web import resource, xmlrpc
@@ -33,7 +34,7 @@ from twisted.python import log
 
 TEST_MODE = False
 
-class Service(xmlrpc.XMLRPC):
+class Service(xmlrpc.XMLRPC, logger.LoggingBaseClass):
     '''
     Base twisted xmlrpc service, contains the stand methods
     and attributes to be inherited by all xmlrpc instances
