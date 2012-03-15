@@ -36,8 +36,9 @@ from common import logger, multicast, lock, datatypes
 from common import rpc as _xmlrpc
 from common.preferences import prefs
 from common.db import tables, query
+from server import callbacks
 
-from twisted.internet import reactor
+from twisted.internet import reactor, threads
 from twisted.web import server as _server
 from twisted.python import log
 
@@ -50,6 +51,9 @@ SERVICE_LOG = None
 # PYFARM_RESTART should not start out in the environment
 if 'PYFARM_RESTART' in os.environ:
     del os.environ['PYFARM_RESTART']
+
+# setup preferences
+prefs.set('database.setup.close-connections', False)
 
 class Server(_xmlrpc.Service):
     '''
@@ -97,6 +101,14 @@ class Server(_xmlrpc.Service):
             log.msg("already added host %s" % host)
             return
     # end xmlrpc_addHost
+
+    def xmlrpc_requestWork(self, hostname):
+        '''run when a remote client requests work from the master'''
+        assign_work = callbacks.AssignWorkToClient(hostname)
+        deferred = threads.deferToThread(assign_work)
+        deferred.addCallback(assign_work.sendWork)
+        deferred.addErrback(assign_work.rejectRequest)
+    # end xmlrpc_requestWork
 # end Server
 
 
