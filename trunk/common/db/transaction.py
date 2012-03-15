@@ -50,7 +50,9 @@ class Transaction(object):
 
         # single engine per run (this MAY be needed later)
         self.engine = ENGINE
-        self.Session = Session
+        self.Session = sqlalchemy.orm.scoped_session(Session)
+#        sqlalchemy.orm.sessionmaker()
+
     # end __init__
 
     def log(self, msg, level='SQL'):
@@ -81,10 +83,12 @@ class Transaction(object):
                 self.session.commit()
                 log.msg("committing database entry to %s" % self.tablename)
 
-        # cleanup connections if requested
+        # close the session
+        self.query.session.close()
+
+        # close the database connection
         if prefs.get('database.setup.close-connections'):
             self.log("closing connections")
-            self.query.session.close_all()
             self.query.session.bind.dispose()
 
         self.end = time.time()
