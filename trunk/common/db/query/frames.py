@@ -24,7 +24,7 @@ import copy
 
 import _tables
 
-import jobs
+import jobs, hosts
 from common import logger, datatypes
 from common.db.transaction import Transaction
 from common.db.tables import frames
@@ -44,7 +44,7 @@ def priority_stats():
     return _tables.priority_stats(frames)
 # end priority_stats
 
-def select(job=None, assign=True):
+def select(job=None, assign=True, hostname=None):
     '''
     Given no input arguments return a job id to select and process
     a frame from.
@@ -78,8 +78,20 @@ def select(job=None, assign=True):
         # if we are being told to assign the frame then take
         # the first frame, switch the state to datatypes.ASSIGN
         if assign:
+            trans.log("selecting the first frame only")
             frame = selected_frames[0]
             frame.state = datatypes.State.ASSIGN
+
+            # set the running host if a hostname was provided
+            if hostname is not None:
+                trans.log("setting hostname on frame to %s" % hostname)
+                hostid = hosts.hostid(hostname)
+
+                # ensure we find a host id
+                if hostid is None:
+                    raise TypeError("failed to find host id for %s" % hostname)
+
+                frame.host = hostid
 
             # create a copy of the frame in its current state
             # so we can retrieve it later
