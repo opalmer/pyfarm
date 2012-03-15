@@ -39,6 +39,8 @@ class AssignWorkToClient(logger.LoggingBaseClass):
 
     def __call__(self):
         '''called by the server in the main thread to retrieve work'''
+        # TODO: check database to be sure the client CAN accept work (cpu count, online, etc)
+        # TODO: update hosts (frames column) database with assigned frame
         self.log("retrieving work for %s" % self.hostname)
         frame = query.frames.select(hostname=self.hostname)
         args = (self.hostname, frame.job.id, frame.id)
