@@ -21,7 +21,7 @@ creates a random assortment of jobs in the database based on the current
 setup
 '''
 
-JOB_COUNT = 20
+JOB_COUNT = 100
 
 import os
 import site
@@ -45,7 +45,7 @@ def log(msg):
 # setup jobtypes
 jobtypes = []
 for filename in os.listdir("jobtypes"):
-    if not filename.startswith("__") and filename.endswith(".py"):
+    if not filename.startswith("__") and filename.endswith(".py") and not filename.startswith("functions"):
         jobtypes.append(filename.split(".")[0])
 
 log("jobtypes: %s" % jobtypes)
