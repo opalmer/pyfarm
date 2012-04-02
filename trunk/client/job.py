@@ -95,6 +95,10 @@ class Manager(xmlrpc.XMLRPC):
         self.__init__(self.service)
     # end xmlrpc_init
 
+    def xmlrpc_assign(self, jobid, frameid):
+        print "=============",jobid, frameid
+    # end xmlrpc_assign
+
     def xmlrpc_run(self, command, arguments, environ=None, force=False):
         '''setup and return instances of the job object'''
         # client must be online in order to submit jobs

@@ -23,10 +23,13 @@ import time
 import random
 import logging
 
-from common import logger, rpc
+from common import logger
+from common import rpc as _xmlrpc
 from common.db import query
+from common.preferences import prefs
 
 from twisted.internet import threads
+from twisted.internet.error import ConnectionRefusedError
 
 class AssignWorkToClient(logger.LoggingBaseClass):
     '''
@@ -39,12 +42,12 @@ class AssignWorkToClient(logger.LoggingBaseClass):
 
     def __call__(self):
         '''called by the server in the main thread to retrieve work'''
-        # TODO: check database to be sure the client CAN accept work (cpu count, online, etc)
         # TODO: update hosts (frames column) database with assigned frame
         self.log("retrieving work for %s" % self.hostname)
         frame = query.frames.select(hostname=self.hostname)
         args = (self.hostname, frame.job.id, frame.id)
         self.log("found work for client %s (jobid: %i frameid: %i)" % args)
+        self.frame = frame
         return frame
     # end __call__
 
@@ -54,16 +57,55 @@ class AssignWorkToClient(logger.LoggingBaseClass):
         right now
         '''
         self.log(
+            "TODO: reset frame [and] job states",
+            level=logging.CRITICAL
+        )
+        self.log(
+            "TODO: handle multiple types of errors",
+            level=logging.CRITICAL
+        )
+
+        if error.type == ConnectionRefusedError:
+            self.log(
+                "connection was refused to %s, resetting database!" % self.hostname,
+                level=logging.ERROR
+            )
+        elif error.type == IndexError:
+            self.log(
+                "no jobs in database!",
+                level=logging.ERROR
+            )
+
+        self.log(
+            "error type: %s" % error.type,
+            level=logging.DEBUG
+        )
+        self.log(
             "%s, rejecting request!" % error.getErrorMessage(),
             level=logging.ERROR
         )
-        # rpc.Connection(self.hostname, port=<port>)
-        # rpc.rejectRequest()
+
     # end rejectRequest
 
     def sendWork(self, frame):
         '''called after __call__ has returned data'''
-        self.log("sending work to %s" % self.hostname)
-        print self.hostname, frame
+        def success(frame):
+            self.log("work sent to %s" % self.hostname)
+        # end success
+
+        def failure(error):
+            self.log(
+                "rpc call to send work failed: %s" % error,
+                level=logging.ERROR
+            )
+            self.rejectRequest(error)
+        # end failure
+
+        self.log("attempting to send work to %s" % self.hostname)
+        rpc = _xmlrpc.Connection(
+            self.hostname, prefs.get("network.ports.client"),
+            success=success, failure=failure
+        )
+        rpc.call("job.assign", frame.job.id, frame.id)
     # end sendWork
 # end AssignWorkToClient
