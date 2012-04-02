@@ -18,7 +18,6 @@
 
 import os
 import time
-import types
 import inspect
 import logging
 import fnmatch
@@ -198,7 +197,7 @@ class Observer(log.FileLogObserver):
         if integer and level < self.level:
             return
 
-        elif isinstance(level, types.StringTypes):
+        elif isinstance(level, str):
             level = level.upper()
             if level in self.custom_levels and self.custom_levels.get(level) < self.level:
                 return

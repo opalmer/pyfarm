@@ -16,7 +16,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
-import types
 import socket
 
 from common.preferences import prefs
@@ -103,8 +102,8 @@ class HeartbeatServer(MulticastServer):
 
     def datagramReceived(self, datagram, address):
         # ensure the incoming datatypes matches what we expect
-        if not isinstance(datagram, types.StringTypes):
-            raise TypeError("unexpected type in datagram")
+        if not isinstance(datagram, str):
+            raise TypeError("unexpected type %s in datagram" % type(datagram))
 
         data = datagram.split("_")
 

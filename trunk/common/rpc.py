@@ -19,7 +19,6 @@
 from __future__ import with_statement
 
 import os
-import types
 import logging
 import socket
 import xmlrpclib
@@ -47,7 +46,7 @@ class Service(xmlrpc.XMLRPC, logger.LoggingBaseClass):
 
         # do not setup the log stream if what was passed
         # in was not actually a file stream
-        if not isinstance(log_stream, types.FileType):
+        if not isinstance(log_stream, file):
             self.log_stream = None
             log.msg(
                 "service log stream established, some method will not function",
@@ -270,7 +269,7 @@ class Connection(object):
                     port=None, success=None, failure=None):
         # split the hostname into port and hostname if
         # port is None and ":" in hostname
-        if isinstance(port, types.NoneType) and ':' in hostname:
+        if port is None and ':' in hostname:
             hostname, port = hostname.split(":")
 
         # be sure everything was setup properly
@@ -295,9 +294,8 @@ class Connection(object):
         log.msg("rpc call to %s failed, iterating over failure below" % self.url)
 
         for error in args:
-            if isinstance(error, types.InstanceType):
-                if error.type == xmlrpclib.Fault:
-                    error.printTraceback()
+            if hasattr(error, 'printTraceback') and callable(error.printTraceback):
+                error.printTraceback()
             else:
                 print str(error)
     # end __fail

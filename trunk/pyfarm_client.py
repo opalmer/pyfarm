@@ -24,7 +24,6 @@ from __future__ import with_statement
 import os
 import sys
 import time
-import types
 import socket
 import logging
 
@@ -210,11 +209,11 @@ class Client(_xmlrpc.Service):
         :exception xmlrpc.Fault(3):
             raised if the new state is not in (True, False)
         '''
-        if isinstance(state, types.BooleanType):
+        if state in datatypes.BOOLEAN_TYPES:
             self.job.online = state
             log.msg("client online state set to %s" % str(state))
 
-        elif not isinstance(state, types.NoneType):
+        elif state is not None:
             raise xmlrpc.Fault(3, "%s is not a valid state" % str(state))
 
         return self.job.online
@@ -237,10 +236,10 @@ class Client(_xmlrpc.Service):
         if count == 0:
             raise xmlrpc.Fault(8, "cannot set jobs_max to zero")
 
-        if not isinstance(count, types.IntType) and not count == None:
+        if not isinstance(count, int) and not count == None:
             raise xmlrpc.Fault(3, "%s is not an integer" % str(count))
 
-        elif isinstance(count, types.IntType):
+        elif isinstance(count, int):
             self.job.job_count_max = count
 
         # if the current job_count_max is greater

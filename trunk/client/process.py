@@ -21,8 +21,8 @@
 
 import os
 import copy
-import types
 import psutil
+import UserDict
 import itertools
 
 from twisted.web import xmlrpc
@@ -57,8 +57,8 @@ class TwistedProcess(protocol.ProcessProtocol):
 
         # copy the current environment and then update it
         # with any custom information
-        self.environ = copy.deepcopy(os.environ)
-        if isinstance(environ, types.DictType):
+        self.environ = dict(os.environ)
+        if isinstance(environ, (dict, UserDict.UserDict)):
             self.environ.update(environ)
 
         # construct the command list and arguments to pass

@@ -22,7 +22,6 @@ import os
 import time
 import copy
 import uuid
-import types
 import socket
 import psutil
 
@@ -258,7 +257,7 @@ class Job(object):
         # setup the arguments and commands
         self.command = process.which(command)
         self.arguments = [command]
-        if isinstance(arguments, types.StringTypes):
+        if isinstance(arguments, datatypes.STRING_TYPES):
             self.arguments.extend(arguments.split())
 
         # create a copy of the original environment and

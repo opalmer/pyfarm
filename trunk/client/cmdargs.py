@@ -16,10 +16,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
-import types
 import psutil
 
-import common.datatypes
 from common import datatypes
 from common.cmdargs import parser
 
@@ -81,7 +79,7 @@ def __setHostRAM(option):
         '--host-ram'
     )
 
-    if isinstance(value, types.IntType) and not isinstance(value, types.BooleanType):
+    if isinstance(value, int) and not value in datatypes.BOOLEAN_TYPES:
         psutil.TOTAL_PHYMEM = value * 1024 * 1024
 # end __setHostRAM
 
@@ -93,6 +91,6 @@ def __setHostCPU(option):
         '--host-cpus'
     )
 
-    if isinstance(value, types.IntType) and not isinstance(value, types.BooleanType):
+    if isinstance(value, int) and value not in datatypes.BOOLEAN_TYPES:
         psutil.NUM_CPUS = value
 # end __setHostCPU

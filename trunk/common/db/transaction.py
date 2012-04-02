@@ -18,7 +18,6 @@
 
 '''Provides functions and classes for transaction management'''
 
-import types
 import time
 
 import sqlalchemy
@@ -71,9 +70,9 @@ class Transaction(object):
         return self
     # end __enter__
 
-    def __exit__(self, type, value, traceback):
+    def __exit__(self, etype, value, traceback):
         # roll back the transaction in the event of an error
-        if not isinstance(type, types.NoneType):
+        if etype is not None:
             self.log("rolling back database transaction: %s" % value)
             self.session.rollback()
 
