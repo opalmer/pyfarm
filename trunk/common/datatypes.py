@@ -18,6 +18,8 @@
 
 import sys
 
+from PyQt4.QtCore import QString
+
 class OperatingSystem:
     LINUX, WINDOWS, MAC, OTHER = range(4)
     MAPPINGS = {
@@ -57,8 +59,11 @@ class Software:
     MAYA, HOUDINI, VRAY, NUKE, BLENDER = range(5)
 # end Software
 
+# python datatypes for type comparison
+LIST_TYPES = (list, tuple, set)
+BOOLEAN_TYPES = (True, False)
+STRING_TYPES = (str, unicode, QString)
+
 OS = OperatingSystem.get()
 OSNAME = OperatingSystem.MAPPINGS.get(OS)
-LIST_TYPES = (list, tuple, set)
 ACTIVE_JOB_STATES = (State.QUEUED, State.RUNNING)
-BOOLEAN_TYPES = (True, False)
