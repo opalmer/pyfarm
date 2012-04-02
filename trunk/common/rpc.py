@@ -239,7 +239,7 @@ class Service(xmlrpc.XMLRPC, logger.LoggingBaseClass):
 # end Service
 
 
-class Connection(object):
+class Connection(logger.LoggingBaseClass):
     '''
     Generic rpc object which implements the Twisted xmlrpc
     proxy object.  The constructor for this class will
@@ -291,13 +291,13 @@ class Connection(object):
         If no other deferred error handlers are defined, this will
         be the default
         '''
-        log.msg("rpc call to %s failed, iterating over failure below" % self.url)
+        self.log("rpc call to %s failed, iterating over failure below" % self.url)
 
         for error in args:
             if hasattr(error, 'printTraceback') and callable(error.printTraceback):
                 error.printTraceback()
             else:
-                print str(error)
+                self.log(str(error), level=logging.ERROR)
     # end __fail
 
     def call(self, *args):
