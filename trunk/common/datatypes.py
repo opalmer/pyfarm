@@ -35,30 +35,93 @@ class OperatingSystem:
     }
 
     @staticmethod
-    def get():
-        '''returns the current operating system as an integer'''
+    def get(value=None):
+        '''
+        returns the current operating system as an integer or the assoicated
+        entry for the given value
+
+        :exceptoion KeyError:
+            raised if value is not None and is not in OperatingSystem.MAPPINGS
+        '''
+        if isinstance(value, (int, str, unicode)):
+            return OperatingSystem.MAPPINGS[value]
+
         platform = sys.platform
         if platform.startswith("linux"):
             platform = "linux"
 
-        if platform.startswith("win"):
+        elif platform.startswith("win"):
             platform = "windows"
 
-        value = OperatingSystem.MAPPINGS.get(platform)
-        if value is None:
+        elif platform not in OperatingSystem.MAPPINGS:
             return OperatingSystem.OTHER
 
-        return value
+        return OperatingSystem.MAPPINGS[platform]
     # end get
 # end OperatingSystem
 
-class State:
-    PAUSED, BLOCKED, QUEUED, ASSIGN, RUNNING, FINISHED, FAILED = range(7)
-# end State
+class Enum(object):
+    '''
+    Simple class which converts arguments to class attributes with
+    an assigned number.
 
-class Software:
-    MAYA, HOUDINI, VRAY, NUKE, BLENDER = range(5)
-# end Software
+    :param args:
+        string arguments which will create instance
+        attributes
+
+    :param integer start:
+        keyword argument which controls the start of the sequence
+
+    :param string name:
+        the name to provide when str(<enum instance>) is called
+
+    :exception TypeError:
+        raised if a value in the incoming arguments is not a string
+
+    :exception KeyError:
+        raised if the value provided to get() or __getitem__ is neither
+        a string provided as an argument to __init__ or an integer
+        which was mapped to an argument
+    '''
+    def __init__(self, *args, **kwargs):
+        self._start = kwargs.get('start', 0)
+        self._end = self._start+len(args)
+        self.__mappings = {}
+        self.__range = xrange(*(self._start, self._end, 1))
+
+        # establish name to use when __repr__ is called
+        name = kwargs.get('name') or self.__class__.__name__
+        self.__name = name.upper()
+
+        index = 0
+        for arg in args:
+            if not isinstance(arg, str):
+                raise TypeError("%s is not a string" % str(arg))
+
+            index_value = self.__range[index]
+
+            # provide both a string mapping and an integer
+            # mapping for use with __getitem__ and get()
+            self.__mappings[index_value] = arg
+            self.__mappings[arg] = index_value
+
+            # set the attribute on the class
+            setattr(self, arg, index_value)
+
+            index += 1
+
+    # external methods
+    def __repr__(self): return self.__name
+    def __getitem__(self, item): return self.__mappings[item]
+    def get(self, item): return self.__getitem__(item)
+# end Enum
+
+
+Software = Enum("MAYA", "HOUDINI", "VRAY", "NUKE", "BLENDER")
+State = Enum(
+    "PAUSED", "BLOCKED", "QUEUED", "ASSIGN",
+    "RUNNING", "FINISHED", "FAILED"
+)
 
 # python datatypes for type comparison
 LIST_TYPES = (list, tuple, set)
