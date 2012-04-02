@@ -38,6 +38,9 @@ os.chdir(trunk)
 # pyfarm libs
 from common import logger
 from common.db import submit
+from common.preferences import prefs
+
+prefs.set('database.setup.close-connections', False)
 
 def log(msg):
     _log.msg(msg, system="make-jobs")
