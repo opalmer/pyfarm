@@ -19,6 +19,7 @@
 import sys
 
 from PyQt4.QtCore import QString
+from sqlalchemy.types import String
 
 class OperatingSystem:
     LINUX, WINDOWS, MAC, OTHER = range(4)
@@ -62,7 +63,7 @@ class Software:
 # python datatypes for type comparison
 LIST_TYPES = (list, tuple, set)
 BOOLEAN_TYPES = (True, False)
-STRING_TYPES = (str, unicode, QString)
+STRING_TYPES = (str, unicode, QString, String)
 
 OS = OperatingSystem.get()
 OSNAME = OperatingSystem.MAPPINGS.get(OS)
