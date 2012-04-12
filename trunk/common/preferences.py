@@ -137,6 +137,12 @@ class Preferences(object):
 
             # only add paths which are not already part of results
             path = template.safe_substitute(template_vars)
+            if not os.path.isdir(path):
+                self.log(
+                    "skipping %s, not a directory" % path, level=logging.DEBUG
+                )
+                continue
+
             if path not in results:
                 results.append(path)
 
