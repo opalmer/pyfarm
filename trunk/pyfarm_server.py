@@ -32,7 +32,7 @@ import xmlrpclib
 from pyfarm import logger, cmdargs, lock, datatypes
 from pyfarm.db import tables
 from pyfarm.db.query import hosts
-from pyfarm.net import multicast
+from pyfarm.net import multicast, dns
 from pyfarm.net import rpc as _rpc
 
 options, args = cmdargs.parser.parse_args()
@@ -46,7 +46,7 @@ from twisted.python import log
 
 CWD = os.getcwd()
 HOSTNAME = socket.gethostname()
-ADDRESS = socket.gethostbyname(HOSTNAME)
+ADDRESS = dns.ip(HOSTNAME)
 SERVICE = None
 SERVICE_LOG = None
 

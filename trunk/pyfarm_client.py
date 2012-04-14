@@ -36,6 +36,7 @@ cmdargs.processOptions(options)
 
 # setup the main log
 from pyfarm import logger
+from pyfarm.net import dns
 from pyfarm.net import rpc as _rpc
 from pyfarm.preferences import prefs
 
@@ -46,7 +47,7 @@ from twisted.python import log
 
 CWD = os.getcwd()
 HOSTNAME = socket.gethostname()
-ADDRESS = socket.gethostbyname(HOSTNAME)
+ADDRESS = dns.ip(HOSTNAME)
 MASTER = ()
 SERVICE = None
 SERVICE_LOG = None

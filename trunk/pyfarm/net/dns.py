@@ -22,8 +22,33 @@ domain name services
 '''
 
 import socket
-import logging
 
-from twisted.python import log
+from pyfarm import datatypes
 
-from pyfarm import logger
+def ip(hostname=None):
+    '''returns the hostname of the current machine'''
+    if hostname is None:
+        hostname = socket.gethostname()
+
+    try:
+        addr = socket.gethostbyname(hostname)
+        return addr
+
+    except socket.gaierror, error:
+        # in some circumstances os x will not be
+        # able to query it's own hostname in dns because
+        # the local dns cache is expecting <hostname>.local
+        # to be looked up
+        if datatypes.OS == datatypes.OperatingSystem.MAC:
+            hostname = "%s.local" % hostname
+            return socket.gethostbyname(hostname)
+
+        # similar situation for windows when attempting to
+        # perform lookups and the local dns cache takes
+        # precedence over asking the dns server
+        elif datatypes.OS == datatypes.OperatingSystem.WINDOWS:
+            hostname = "%s." % hostname
+            return socket.gethostbyname(hostname)
+
+        raise
+# end ip
