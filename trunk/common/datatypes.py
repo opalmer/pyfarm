@@ -18,7 +18,6 @@
 
 import sys
 
-from PyQt4.QtCore import QString
 from sqlalchemy.types import String
 
 class OperatingSystem:
@@ -126,7 +125,7 @@ State = Enum(
 # python datatypes for type comparison
 LIST_TYPES = (list, tuple, set)
 BOOLEAN_TYPES = (True, False)
-STRING_TYPES = (str, unicode, QString, String)
+STRING_TYPES = (str, unicode, String)
 
 OS = OperatingSystem.get()
 OSNAME = OperatingSystem.MAPPINGS.get(OS)
