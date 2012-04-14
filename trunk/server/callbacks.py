@@ -19,16 +19,13 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
-import time
-import random
 import logging
 
 from common import logger
-from common import rpc as _xmlrpc
 from common.db import query
+from common.net import rpc as _rpc
 from common.preferences import prefs
 
-from twisted.internet import threads
 from twisted.internet.error import ConnectionRefusedError
 
 class AssignWorkToClient(logger.LoggingBaseClass):
@@ -102,7 +99,7 @@ class AssignWorkToClient(logger.LoggingBaseClass):
         # end failure
 
         self.log("attempting to send work to %s" % self.hostname)
-        rpc = _xmlrpc.Connection(
+        rpc = _rpc.Connection(
             self.hostname, prefs.get("network.ports.client"),
             success=success, failure=failure
         )

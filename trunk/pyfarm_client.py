@@ -29,15 +29,15 @@ import logging
 
 # parse command line arguments (before we setup logging)
 from client import cmdargs
+
 options, args = cmdargs.parser.parse_args()
 cmdargs.processOptions(options)
 
 # setup the main log
 from common import logger, lock, datatypes
-from common import rpc as _xmlrpc
 from common.preferences import prefs
+from common.net import rpc as _rpc
 from client import job, system, process
-from common.db.query import hosts
 
 from twisted.internet import reactor, protocol
 from twisted.web import xmlrpc
@@ -55,7 +55,7 @@ SERVICE_LOG = None
 if 'PYFARM_RESTART' in os.environ:
     del os.environ['PYFARM_RESTART']
 
-class Client(_xmlrpc.Service):
+class Client(_rpc.Service):
     '''
     Main xmlrpc service which controls the client.  Most methods
     are handled entirely outside of this class for the purposes of
@@ -63,7 +63,7 @@ class Client(_xmlrpc.Service):
     '''
     # provides a location to store our call to reactor.callLater
     def __init__(self, log_stream):
-        _xmlrpc.Service.__init__(self, log_stream)
+        _rpc.Service.__init__(self, log_stream)
 
         # setup sub handlers
         self.sys = system.SystemInformation()
@@ -166,7 +166,7 @@ class Client(_xmlrpc.Service):
                 "software" : options.host_software
             }
 
-            rpc = _xmlrpc.Connection(MASTER[0], MASTER[1])
+            rpc = _rpc.Connection(MASTER[0], MASTER[1])
             rpc.call('addHost', HOSTNAME, hostinfo, force)
 
             # if we are using sqlite inform master to update our resource
