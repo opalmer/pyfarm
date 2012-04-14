@@ -28,16 +28,16 @@ import socket
 import logging
 
 # parse command line arguments (before we setup logging)
-from client import cmdargs
+from pyfarm.client import cmdargs, system, process, job
+from pyfarm import lock, datatypes
 
 options, args = cmdargs.parser.parse_args()
 cmdargs.processOptions(options)
 
 # setup the main log
-from common import logger, lock, datatypes
-from common.preferences import prefs
-from common.net import rpc as _rpc
-from client import job, system, process
+from pyfarm import logger
+from pyfarm.net import rpc as _rpc
+from pyfarm.preferences import prefs
 
 from twisted.internet import reactor, protocol
 from twisted.web import xmlrpc

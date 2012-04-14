@@ -22,16 +22,11 @@ from __future__ import with_statement
 
 import socket
 
-from common import logger
-
-from twisted.python import log
-from twisted.web import http
 from twisted.internet import reactor
+from pyfarm.web import handler, html
 
 PORT = 9025
 HOSTNAME = socket.getfqdn()
-
-from common.web import handler, html
 
 class RequestHandler(handler.Request):
     pages = {

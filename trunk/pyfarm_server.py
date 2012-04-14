@@ -29,15 +29,16 @@ import logging
 import xmlrpclib
 
 # parse command line arguments (before we setup logging)
-from common import cmdargs
+from pyfarm import logger, cmdargs, lock, datatypes
+from pyfarm.db import tables
+from pyfarm.db.query import hosts
+from pyfarm.net import multicast
+from pyfarm.net import rpc as _rpc
+
 options, args = cmdargs.parser.parse_args()
 
-from common.net import multicast
-from common.net import rpc as _rpc
-from common import logger, lock, datatypes
-from common.preferences import prefs
-from common.db import tables, query
-from server import callbacks
+from pyfarm.preferences import prefs
+from pyfarm.server import callbacks
 
 from twisted.internet import reactor, threads
 from twisted.web import server as _server
@@ -71,7 +72,7 @@ class Server(_rpc.Service):
         this point the event loop should have terminated but we
         make sure to handle either case.
         '''
-        for host in query.hosts.hostlist(online=True):
+        for host in hosts.hostlist(online=True):
             port = prefs.get('network.ports.client')
             if not self.xmlrpc_ping(host, port):
                 log.msg("%s does not appear to be up, skipping" % host)
@@ -98,7 +99,7 @@ class Server(_rpc.Service):
         adds a host url and sets up the host in the database
         '''
         host = "%s:%i" % (hostname, prefs.get('network.ports.client'))
-        if not force and host in query.hosts.hostlist(online=None):
+        if not force and host in hosts.hostlist(online=None):
             log.msg("already added host %s" % host)
             return
     # end xmlrpc_addHost
