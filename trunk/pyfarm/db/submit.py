@@ -44,14 +44,15 @@ def validJobtype(jobtype):
         log.msg(msg)
 
         try:
-            module = __import__('jobtypes.%s' % jobtype, fromlist=['jobtypes'])
+            print jobtype
+            module = __import__(jobtype, locals(), globals(), fromlist=['pyfarm.jobtypes'])
 
         except ImportError:
             raise ImportError("no such jobtype '%s'" % jobtype)
 
     else:
         modulename = mappings.get(jobtype)
-        module = __import__('jobtypes.%s' % modulename, fromlist=['jobtypes'])
+        module = __import__(modulename, locals(), globals(), fromlist=['pyfarm.jobtypes'])
 
     log.msg("found module for %s jobtype: %s" % (jobtype, module.__file__))
 
