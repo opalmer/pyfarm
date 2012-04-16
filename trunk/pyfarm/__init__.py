@@ -21,6 +21,7 @@ import site
 
 PYFARM_PACKAGE = os.path.dirname(os.path.abspath(__file__))
 PYFARM_ROOT = os.path.abspath(os.path.join(PYFARM_PACKAGE, ".."))
-PYFARM_ETC = os.path.join(PYFARM_ROOT, 'etc')
+PYFARM_ETC = os.path.join(PYFARM_ROOT, "etc")
+PYFARM_JOBTYPES = os.path.join(PYFARM_ROOT, "pyfarm", "jobtypes")
 
 site.addsitedir(PYFARM_ROOT)
