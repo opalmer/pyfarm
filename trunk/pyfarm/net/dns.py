@@ -25,14 +25,29 @@ import socket
 
 from pyfarm import datatypes
 
-def ip(hostname=None):
-    '''returns the hostname of the current machine'''
+DNS_CACHE = {}
+
+def ip(hostname=None, cache=True):
+    '''
+    returns the hostname of the current machine
+
+    :param boolean cache:
+        if False do not returns results from cache if the
+        hostname exists in DNS_CACHE
+    '''
     if hostname is None:
         hostname = socket.gethostname()
 
+    if cache and hostname in DNS_CACHE:
+        return DNS_CACHE[hostname]
+
     try:
-        addr = socket.gethostbyname(hostname)
-        return addr
+        address = socket.gethostbyname(hostname)
+
+        if not cache or hostname not in DNS_CACHE:
+            DNS_CACHE[hostname] = address
+
+        return address
 
     except socket.gaierror, error:
         # in some circumstances os x will not be
@@ -41,14 +56,23 @@ def ip(hostname=None):
         # to be looked up
         if datatypes.OS == datatypes.OperatingSystem.MAC:
             hostname = "%s.local" % hostname
-            return socket.gethostbyname(hostname)
+            address =  socket.gethostbyname(hostname)
 
+            if not cache or hostname not in DNS_CACHE:
+                DNS_CACHE[hostname] = address
+
+            return address
         # similar situation for windows when attempting to
         # perform lookups and the local dns cache takes
         # precedence over asking the dns server
         elif datatypes.OS == datatypes.OperatingSystem.WINDOWS:
             hostname = "%s." % hostname
-            return socket.gethostbyname(hostname)
+            address = socket.gethostbyname(hostname)
+
+            if not cache or hostname not in DNS_CACHE:
+                DNS_CACHE[hostname] = address
+
+            return address
 
         raise
 # end ip
