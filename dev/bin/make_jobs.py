@@ -47,7 +47,7 @@ def log(msg):
 
 # setup jobtypes
 jobtypes = []
-for filename in os.listdir("jobtypes"):
+for filename in os.listdir(os.path.join("pyfarm", "jobtypes")):
     if not filename.startswith("__") and filename.endswith(".py") and not filename.startswith("functions"):
         jobtypes.append(filename.split(".")[0])
 
