@@ -40,7 +40,7 @@ HOSTNAME = socket.getfqdn()
 SKIP_MODULES = prefs.get('jobtypes.excluded-names')
 CWD = os.path.dirname(os.path.abspath(__file__))
 
-__all__ = ['JobData', 'jobtypes', 'load']
+__all__ = ['JobData', 'jobtypes', 'load', 'run']
 
 class JobData(logger.LoggingBaseClass):
     '''

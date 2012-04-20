@@ -18,46 +18,18 @@
 
 '''simple tests'''
 
-from __future__ import with_statement
+import imp
 
-import socket
+name = 'mayatomr'
+paths = ['pyfarm/jobtypes']
+module = None
+stream, path, description = imp.find_module(name, paths)
 
-from twisted.internet import reactor
-from pyfarm.web import handler, html
+try:
+    print stream, path, description
+    module = imp.load_module(name, stream, path, description)
 
-PORT = 9025
-HOSTNAME = socket.getfqdn()
+finally:
+    stream.close()
 
-class RequestHandler(handler.Request):
-    pages = {
-        "/" : "html_root",
-        "/log/service" : "html_log_service",
-        "/log/jobs" : "html_log_jobs"
-    }
-
-    def html_log_jobs(self):
-        with html.Page("PyFarm - Job Logs - %s" % HOSTNAME, PORT) as page:
-            page.add("Nothing here yet.")
-        return page.content
-    # end html_log_jobs
-
-    def html_log_service(self):
-        with html.Page("PyFarm - Service Log - %s" % HOSTNAME, PORT) as page:
-            page.add("Nothing here yet.")
-        return page.content
-    # end html_log_service
-
-    def html_root(self):
-        with html.Page("PyFarm - Host Interface - %s" % HOSTNAME, PORT) as page:
-            with html.Tag(page, "p"):
-                page.link("%s:%i/log/service" % (HOSTNAME, PORT), "Service Log")
-                page.link("%s:%i/log/jobs" % (HOSTNAME, PORT), "Job Logs")
-
-        return page.content
-    # end html_root
-# end RequestHandler
-
-if __name__ == '__main__':
-    factory = handler.CreateFactory(RequestHandler)
-    reactor.listenTCP(PORT, factory)
-    reactor.run()
+print module
