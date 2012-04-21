@@ -23,6 +23,7 @@ functions for jobtype system related queries and setup
 from __future__ import with_statement
 
 import os
+import imp
 import copy
 import socket
 import inspect
@@ -41,6 +42,14 @@ SKIP_MODULES = prefs.get('jobtypes.excluded-names')
 CWD = os.path.dirname(os.path.abspath(__file__))
 
 __all__ = ['JobData', 'jobtypes', 'load', 'run']
+
+# construct the list of valid jobtype file names
+JOBTYPE_FILENAMES = set()
+for listing in os.listdir(CWD):
+    filename, extension = os.path.splitext(listing)
+    if filename not in SKIP_MODULES:
+        JOBTYPE_FILENAMES.add(filename)
+
 
 class JobData(logger.LoggingBaseClass):
     '''
@@ -92,25 +101,28 @@ class JobData(logger.LoggingBaseClass):
 
 def jobtypes():
     '''returns a list of all valid jobtypes as strings'''
-    types = set()
+    types = []
 
-    for listing in os.listdir(CWD):
-        filename, extension = os.path.splitext(listing)
-        if filename not in SKIP_MODULES:
-            # load the module and ensure it has an attribute 'Job'
-            # that is a class
-            module = __import__(filename, locals(), globals())
-            if hasattr(module, 'Job') and inspect.isclass(module.Job):
-                types.add(filename)
+    for listing in JOBTYPE_FILENAMES:
+        if
+        stream, path, description = imp.find_module(listing, [CWD])
+        print stream, path
+        #filename, extension = os.path.splitext(listing)
+        #if filename not in SKIP_MODULES:
+            ## load the module and ensure it has an attribute 'Job'
+            ## that is a class
+            #module = __import__(filename, locals(), globals())
+            #if hasattr(module, 'Job') and inspect.isclass(module.Job):
+                #types.add(filename)
 
-            else:
-                log.msg(
-                    "'Job' is not a class in %s" % module.__file__,
-                    level=logging.WARNING,
-                    system="jobtypes.functions.jobtypes"
-                )
+            #else:
+                #log.msg(
+                    #"'Job' is not a class in %s" % module.__file__,
+                    #level=logging.WARNING,
+                    #system="jobtypes.functions.jobtypes"
+                #)
 
-    return list(types)
+    return types
 # end jobtypes
 
 def load(name):
