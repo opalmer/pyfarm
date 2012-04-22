@@ -39,7 +39,9 @@ OBSERVERS = []
 
 # dictionary of log levels and their associated
 # styles and colors
+ENABLE_TERMCOLOR = pref.get('logging.termcolor')
 TERMCOLOR = {
+    logging.DEBUG : (Style.DIM, Style.RESET_ALL),
     logging.INFO : (Fore.GREEN, Fore.RESET),
     logging.WARNING : (Fore.YELLOW, Fore.RESET),
     logging.ERROR : (Fore.RED, Fore.RESET),
@@ -186,8 +188,13 @@ class Observer(log.FileLogObserver):
         given information from the event dictionary and a message
         output a properly colorized message
         '''
-        level = eventDict['level']
-        style_start, style_end = TERMCOLOR.get(level, ('', ''))
+        style_start = ""
+        style_end = ""
+
+        if ENABLE_TERMCOLOR:
+            level = eventDict['level']
+            style_start, style_end = TERMCOLOR.get(level, ('', ''))
+
         return style_start + msg + style_end
     # end __colorize
 
