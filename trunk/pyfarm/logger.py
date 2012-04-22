@@ -21,6 +21,8 @@ import time
 import inspect
 import logging
 import fnmatch
+import colorama
+from colorama import Fore, Back, Style
 from logging import handlers
 
 from pyfarm.preferences import prefs
@@ -29,10 +31,22 @@ from twisted.python import log
 from pyfarm import datatypes
 
 log.FileLogObserver.timeFormat = prefs.get('logging.timestamp')
+colorama.init()
 
 # lists of currently instanced stream and observers
 STREAMS = {}
 OBSERVERS = []
+
+# dictionary of log levels and their associated
+# styles and colors
+TERMCOLOR = {
+    logging.INFO : (Fore.GREEN, Fore.RESET),
+    logging.WARNING : (Fore.YELLOW, Fore.RESET),
+    logging.ERROR : (Fore.RED, Fore.RESET),
+    logging.CRITICAL : (
+        Back.RED+Fore.WHITE+Style.BRIGHT, Back.RESET+Fore.RESET+Style.RESET_ALL
+    )
+}
 
 class Observer(log.FileLogObserver):
     '''
@@ -167,6 +181,16 @@ class Observer(log.FileLogObserver):
         return True
     # end __observable
 
+    def __colorize(self, eventDict, msg):
+        '''
+        given information from the event dictionary and a message
+        output a properly colorized message
+        '''
+        level = eventDict['level']
+        style_start, style_end = TERMCOLOR.get(level, ('', ''))
+        return style_start + msg + style_end
+    # end __colorize
+
     def emit(self, eventDict):
         '''
         Takes an incoming event dictionary and determines if we should
@@ -217,7 +241,9 @@ class Observer(log.FileLogObserver):
             'text': text.replace("\n", "\n\t"),
             'level' : level.upper()
         }
+
         msg = timeStr + " " + log._safeFormat(self.format, fmtDict)
+        msg = self.__colorize(eventDict, msg)
 
         if self.stream is not None:
             log.util.untilConcludes(self.write, msg+"\n")
