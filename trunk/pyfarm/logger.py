@@ -243,13 +243,13 @@ class Observer(log.FileLogObserver):
         }
 
         msg = timeStr + " " + log._safeFormat(self.format, fmtDict)
-        msg = self.__colorize(eventDict, msg)
 
         if self.stream is not None:
             log.util.untilConcludes(self.write, msg+"\n")
             log.util.untilConcludes(self.flush)
 
         else:
+            msg = self.__colorize(eventDict, msg)
             print msg.strip()
     # end emit
 
