@@ -281,7 +281,7 @@ class Client(_rpc.Service):
 with lock.ProcessLock('client', kill=options.force_kill, wait=options.wait):
     # determine the location we should log to
     if not options.log:
-        root = prefs.get('logging.locations.general')
+        root = prefs.get('filesystem.locations.general')
         SERVICE_LOG = os.path.join(root, 'client-%s.log' % HOSTNAME)
     else:
         SERVICE_LOG = os.path.abspath(options.log)
