@@ -140,7 +140,7 @@ with lock.ProcessLock('server', kill=options.force_kill, wait=options.wait) \
     as context:
     # determine the location we should log to
     if not options.log:
-        root = prefs.get('logging.locations.general')
+        root = prefs.get('filesystem.locations.general')
         SERVICE_LOG = os.path.join(root, 'server-%s.log' % HOSTNAME)
     else:
         SERVICE_LOG = os.path.abspath(options.log)
