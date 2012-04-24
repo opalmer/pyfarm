@@ -192,7 +192,7 @@ class Observer(log.FileLogObserver):
         style_end = ""
 
         if ENABLE_TERMCOLOR:
-            level = eventDict['level']
+            level = eventDict.get('level', logging.DEBUG)
             style_start, style_end = TERMCOLOR.get(level, ('', ''))
 
         return style_start + msg + style_end
