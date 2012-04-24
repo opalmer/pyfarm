@@ -25,31 +25,24 @@ from __future__ import with_statement
 import os
 import imp
 import copy
+import fnmatch
 import socket
 import inspect
 import logging
 
 from twisted.python import log
 
-from pyfarm import logger, datatypes
+from pyfarm import logger, datatypes, fileio
 from pyfarm.preferences import prefs
 from pyfarm.db import Transaction
 from pyfarm.db.query import hosts
 from pyfarm.db import tables
+from pyfarm.preferences import prefs
 
 HOSTNAME = socket.getfqdn()
-SKIP_MODULES = prefs.get('jobtypes.excluded-names')
 CWD = os.path.dirname(os.path.abspath(__file__))
 
 __all__ = ['JobData', 'jobtypes', 'load', 'run']
-
-# construct the list of valid jobtype file names
-JOBTYPE_FILENAMES = set()
-for listing in os.listdir(CWD):
-    filename, extension = os.path.splitext(listing)
-    if filename not in SKIP_MODULES:
-        JOBTYPE_FILENAMES.add(filename)
-
 
 class JobData(logger.LoggingBaseClass):
     '''
@@ -101,28 +94,35 @@ class JobData(logger.LoggingBaseClass):
 
 def jobtypes():
     '''returns a list of all valid jobtypes as strings'''
-    types = []
+    types = set()
 
-    for listing in JOBTYPE_FILENAMES:
-        if
-        stream, path, description = imp.find_module(listing, [CWD])
-        print stream, path
-        #filename, extension = os.path.splitext(listing)
-        #if filename not in SKIP_MODULES:
-            ## load the module and ensure it has an attribute 'Job'
-            ## that is a class
-            #module = __import__(filename, locals(), globals())
-            #if hasattr(module, 'Job') and inspect.isclass(module.Job):
-                #types.add(filename)
+    for root in prefs.get('jobtypes.search-paths'):
+        # skip directories that do not exist
+        if not os.path.isdir(root):
+            continue
 
-            #else:
-                #log.msg(
-                    #"'Job' is not a class in %s" % module.__file__,
-                    #level=logging.WARNING,
-                    #system="jobtypes.functions.jobtypes"
-                #)
+        for filename in os.listdir(root):
+            path = os.path.abspath(os.path.join(root, filename))
 
-    return types
+            # skip directories
+            if os.path.isdir(path):
+                continue
+
+            # skip any files matching an exclusion pattern
+            matches = False
+            for pattern in prefs.get('jobtypes.excluded-names'):
+                if not matches and fnmatch.fnmatch(filename, pattern):
+                    matches = True
+
+            if matches:
+                continue
+
+            modulename, extension = os.path.splitext(filename)
+            module = fileio.module.load(modulename, root)
+            if hasattr(module, 'Job') and inspect.isclass(module.Job):
+                types.add(modulename)
+
+    return list(types)
 # end jobtypes
 
 def load(name):

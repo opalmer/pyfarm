@@ -18,18 +18,6 @@
 
 '''simple tests'''
 
-import imp
+from pyfarm import jobtypes
 
-name = 'mayatomr'
-paths = ['pyfarm/jobtypes']
-module = None
-stream, path, description = imp.find_module(name, paths)
-
-try:
-    print stream, path, description
-    module = imp.load_module(name, stream, path, description)
-
-finally:
-    stream.close()
-
-print module
+print jobtypes.jobtypes()
