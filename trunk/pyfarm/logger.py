@@ -39,7 +39,7 @@ OBSERVERS = []
 
 # dictionary of log levels and their associated
 # styles and colors
-ENABLE_TERMCOLOR = pref.get('logging.termcolor')
+ENABLE_TERMCOLOR = prefs.get('logging.termcolor')
 TERMCOLOR = {
     logging.DEBUG : (Style.DIM, Style.RESET_ALL),
     logging.INFO : (Fore.GREEN, Fore.RESET),
