@@ -16,12 +16,12 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import with_statement
-
 '''
 module which contains functions for loading information
 from disk
 '''
+
+from __future__ import with_statement
 
 import os
 import imp
@@ -117,4 +117,4 @@ class module:
             module = imp.load_module(name, stream, path, description)
             cls.CACHE[namespace] = module
 
-        return cls.CACHE[namespace] = module
+        return cls.CACHE[namespace]
