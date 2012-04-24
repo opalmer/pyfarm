@@ -81,7 +81,7 @@ class Preferences(object):
     def __loggingLocations(self, data, kwargs):
         template = string.Template(data)
         template_vars = {
-            "root" : self.get('logging.roots.%s' % datatypes.OSNAME, **kwargs),
+            "root" : self.get('filesystem.roots.%s' % datatypes.OSNAME, **kwargs),
             "temp" : tempfile.gettempdir()
         }
 
@@ -117,7 +117,7 @@ class Preferences(object):
         # finally iterate over each paths and see if anything is
         # pointing to the farm root
         template_vars = {
-            "root" : self.get('logging.roots.%s' % datatypes.OSNAME, **kwargs)
+            "root" : self.get('filesystem.roots.%s' % datatypes.OSNAME, **kwargs)
         }
 
         # remove any keys that are already in kwargs so
