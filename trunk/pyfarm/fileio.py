@@ -26,9 +26,10 @@ from __future__ import with_statement
 import os
 import imp
 import yaml
+import logging
 import tempfile
+
 from twisted.python import log
-from pyfarm import logger
 
 class yml:
     CACHE = {}
@@ -54,7 +55,10 @@ class yml:
         if force or abspath not in cls.CACHE:
             with open(path, 'r') as stream:
                 cls.CACHE[abspath] = yaml.load(stream, Loader=cls.LOADER)
-            log.msg("Loaded: %s" % abspath, system="loader.yml")
+                log.msg(
+                    "Loaded: %s" % abspath, system="loader.yml",
+                    level=logging.INFO
+                )
 
         return cls.CACHE[abspath]
     # end load
