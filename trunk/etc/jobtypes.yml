@@ -18,10 +18,12 @@
 # names to exclude from the jobtypes list
 excluded-names:
  - __init__
- - base
- - functions
 
-# The path(::s) to search for executable files. All environment
+# path(s) to search for jobtypes
+search-paths:
+  - $root/pyfarm/jobtypes
+
+# The path(s) to search for executable files. All environment
 # variables as well as some template variables will
 # be run through os.path.expandvars
 path:
