@@ -19,14 +19,13 @@
 from __future__ import with_statement
 
 import os
-import yaml
 import string
 import psutil
 import logging
 import tempfile
 
 from twisted.python import log
-from pyfarm import datatypes, PYFARM_ETC
+from pyfarm import datatypes, PYFARM_ETC, PYFARM_ROOT, fileio
 
 if not os.path.isdir(PYFARM_ETC):
     raise OSError("configuration directory does not exist: %s" % PYFARM_ETC)
@@ -40,12 +39,6 @@ class Preferences(object):
     # creates a 'frozen' form of the preferences to override
     # the yaml files on disk.
     PREFERENCES = {}
-
-    # determine the yaml loader we should use
-    if hasattr(yaml, 'CLoader'):
-        LOADER = yaml.CLoader
-    else:
-        LOADER = yaml.SafeLoader
 
     def __init__(self):
         self.loaded = []
@@ -62,11 +55,9 @@ class Preferences(object):
         if not os.path.isfile(path):
             raise OSError("configuration does not exist: %s" % path)
 
-        with open(path, 'r') as stream:
-            data = yaml.load(stream, Loader=Preferences.LOADER)
-            self.data[name] = data
-            self.loaded.append(filename)
-            self.log("Loaded: %s" % path)
+        data = fileio.yml.load(path)
+        self.data[name] = data
+        self.loaded.append(path)
     # end __load
 
     def __pathjoin(self, value):
@@ -218,6 +209,21 @@ class Preferences(object):
         return [ result for result in results if result ]
     # end __extensions
 
+    def __jobtypeSearchPaths(self, data, kwargs):
+        paths = []
+        for entry in data:
+            path = os.path.sep.join(entry.split("/"))
+            template = string.Template(entry)
+            expanded_template = template.safe_substitute(
+                    {
+                        "pyfarm" : PYFARM_ROOT,
+                        "root" : self.get('filesystem.roots.%s' % datatypes.OSNAME, **kwargs)
+                    }
+            )
+            paths.append(os.path.expandvars(expanded_template))
+        return paths
+    # end __jobtypeSearchPaths
+
     def log(self, msg, level=logging.INFO):
         log.msg(msg, system='Preferences', level=level)
     # end log
@@ -327,7 +333,10 @@ class Preferences(object):
             error =  "could not find '%s' data when searching %s" % (value, key)
             raise KeyError(error)
 
-        if key.startswith('filesystem.locations.'):
+        if key == 'jobtypes.search-paths':
+            data = self.__jobtypeSearchPaths(data, kwargs)
+
+        elif key.startswith('filesystem.locations.'):
             data = self.__loggingLocations(data, kwargs)
 
         elif key == 'jobtypes.path':
@@ -336,6 +345,7 @@ class Preferences(object):
         elif key == 'client.max-jobs':
             data = self.__calculateMaxJobs(data, kwargs)
 
+        Preferences.PREFERENCES[key] = data
         return data
     # end get
 # end Preferences

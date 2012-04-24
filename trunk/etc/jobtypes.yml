@@ -17,10 +17,11 @@
 
 # names to exclude from the jobtypes list
 excluded-names:
- - __init__
+ - __init__*
 
 # path(s) to search for jobtypes
 search-paths:
+  - $pyfarm/pyfarm/jobtypes
   - $root/pyfarm/jobtypes
 
 # The path(s) to search for executable files. All environment
