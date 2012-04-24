@@ -64,30 +64,6 @@ enable-filtering: false
 # that is created with a duplicate name
 backups: 5
 
-# Root locations for specific platforms.  These will
-# generally need to be changed for your configuration.
-roots:
-  windows: F:\
-  linux: /farm
-  mac: /farm
-
-# Root locations or templates for specific types
-# of logs.  Please note that '/' should always be used
-# as a separator regardless of platform.  Internally
-# the preferences module will split these paths by '/' then
-# recombine them with the proper separator.
-#
-# Default Template Variables:
-#   $temp - determined by tempfile.gettempdir()
-#   $root - determined by roots[datatypes.OSNAME]
-#
-# Variables which are not defined above but included below
-# would be substituted when the log is created.  For example $jobid or
-# $frame would be included when a new job starts on a client
-locations:
-  general: $root/log
-  jobs: $root/log/jobs/$jobid/$frame.log
-
 sqlalchemy:
   echo: false
   pool: false
