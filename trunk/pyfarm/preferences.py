@@ -250,7 +250,10 @@ class Preferences(object):
                 return
 
             Preferences.PREFERENCES[key] = value
-            self.log("set frozen preference %s to %s" % (key, value))
+            self.log(
+                "freezing preference %s to %s" % (key, value),
+                level=logging.WARNING
+            )
     # end set
 
     def get(self, key, **kwargs):
@@ -324,7 +327,7 @@ class Preferences(object):
             error =  "could not find '%s' data when searching %s" % (value, key)
             raise KeyError(error)
 
-        if key.startswith('logging.locations.'):
+        if key.startswith('filesystem.locations.'):
             data = self.__loggingLocations(data, kwargs)
 
         elif key == 'jobtypes.path':
