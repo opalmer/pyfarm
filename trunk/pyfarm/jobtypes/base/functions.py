@@ -42,7 +42,7 @@ from pyfarm.preferences import prefs
 HOSTNAME = socket.getfqdn()
 CWD = os.path.dirname(os.path.abspath(__file__))
 
-__all__ = ['JobData', 'jobtypes', 'load', 'run']
+__all__ = ['JobData', 'jobtypes', 'load', 'run', 'roots']
 
 class JobData(logger.LoggingBaseClass):
     '''
@@ -92,15 +92,29 @@ class JobData(logger.LoggingBaseClass):
     # end __lookup
 # end JobData
 
-def jobtypes():
-    '''returns a list of all valid jobtypes as strings'''
-    types = set()
+def roots():
+    '''returns the root paths to search'''
+    log.msg("searching for jobtype root directories")
 
+    paths = []
     for root in prefs.get('jobtypes.search-paths'):
         # skip directories that do not exist
-        if not os.path.isdir(root):
+        if not os.path.isdir(root) and root not in paths:
+            log.msg(
+                "skipping %s, directory does not exist" % root
+            )
             continue
 
+        paths.append(root)
+
+    return paths
+# end roots
+
+def __search():
+    '''generator which returns a root and module name'''
+    found = set()
+    for root in roots():
+        names = set()
         for filename in os.listdir(root):
             path = os.path.abspath(os.path.join(root, filename))
 
@@ -118,9 +132,36 @@ def jobtypes():
                 continue
 
             modulename, extension = os.path.splitext(filename)
-            module = fileio.module.load(modulename, root)
-            if hasattr(module, 'Job') and inspect.isclass(module.Job):
-                types.add(modulename)
+
+            # skip files which have already been found
+            if modulename in found:
+                continue
+            else:
+                found.add(modulename)
+                yield root, modulename
+# end __search
+
+def __jobypes():
+    '''generator which returns valid jobtype modules'''
+    found = set()
+    for root, modulename in __search():
+        module = fileio.module.load(modulename, root)
+        if hasattr(module, 'Job') and inspect.isclass(module.Job):
+            yield module
+
+        else:
+            error = "jobtype '%s' does not have a Job " % modulename
+            error += "class, skipping"
+            log.msg(error, level=logging.WARNING)
+# end __jobtypes
+
+def jobtypes():
+    '''returns a list of all valid jobtypes as strings'''
+    types = set()
+
+    for module in __jobypes():
+        name = module.__name__
+        types.add(name)
 
     return list(types)
 # end jobtypes
@@ -130,19 +171,22 @@ def load(name):
     loads and returns a specific jobtype so long as it exists
     and contains the Job class
 
-    :exception NameError:
+    :exception ImportError:
         raised if the a valid jobtype with the given
         name does not exist
 
     :return:
         return the jobtype's class object
     '''
-    if name not in jobtypes():
-        raise NameError("no such jobtype %s" % name)
+    module = fileio.module.load(name, roots())
 
-    log.msg("loading jobtype %s" % name)
-    module = __import__(name, locals(), globals(), fromlist=['jobtypes'])
-    return module.Job
+    try:
+        return module.Job
+    except AttributeError:
+        log.msg(
+            "%s does not contain the job class",
+            level=logging.ERROR
+        )
 # end load
 
 def run(jobid, frameid):
