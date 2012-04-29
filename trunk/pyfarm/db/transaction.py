@@ -25,7 +25,7 @@ import sqlalchemy.orm
 from twisted.python import log
 
 from pyfarm import logger
-from pyfarm.db.session import ENGINE, Session
+from pyfarm.db import session
 from pyfarm.preferences import prefs
 
 class Transaction(object):
@@ -49,8 +49,8 @@ class Transaction(object):
         self.tablename = self.table.fullname
 
         # single engine per run (this MAY be needed later)
-        self.engine = ENGINE
-        self.Session = sqlalchemy.orm.scoped_session(Session)
+        self.engine = session.ENGINE
+        self.Session = sqlalchemy.orm.scoped_session(session.Session)
 #        sqlalchemy.orm.sessionmaker()
 
     # end __init__
