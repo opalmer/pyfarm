@@ -57,7 +57,7 @@ if 'PYFARM_RESTART' in os.environ:
 # setup preferences
 prefs.set('database.setup.close-connections', False)
 
-class Server(_rpc.Service):
+class Server(_rpc.Service, logger.LoggingBaseClass):
     '''
     Main server class to act as an external interface to the
     data base and job server.
@@ -75,23 +75,23 @@ class Server(_rpc.Service):
         for host in hosts.hostlist(online=True):
             port = prefs.get('network.ports.client')
             if not self.xmlrpc_ping(host, port):
-                log.msg("%s does not appear to be up, skipping" % host)
+                self.log("%s does not appear to be up, skipping" % host)
                 continue
 
             if not reactor.running:
                 url = "http://%s:%i" % (host, port)
                 rpc = xmlrpclib.ServerProxy(url, allow_none=True)
                 if rpc.setMaster('', True):
-                    log.msg("reset master on %s" % host)
+                    self.log("reset master on %s" % host)
 
                 else:
-                    log.msg(
+                    self.log(
                         "%s failed to reset master" % host, level=logging.ERROR
                     )
             else:
                 rpc = _rpc.Connection(host, port)
                 rpc.call('setMaster', '', True)
-                log.msg("called setMaster on %s" % host)
+                self.log("called setMaster on %s" % host)
     # end resetClientMasters
 
     def xmlrpc_addHost(self, hostname, host_data, force=False):
@@ -100,7 +100,7 @@ class Server(_rpc.Service):
         '''
         host = "%s:%i" % (hostname, prefs.get('network.ports.client'))
         if not force and host in hosts.hostlist(online=None):
-            log.msg("already added host %s" % host)
+            self.log("already added host %s" % host)
             return
     # end xmlrpc_addHost
 
@@ -121,13 +121,16 @@ def incoming_host(data):
     '''
     def success(*args):
         if args[0]:
-            log.msg("successfully set master on %s" % hostname)
+            log.msg("successfully set master on %s" % hostname, system="Server")
         else:
-            log.msg("failed to set master on %s" % hostname)
+            log.msg("failed to set master on %s" % hostname, system="Server")
     # end success
 
     hostname, force = data
-    log.msg("incoming heartbeat from %s" % hostname)
+    log.msg(
+        "incoming heartbeat from %s" % hostname,
+        system="Server"
+    )
 
     # run setMaster on the incoming client
     rpc = _rpc.Connection(hostname, prefs.get('network.ports.client'), success)
@@ -166,7 +169,10 @@ with lock.ProcessLock('server', kill=options.force_kill, wait=options.wait) \
     # start the reactor
     reactor.listenTCP(prefs.get('network.ports.server'), _server.Site(server))
     args = (HOSTNAME, prefs.get('network.ports.server'))
-    log.msg("running server at http://%s:%i" % args)
+    log.msg(
+        "running server at http://%s:%i" % args,
+        system="Server", level=logging.INFO
+    )
     reactor.run()
 
 # If RESTART has been set to True then restart the server
@@ -175,7 +181,10 @@ with lock.ProcessLock('server', kill=options.force_kill, wait=options.wait) \
 # to release.
 if os.getenv('PYFARM_RESTART') == "true":
     pause = prefs.get('network.rpc.delay')
-    log.msg("preparing to restart the server, pausing %i seconds" % pause)
+    log.msg(
+        "preparing to restart the server, pausing %i seconds" % pause,
+        system="Server"
+    )
     time.sleep(pause)
     args = sys.argv[:]
 

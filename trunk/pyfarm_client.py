@@ -30,6 +30,7 @@ import logging
 # parse command line arguments (before we setup logging)
 from pyfarm.client import cmdargs, system, process, job
 from pyfarm import lock, datatypes
+from pyfarm.db import submit
 
 options, args = cmdargs.parser.parse_args()
 cmdargs.processOptions(options)
@@ -56,7 +57,7 @@ SERVICE_LOG = None
 if 'PYFARM_RESTART' in os.environ:
     del os.environ['PYFARM_RESTART']
 
-class Client(_rpc.Service):
+class Client(_rpc.Service, logger.LoggingBaseClass):
     '''
     Main xmlrpc service which controls the client.  Most methods
     are handled entirely outside of this class for the purposes of
@@ -84,10 +85,10 @@ class Client(_rpc.Service):
         Client.HEARTBEAT = reactor.callLater(interval, self.heartbeat)
 
         if not force and MASTER:
-            log.msg("skipping heartbeat")
+            self.log("skipping heartbeat")
             return False
 
-        log.msg("sending heartbeat")
+        self.log("sending heartbeat")
         # prepare the data to send
         address = (
             prefs.get('network.heartbeat.group'),
@@ -105,7 +106,7 @@ class Client(_rpc.Service):
             udp.stopListening()
 
         except socket.error, error:
-            log.msg("error sending multicast: %s" % error)
+            self.log("error sending multicast: %s" % error)
             return False
 
         else:
@@ -118,7 +119,11 @@ class Client(_rpc.Service):
     # end xmlrpc_master
 
     def xmlrpc_foo(self):
-        self.resource_updates.trigger()
+        submit_job = submit.Submit()
+        submit_job.job('mayatomr', 1, 10)
+        submit_job.job('mayatomr', 11, 20)
+        submit_job.commit()
+    # end xmlrpc_foo
 
     def xmlrpc_setMaster(self, master, force=False):
         '''
@@ -138,19 +143,19 @@ class Client(_rpc.Service):
 
         # if new address is the current address do nothing
         if master == MASTER:
-            log.msg("master is already set to %s" % str(master))
+            self.log("master is already set to %s" % str(master))
             return False
 
         # if master is already set and force is not use do nothing
         if MASTER and not force:
-            log.msg("master is already set, use force to override")
+            self.log("master is already set, use force to override")
             return False
 
         MASTER = master
-        log.msg("master set to %s" % str(master))
+        self.log("master set to %s" % str(master))
 
         if MASTER:
-            log.msg("sending host information to %s" % str(MASTER))
+            self.log("sending host information to %s" % str(MASTER))
             # generate information about this system and send it to
             # the master
 
@@ -173,12 +178,12 @@ class Client(_rpc.Service):
             # if we are using sqlite inform master to update our resource
             # in the database
             if prefs.get('database.engine') == "sqlite":
-                log.msg("informing master to update our resources")
+                self.log("informing master to update our resources")
                 rpc.call('resources', HOSTNAME, True)
 
             # otherwise we update resource information ourselves
             else:
-                log.msg("updating our own resource information")
+                self.log("updating our own resource information")
                 self.xmlrpc_resources('', True)
 
         return True
@@ -212,7 +217,7 @@ class Client(_rpc.Service):
         '''
         if state in datatypes.BOOLEAN_TYPES:
             self.job.online = state
-            log.msg("client online state set to %s" % str(state))
+            self.log("client online state set to %s" % str(state))
 
         elif state is not None:
             raise xmlrpc.Fault(3, "%s is not a valid state" % str(state))
@@ -234,7 +239,7 @@ class Client(_rpc.Service):
         :exception xmlrpc.Fault(8):
             raised if we attempt to set max jobs to 0
         '''
-        if count == 0:
+        if count is 0:
             raise xmlrpc.Fault(8, "cannot set jobs_max to zero")
 
         if not isinstance(count, int) and not count == None:
@@ -247,17 +252,14 @@ class Client(_rpc.Service):
         # than the processor count then send a warning to the console
         if self.job.job_count_max > process.CPU_COUNT:
             args = (self.job.job_count_max, process.CPU_COUNT)
-            log.msg(
+            self.log(
                 "max job count (%i) is greater than the cpu count (%i)!" % args,
                 level=logging.WARNING
             )
 
         # if the job count is unlimited show a warning
         elif self.job.job_count_max == -1:
-            log.msg(
-                "max job count is unlimited!",
-                level=logging.WARNING
-            )
+            self.log("max job count is unlimited!", level=logging.WARNING)
 
         return self.job.job_count_max
     # end xmlrpc_jobs_max
@@ -299,7 +301,10 @@ with lock.ProcessLock('client', kill=options.force_kill, wait=options.wait):
 
     # start reactor
     args = (HOSTNAME, prefs.get('network.ports.client'))
-    log.msg("running client at http://%s:%i" % args)
+    log.msg(
+        "running client at http://%s:%i" % args,
+        level=logging.INFO, system="Client"
+    )
     reactor.run()
 
 # If RESTART has been set to True then restart the client
@@ -308,7 +313,10 @@ with lock.ProcessLock('client', kill=options.force_kill, wait=options.wait):
 # to release.
 if os.getenv('PYFARM_RESTART') == 'true' and prefs.get('network.rpc.restart'):
     pause = prefs.get('network.rpc.delay')
-    log.msg("preparing to restart the client, pausing %i seconds" % pause)
+    log.msg(
+        "preparing to restart the client, pausing %i seconds" % pause,
+        system="Client"
+    )
     time.sleep(pause)
     args = sys.argv[:]
 

@@ -48,10 +48,9 @@ class Service(xmlrpc.XMLRPC, logger.LoggingBaseClass):
         # in was not actually a file stream
         if not isinstance(log_stream, file):
             self.log_stream = None
-            log.msg(
-                "service log stream established, some method will not function",
-                level=logging.WARNING
-            )
+            msg = "service log stream established, some logging methods "
+            msg += "will not function"
+            self.log(msg, level=logging.WARNING)
     # end __init__
 
     def _blockShutdown(self):
@@ -93,7 +92,7 @@ class Service(xmlrpc.XMLRPC, logger.LoggingBaseClass):
         '''
         global TEST_MODE
         TEST_MODE = value
-        log.msg("test mode set to %s" % TEST_MODE)
+        self.log("test mode set to %s" % TEST_MODE)
     # end xmlrpc_test_mode
 
     def xmlrpc_ping(self, hostname=None, port=None, success=None, failure=None):
@@ -107,6 +106,7 @@ class Service(xmlrpc.XMLRPC, logger.LoggingBaseClass):
         :param integer port:
             the remote port to ping the given hostname on
         '''
+        self.log("incoming ping request")
         if hostname and port:
             return ping(hostname, port, success, failure)
 
@@ -137,7 +137,7 @@ class Service(xmlrpc.XMLRPC, logger.LoggingBaseClass):
             raise xmlrpc.Fault(9, msg)
 
         elif block and force:
-            log.msg("shutdown forced!", level=logging.WARNING)
+            self.log("shutdown forced!", level=logging.WARNING)
 
         if not TEST_MODE:
             self._runShutdown()
@@ -193,7 +193,7 @@ class Service(xmlrpc.XMLRPC, logger.LoggingBaseClass):
             # if data is None them we first have to retrieve data for the
             # remote host
             if hostname is not None and data is None:
-                log.msg("retrieving resources for %s" % hostname)
+                self.log("retrieving resources for %s" % hostname)
                 url = 'http://%s:%i' % (hostname, prefs.get('network.ports.client'))
                 rpc = xmlrpclib.ServerProxy(url)
                 resources = rpc.resources()
@@ -217,11 +217,11 @@ class Service(xmlrpc.XMLRPC, logger.LoggingBaseClass):
             # our resource information directly to the server
             if update and engine == "sqlite":
                 def success(*values):
-                    log.msg("updated resources fields remotely: %s" % values)
+                    self.log("updated resources fields remotely: %s" % values)
                 # end success
 
                 def failure(*values):
-                    log.msg("failed to update resources remotely: %s" % values)
+                    self.log("failed to update resources remotely: %s" % values)
                 # end failure
 
                 log.msg("updating host resource information using master")
@@ -232,7 +232,7 @@ class Service(xmlrpc.XMLRPC, logger.LoggingBaseClass):
 
             # if we're not using sqlite then update the database directly
             elif update and engine != "sqlite":
-                log.msg("updating resources in table")
+                self.log("updating resources in table")
                 return hosts.update_resources(_hostname, sysinfo)
 
         raise NotImplementedError("unhandled usage")
@@ -332,7 +332,9 @@ def ping(hostname, port, success=None, failure=None):
         try:
             rpc = xmlrpclib.ServerProxy(url, allow_none=True)
             rpc.ping()
-            log.msg("successfully received ping from %s" % ident)
+            log.msg(
+                "successfully received ping from %s" % ident, system="rpc.ping"
+            )
 
             if callable(success):
                 success(hostname, port)
@@ -340,7 +342,10 @@ def ping(hostname, port, success=None, failure=None):
             return True
 
         except socket.error:
-            log.msg("failed to ping %s" % ident, level=logging.WARNING)
+            log.msg(
+                "failed to ping %s" % ident, level=logging.WARNING,
+                system="rpc.ping"
+            )
 
             if callable(failure):
                 failure(hostname, port)
@@ -353,7 +358,7 @@ def ping(hostname, port, success=None, failure=None):
 
         if not callable(failure):
             def failure(value):
-                log.msg('failed to ping %s' % ident)
+                log.msg("failed to ping %s" % ident, system="rpc.ping")
 
         rpc = xmlrpc.Proxy(url)
         return rpc.callRemote('ping').addCallbacks(success, failure)
