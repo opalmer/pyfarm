@@ -36,7 +36,7 @@ site.addsitedir(trunk)
 os.chdir(trunk)
 
 # pyfarm libs
-from pyfarm import logger
+from pyfarm import logger, jobtypes
 from pyfarm.db import submit
 from pyfarm.preferences import prefs
 
@@ -45,18 +45,13 @@ prefs.set('database.setup.close-connections', False)
 def log(msg):
     _log.msg(msg, system="make-jobs")
 
-# setup jobtypes
-jobtypes = []
-for filename in os.listdir(os.path.join("pyfarm", "jobtypes")):
-    if not filename.startswith("__") and filename.endswith(".py") and not filename.startswith("functions"):
-        jobtypes.append(filename.split(".")[0])
-
-log("jobtypes: %s" % jobtypes)
+typnames = jobtypes.jobtypes()
+log("jobtypes: %s" % typnames)
 
 submit_jobs = submit.Submit()
 for i in range(JOB_COUNT):
     submit_jobs.job(
-        random.choice(jobtypes), 1, 10, priority=random.randint(1, 1000),
+        random.choice(typnames), 1, 10, priority=random.randint(1, 1000),
         cpus=random.randint(1, 16), ram=random.randint(128, 4096)
     )
 
