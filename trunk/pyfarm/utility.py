@@ -16,6 +16,11 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
+'''
+General utility functions that are not specific to individual components
+of PyFarm.
+'''
+
 def framerange(start, end, by=1):
     '''wrapper around xrange() which automatically adds 1 to the end frame'''
     return xrange(start, end+1, by)
