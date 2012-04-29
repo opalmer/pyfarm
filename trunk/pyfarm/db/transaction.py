@@ -71,10 +71,10 @@ class Transaction(object):
         return self
     # end __enter__
 
-    def __exit__(self, etype, value, traceback):
+    def __exit__(self, exc_type, exc_val, exc_tb):
         # roll back the transaction in the event of an error
-        if etype is not None:
-            self.log("rolling back database transaction: %s" % value)
+        if exc_type is not None:
+            self.log("rolling back database transaction: %s" % exc_val)
             self.session.rollback()
 
         # commit changes if there are any pending
@@ -96,3 +96,23 @@ class Transaction(object):
         self.log("closed database transaction on %s (%ss)" % args)
     # end __exit__
 # end Transaction
+
+
+class Connection(object):
+    '''manages a single connection to the database'''
+    def __init__(self, connection=None):
+        self.connection = connection
+    # end __init__
+
+    def __enter__(self):
+        if self.connection is None:
+            self.connection = session.ENGINE.connect()
+
+        return self.connection
+    # end __enter__
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.connection.close()
+        session.ENGINE.dispose()
+    # end __exit__
+# end Connection
