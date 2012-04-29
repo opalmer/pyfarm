@@ -30,10 +30,11 @@ from pyfarm import logger
 from pyfarm.preferences import prefs
 
 url = prefs.get('database.url')
+config = prefs.get('database.setup.config')
 ENGINE = sql.create_engine(
     url,
     echo=prefs.get('logging.sqlalchemy.echo'),
     echo_pool=prefs.get('logging.sqlalchemy.pool')
 )
 Session = orm.sessionmaker(bind=ENGINE)
-log.msg("created engine: %s" % url)
+log.msg("setup engine: %s, config: %s" % (ENGINE.name, config))
