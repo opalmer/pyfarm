@@ -91,6 +91,7 @@ jobs = sql.Table('pyfarm_jobs', metadata,
     # isolate - if True this job must run by itself (no other jobs on host)
     # cpus - number of cpus required to be free on the client
     # enviro - pickle of an environment dictionary
+    sql.Column('notes', sql.String(512, convert_unicode=True), default=""),
     sql.Column('enviro', sql.PickleType),
     sql.Column('data', sql.PickleType),
     sql.Column('user', sql.String(256)),
