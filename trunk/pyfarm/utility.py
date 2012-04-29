@@ -17,6 +17,6 @@
 # along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
 def framerange(start, end, by=1):
-    '''wrapper around xrange() which automatically adds 1 to the end'''
+    '''wrapper around xrange() which automatically adds 1 to the end frame'''
     return xrange(start, end+1, by)
 # end framerange
