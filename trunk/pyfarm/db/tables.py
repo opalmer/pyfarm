@@ -60,7 +60,7 @@ hosts = sql.Table('pyfarm_hosts', metadata,
     sql.Column('groups', sql.String(128), default='*'),
     sql.Column('software', sql.String(256), default="*"),
     sql.Column('hold', sql.Boolean, nullable=False, default=False),
-    sql.Column('frames', sql.PickleType) # list of running frame ids
+    sql.Column('dependencies', sql.PickleType, default=[])
 )
 
 # create jobs table
@@ -119,6 +119,7 @@ frames = sql.Table('pyfarm_frames', metadata,
     sql.Column('ram', sql.Integer, default=None),
     sql.Column('time_start', sql.Float, default=None),
     sql.Column('time_end', sql.Float, default=None),
+    sql.Column('dependencies', sql.PickleType, default=[]),
     sql.Column('uuid', sql.String(36), default=""),
 )
 
