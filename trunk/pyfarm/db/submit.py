@@ -29,39 +29,10 @@ import logging
 
 from twisted.python import log
 
-from pyfarm import logger, datatypes, db
+from pyfarm import logger, datatypes, db, jobtypes
 from pyfarm.preferences import prefs
 from pyfarm.db import Transaction
 from pyfarm.db import  tables
-
-
-def validJobtype(jobtype):
-    '''ensure the jobtype exists and return its module or raise an error'''
-    mappings = prefs.get('jobtypes.mappings')
-    if jobtype not in mappings:
-        msg = "jobtype %s does not have a mapping " % jobtype
-        msg += "in jobtypes.mappings, attempting to import directly"
-        log.msg(msg)
-
-        try:
-            print jobtype
-            module = __import__(jobtype, locals(), globals(), fromlist=['pyfarm.jobtypes'])
-
-        except ImportError:
-            raise ImportError("no such jobtype '%s'" % jobtype)
-
-    else:
-        modulename = mappings.get(jobtype)
-        module = __import__(modulename, locals(), globals(), fromlist=['pyfarm.jobtypes'])
-
-    log.msg("found module for %s jobtype: %s" % (jobtype, module.__file__))
-
-    # check to make sure the Job class exists
-    if not hasattr(module, 'Job') or not inspect.isclass(module.Job):
-        raise AttributeError('%s jobtype missing the Job class' % jobtype)
-
-    return module
-# end validJobtype
 
 def job(jobtype, start, end, by=1, data=None, environ=None, priority=500,
         software=None, ram=None, cpus=None, requeue=True, requeue_max=None,
@@ -105,7 +76,6 @@ def job(jobtype, start, end, by=1, data=None, environ=None, priority=500,
         priority to submit with the job
     '''
     # ensure the jobtype exists and setup defaults
-    validJobtype(jobtype)
     data = data or {}
     environ = environ or {}
     software = software or []
