@@ -208,6 +208,9 @@ class Observer(log.FileLogObserver):
         if text is None:
             return
 
+        # scrub __main__. from the start of system names
+        eventDict['system'] = eventDict['system'].replace("__main__.", "")
+
         # if we are observing a specific system and the
         # emitted system does not match that system
         # then skip the rest of the function
