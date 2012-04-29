@@ -53,8 +53,11 @@ for filename in os.listdir(os.path.join("pyfarm", "jobtypes")):
 
 log("jobtypes: %s" % jobtypes)
 
+submit_jobs = submit.Submit()
 for i in range(JOB_COUNT):
-    submit.job(
+    submit_jobs.job(
         random.choice(jobtypes), 1, 10, priority=random.randint(1, 1000),
-        ram=random.randint(128, 4096), cpus=random.randint(1, 16)
+        cpus=random.randint(1, 16), ram=random.randint(128, 4096)
     )
+
+submit_jobs.commit()
