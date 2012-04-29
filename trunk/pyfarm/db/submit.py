@@ -22,155 +22,169 @@ Used to verify and submit jobs
 
 from __future__ import with_statement
 
-import time
-import inspect
+import os
 import getpass
 import logging
+import pprint
 
-from twisted.python import log
-
-from pyfarm import logger, datatypes, db, jobtypes
+from pyfarm import logger, datatypes, jobtypes, utility
 from pyfarm.preferences import prefs
-from pyfarm.db import Transaction
-from pyfarm.db import  tables
+from pyfarm.db import tables, session, transaction
 
-def job(jobtype, start, end, by=1, data=None, environ=None, priority=500,
-        software=None, ram=None, cpus=None, requeue=True, requeue_max=None,
-        state=datatypes.State.QUEUED):
-    '''
-    Used to submit a new job with a range of frames.
+class Submit(logger.LoggingBaseClass):
+    '''class for submitting multiple jobs as once'''
+    def __init__(self):
+        # stores frame and job information to submit
+        self.jobs = []
+    # end __init__
 
-    :param string jobtype:
-        the name of the jobtype to pull from jobtypes.mappings
+    @property
+    def job_count(self):
+        '''returns the number of jobs waiting to be added'''
+        return len(self.jobs)
+    # end job_count
 
-    :param integer start, end, by:
-        the start, end, and byframe for the job
+    @property
+    def frame_count(self):
+        '''returns the number of frames waiting to be added'''
+        count = 0
 
-    :param integer state:
-        the state to submit the job in
+        for job in self.jobs:
+            start, end, by = job['start_frame'], job['end_frame'], job['by_frame']
+            count += len(list(utility.framerange(start, end, by)))
 
-    :param dictionary data:
-        Extra data to include with the job (scene path, additional flags, etc).
-        This information is handled by the jobtype
+        return count
+    # end frame_count
 
-    :param dictionary environ:
-        environment to update the runtime environment with
+    def job(self, jobtype, start, end, by=1, data=None, environ=None,
+            priority=500, software=None, ram=None, cpus=None, requeue=True,
+            requeue_max=None, state=datatypes.State.QUEUED):
+        '''
+        Used to submit a new job with a range of frames.
 
-    :param list software:
-        software type or types (datatypes.Software) that are required to run
-         the job
+        :param string jobtype:
+            the name of the jobtype to pull from jobtypes.mappings
 
-    :param integer ram:
-        minimum free ram required to run the job
+        :param integer start, end, by:
+            the start, end, and byframe for the job
 
-    :param integer cpus:
-        minimum number of cpus required to run the job
+        :param integer state:
+            the state to submit the job in
 
-    :param boolean requeue:
-        if True failed frames will be requeued
+        :param dictionary data:
+            Extra data to include with the job (scene path, additional flags, etc).
+            This information is handled by the jobtype
 
-    :param boolean requeue_max:
-        max number of times a frame can be requeued
+        :param dictionary environ:
+            environment to update the runtime environment with
 
-    :param integer priority:
-        priority to submit with the job
-    '''
-    # ensure the jobtype exists and setup defaults
-    data = data or {}
-    environ = environ or {}
-    software = software or []
-    requeue_max = requeue_max or prefs.get('jobtypes.defaults.requeue-max')
+        :param list software:
+            software type or types (datatypes.Software) that are required to run
+             the job
 
-    # construct the data to commit
-    data = {
-        "jobtype" : jobtype, "state" : state,
-        "start_frame" : start, "end_frame" : end, "by_frame" : by,
-        "priority" : priority, "enviro" : environ,
-        "data" : data, "user" : getpass.getuser(), "software" : software,
-        "ram" : ram, "cpus" : cpus, "requeue_failed" : requeue,
-        "requeue_max" : requeue_max
-    }
+        :param integer ram:
+            minimum free ram required to run the job
 
-    # commit data to table
-    log.msg("submitting job for jobtype %s" % jobtype)
+        :param integer cpus:
+            minimum number of cpus required to run the job
 
-    # insert the job into the table
-    time_start = time.time()
-    log.msg("inserting %s job" % jobtype)
-    table = tables.jobs
-    insert = table.insert()
-    results = insert.execute(data)
-    jobid = int(results.last_inserted_ids()[0])
-    log.msg("inserted job (id: %i)" % jobid)
+        :param boolean requeue:
+            if True failed frames will be requeued
 
-    # insert the frames into the table
-    count = 0
-    table = tables.frames
-    insert = table.insert()
-    frameids = []
+        :param boolean requeue_max:
+            max number of times a frame can be requeued
 
-    args = (jobid, start, end, by, table)
-    log.msg("inserting frames for job %i using range(%i, %i, %i) into %s" % args)
-    for frame in range(start, end+1, by):
-        data = {"jobid" : jobid, "frame" : frame, "priority" : priority}
-        result = insert.execute(data)
-        frameids.append(int(result.last_inserted_ids()[0]))
-        count += 1
+        :param integer priority:
+            priority to submit with the job
 
-    time_end = time.time()
-    args = (count, table.fullname, time_end-time_start)
-    log.msg("inserted %i frames into %s (elapsed: %s)" % args)
+        :exception NameError:
+            raised if the provided jobtype does not exist
+        '''
+        # ensure the provided jobtype is valid before we
+        # attempt to build data
+        if jobtype not in jobtypes.jobtypes():
+            raise NameError("%s is not a valid jobtype" % jobtype)
 
-    return jobid, frameids
-# end job
+        # setup default data
+        data = data or {}
+        environ = environ or {}
+        software = software or []
+        requeue_max = requeue_max or prefs.get('jobtypes.defaults.requeue-max')
 
-def frames(jobid, start, end, by):
-    '''
-    used to submit a frame or frames to a job after submission
+        # construct the job data to commit
+        jobdata = {
+            "jobtype" : jobtype, "state" : state,
+            "start_frame" : start, "end_frame" : end, "by_frame" : by,
+            "priority" : priority, "enviro" : environ,
+            "data" : data, "user" : getpass.getuser(), "software" : software,
+            "ram" : ram, "cpus" : cpus, "requeue_failed" : requeue,
+            "requeue_max" : requeue_max
+        }
+        self.jobs.append(jobdata)
 
-    :exception ValueError:
-        raised if the priovided jobid does not exist
-    '''
-    frameids = []
+        args = (os.linesep, pprint.pformat(jobdata))
+        self.log("added pending job to commit: %s%s" % args)
+    # end job
 
-    with Transaction(tables.frames, system="db.submit.frames") as trans:
-        # ensure the parent job id exists in the database, retrieve
-        # the priority if it does
-        trans.log("ensuring job %i exists" % jobid)
-        if not trans.query.filter_by(jobid=jobid).count():
-            args = (jobid, tables.frames)
-            raise ValueError("jobid %i does not exist in %s" % args)
-        else:
-            priority = jobs.priority(jobid)
+    def commit(self):
+        '''commits all jobs and frames into their respective tables'''
+        args = (self.job_count, self.frame_count)
+        self.log(
+            "preparing to submit %i job(s) and %i frame(s)" % args,
+            level=logging.INFO
+        )
 
-        trans.log("iterating over frames")
-        for i in range(start, end+1, by):
-            exists = trans.query.filter_by(frame=i, jobid=jobid).count()
+        self.log(
+            "...inserting %i new jobs into database" % self.job_count,
+            level=logging.INFO
+        )
 
-            # skip any frames that already exist
-            if exists:
-                trans.log(
-                    "skipping frame %i, it already exists" % i,
-                    level=logging.WARNING
+        frames = []
+        jobcount = 0
+        conn = session.ENGINE.connect()
+
+        for job in self.jobs:
+            with conn.begin():
+                result = conn.execute(
+                    tables.jobs.insert(),
+                    [job]
                 )
-                continue
+                jobid = int(result.last_inserted_ids()[0])
 
-            data = {
-                "jobid" : jobid, "priority" : priority, "frame" : i
-            }
-            insert = trans.table.insert()
-            result = insert.execute(data)
-            frameids.append(int(result.last_inserted_ids()[0]))
+            # prepare to insert frames into the database
+            priority = job['priority']
+            start, end, by = job['start_frame'], job['end_frame'], job['by_frame']
+            jobcount += 1
 
-            print "%i does not exist" % i
+            # iterate over every frame and generate data to insert into
+            # the database
+            for frame in utility.framerange(start, end, by):
+                frames.append(
+                    {"jobid" : jobid, "frame" : frame, "priority" : priority}
+                )
 
-    log.msg(
-        "added %i frames to job %i" % (len(frameids), jobid),
-        system="db.submit.frames"
-    )
-    return frameids
-# end frames
+        self.jobs = []
+        self.log("...inserted %i jobs" % jobcount)
+        self.log(
+            "...inserting %i new frames into the database" % len(frames),
+            level=logging.INFO
+        )
+
+        with conn.begin():
+            result = conn.execute(tables.frames.insert(),frames)
+            self.log("...inserted %i frames" % result._rowcount)
+
+        self.log("...done", level=logging.INFO)
+
+        # close the connection and dispose of the connection to the
+        # database
+        conn.close()
+        session.ENGINE.dispose()
+    # end commit
+# end Submit
 
 if __name__ == '__main__':
-#    job('mayatomr', 1, 10)
-    frames(1, 1, 20, 1)
+    submit = Submit()
+    submit.job('mayatomr', 1, 10)
+    submit.job('mayatomr', 11, 20)
+    submit.commit()
