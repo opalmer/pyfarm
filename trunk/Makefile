@@ -12,12 +12,15 @@ clean:
 	@find . -name "*~" -exec rm {} \;
 
 jobs:
+	@echo "adding random job data"
 	@$(PYTHON) ../dev/bin/make_jobs.py
 
-db:
-	@echo "rebuilding database"
+tables:
+	@echo "rebuilding tables"
 	@$(PYTHON) -c 'from pyfarm.db import tables; tables.init(rebuild=True)'
-	$(MAKE) jobs
+
+db: tables jobs
+	@echo "rebuilding database"
 
 pyfarm.%: SCRIPT=pyfarm_$(subst pyfarm.,,$@.py)
 pyfarm.%:
