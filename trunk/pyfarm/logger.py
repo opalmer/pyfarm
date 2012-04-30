@@ -329,7 +329,7 @@ class LoggingBaseClass(object):
     '''Adds a custom self.log method to an inherited class'''
     def log(self, msg, **kwargs):
         module = inspect.getmodule(self.__class__).__name__
-        classname = self.__class__.__name__
+        classname = self.__module__ + "." + self.__class__.__name__
         kwargs['system'] = "%s.%s" % (module, classname)
         log.msg(msg, **kwargs)
     # end log
