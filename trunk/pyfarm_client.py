@@ -119,7 +119,7 @@ class Client(_rpc.Service, logger.LoggingBaseClass):
     # end xmlrpc_master
 
     def xmlrpc_foo(self):
-        submit_job = submit.Submit()
+        submit_job = submit.Job()
         submit_job.job('mayatomr', 1, 10)
         submit_job.job('mayatomr', 11, 20)
         submit_job.commit()

@@ -31,7 +31,7 @@ from pyfarm import logger, datatypes, jobtypes, utility
 from pyfarm.preferences import prefs
 from pyfarm.db import tables, session, transaction
 
-class Submit(logger.LoggingBaseClass):
+class Job(logger.LoggingBaseClass):
     '''class for submitting multiple jobs as once'''
     def __init__(self):
         # stores frame and job information to submit
@@ -56,7 +56,7 @@ class Submit(logger.LoggingBaseClass):
         return count
     # end frame_count
 
-    def job(self, jobtype, start, end, by=1, data=None, environ=None,
+    def add(self, jobtype, start, end, by=1, data=None, environ=None,
             priority=500, software=None, ram=None, cpus=None, requeue=True,
             requeue_max=None, state=datatypes.State.QUEUED):
         '''
@@ -124,10 +124,17 @@ class Submit(logger.LoggingBaseClass):
 
         args = (os.linesep, pprint.pformat(jobdata))
         self.log("added pending job to commit: %s%s" % args)
-    # end job
+    # end add
 
     def commit(self):
         '''commits all jobs and frames into their respective tables'''
+        if not self.jobs:
+            self.log(
+                "no jobs to commit, stopping submission",
+                level=logging.WARNING
+            )
+            return
+
         args = (self.job_count, self.frame_count)
         self.log(
             "preparing to submit %i job(s) and %i frame(s)" % args,
@@ -181,10 +188,10 @@ class Submit(logger.LoggingBaseClass):
         conn.close()
         session.ENGINE.dispose()
     # end commit
-# end Submit
+# end Job
 
 if __name__ == '__main__':
-    submit = Submit()
-    submit.job('mayatomr', 1, 10)
-    submit.job('mayatomr', 11, 20)
+    submit = Job()
+#    submit.job('mayatomr', 1, 10)
+#    submit.job('mayatomr', 11, 20)
     submit.commit()

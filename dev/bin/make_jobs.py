@@ -48,9 +48,9 @@ def log(msg):
 typnames = jobtypes.jobtypes()
 log("jobtypes: %s" % typnames)
 
-submit_jobs = submit.Submit()
+submit_jobs = submit.Job()
 for i in range(JOB_COUNT):
-    submit_jobs.job(
+    submit_jobs.add(
         random.choice(typnames), 1, 10, priority=random.randint(1, 1000),
         cpus=random.randint(1, 16), ram=random.randint(128, 4096)
     )
