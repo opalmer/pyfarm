@@ -16,3 +16,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
+__all__ = ['frames', 'hosts', 'jobs']
+
+from pyfarm.db.query import frames, hosts, jobs
