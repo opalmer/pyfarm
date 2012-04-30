@@ -26,30 +26,189 @@ import os
 import getpass
 import logging
 import pprint
+import sqlalchemy as sql
 
 from pyfarm import logger, datatypes, jobtypes, utility
 from pyfarm.preferences import prefs
-from pyfarm.db import tables, session, transaction
+from pyfarm.db import tables, session, transaction, query
 
-class Job(logger.LoggingBaseClass):
-    '''class for submitting multiple jobs as once'''
+__all__ = ['Job', 'Frame']
+
+class SubmitBase(logger.LoggingBaseClass):
     def __init__(self):
-        # stores frame and job information to submit
-        self.jobs = []
+        self.data = []
     # end __init__
 
     @property
-    def job_count(self):
-        '''returns the number of jobs waiting to be added'''
-        return len(self.jobs)
-    # end job_count
+    def count(self):
+        return len(self.data)
+    # end count
+
+    def getPriority(self, priority):
+        '''ensures the priority provided is within an allowable range'''
+        if priority is None:
+            return prefs.get('jobsystem.priority-default')
+
+        elif isinstance(priority, int):
+            return priority
+
+        raise TypeError("invalid type provided to priority")
+    # end getPriority
+
+    def close(self, conn=None):
+        '''closes the given connection and clears self.data'''
+        if conn is not None:
+            conn.close()
+            session.ENGINE.dispose()
+
+        del self.data[:]
+    # end close
+# end SubmitBase
+
+
+class Frame(SubmitBase):
+    '''class for adding frames to an existing job'''
+    def __init__(self, jobid=None):
+        super(Frame, self).__init__()
+        self.jobid = jobid
+        self.jobvalid = None
+
+        if isinstance(jobid, int):
+            self.jobvalid = query.jobs.exists(jobid)
+
+        if isinstance(jobid, int) and not self.jobvalid:
+            raise LookupError("%i is not a valid job id" % jobid)
+    # end __init__
+
+    def add(self, frame=None, jobid=None, priority=None, ram=None, cpus=None,
+            state=datatypes.State.QUEUED, dependencies=None):
+        '''
+        adds a frame to be committed to the database
+
+        :param integer frame:
+            the frame to add to the database
+
+        :exception ValueError:
+            raised if a jobid was not provided
+        '''
+        if jobid is None and self.jobid is None:
+            msg = "you must either setup Frame() with a parent job id "
+            msg += "or provide one to Frame.add()"
+            raise ValueError(msg)
+
+        # retrieve and ensure the job id is valid
+        jobid = jobid or self.jobid
+        if self.jobvalid is None:
+            self.jobvalid = query.jobs.exists(jobid)
+
+        if not self.jobvalid:
+            raise LookupError("%i is not a valid job id" % jobid)
+
+        # prepare to add the frame
+        dependencies = dependencies or []
+        priority = self.getPriority(priority)
+        data = {
+            "frame" : frame, "jobid" : jobid, "priority" : priority,
+            "state" : state, "dependencies" : dependencies, "ram" : ram,
+            "cpus" : cpus
+        }
+
+        # ensure we do not add the same frame twice
+        if data in self.data:
+            self.log(
+                "frame %i for job %i has already been added, skipping" % (frame, jobid),
+                level=logging.WARNING
+            )
+            return
+
+        self.data.append(data)
+    # end add
+
+    def commit(self):
+        '''
+        Commits the frame(s) to the database.  Any frames that already exist
+        at the given job id will be skipped
+
+        :return:
+            returns the number frames added
+        '''
+        if not self.data:
+            self.log(
+                "no frames to commit, stopping submission",
+                level=logging.WARNING
+            )
+            return
+
+        self.log("committing %i frames" % self.count, level=logging.INFO)
+
+        # make sure the entries we attempting to commit
+        # do not already exist in the database
+        self.log("...searching for duplicate frames")
+        search_clauses = []
+        for frame in self.data:
+            # constructs a query to search for the
+            # specific frame in the database
+            search_clauses.append(
+                tables.frames.c.frame == frame['frame'] and \
+                tables.frames.c.jobid == frame['jobid']
+            )
+
+        # retrieve entries from the database which match out query
+        select = sql.select(tables.frames.c)
+        query = select.where(sql.or_(*search_clauses))
+        existing_frames = []
+
+        conn = session.ENGINE.connect()
+        for result in conn.execute(query):
+            existing_frames.append((result.frame, result.jobid))
+
+        # now that we have discovered which frames exist
+        # find what data we should commit
+        commit_data = []
+        for data in self.data:
+            frame, jobid = data['frame'], data['jobid']
+
+            if (frame, jobid) in existing_frames:
+                msg = "frame %i with jobid %i already " % (frame, jobid)
+                msg += "exists, skipping"
+                self.log(msg, level=logging.WARNING)
+                continue
+
+            commit_data.append(data)
+
+        if not commit_data:
+            self.log(
+                "nothing to commit, no frames found in commit_data",
+                level=logging.WARNING
+            )
+            self.close(conn)
+            return
+
+        with conn.begin():
+            conn.execute(
+                tables.frames.insert(),
+                commit_data
+            )
+
+        self.close(conn)
+        return len(commit_data)
+    # end commit
+# end Frame
+
+
+class Job(SubmitBase):
+    '''class for submitting multiple jobs as once'''
+    def __init__(self):
+        super(Job, self).__init__()
+        self.data = []
+    # end __init__
 
     @property
     def frame_count(self):
         '''returns the number of frames waiting to be added'''
         count = 0
 
-        for job in self.jobs:
+        for job in self.data:
             start, end, by = job['start_frame'], job['end_frame'], job['by_frame']
             count += len(list(utility.framerange(start, end, by)))
 
@@ -57,8 +216,8 @@ class Job(logger.LoggingBaseClass):
     # end frame_count
 
     def add(self, jobtype, start, end, by=1, data=None, environ=None,
-            priority=500, software=None, ram=None, cpus=None, requeue=True,
-            requeue_max=None, state=datatypes.State.QUEUED):
+            dependencies=None, priority=None, software=None, ram=None, cpus=None,
+            requeue=True, requeue_max=None, state=datatypes.State.QUEUED):
         '''
         Used to submit a new job with a range of frames.
 
@@ -77,6 +236,9 @@ class Job(logger.LoggingBaseClass):
 
         :param dictionary environ:
             environment to update the runtime environment with
+
+        :param list dependencies:
+            other job ids we are dependent on
 
         :param list software:
             software type or types (datatypes.Software) that are required to run
@@ -99,6 +261,9 @@ class Job(logger.LoggingBaseClass):
 
         :exception NameError:
             raised if the provided jobtype does not exist
+
+        :exception ValueError:
+            raised if the priority of
         '''
         # ensure the provided jobtype is valid before we
         # attempt to build data
@@ -110,6 +275,7 @@ class Job(logger.LoggingBaseClass):
         environ = environ or {}
         software = software or []
         requeue_max = requeue_max or prefs.get('jobtypes.defaults.requeue-max')
+        priority = self.getPriority(priority)
 
         # construct the job data to commit
         jobdata = {
@@ -120,7 +286,11 @@ class Job(logger.LoggingBaseClass):
             "ram" : ram, "cpus" : cpus, "requeue_failed" : requeue,
             "requeue_max" : requeue_max
         }
-        self.jobs.append(jobdata)
+
+        if dependencies:
+            jobdata.update(dependencies=dependencies)
+
+        self.data.append(jobdata)
 
         args = (os.linesep, pprint.pformat(jobdata))
         self.log("added pending job to commit: %s%s" % args)
@@ -128,29 +298,29 @@ class Job(logger.LoggingBaseClass):
 
     def commit(self):
         '''commits all jobs and frames into their respective tables'''
-        if not self.jobs:
+        if not self.data:
             self.log(
                 "no jobs to commit, stopping submission",
                 level=logging.WARNING
             )
             return
 
-        args = (self.job_count, self.frame_count)
+        args = (self.count, self.frame_count)
         self.log(
             "preparing to submit %i job(s) and %i frame(s)" % args,
             level=logging.INFO
         )
 
         self.log(
-            "...inserting %i new jobs into database" % self.job_count,
+            "...inserting %i new jobs into database" % self.count,
             level=logging.INFO
         )
 
-        frames = []
         jobcount = 0
         conn = session.ENGINE.connect()
 
-        for job in self.jobs:
+        framedata = []
+        for job in self.data:
             with conn.begin():
                 result = conn.execute(
                     tables.jobs.insert(),
@@ -163,35 +333,30 @@ class Job(logger.LoggingBaseClass):
             start, end, by = job['start_frame'], job['end_frame'], job['by_frame']
             jobcount += 1
 
-            # iterate over every frame and generate data to insert into
-            # the database
+            # prepare the frames for this job to be inserted
+            # into the database
             for frame in utility.framerange(start, end, by):
-                frames.append(
-                    {"jobid" : jobid, "frame" : frame, "priority" : priority}
-                )
+                data = {
+                    "frame" : frame, "jobid" : jobid, "priority" : priority,
+                    "ram" : job['ram']
+                }
+                framedata.append(data)
 
-        self.jobs = []
         self.log("...inserted %i jobs" % jobcount)
-        self.log(
-            "...inserting %i new frames into the database" % len(frames),
-            level=logging.INFO
-        )
+        self.close(conn)
 
-        with conn.begin():
-            result = conn.execute(tables.frames.insert(),frames)
-            self.log("...inserted %i frames" % result._rowcount)
-
-        self.log("...done", level=logging.INFO)
-
-        # close the connection and dispose of the connection to the
-        # database
-        conn.close()
-        session.ENGINE.dispose()
+        # insert frames into the database
+        frames = Frame()
+        for data in framedata:
+            frames.add(**data)
+        count = frames.commit()
+        self.log("...inserted %i frames" % count)
     # end commit
 # end Job
 
 if __name__ == '__main__':
+#    submit = Frame(590)
     submit = Job()
-#    submit.job('mayatomr', 1, 10)
-#    submit.job('mayatomr', 11, 20)
+    submit.add('mayatomr', 1, 10)
     submit.commit()
+    #    submit.log('test')
