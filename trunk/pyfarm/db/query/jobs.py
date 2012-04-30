@@ -78,3 +78,10 @@ def job(jobid):
         result = query.first()
         return copy.deepcopy(result)
 # end job
+
+def exists(jobid):
+    '''returns True if the given job id exists, False if it does not'''
+    with Transaction(jobs, system="query.jobs.exists") as trans:
+        query = trans.query.filter(jobs.c.id == jobid)
+        return bool(query.count())
+# end exists
