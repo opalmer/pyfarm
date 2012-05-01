@@ -119,7 +119,7 @@ class Enum(object):
 Software = Enum("MAYA", "HOUDINI", "VRAY", "NUKE", "BLENDER")
 State = Enum(
     "PAUSED", "BLOCKED", "QUEUED", "ASSIGN",
-    "RUNNING", "FINISHED", "FAILED"
+    "RUNNING", "DONE", "FAILED"
 )
 
 # python datatypes for type comparison
