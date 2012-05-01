@@ -68,6 +68,10 @@ class SubmitBase(logger.LoggingBaseClass):
 
 class Frame(SubmitBase):
     '''class for adding frames to an existing job'''
+    VALID_STATES = (
+        datatypes.State.PAUSED, datatypes.State.QUEUED, datatypes.State.DONE,
+        datatypes.State.FAILED
+    )
     def __init__(self, jobid=None):
         super(Frame, self).__init__()
         self.jobid = jobid
@@ -88,13 +92,33 @@ class Frame(SubmitBase):
         :param integer frame:
             the frame to add to the database
 
+        :param integer jobid:
+            the jobid to assign to this frame (if not provided to __init__)
+
+        :param integer priority:
+            the priority to assign the frame
+
+        :param integer ram:
+            how much ram this frame requires to run on a host
+
+        :param integer cpus:
+            how many cpus are required to run this frame
+
+        :param integer state:
+            The state to start the frame in.  Valid enum states are PAUSED,
+            QUEUED, DONE, and FAILED
+
         :exception ValueError:
-            raised if a jobid was not provided
+            raised if a jobid was not provided or the sate was invalid
         '''
         if jobid is None and self.jobid is None:
             msg = "you must either setup Frame() with a parent job id "
             msg += "or provide one to Frame.add()"
             raise ValueError(msg)
+
+        # ensure the state of the submitted frame is valid
+        if state not in self.VALID_STATES:
+            raise ValueError("not a valid state for frame submission")
 
         # retrieve and ensure the job id is valid
         jobid = jobid or self.jobid
@@ -130,14 +154,14 @@ class Frame(SubmitBase):
         at the given job id will be skipped
 
         :return:
-            returns the number frames added
+            a dictionary of jobs and frame(s) added to each job
         '''
         if not self.data:
             self.log(
                 "no frames to commit, stopping submission",
                 level=logging.WARNING
             )
-            return
+            return {}
 
         self.log("committing %i frames" % self.count, level=logging.INFO)
 
@@ -182,7 +206,7 @@ class Frame(SubmitBase):
                 level=logging.WARNING
             )
             self.close(conn)
-            return
+            return {}
 
         with conn.begin():
             conn.execute(
@@ -191,13 +215,35 @@ class Frame(SubmitBase):
             )
 
         self.close(conn)
-        return len(commit_data)
+
+        # now retrieve the results of these new entries
+        search_clauses = []
+        for frame in commit_data:
+            search_clauses.append(
+                tables.frames.c.frame == frame['frame'] and \
+                tables.frames.c.jobid == frame['jobid']
+            )
+
+        added_frames = {}
+        select = sql.select(tables.frames.c)
+        query = select.where(sql.or_(*search_clauses))
+        with transaction.Connection() as conn:
+            for result in conn.execute(query):
+                if result.jobid not in added_frames:
+                    added_frames[result.jobid] = []
+
+                added_frames[result.jobid].append(result.frame)
+
+        return added_frames
     # end commit
 # end Frame
 
 
 class Job(SubmitBase):
     '''class for submitting multiple jobs as once'''
+    VALID_STATES = (
+        datatypes.State.PAUSED, datatypes.State.QUEUED, datatypes.State.BLOCKED
+    )
     def __init__(self):
         super(Job, self).__init__()
         self.data = []
@@ -228,7 +274,8 @@ class Job(SubmitBase):
             the start, end, and byframe for the job
 
         :param integer state:
-            the state to submit the job in
+            The state to submit the job in.  Valid state enums are PAUSED,
+            QUEUED, and BLOCKED
 
         :param dictionary data:
             Extra data to include with the job (scene path, additional flags, etc).
@@ -263,12 +310,16 @@ class Job(SubmitBase):
             raised if the provided jobtype does not exist
 
         :exception ValueError:
-            raised if the priority of
+            raised if the submitted state is invalid
         '''
         # ensure the provided jobtype is valid before we
         # attempt to build data
         if jobtype not in jobtypes.jobtypes():
             raise NameError("%s is not a valid jobtype" % jobtype)
+
+        # ensure the state of the submitted frame is valid
+        if state not in self.VALID_STATES:
+            raise ValueError("not a valid state for frame submission")
 
         # setup default data
         data = data or {}
@@ -297,13 +348,18 @@ class Job(SubmitBase):
     # end add
 
     def commit(self):
-        '''commits all jobs and frames into their respective tables'''
+        '''
+        commits all jobs and frames into their respective tables
+
+        :return:
+            a dictionary of jobs and frame(s) added to each job
+        '''
         if not self.data:
             self.log(
                 "no jobs to commit, stopping submission",
                 level=logging.WARNING
             )
-            return
+            return {}
 
         args = (self.count, self.frame_count)
         self.log(
@@ -320,6 +376,7 @@ class Job(SubmitBase):
         conn = session.ENGINE.connect()
 
         framedata = []
+        inserted_ids = []
         for job in self.data:
             with conn.begin():
                 result = conn.execute(
@@ -327,6 +384,7 @@ class Job(SubmitBase):
                     [job]
                 )
                 jobid = int(result.last_inserted_ids()[0])
+                inserted_ids.append(jobid)
 
             # prepare to insert frames into the database
             priority = job['priority']
@@ -349,8 +407,14 @@ class Job(SubmitBase):
         frames = Frame()
         for data in framedata:
             frames.add(**data)
-        count = frames.commit()
+
+        committed_frames = frames.commit()
+        count = 0
+        for jobid, frames in committed_frames.items():
+            count += len(frames)
         self.log("...inserted %i frames" % count)
+
+        return committed_frames
     # end commit
 # end Job
 
@@ -358,5 +422,6 @@ if __name__ == '__main__':
 #    submit = Frame(590)
     submit = Job()
     submit.add('mayatomr', 1, 10)
-    submit.commit()
+    submit.add('mayatomr', 1, 10)
+    print submit.commit()
     #    submit.log('test')
