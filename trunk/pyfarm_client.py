@@ -120,9 +120,17 @@ class Client(_rpc.Service, logger.LoggingBaseClass):
 
     def xmlrpc_foo(self):
         submit_job = submit.Job()
-        submit_job.job('mayatomr', 1, 10)
-        submit_job.job('mayatomr', 11, 20)
-        submit_job.commit()
+        submit_job.add('mayatomr', 1, 10)
+        submit_job.add('mayatomr', 11, 20)
+
+        # capture results and convert for output
+        # over xmlrpc
+        output = {}
+        results = submit_job.commit()
+        for jobid, frames in results.items():
+            output[str(jobid)] = frames
+
+        return output
     # end xmlrpc_foo
 
     def xmlrpc_setMaster(self, master, force=False):
