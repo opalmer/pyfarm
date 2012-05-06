@@ -13,6 +13,6 @@ build
 docs*
 tools*
 dev*
-database.yml
+*.yml
 *.bat
 *.cmd
