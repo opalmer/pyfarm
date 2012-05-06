@@ -25,7 +25,7 @@ import socket
 
 from pyfarm import datatypes
 
-DNS_CACHE = {}
+RESOLVED_HOSTNAMES = {}
 
 def ip(hostname=None, cache=True):
     '''
@@ -33,19 +33,20 @@ def ip(hostname=None, cache=True):
 
     :param boolean cache:
         if False do not returns results from cache if the
-        hostname exists in DNS_CACHE
+        hostname exists in RESOLVED_HOSTNAMES
     '''
+    _hostname = hostname # keeps track of the original hostname
     if hostname is None:
         hostname = socket.gethostname()
 
-    if cache and hostname in DNS_CACHE:
-        return DNS_CACHE[hostname]
+    if cache and hostname in RESOLVED_HOSTNAMES:
+        return RESOLVED_HOSTNAMES[hostname]
 
     try:
         address = socket.gethostbyname(hostname)
 
-        if not cache or hostname not in DNS_CACHE:
-            DNS_CACHE[hostname] = address
+        if not cache or hostname not in RESOLVED_HOSTNAMES:
+            RESOLVED_HOSTNAMES[hostname] = address
 
         return address
 
@@ -58,10 +59,12 @@ def ip(hostname=None, cache=True):
             hostname = "%s.local" % hostname
             address =  socket.gethostbyname(hostname)
 
-            if not cache or hostname not in DNS_CACHE:
-                DNS_CACHE[hostname] = address
+            if cache:
+                RESOLVED_HOSTNAMES[_hostname] = address
+                RESOLVED_HOSTNAMES[hostname] = address
 
             return address
+
         # similar situation for windows when attempting to
         # perform lookups and the local dns cache takes
         # precedence over asking the dns server
@@ -69,8 +72,9 @@ def ip(hostname=None, cache=True):
             hostname = "%s." % hostname
             address = socket.gethostbyname(hostname)
 
-            if not cache or hostname not in DNS_CACHE:
-                DNS_CACHE[hostname] = address
+            if cache:
+                RESOLVED_HOSTNAMES[_hostname] = address
+                RESOLVED_HOSTNAMES[hostname] = address
 
             return address
 
