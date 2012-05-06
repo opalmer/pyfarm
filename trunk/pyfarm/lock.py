@@ -24,8 +24,11 @@ import atexit
 import psutil
 import signal
 import tempfile
+import logging
 
-from pyfarm.logger import log
+from pyfarm import logger
+
+from twisted.python import log
 
 KILL_SLEEP = 2
 LOCK_ROOT = os.path.join(tempfile.gettempdir(), 'pyfarm', 'lock')
@@ -37,11 +40,13 @@ if not os.path.isdir(LOCK_ROOT):
 
 class ProcessLockError(Exception):
     '''raised when we had trouble acquiring a lock'''
-    pass
+    def __init__(self, msg=None):
+        super(ProcessLockError, self).__init__(msg)
+    # end __init__
 # end ProcessLockError
 
 
-class LockFile(object):
+class LockFile(logger.LoggingBaseClass):
     '''stores, controls, and maintains a lockfile'''
     def __init__(self, name, pid):
         self.name = name
@@ -53,7 +58,7 @@ class LockFile(object):
         '''removes the lock file on disk'''
         if os.path.isfile(self.path):
             os.remove(self.path)
-            log.msg("removed lock file %s" % self.path)
+            self.log("removed lock file %s" % self.path)
     # end remove
 
     def filepid(self):
@@ -99,6 +104,16 @@ class LockFile(object):
         :exception ProcessLockError:
             raised on failure to create the new lock file
         '''
+        # check to see if the lock file on disk is stale and
+        # if it is, remove it
+        filepid = self.filepid()
+        if isinstance(filepid, int) and psutil.pid_exists(filepid):
+            self.log(
+                "process id in lock file is stale and will be removed",
+                level=logging.WARNING
+            )
+            self.remove()
+
         # If self.path already exists check to see if the
         # process id it contains is valid.  If is then raise
         # an exception otherwise remove the file
