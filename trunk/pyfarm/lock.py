@@ -107,7 +107,7 @@ class LockFile(logger.LoggingBaseClass):
         # check to see if the lock file on disk is stale and
         # if it is, remove it
         filepid = self.filepid()
-        if isinstance(filepid, int) and psutil.pid_exists(filepid):
+        if isinstance(filepid, int) and not psutil.pid_exists(filepid):
             self.log(
                 "process id in lock file is stale and will be removed",
                 level=logging.WARNING
