@@ -48,6 +48,7 @@ metadata.bind = ENGINE
 hosts = sql.Table('pyfarm_hosts', metadata,
     sql.Column('id', sql.Integer, autoincrement=True, primary_key=True),
     sql.Column('hostname', sql.String(255)),
+    sql.Column('master', sql.String(255)),
     sql.Column('ip', sql.String(16)),
     sql.Column('subnet', sql.String(16)),
     sql.Column('os', sql.Integer),
