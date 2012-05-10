@@ -65,34 +65,6 @@ class Server(_rpc.Service, logger.LoggingBaseClass):
         _rpc.Service.__init__(self, log_stream)
     # end __init__
 
-    def resetClientMasters(self):
-        '''
-        Informs all clients to reset their master servers to ().  By
-        this point the event loop should have terminated but we
-        make sure to handle either case.
-        '''
-        for host in hosts.hostlist(online=True):
-            port = prefs.get('network.ports.client')
-            if not self.xmlrpc_ping(host, port):
-                self.log("%s does not appear to be up, skipping" % host)
-                continue
-
-            if not reactor.running:
-                url = "http://%s:%i" % (host, port)
-                rpc = xmlrpclib.ServerProxy(url, allow_none=True)
-                if rpc.setMaster('', True):
-                    self.log("reset master on %s" % host)
-
-                else:
-                    self.log(
-                        "%s failed to reset master" % host, level=logging.ERROR
-                    )
-            else:
-                rpc = _rpc.Connection(host, port)
-                rpc.call('setMaster', '', True)
-                self.log("called setMaster on %s" % host)
-    # end resetClientMasters
-
     def xmlrpc_addHost(self, hostname, host_data, force=False):
         '''
         adds a host url and sets up the host in the database
@@ -114,8 +86,7 @@ class Server(_rpc.Service, logger.LoggingBaseClass):
 
 # create a lock for the process so we can't run two clients
 # at once
-with lock.ProcessLock('server', kill=options.force_kill, wait=options.wait) \
-    as context:
+with lock.ProcessLock('server', kill=options.force_kill, wait=options.wait):
     # determine the location we should log to
     if not options.log:
         root = prefs.get('filesystem.locations.general')
@@ -129,9 +100,6 @@ with lock.ProcessLock('server', kill=options.force_kill, wait=options.wait) \
 
     server = Server(SERVICE_LOG)
     SERVICE = server
-
-    # add exit actions to lock's exit context
-    context.addExitAction(server.resetClientMasters)
 
     # setup the required tables
     tables.init()
