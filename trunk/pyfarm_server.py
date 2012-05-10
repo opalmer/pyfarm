@@ -84,9 +84,12 @@ class Server(_rpc.Service, logger.LoggingBaseClass):
     # end xmlrpc_requestWork
 # end Server
 
-# create a lock for the process so we can't run two clients
-# at once
-with lock.ProcessLock('server', kill=options.force_kill, wait=options.wait):
+# create a lock for the process so we can't run two servers
+# from the same host at once
+with lock.ProcessLock(
+    'server', kill=options.force_kill, wait=options.wait,
+    remove=options.remove_lock
+):
     # determine the location we should log to
     if not options.log:
         root = prefs.get('filesystem.locations.general')

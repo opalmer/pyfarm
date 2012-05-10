@@ -253,8 +253,11 @@ class Client(_rpc.Service, logger.LoggingBaseClass):
 
 
 # create a lock for the process so we can't run two clients
-# at once
-with lock.ProcessLock('client', kill=options.force_kill, wait=options.wait):
+# from the same host at once
+with lock.ProcessLock(
+    'client', kill=options.force_kill, wait=options.wait,
+    remove=options.remove_lock
+):
     # determine the location we should log to
     if not options.log:
         root = prefs.get('filesystem.locations.general')
