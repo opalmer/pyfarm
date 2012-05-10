@@ -79,40 +79,6 @@ class Client(_rpc.Service, logger.LoggingBaseClass):
         }
     # end __init__
 
-    def heartbeat(self, force=False):
-        '''Sends out a multicast heartbeat in search of a master server'''
-        interval = prefs.get('network.heartbeat.interval')
-        Client.HEARTBEAT = reactor.callLater(interval, self.heartbeat)
-
-        if not force and MASTER:
-            self.log("skipping heartbeat")
-            return False
-
-        self.log("sending heartbeat")
-        # prepare the data to send
-        address = (
-            prefs.get('network.heartbeat.group'),
-            prefs.get('network.ports.heartbeat')
-        )
-        data = "_".join([
-            prefs.get('network.heartbeat.prefix'),
-            HOSTNAME, str(force)
-        ])
-
-        # write data to the mulicast then close the connection
-        try:
-            udp = reactor.listenUDP(0, protocol.DatagramProtocol())
-            udp.write(data, address)
-            udp.stopListening()
-
-        except socket.error, error:
-            self.log("error sending multicast: %s" % error)
-            return False
-
-        else:
-            return True
-        # end heartbeat
-
     def xmlrpc_master(self):
         '''returns the current master'''
         return MASTER
@@ -300,11 +266,37 @@ with lock.ProcessLock('client', kill=options.force_kill, wait=options.wait):
     observer = logger.Observer(SERVICE_LOG)
     observer.start()
 
+    # ensure both master and set-master are not being set
+    if options.master is not None and options.set_master is not None:
+        raise ValueError("--set-master and --master cannot both be defined")
+
+    # if either master or set_master are set then we should
+    # setup the local MASTER variable before we continue
+    if options.master or options.set_master:
+        port = prefs.get('network.ports.server')
+        master = options.master or options.set_master
+        MASTER = (master, port)
+
+    if options.set_master:
+        log.msg(
+            "--set-master database calls not implemented",
+            level="NOT_IMPLEMENTED",
+            system="Client"
+        )
+
+    elif options.set_master is None and options.master is None:
+        log.msg(
+            "master from database not implemented",
+            level="NOT_IMPLEMENTED",
+            system="Client"
+        )
+
+    log.msg('master has been set to %s:%s' % MASTER, level=logging.INFO)
+
     client = Client(SERVICE_LOG)
     SERVICE = client
 
-    # start the heartbeat service and listen client port
-    client.heartbeat()
+    # start listening for connections with the client
     reactor.listenTCP(prefs.get('network.ports.client'), _server.Site(client))
 
     # start reactor

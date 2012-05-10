@@ -32,8 +32,7 @@ import xmlrpclib
 from pyfarm import logger, cmdargs, lock, datatypes
 from pyfarm.db import tables
 from pyfarm.db.query import hosts
-from pyfarm.net import multicast, dns
-from pyfarm.net import rpc as _rpc
+from pyfarm.net import rpc as _rpc, dns
 
 options, args = cmdargs.parser.parse_args()
 
@@ -113,30 +112,6 @@ class Server(_rpc.Service, logger.LoggingBaseClass):
     # end xmlrpc_requestWork
 # end Server
 
-
-def incoming_host(data):
-    '''
-    callback for multicast server, runs whenever a new client
-    contacts the server
-    '''
-    def success(*args):
-        if args[0]:
-            log.msg("successfully set master on %s" % hostname, system="Server")
-        else:
-            log.msg("failed to set master on %s" % hostname, system="Server")
-    # end success
-
-    hostname, force = data
-    log.msg(
-        "incoming heartbeat from %s" % hostname,
-        system="Server"
-    )
-
-    # run setMaster on the incoming client
-    rpc = _rpc.Connection(hostname, prefs.get('network.ports.client'), success)
-    rpc.call('setMaster', HOSTNAME)
-# end incoming_host
-
 # create a lock for the process so we can't run two clients
 # at once
 with lock.ProcessLock('server', kill=options.force_kill, wait=options.wait) \
@@ -157,11 +132,6 @@ with lock.ProcessLock('server', kill=options.force_kill, wait=options.wait) \
 
     # add exit actions to lock's exit context
     context.addExitAction(server.resetClientMasters)
-
-    # setup multicast server to listen for incoming clients
-    heartbeat_server = multicast.HeartbeatServer()
-    heartbeat_server.addCallback(incoming_host)
-    reactor.listenMulticast(prefs.get('network.ports.heartbeat'), heartbeat_server)
 
     # setup the required tables
     tables.init()
