@@ -52,6 +52,11 @@ class LockFile(logger.LoggingBaseClass):
         self.name = name
         self.pid = pid
         self.path = os.path.join(LOCK_ROOT, name)
+
+        pid = self.filepid()
+        if pid is not None and not psutil.pid_exists(pid):
+            self.log("removing stale lock file")
+            self.remove()
     # end __init__
 
     def remove(self):
@@ -152,15 +157,21 @@ class ProcessLock(object):
         registers an exit handler which will remove the lock file
         with Python exits
 
+    :param boolean remove:
+        removes the lock file on disk if one exists
+
     :exception ProcessLockError:
         raised if we failed to acquire a lock
     '''
     def __init__(self, name, pid=None, force=False, wait=False, kill=False,
-                 register=True):
+                 register=True, remove=False):
         self.name = name
         self.pid = pid or os.getpid()
         self.lock = LockFile(name, self.pid)
         self.actions = []
+
+        if remove:
+            self.lock.remove()
 
         if kill and self.lock.locked():
             pid = self.lock.filepid()
