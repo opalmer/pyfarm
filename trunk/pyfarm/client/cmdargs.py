@@ -41,6 +41,14 @@ parser.add_option(
     '--host-software', default='*',
     help='comma separated list of software the host can run'
 )
+parser.add_option(
+    '--master', default=None,
+    help='sets the master for the current session'
+)
+parser.add_option(
+    '--set-master', default=None,
+    help='sets the master for the current session and in the database'
+)
 
 def processOptions(options):
     '''sets up constants based on input provided by optparse'''
