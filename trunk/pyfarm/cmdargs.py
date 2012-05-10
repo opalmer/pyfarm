@@ -24,14 +24,20 @@ import optparse
 
 parser = optparse.OptionParser()
 parser.add_option(
-    '--force-kill', help='kill any currently running process before starting',
-    dest='force_kill', action='store_true', default=False
+    '--force-kill', action='store_true', default=False,
+        help='kill any currently running process before starting'
 )
 parser.add_option(
-    '--wait', help='waits for running processes to terminate first',
-    action='store_true', default=False
+    '--wait', action='store_true', default=False,
+    help='waits for running processes to terminate first'
 )
 parser.add_option(
-    '--log', help='location to send the logfile to',
-    default=None
+    '--log', default=None,
+    help='location to send the logfile to'
+)
+parser.add_option(
+    '--remove-lock', action='store_true', default=False,
+    help='Removes the lock file on disk before starting if one exists.  This' +
+         ' is mainly used if you already know the process does not exist and' +
+         ' you do not wish to remove the lock file manually.'
 )
