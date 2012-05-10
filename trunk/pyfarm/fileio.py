@@ -26,21 +26,19 @@ from __future__ import with_statement
 import os
 import imp
 import yaml
-import logging
 import tempfile
 
 from twisted.python import log
 
+# import the fastest loader/dumper
+try:
+    from yaml import CLoader as Loader, CDumper as Dumper
+
+except ImportError:
+    from yaml import Loader, Dumper
+
 class yml:
     CACHE = {}
-    LOADER = yaml.Loader
-    DUMPER = yaml.Dumper
-
-    if hasattr(yaml, 'CLoader'):
-        LOADER = yaml.CLoader
-
-    if hasattr(yaml, 'CDumper'):
-        DUMPER = yaml.CDumper
 
     @classmethod
     def load(cls, path, force=False):
@@ -54,11 +52,8 @@ class yml:
 
         if force or abspath not in cls.CACHE:
             with open(path, 'r') as stream:
-                cls.CACHE[abspath] = yaml.load(stream, Loader=cls.LOADER)
-                log.msg(
-                    "Loaded: %s" % abspath, system="loader.yml",
-                    level=logging.INFO
-                )
+                cls.CACHE[abspath] = yaml.load(stream, Loader=Loader)
+                log.msg("Loaded: %s" % abspath, system="loader.yml")
 
         return cls.CACHE[abspath]
     # end load
@@ -84,7 +79,7 @@ class yml:
             tempstream.close()
 
         with open(path, 'w') as stream:
-            yaml.dump(data, stream, Dumper=cls.DUMPER)
+            yaml.dump(data, stream, Dumper=Dumper)
 
             return path
     # end dump
