@@ -49,6 +49,10 @@ parser.add_option(
     '--set-master', default=None,
     help='sets the master for the current session and in the database'
 )
+parser.add_option(
+    '--lookup-master', action='store_true',
+    help='forces the master to be determined from the database'
+)
 
 def processOptions(options):
     '''sets up constants based on input provided by optparse'''

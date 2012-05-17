@@ -25,3 +25,15 @@
 #
 max-jobs: relative
 relative-value: 2
+
+# The master to connect to.  This value will be used
+# as the master server by default unless one of
+# the following command line arguments are provided:
+# * --master
+# * --set-master
+# * --lookup-master
+#
+# After the preference has been queried and the above
+# flags are not present then the master will be set in the 
+# database.
+master:
