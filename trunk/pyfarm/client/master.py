@@ -20,16 +20,16 @@
 
 from pyfarm import prefs
 
-#PORT = prefs.get('')
+PORT = prefs.get('network.ports.client')
 
 def getmaster(options):
     '''primary function for retrieving the master'''
-    print options
+    # ensure both --master and --set-master are not being provided
+    if options.master is not None and options.set_master is not None:
+        raise ValueError("--set-master and --master cannot both be defined")
 # end getmaster
 
-## ensure both --master and --set-master are not being used
-#if options.master is not None and options.set_master is not None:
-#    raise ValueError("--set-master and --master cannot both be defined")
+
 #
 ## if either master or set_master are set then we should
 ## setup the local MASTER variable before we continue
