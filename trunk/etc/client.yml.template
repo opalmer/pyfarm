@@ -37,3 +37,8 @@ relative-value: 2
 # flags are not present then the master will be set in the 
 # database.
 master:
+
+# Equivalent to the --lookup-master flag this will ensure
+# that the master is always looked up in the database instead
+# of using the master setting above.
+lookup-master: false
