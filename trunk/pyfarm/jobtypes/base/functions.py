@@ -32,12 +32,10 @@ import logging
 
 from twisted.python import log
 
-from pyfarm import logger, datatypes, fileio
-from pyfarm.preferences import prefs
+from pyfarm import logger, datatypes, fileio, prefs
 from pyfarm.db import Transaction
 from pyfarm.db.query import hosts
 from pyfarm.db import tables
-from pyfarm.preferences import prefs
 
 HOSTNAME = socket.getfqdn()
 CWD = os.path.dirname(os.path.abspath(__file__))

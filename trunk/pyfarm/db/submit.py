@@ -28,8 +28,7 @@ import logging
 import pprint
 import sqlalchemy as sql
 
-from pyfarm import logger, datatypes, jobtypes, utility
-from pyfarm.preferences import prefs
+from pyfarm import logger, datatypes, jobtypes, utility, prefs
 from pyfarm.db import tables, session, transaction, query
 
 __all__ = ['Job', 'Frame']

@@ -19,8 +19,7 @@
 import logging
 import sqlalchemy as sql
 
-from pyfarm import datatypes
-from pyfarm.preferences import prefs
+from pyfarm import datatypes, prefs
 from pyfarm.db.session import ENGINE
 
 from twisted.python import log

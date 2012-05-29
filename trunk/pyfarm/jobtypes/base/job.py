@@ -25,8 +25,7 @@ import getpass
 import logging
 import itertools
 
-from pyfarm.preferences import prefs
-from pyfarm import logger, datatypes
+from pyfarm import logger, datatypes, prefs
 from pyfarm.db import Transaction
 
 USERNAME = getpass.getuser()

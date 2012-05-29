@@ -24,9 +24,8 @@ import sqlalchemy
 import sqlalchemy.orm
 from twisted.python import log
 
-from pyfarm import logger
+from pyfarm import logger, prefs
 from pyfarm.db import session
-from pyfarm.preferences import prefs
 
 class Transaction(object):
     '''

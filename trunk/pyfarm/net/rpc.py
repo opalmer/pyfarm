@@ -23,8 +23,7 @@ import logging
 import socket
 import xmlrpclib
 
-from pyfarm import logger
-from pyfarm.preferences import prefs
+from pyfarm import logger, prefs
 from pyfarm.db.query import hosts
 
 from twisted.internet import reactor

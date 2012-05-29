@@ -21,8 +21,7 @@
 
 import logging
 
-from pyfarm import logger
-from pyfarm.preferences import prefs
+from pyfarm import logger, prefs
 
 from twisted.internet.error import ConnectionRefusedError
 

@@ -25,10 +25,8 @@ import colorama
 from colorama import Fore, Back, Style
 from logging import handlers
 
-from pyfarm.preferences import prefs
-
 from twisted.python import log
-from pyfarm import datatypes
+from pyfarm import datatypes, prefs
 
 log.FileLogObserver.timeFormat = prefs.get('logging.timestamp')
 colorama.init()
