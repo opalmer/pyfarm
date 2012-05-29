@@ -28,7 +28,7 @@ import socket
 import logging
 
 # parse command line arguments (before we setup logging)
-from pyfarm.client import cmdargs, system, process, job
+from pyfarm.client import cmdargs, system, process, job, master
 from pyfarm import lock, datatypes
 from pyfarm.db import submit
 
@@ -36,10 +36,9 @@ options, args = cmdargs.parser.parse_args()
 cmdargs.processOptions(options)
 
 # setup the main log
-from pyfarm import logger
+from pyfarm import logger, prefs
 from pyfarm.net import dns
 from pyfarm.net import rpc as _rpc
-from pyfarm.preferences import prefs
 
 from twisted.internet import reactor, protocol
 from twisted.web import xmlrpc
@@ -269,33 +268,7 @@ with lock.ProcessLock(
     observer = logger.Observer(SERVICE_LOG)
     observer.start()
 
-    # ensure both master and set-master are not being set
-    if options.master is not None and options.set_master is not None:
-        raise ValueError("--set-master and --master cannot both be defined")
-
-    # if either master or set_master are set then we should
-    # setup the local MASTER variable before we continue
-    if options.master or options.set_master:
-        port = prefs.get('network.ports.server')
-        master = options.master or options.set_master
-        MASTER = (master, port)
-
-    if options.set_master:
-        log.msg(
-            "--set-master database calls not implemented",
-            level="NOT_IMPLEMENTED",
-            system="Client"
-        )
-
-    elif options.set_master is None and options.master is None:
-        log.msg(
-            "master from database not implemented",
-            level="NOT_IMPLEMENTED",
-            system="Client"
-        )
-
-    log.msg('master has been set to %s:%s' % MASTER, level=logging.INFO)
-
+    MASTER = master.getmaster(options)
     client = Client(SERVICE_LOG)
     SERVICE = client
 

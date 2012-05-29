@@ -29,14 +29,12 @@ import logging
 import xmlrpclib
 
 # parse command line arguments (before we setup logging)
-from pyfarm import logger, cmdargs, lock, datatypes
+from pyfarm import logger, cmdargs, lock, datatypes, prefs
 from pyfarm.db import tables
 from pyfarm.db.query import hosts
 from pyfarm.net import rpc as _rpc, dns
 
 options, args = cmdargs.parser.parse_args()
-
-from pyfarm.preferences import prefs
 from pyfarm.server import callbacks
 
 from twisted.internet import reactor, threads
