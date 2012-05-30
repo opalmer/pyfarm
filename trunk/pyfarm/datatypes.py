@@ -65,14 +65,40 @@ class OperatingSystem:
 class __Localhost:
     '''namespaced class for storing information about the local host'''
 
-    class __io_network:
+    # constants which do not change at runtime
+    OS = OperatingSystem.get()
+    OSNAME = OperatingSystem.MAPPINGS.get(OS)
+    CPU_COUNT = psutil.NUM_CPUS
+    TOTAL_RAM = int(psutil.phymem_usage().total / 1024 / 1024)
+    TOTAL_SWAP = int(psutil.virtmem_usage().total / 1024 / 1024)
+
+    class __network:
         @property
         def SENT(self): return psutil.network_io_counters().bytes_sent / 1024 / 1024
         @property
         def RECV(self): return psutil.network_io_counters().bytes_recv / 1024 / 1024
-    # end __io_network
+        @property
+        def HOSTNAME(self): return socket.gethostname()
+        @property
+        def FQDN(self): return socket.getfqdn(self.HOSTNAME)
+        @property
+        def IP(self): return socket.gethostbyname(self.FQDN)
 
-    class __io_disk:
+        @property
+        def SUBNET(self):
+            '''returns the current subnet address'''
+            ip = self.IP
+            for interface in netifaces.interfaces():
+                addresses = netifaces.ifaddresses(interface)
+
+                # TODO: add support for IPv6
+                for address in addresses.get(socket.AF_INET, []):
+                    if ip == address.get('addr'):
+                        return address.get('netmask')
+        # end SUBNET
+    # end __network
+
+    class __disk:
         @property
         def READ_COUNT(self): return psutil.disk_io_counters().read_count
         @property
@@ -85,13 +111,13 @@ class __Localhost:
         def READ_TIME(self): return psutil.disk_io_counters().read_time
         @property
         def WRITE_TIME(self): return psutil.disk_io_counters().write_time
-    # end __io_disk
+    # end __disk
 
-    class __io_partitions:
+    class __partitions:
         @property
         def MOUNTS(self): return [m.mountpoint for m in psutil.disk_partitions()]
         def usage(self, path): return psutil.disk_usage(path)
-    # end __io_partitions
+    # end __partitions
 
     class __cpu:
         @property
@@ -102,19 +128,10 @@ class __Localhost:
         def IDLE(self): return psutil.cpu_times().idle
     # end __cpu
 
-    # constants which do not change at runtime
-    OS = OperatingSystem.get()
-    OSNAME = OperatingSystem.MAPPINGS.get(OS)
-    HOSTNAME = socket.gethostname()
-    FQDN = socket.getfqdn(HOSTNAME)
-    CPU_COUNT = psutil.NUM_CPUS
-    TOTAL_RAM = int(psutil.phymem_usage().total / 1024 / 1024)
-    TOTAL_SWAP = int(psutil.virtmem_usage().total / 1024 / 1024)
-
     # bound internal classes
-    network = __io_network()
-    disk = __io_disk()
-    partitions = __io_partitions()
+    net = __network()
+    disk = __disk()
+    partitions = __partitions()
     cpu = __cpu()
 
     @property
@@ -128,25 +145,6 @@ class __Localhost:
         '''returns the amount of free swap'''
         return int(psutil.virtmem_usage().free / 1024 / 1024)
     # end SWAP
-
-    @property
-    def IP(self):
-        '''returns the current ip address as resolved by DNS'''
-        return socket.gethostbyname(self.FQDN)
-    # end IP
-
-    @property
-    def SUBNET(self):
-        '''returns the current subnet address'''
-        ip = self.IP
-        for interface in netifaces.interfaces():
-            addresses = netifaces.ifaddresses(interface)
-
-            # TODO: add support for IPv6
-            for address in addresses.get(socket.AF_INET, []):
-                if ip == address.get('addr'):
-                    return address.get('netmask')
-    # end SUBNET
 
     @property
     def LOAD(self):
