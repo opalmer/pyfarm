@@ -24,8 +24,8 @@ import netifaces
 
 from pyfarm import datatypes
 
-HOSTNAME = datatypes.Localhost.network.HOSTNAME
-FQDN = datatypes.Localhost.network.FQDN
+HOSTNAME = datatypes.Localhost.net.HOSTNAME
+FQDN = datatypes.Localhost.net.FQDN
 
 def host(
         hostname=None, master=None, ip=None, subnet=None, os=None,
@@ -73,7 +73,7 @@ hosts = sql.Table('pyfarm_hosts', metadata,
     '''
     local = False
     if hostname is None:
-        hostname = datatypes.Localhost.network.HOSTNAME
+        hostname = datatypes.Localhost.net.HOSTNAME
         local = True
 
     elif hostname is not None and hostname in ('localhost', HOSTNAME, FQDN):
@@ -85,13 +85,13 @@ hosts = sql.Table('pyfarm_hosts', metadata,
         raise ValueError("hostname must be provided if ip is None")
 
     elif ip is None:
-        ip = datatypes.Localhost.network.IP
+        ip = datatypes.Localhost.net.IP
 
     if not local and subnet is None:
         raise ValueError("subnet must be provided if hostname is not local")
 
     elif local and subnet is None:
-        subnet = datatypes.Localhost.network.SUBNET
+        subnet = datatypes.Localhost.net.SUBNET
 
     if not local and os is None:
         raise ValueError("os must be provided if hostname is not local")
