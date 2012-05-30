@@ -17,6 +17,9 @@
 # along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
 import sys
+import psutil
+import socket
+import netifaces
 
 from sqlalchemy.types import String
 
@@ -58,6 +61,100 @@ class OperatingSystem:
         return OperatingSystem.MAPPINGS[platform]
     # end get
 # end OperatingSystem
+
+class __Localhost:
+    '''namespaced class for storing information about the local host'''
+
+    class __io_network:
+        @property
+        def SENT(self): return psutil.network_io_counters().bytes_sent / 1024 / 1024
+        @property
+        def RECV(self): return psutil.network_io_counters().bytes_recv / 1024 / 1024
+    # end __io_network
+
+    class __io_disk:
+        @property
+        def READ_COUNT(self): return psutil.disk_io_counters().read_count
+        @property
+        def WRITE_COUNT(self): return psutil.disk_io_counters().read_count
+        @property
+        def READ(self): return psutil.disk_io_counters().read_bytes / 1024 / 1024
+        @property
+        def WRITE(self): return psutil.disk_io_counters().write_bytes / 1024 / 1024
+        @property
+        def READ_TIME(self): return psutil.disk_io_counters().read_time
+        @property
+        def WRITE_TIME(self): return psutil.disk_io_counters().write_time
+    # end __io_disk
+
+    class __io_partitions:
+        @property
+        def MOUNTS(self): return [m.mountpoint for m in psutil.disk_partitions()]
+        def usage(self, path): return psutil.disk_usage(path)
+    # end __io_partitions
+
+    class __cpu:
+        @property
+        def USER(self): return psutil.cpu_times().user
+        @property
+        def SYSTEM(self): return psutil.cpu_times().system
+        @property
+        def IDLE(self): return psutil.cpu_times().idle
+    # end __cpu
+
+    # constants which do not change at runtime
+    OS = OperatingSystem.get()
+    OSNAME = OperatingSystem.MAPPINGS.get(OS)
+    HOSTNAME = socket.gethostname()
+    FQDN = socket.getfqdn(HOSTNAME)
+    CPU_COUNT = psutil.NUM_CPUS
+    TOTAL_RAM = int(psutil.phymem_usage().total / 1024 / 1024)
+    TOTAL_SWAP = int(psutil.virtmem_usage().total / 1024 / 1024)
+
+    # bound internal classes
+    network = __io_network()
+    disk = __io_disk()
+    partitions = __io_partitions()
+    cpu = __cpu()
+
+    @property
+    def RAM(self):
+        '''returns the amount of free ram'''
+        return int(psutil.phymem_usage().free / 1024 / 1024)
+    # end RAM
+
+    @property
+    def SWAP(self):
+        '''returns the amount of free swap'''
+        return int(psutil.virtmem_usage().free / 1024 / 1024)
+    # end SWAP
+
+    @property
+    def IP(self):
+        '''returns the current ip address as resolved by DNS'''
+        return socket.gethostbyname(self.FQDN)
+    # end IP
+
+    @property
+    def SUBNET(self):
+        '''returns the current subnet address'''
+        ip = self.IP
+        for interface in netifaces.interfaces():
+            addresses = netifaces.ifaddresses(interface)
+
+            # TODO: add support for IPv6
+            for address in addresses.get(socket.AF_INET, []):
+                if ip == address.get('addr'):
+                    return address.get('netmask')
+    # end SUBNET
+
+    @property
+    def LOAD(self):
+        '''returns the current average system load'''
+        return psutil.cpu_percent()
+    # end LOAD
+# end __Localhost
+
 
 class Enum(object):
     '''
@@ -116,6 +213,7 @@ class Enum(object):
 # end Enum
 
 
+Localhost = __Localhost()
 Software = Enum("MAYA", "HOUDINI", "VRAY", "NUKE", "BLENDER")
 State = Enum(
     "PAUSED", "BLOCKED", "QUEUED", "ASSIGN",
@@ -126,7 +224,4 @@ State = Enum(
 LIST_TYPES = (list, tuple, set)
 BOOLEAN_TYPES = (True, False)
 STRING_TYPES = (str, unicode, String)
-
-OS = OperatingSystem.get()
-OSNAME = OperatingSystem.MAPPINGS.get(OS)
 ACTIVE_JOB_STATES = (State.QUEUED, State.RUNNING)
