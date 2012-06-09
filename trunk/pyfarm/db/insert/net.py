@@ -18,18 +18,16 @@
 
 '''inserts network information into the database'''
 
-import psutil
-import socket
-import netifaces
+from twisted.python import log
 
-from pyfarm import datatypes
+from pyfarm.datatypes import Localhost, OperatingSystem
 
-HOSTNAME = datatypes.Localhost.net.HOSTNAME
-FQDN = datatypes.Localhost.net.FQDN
+HOSTNAME = Localhost.net.HOSTNAME
+FQDN = Localhost.net.FQDN
 
 def host(
         hostname=None, master=None, ip=None, subnet=None, os=None,
-        ram_total=None, check_type=True
+        ram_total=None, typecheck=True
     ):
     '''
     inserts a single host into the database
@@ -41,7 +39,7 @@ def host(
     :param integer os: local os if not provided
     :param integer ram_total: local ram total if not provided
 
-    :param boolean check_type:
+    :param boolean typecheck:
         if True then type check each input for errors prior to making the update
 
     :exception ValueError:
@@ -71,13 +69,16 @@ hosts = sql.Table('pyfarm_hosts', metadata,
     sql.Column('dependencies', sql.PickleType, default=[])
 )
     '''
+    log.msg("preparing to insert new host")
     local = False
     if hostname is None:
-        hostname = datatypes.Localhost.net.HOSTNAME
+        hostname = HOSTNAME
         local = True
 
     elif hostname is not None and hostname in ('localhost', HOSTNAME, FQDN):
         local = True
+
+    log.msg("...hostname: %s" % hostname)
 
     # hostname must be provided in order to discover
     # the ip address
@@ -85,32 +86,38 @@ hosts = sql.Table('pyfarm_hosts', metadata,
         raise ValueError("hostname must be provided if ip is None")
 
     elif ip is None:
-        ip = datatypes.Localhost.net.IP
+        ip = Localhost.net.IP
+
+    log.msg("....address: %s" % ip)
 
     if not local and subnet is None:
         raise ValueError("subnet must be provided if hostname is not local")
 
     elif local and subnet is None:
-        subnet = datatypes.Localhost.net.SUBNET
+        subnet = Localhost.net.SUBNET
 
     if not local and os is None:
         raise ValueError("os must be provided if hostname is not local")
 
     elif local and os is None:
-        os = datatypes.Localhost.OS
+        os = Localhost.OS
 
-    elif os not in datatypes.OperatingSystem.MAPPINGS:
+    elif os not in OperatingSystem.MAPPINGS:
         raise KeyError("no such operation system '%s'" % os)
+
+    log.msg(".........os: %s" % OperatingSystem.get(os))
 
     if not local and ram_total is None:
         raise ValueError("ram_total must be provided if hostname is not local")
 
     elif local and ram_total is None:
-        ram_total = datatypes.Localhost.TOTAL_RAM
+        ram_total = Localhost.TOTAL_RAM
+
+    log.msg("........ram: %s" % ram_total)
 
     # check to ensure all the values we have constructed
     # are what we are expecting
-    if check_type:
+    if typecheck:
         nonetype = None.__class__
         type_check = {
             'hostname' : str, 'master' : (str, nonetype), 'ip' : str,
@@ -126,4 +133,5 @@ hosts = sql.Table('pyfarm_hosts', metadata,
 # end host
 
 if __name__ == "__main__":
+    from pyfarm import logger
     host()
