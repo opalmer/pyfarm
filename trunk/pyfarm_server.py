@@ -33,7 +33,8 @@ import xmlrpclib
 from pyfarm import logger, cmdargs, lock, datatypes, prefs
 from pyfarm.db import tables
 from pyfarm.db.query import hosts
-from pyfarm.net import rpc as _rpc, dns
+from pyfarm.net import rpc as _rpc
+from pyfarm.datatypes import Localhost
 
 options, args = cmdargs.parser.parse_args()
 from pyfarm.server import callbacks
@@ -43,8 +44,8 @@ from twisted.web import server as _server
 from twisted.python import log
 
 CWD = os.getcwd()
-HOSTNAME = socket.gethostname()
-ADDRESS = dns.ip(HOSTNAME)
+HOSTNAME = Localhost.net.HOSTNAME
+ADDRESS = Localhost.net.IP
 SERVICE = None
 SERVICE_LOG = None
 
