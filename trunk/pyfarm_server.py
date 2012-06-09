@@ -120,7 +120,7 @@ with lock.ProcessLock(
 # script.  This must be done after the reactor and has been
 # shutdown and after we have given the port(s) a chance
 # to release.
-if os.getenv('PYFARM_RESTART') == "true":
+if os.environ.get('PYFARM_RESTART') == "true":
     pause = prefs.get('network.rpc.delay')
     log.msg(
         "preparing to restart the server, pausing %i seconds" % pause,

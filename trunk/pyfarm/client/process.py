@@ -156,7 +156,7 @@ def which(program, paths=None, names=None):
     # iterate over all environment variables and retrieve
     # any additional paths
     for envvar in envvars:
-        for path in os.getenv(envvar, '').split(os.pathsep):
+        for path in os.environ.get(envvar, '').split(os.pathsep):
             paths.append(path)
 
     # extend the search paths by those listed in the preferences
