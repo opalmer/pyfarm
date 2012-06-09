@@ -27,7 +27,7 @@ FQDN = Localhost.net.FQDN
 
 def host(
         hostname=None, master=None, ip=None, subnet=None, os=None,
-        ram_total=None, typecheck=True
+        ram_total=None, ram_usage=None, typecheck=True
     ):
     '''
     inserts a single host into the database
@@ -38,6 +38,7 @@ def host(
     :param string subnet: local subnet if not provided
     :param integer os: local os if not provided
     :param integer ram_total: local ram total if not provided
+    :param integer ram_usage: local ram usage if not provided
 
     :param boolean typecheck:
         if True then type check each input for errors prior to making the update
@@ -78,7 +79,7 @@ hosts = sql.Table('pyfarm_hosts', metadata,
     elif hostname is not None and hostname in ('localhost', HOSTNAME, FQDN):
         local = True
 
-    log.msg("...hostname: %s" % hostname)
+    log.msg("....hostname: %s" % hostname)
 
     # hostname must be provided in order to discover
     # the ip address
@@ -88,7 +89,7 @@ hosts = sql.Table('pyfarm_hosts', metadata,
     elif ip is None:
         ip = Localhost.net.IP
 
-    log.msg("....address: %s" % ip)
+    log.msg(".....address: %s" % ip)
 
     if not local and subnet is None:
         raise ValueError("subnet must be provided if hostname is not local")
@@ -105,7 +106,7 @@ hosts = sql.Table('pyfarm_hosts', metadata,
     elif os not in OperatingSystem.MAPPINGS:
         raise KeyError("no such operation system '%s'" % os)
 
-    log.msg(".........os: %s" % OperatingSystem.get(os))
+    log.msg("..........os: %s" % OperatingSystem.get(os))
 
     if not local and ram_total is None:
         raise ValueError("ram_total must be provided if hostname is not local")
@@ -113,7 +114,15 @@ hosts = sql.Table('pyfarm_hosts', metadata,
     elif local and ram_total is None:
         ram_total = Localhost.TOTAL_RAM
 
-    log.msg("........ram: %s" % ram_total)
+    log.msg("...ram total: %s" % ram_total)
+
+    if local and ram_usage is None:
+        ram_usage = Localhost.RAM
+
+    elif not local and ram_usage is None:
+        raise ValueError("ram_usage must be provided when hostname is not local")
+
+    log.msg("...ram usage: %s" % ram_usagegi)
 
     # check to ensure all the values we have constructed
     # are what we are expecting
@@ -121,7 +130,7 @@ hosts = sql.Table('pyfarm_hosts', metadata,
         nonetype = None.__class__
         type_check = {
             'hostname' : str, 'master' : (str, nonetype), 'ip' : str,
-            'subnet' : str, 'os' : int, 'ram_total' : int
+            'subnet' : str, 'os' : int, 'ram_total' : int, 'ram_usage' : int
         }
 
         local_values = locals()
