@@ -1,8 +1,5 @@
 #!/usr/bin/env python
 #
-# INITIAL: Dec 18 2011
-# PURPOSE: Receive, process, and handle job requests for PyFarm
-#
 # This file is part of PyFarm.
 # Copyright (C) 2008-2012 Oliver Palmer
 #
@@ -18,6 +15,10 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
+
+'''
+receieve, process, and handle job requests from the master
+'''
 
 from __future__ import with_statement
 

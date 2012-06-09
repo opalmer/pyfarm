@@ -1,8 +1,5 @@
 # No shebang line, this module is meant to be imported
 #
-# INITIAL: Nov 13 2011
-# PURPOSE: Used to create and manage a process
-#
 # This file is part of PyFarm.
 # Copyright (C) 2008-2012 Oliver Palmer
 #
