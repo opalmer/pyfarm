@@ -20,12 +20,9 @@
 run commands and manage host information and resources
 '''
 
-from __future__ import with_statement
-
 import os
 import sys
 import time
-import socket
 import logging
 
 # parse command line arguments (before we setup logging)
@@ -298,7 +295,7 @@ if os.environ.get('PYFARM_RESTART') == 'true' and prefs.get('network.rpc.restart
     args = sys.argv[:]
 
     args.insert(0, sys.executable)
-    if datatypes.OS == datatypes.OperatingSystem.WINDOWS:
+    if Localhost.OS == datatypes.OperatingSystem.WINDOWS:
         args = ['"%s"' % arg for arg in args]
 
     os.chdir(CWD)

@@ -20,14 +20,10 @@
 receieve, process, and handle job requests from the master
 '''
 
-from __future__ import with_statement
-
 import os
 import sys
 import time
-import socket
 import logging
-import xmlrpclib
 
 # parse command line arguments (before we setup logging)
 from pyfarm import logger, cmdargs, lock, datatypes, prefs
@@ -131,7 +127,7 @@ if os.environ.get('PYFARM_RESTART') == "true":
 
     args.insert(0, sys.executable)
 
-    if datatypes.OS == datatypes.OperatingSystem.WINDOWS:
+    if Localhost.OS == datatypes.OperatingSystem.WINDOWS:
         args = ['"%s"' % arg for arg in args]
 
     os.chdir(CWD)
