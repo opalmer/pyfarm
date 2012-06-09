@@ -26,6 +26,7 @@ import tempfile
 
 from twisted.python import log
 from pyfarm import datatypes, PYFARM_ETC, PYFARM_ROOT, fileio
+from pyfarm.datatypes import Localhost
 
 if not os.path.isdir(PYFARM_ETC):
     raise OSError("configuration directory does not exist: %s" % PYFARM_ETC)
@@ -217,7 +218,7 @@ class Preferences(object):
             expanded_template = template.safe_substitute(
                     {
                         "pyfarm" : PYFARM_ROOT,
-                        "root" : self.get('filesystem.roots.%s' % datatypes.OSNAME, **kwargs)
+                        "root" : self.get('filesystem.roots.%s' % Localhost.OSNAME, **kwargs)
                     }
             )
             paths.append(os.path.expandvars(expanded_template))
