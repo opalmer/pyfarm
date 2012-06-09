@@ -54,6 +54,9 @@ class TwistedProcess(protocol.ProcessProtocol):
         self.environ = dict(os.environ)
         if isinstance(environ, (dict, UserDict.UserDict)):
             self.environ.update(environ)
+            
+        elif environ is not None:
+            raise TypeError("expected None, dict, or UserDict for environ")
 
         # construct the command list and arguments to pass
         # to reactor.spawnProcess
