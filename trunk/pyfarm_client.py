@@ -38,8 +38,8 @@ cmdargs.processOptions(options)
 
 # setup the main log
 from pyfarm import logger, prefs
-from pyfarm.net import dns
 from pyfarm.net import rpc as _rpc
+from pyfarm.datatypes import Localhost
 
 from twisted.internet import reactor, protocol
 from twisted.web import xmlrpc
@@ -47,8 +47,8 @@ from twisted.web import server as _server
 from twisted.python import log
 
 CWD = os.getcwd()
-HOSTNAME = socket.gethostname()
-ADDRESS = dns.ip(HOSTNAME)
+HOSTNAME = Localhost.net.HOSTNAME
+ADDRESS = Localhost.net.IP
 MASTER = ()
 SERVICE = None
 SERVICE_LOG = None
