@@ -47,7 +47,7 @@ class TwistedProcess(protocol.ProcessProtocol):
         # ensure the uuid object is the proper type
         if not isinstance(uuid, UUID):
             raise TypeError("expected UUID type for uuid import argument")
-        
+
         self.uuid = uuid
         self.log = log
         self.command = command
