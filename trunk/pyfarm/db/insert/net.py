@@ -28,6 +28,7 @@ FQDN = Localhost.net.FQDN
 def host(
         hostname=None, master=None, ip=None, subnet=None, os=None,
         ram_total=None, ram_usage=None, swap_total=None, swap_usage=None,
+        cpu_count=None,
         typecheck=True
     ):
     '''
@@ -150,10 +151,19 @@ hosts = sql.Table('pyfarm_hosts', metadata,
         swap_usage = Localhost.SWAP
 
     elif not local and swap_usage is None:
-        raise TypeError("swap_usage must be provided when hostname is not local")
+        raise ValueError("swap_usage must be provided when hostname is not local")
 
     log.msg("..swap usage: %s" % swap_usage)
     data['swap_usage'] = swap_usage
+
+    if local and cpu_count is None:
+        cpu_count = Localhost.CPU_COUNT
+
+    elif not local and cpu_count is None:
+        raise ValueError("cpu_count must be provided when hostname is not local")
+
+    log.msg("...cpus: %s" % cpu_count)
+    data['cpu_count'] = cpu_count
 
     # check to ensure all the values we have constructed
     # are what we are expecting
@@ -162,7 +172,7 @@ hosts = sql.Table('pyfarm_hosts', metadata,
         type_check = {
             'hostname' : str, 'master' : (str, nonetype), 'ip' : str,
             'subnet' : str, 'os' : int, 'ram_total' : int, 'ram_usage' : int,
-            'swap_usage' : int, 'swap_total' : int
+            'swap_usage' : int, 'swap_total' : int, 'cpu_count' : intg
         }
 
         for key, expected_types in type_check.iteritems():
