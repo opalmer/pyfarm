@@ -82,7 +82,7 @@ class __Localhost:
         @property
         def FQDN(self): return socket.getfqdn(self.HOSTNAME)
         @property
-        def IP(self): return socket.gethostbyname(self.FQDN)
+        def IP(self): return socket.gethostbyname(self.HOSTNAME)
 
         @property
         def SUBNET(self):
