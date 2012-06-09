@@ -20,17 +20,12 @@
 # along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
-import psutil
 import UserDict
 import itertools
 
 from twisted.web import xmlrpc
 from twisted.internet import protocol, defer
 from twisted.python import log
-
-from pyfarm import logger
-
-CPU_COUNT = psutil.NUM_CPUS
 
 class TwistedProcess(protocol.ProcessProtocol):
     '''
@@ -126,14 +121,14 @@ def which(program, paths=None, names=None):
     if os.path.isfile(program):
         return os.path.abspath(program)
 
-    if paths == None:
+    if paths is None:
         paths = []
 
     # ensure the paths argument is a list
     if not isinstance(paths, list):
         raise TypeError("paths expects a list not a %s" % type(paths))
 
-    if names == None:
+    if names is None:
         names = []
 
     # ensure the names argument is a list
