@@ -223,5 +223,8 @@ LIST_TYPES = (list, tuple, set)
 BOOLEAN_TYPES = (True, False)
 STRING_TYPES = (str, unicode, String)
 ACTIVE_JOB_STATES = (State.QUEUED, State.RUNNING)
+
+# defaults when creating host
 DEFAULT_GROUPS = ['*']
 DEFAULT_SOFTWARE = ['*']
+DEFAULT_JOBTYPES = ['*']
