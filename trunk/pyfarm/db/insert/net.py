@@ -66,7 +66,7 @@ hosts = sql.Table('pyfarm_hosts', metadata,
 #    sql.Column('ram_usage', sql.Integer),
 #    sql.Column('swap_total', sql.Integer),
 #    sql.Column('swap_usage', sql.Integer),
-    sql.Column('cpu_count', sql.Integer),
+#    sql.Column('cpu_count', sql.Integer),
     sql.Column('online', sql.Boolean, nullable=False, default=True),
     sql.Column('groups', sql.String(128), default='*'),
     sql.Column('software', sql.String(256), default="*"),
@@ -78,6 +78,7 @@ hosts = sql.Table('pyfarm_hosts', metadata,
     local = False
     data = {}
 
+    # setup hostname
     if hostname is None:
         hostname = HOSTNAME
         local = True
@@ -88,6 +89,7 @@ hosts = sql.Table('pyfarm_hosts', metadata,
     log.msg("...hostname: %s" % hostname)
     data['hostname'] = hostname
 
+    # setup ip address
     # hostname must be provided in order to discover
     # the ip address
     if hostname is None and ip is None:
@@ -99,6 +101,7 @@ hosts = sql.Table('pyfarm_hosts', metadata,
     log.msg("...address: %s" % ip)
     data['ip'] = ip
 
+    # subnet setup
     if not local and subnet is None:
         raise ValueError("subnet must be provided if hostname is not local")
 
@@ -108,6 +111,7 @@ hosts = sql.Table('pyfarm_hosts', metadata,
     log.msg("...subnet: %s" % subnet)
     data['subnet'] = subnet
 
+    # operating system setup
     if not local and os is None:
         raise ValueError("os must be provided if hostname is not local")
 
@@ -120,6 +124,7 @@ hosts = sql.Table('pyfarm_hosts', metadata,
     log.msg("...os: %s" % OperatingSystem.get(os))
     data['os'] = os
 
+    # ram setup - total
     if not local and ram_total is None:
         raise ValueError("ram_total must be provided if hostname is not local")
 
@@ -129,6 +134,7 @@ hosts = sql.Table('pyfarm_hosts', metadata,
     log.msg("...ram total: %s" % ram_total)
     data['ram_total'] = ram_total
 
+    # ram setup - usage
     if local and ram_usage is None:
         ram_usage = Localhost.RAM
 
@@ -138,6 +144,7 @@ hosts = sql.Table('pyfarm_hosts', metadata,
     log.msg("...ram usage: %s" % ram_usage)
     data['ram_usage'] = ram_usage
 
+    # swap setup - total
     if local and swap_total is None:
         swap_total = Localhost.TOTAL_SWAP
 
@@ -147,6 +154,7 @@ hosts = sql.Table('pyfarm_hosts', metadata,
     log.msg("...swap total: %s" % swap_total)
     data['swap_total'] = swap_total
 
+    # swap setup - usage
     if local and swap_usage is None:
         swap_usage = Localhost.SWAP
 
@@ -156,6 +164,7 @@ hosts = sql.Table('pyfarm_hosts', metadata,
     log.msg("...swap usage: %s" % swap_usage)
     data['swap_usage'] = swap_usage
 
+    # setup cpu count
     if local and cpu_count is None:
         cpu_count = Localhost.CPU_COUNT
 
@@ -165,6 +174,9 @@ hosts = sql.Table('pyfarm_hosts', metadata,
     log.msg("...cpus: %s" % cpu_count)
     data['cpu_count'] = cpu_count
 
+    # setup online
+
+
     # check to ensure all the values we have constructed
     # are what we are expecting
     if typecheck:
@@ -172,7 +184,8 @@ hosts = sql.Table('pyfarm_hosts', metadata,
         type_check = {
             'hostname' : str, 'master' : (str, nonetype), 'ip' : str,
             'subnet' : str, 'os' : int, 'ram_total' : int, 'ram_usage' : int,
-            'swap_usage' : int, 'swap_total' : int, 'cpu_count' : int
+            'swap_usage' : int, 'swap_total' : int, 'cpu_count' : int,
+            'online' : bool
         }
 
         for key, expected_types in type_check.iteritems():
