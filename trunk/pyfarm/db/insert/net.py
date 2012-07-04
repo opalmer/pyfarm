@@ -18,10 +18,13 @@
 
 '''inserts network information into the database'''
 
+import logging
 import collections
+import sqlalchemy as sql
 from twisted.python import log
 
 from pyfarm import datatypes
+from pyfarm.db import tables, session
 from pyfarm.datatypes import Localhost, OperatingSystem
 
 HOSTNAME = Localhost.net.HOSTNAME
@@ -31,7 +34,7 @@ def host(
         hostname=None, master=None, ip=None, subnet=None, os=None,
         ram_total=None, ram_usage=None, swap_total=None, swap_usage=None,
         cpu_count=None, online=None, groups=None, software=None, jobtypes=None,
-        typecheck=True
+        typecheck=True, drop=False, error=True
     ):
     '''
     inserts a single host into the database
@@ -58,6 +61,15 @@ def host(
 
     :param list jobtypes:
         jobtypes which this host will accept
+
+    :param boolean drop:
+        if True then existing entries of the same host will be
+        dropped prior to inserting a new entry.  If entries for the provided
+        host already exist and this value is False and error is True
+        then a NameError will be raised
+
+    :param boolean error:
+        if True raise an error if we find duplicate hosts and drop is False
 
     :param boolean typecheck:
         if True then type check each input for errors prior to making the update
@@ -210,8 +222,52 @@ def host(
             if not isinstance(value, expected_types):
                 args = (key, expected_types, type(value))
                 raise TypeError("unexpected type for %s, expected %s got %s" % args)
+
+    # check to see if the host alreadu exists in the database
+    conn = session.ENGINE.connect()
+    select = tables.hosts.select(tables.hosts.c.hostname == data['hostname'])
+    result = conn.execute(select).fetchone()
+    hostid = None
+    if result is not None:
+        hostid = result.id
+
+    if result and not drop and error:
+        raise NameError("%s already exists in the database")
+
+    elif result and not drop and not error:
+        log.msg(
+            "%s already exists in the database, skipping insert" % data['hostname'],
+            level=logging.WARNING
+        )
+        conn.close()
+        return hostid
+
+    elif result and drop:
+        log.msg(
+            "dropping existing host entry for %s" % data['hostname'],
+            level=logging.WARNING
+        )
+        log.msg(
+            "drop host not implemented",
+            level=logging.CRITICAL
+        )
+
+
+    with conn.begin():
+        result = conn.execute(
+            tables.hosts.insert(),
+            [data]
+        )
+        hostid = result.last_inserted_ids()[0]
+        log.msg(
+            "inserted %s as host %s" % (data['hostname'], hostid),
+            level=logging.INFO
+        )
+
+    conn.close()
+    return hostid
 # end host
 
 if __name__ == "__main__":
     from pyfarm import logger
-    host()
+    print host(drop=True, error=False)
