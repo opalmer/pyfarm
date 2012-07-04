@@ -57,10 +57,9 @@ hosts = sql.Table('pyfarm_hosts', metadata,
     sql.Column('swap_usage', sql.Integer),
     sql.Column('cpu_count', sql.Integer),
     sql.Column('online', sql.Boolean, nullable=False, default=True),
-    sql.Column('groups', sql.String(128), default='*'),
-    sql.Column('software', sql.String(256), default="*"),
-    sql.Column('hold', sql.Boolean, nullable=False, default=False),
-    sql.Column('dependencies', sql.PickleType, default=[])
+    sql.Column('groups', sql.PickleType, default=datatypes.DEFAULT_GROUPS),
+    sql.Column('software', sql.PickleType, default=datatypes.DEFAULT_SOFTWARE),
+    sql.Column('jobtypes', sql.PickleType, default=datatypes.DEFAULT_JOBTYPES)
 )
 
 # create jobs table
