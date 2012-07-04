@@ -30,7 +30,7 @@ FQDN = Localhost.net.FQDN
 def host(
         hostname=None, master=None, ip=None, subnet=None, os=None,
         ram_total=None, ram_usage=None, swap_total=None, swap_usage=None,
-        cpu_count=None, online=None, groups=None,
+        cpu_count=None, online=None, groups=None, software=None, jobtypes=None,
         typecheck=True
     ):
     '''
@@ -49,6 +49,12 @@ def host(
     :param boolean online:
         if True then the host should be accepting jobs (though the local host
         may override this)
+
+    :param list groups:
+        groups this machine belongs to (default '*')
+
+    :param list software:
+        software which this host supports (default '*')
 
     :param boolean typecheck:
         if True then type check each input for errors prior to making the update
@@ -75,7 +81,7 @@ hosts = sql.Table('pyfarm_hosts', metadata,
 #    sql.Column('cpu_count', sql.Integer),
 #    sql.Column('online', sql.Boolean, nullable=False, default=True),
 #    sql.Column('groups', sql.String(128), default='*'),
-    sql.Column('software', sql.String(256), default="*"),
+#    sql.Column('software', sql.String(256), default="*"),
     sql.Column('hold', sql.Boolean, nullable=False, default=False),
     sql.Column('dependencies', sql.PickleType, default=[])
 )
@@ -183,6 +189,18 @@ hosts = sql.Table('pyfarm_hosts', metadata,
 
     data['groups'] = groups
 
+    # software setup
+    if software is None:
+        software = datatypes.DEFAULT_SOFTWARE
+
+    data['software'] = software
+
+    # jobtypes setup
+    if jobtypes is None:
+        jobtypes = datatypes.DEFAULT_JOBTYPES
+
+    data['jobtypes'] = jobtypes
+
     # iterate over all values we just created and
     # log them
     for key, value in data.iteritems():
@@ -199,7 +217,8 @@ hosts = sql.Table('pyfarm_hosts', metadata,
             'hostname' : str, 'master' : (str, nonetype), 'ip' : str,
             'subnet' : str, 'os' : int, 'ram_total' : int, 'ram_usage' : int,
             'swap_usage' : int, 'swap_total' : int, 'cpu_count' : int,
-            'online' : bool, 'groups' : list
+            'online' : bool, 'groups' : list, 'software' : list,
+            'jobtypes' : list
         }
 
         for key, expected_types in type_check.iteritems():
