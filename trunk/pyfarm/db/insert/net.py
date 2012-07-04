@@ -85,7 +85,7 @@ hosts = sql.Table('pyfarm_hosts', metadata,
     elif hostname is not None and hostname in ('localhost', HOSTNAME, FQDN):
         local = True
 
-    log.msg("....hostname: %s" % hostname)
+    log.msg("...hostname: %s" % hostname)
     data['hostname'] = hostname
 
     # hostname must be provided in order to discover
@@ -96,7 +96,7 @@ hosts = sql.Table('pyfarm_hosts', metadata,
     elif ip is None:
         ip = Localhost.net.IP
 
-    log.msg(".....address: %s" % ip)
+    log.msg("...address: %s" % ip)
     data['ip'] = ip
 
     if not local and subnet is None:
@@ -105,7 +105,7 @@ hosts = sql.Table('pyfarm_hosts', metadata,
     elif local and subnet is None:
         subnet = Localhost.net.SUBNET
 
-    log.msg("......subnet: %s" % subnet)
+    log.msg("...subnet: %s" % subnet)
     data['subnet'] = subnet
 
     if not local and os is None:
@@ -117,7 +117,7 @@ hosts = sql.Table('pyfarm_hosts', metadata,
     elif os not in OperatingSystem.MAPPINGS:
         raise KeyError("no such operation system '%s'" % os)
 
-    log.msg("..........os: %s" % OperatingSystem.get(os))
+    log.msg("...os: %s" % OperatingSystem.get(os))
     data['os'] = os
 
     if not local and ram_total is None:
@@ -144,7 +144,7 @@ hosts = sql.Table('pyfarm_hosts', metadata,
     elif not local and swap_usage is None:
         raise ValueError("swap_total must be provided when hostname is not local")
 
-    log.msg("..swap total: %s" % swap_total)
+    log.msg("...swap total: %s" % swap_total)
     data['swap_total'] = swap_total
 
     if local and swap_usage is None:
@@ -153,7 +153,7 @@ hosts = sql.Table('pyfarm_hosts', metadata,
     elif not local and swap_usage is None:
         raise ValueError("swap_usage must be provided when hostname is not local")
 
-    log.msg("..swap usage: %s" % swap_usage)
+    log.msg("...swap usage: %s" % swap_usage)
     data['swap_usage'] = swap_usage
 
     if local and cpu_count is None:
@@ -172,7 +172,7 @@ hosts = sql.Table('pyfarm_hosts', metadata,
         type_check = {
             'hostname' : str, 'master' : (str, nonetype), 'ip' : str,
             'subnet' : str, 'os' : int, 'ram_total' : int, 'ram_usage' : int,
-            'swap_usage' : int, 'swap_total' : int, 'cpu_count' : intg
+            'swap_usage' : int, 'swap_total' : int, 'cpu_count' : int
         }
 
         for key, expected_types in type_check.iteritems():
