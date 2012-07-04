@@ -51,10 +51,13 @@ def host(
         may override this)
 
     :param list groups:
-        groups this machine belongs to (default '*')
+        groups this machine belongs to
 
     :param list software:
-        software which this host supports (default '*')
+        software which this host supports
+
+    :param list jobtypes:
+        jobtypes which this host will accept
 
     :param boolean typecheck:
         if True then type check each input for errors prior to making the update
@@ -66,25 +69,6 @@ def host(
     :exception KeyError:
         raised if there were problems with a value provided not
         being a part of a set or 'known values'.
-
-hosts = sql.Table('pyfarm_hosts', metadata,
-    sql.Column('id', sql.Integer, autoincrement=True, primary_key=True),
-#    sql.Column('hostname', sql.String(255)),
-#    sql.Column('master', sql.String(255)),
-#    sql.Column('ip', sql.String(16)),
-#    sql.Column('subnet', sql.String(16)),
-#    sql.Column('os', sql.Integer),
-#    sql.Column('ram_total', sql.Integer),
-#    sql.Column('ram_usage', sql.Integer),
-#    sql.Column('swap_total', sql.Integer),
-#    sql.Column('swap_usage', sql.Integer),
-#    sql.Column('cpu_count', sql.Integer),
-#    sql.Column('online', sql.Boolean, nullable=False, default=True),
-#    sql.Column('groups', sql.String(128), default='*'),
-#    sql.Column('software', sql.String(256), default="*"),
-    sql.Column('hold', sql.Boolean, nullable=False, default=False),
-    sql.Column('dependencies', sql.PickleType, default=[])
-)
     '''
     log.msg("preparing to insert new host")
     local = False
