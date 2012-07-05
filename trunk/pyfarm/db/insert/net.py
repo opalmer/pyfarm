@@ -34,7 +34,7 @@ def host(
         hostname=None, master=None, ip=None, subnet=None, os=None,
         ram_total=None, ram_usage=None, swap_total=None, swap_usage=None,
         cpu_count=None, online=None, groups=None, software=None, jobtypes=None,
-        typecheck=True, drop=False, error=True
+        typecheck=True, drop=False
     ):
     '''
     inserts a single host into the database
@@ -95,6 +95,7 @@ def host(
         local = True
 
     data['hostname'] = hostname
+    data['master'] = master
 
     # setup ip address
     # hostname must be provided in order to discover
@@ -223,36 +224,31 @@ def host(
                 args = (key, expected_types, type(value))
                 raise TypeError("unexpected type for %s, expected %s got %s" % args)
 
-    # check to see if the host alreadu exists in the database
-    conn = session.ENGINE.connect()
+    # find existing hosts
     select = tables.hosts.select(tables.hosts.c.hostname == data['hostname'])
-    result = conn.execute(select).fetchone()
-    hostid = None
-    if result is not None:
-        hostid = result.id
+    existing_hosts = select.execute().fetchall()
+    host_count = len(existing_hosts)
 
-    if result and not drop and error:
-        raise NameError("%s already exists in the database")
+    if host_count:
+        log.msg("found existing existing entries for %s" % data['hostname'])
 
-    elif result and not drop and not error:
+        if not drop:
+            raise NameError("%s already exists in the database" % data['hostname'])
+
+    # if we found existing hosts and we're being told
+    # to drop
+    if host_count and drop:
         log.msg(
-            "%s already exists in the database, skipping insert" % data['hostname'],
+            "dropping entries for %s" % data['hostname'],
             level=logging.WARNING
         )
-        conn.close()
-        return hostid
+        for host in existing_hosts:
+            log.msg("removing host %s" % host.id)
+            delete = tables.hosts.delete(tables.hosts.c.id == host.id)
+            delete.execute()
 
-    elif result and drop:
-        log.msg(
-            "dropping existing host entry for %s" % data['hostname'],
-            level=logging.WARNING
-        )
-        log.msg(
-            "drop host not implemented",
-            level=logging.CRITICAL
-        )
-
-
+    # insert the new entry into the database
+    conn = session.ENGINE.connect()
     with conn.begin():
         result = conn.execute(
             tables.hosts.insert(),
@@ -260,14 +256,15 @@ def host(
         )
         hostid = result.last_inserted_ids()[0]
         log.msg(
-            "inserted %s as host %s" % (data['hostname'], hostid),
+            "inserted %s (hostid: %s)" % (data['hostname'], hostid),
             level=logging.INFO
         )
 
     conn.close()
+
     return hostid
 # end host
 
 if __name__ == "__main__":
     from pyfarm import logger
-    print host(drop=True, error=False)
+    print host(drop=True)
