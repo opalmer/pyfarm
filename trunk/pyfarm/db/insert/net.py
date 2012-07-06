@@ -263,6 +263,7 @@ def host(
         )
 
     conn.close()
+    session.ENGINE.dispose()
 
     return hostid
 # end host
