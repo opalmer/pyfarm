@@ -30,6 +30,8 @@ from pyfarm.datatypes import Localhost, OperatingSystem
 HOSTNAME = Localhost.net.HOSTNAME
 FQDN = Localhost.net.FQDN
 
+__all__ = ['host']
+
 def host(
         hostname=None, master=None, ip=None, subnet=None, os=None,
         ram_total=None, ram_usage=None, swap_total=None, swap_usage=None,
