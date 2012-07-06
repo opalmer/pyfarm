@@ -17,3 +17,5 @@
 # along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
 '''module for inserting new data into the database'''
+
+from pyfarm.db.insert.net import *
