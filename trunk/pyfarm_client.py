@@ -28,7 +28,7 @@ import logging
 # parse command line arguments (before we setup logging)
 from pyfarm.client import cmdargs, system, process, job, master
 from pyfarm import lock, datatypes
-from pyfarm.db import submit
+from pyfarm.db import submit, insert
 
 options, args = cmdargs.parser.parse_args()
 cmdargs.processOptions(options)
@@ -38,7 +38,7 @@ from pyfarm import logger, prefs
 from pyfarm.net import rpc as _rpc
 from pyfarm.datatypes import Localhost
 
-from twisted.internet import reactor, protocol
+from twisted.internet import reactor
 from twisted.web import xmlrpc
 from twisted.web import server as _server
 from twisted.python import log
@@ -81,20 +81,16 @@ class Client(_rpc.Service, logger.LoggingBaseClass):
         return MASTER
     # end xmlrpc_master
 
-    def xmlrpc_foo(self):
-        submit_job = submit.Job()
-        submit_job.add('mayatomr', 1, 10)
-        submit_job.add('mayatomr', 11, 20)
+    def xmlrpc_insertHost(self, drop=True):
+        '''inserts a host into the database and returns the host id'''
+        try:
+            return insert.host(drop=drop)
 
-        # capture results and convert for output
-        # over xmlrpc
-        output = {}
-        results = submit_job.commit()
-        for jobid, frames in results.items():
-            output[str(jobid)] = frames
-
-        return output
-    # end xmlrpc_foo
+        except NameError:
+            raise xmlrpc.Fault(
+                10, "%s already exists in the database" % HOSTNAME
+            )
+    # end xmlrpc_insertHost
 
     def xmlrpc_setMaster(self, master, force=False):
         '''
