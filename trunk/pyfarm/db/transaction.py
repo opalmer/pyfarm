@@ -54,13 +54,11 @@ class Transaction(object):
         # single engine per run (this MAY be needed later)
         self.engine = session.ENGINE
         self.Session = sqlalchemy.orm.scoped_session(session.Session)
-#        sqlalchemy.orm.sessionmaker()
-
     # end __init__
 
     def log(self, msg, level='SQL'):
         log.msg(msg, level=level, system=self.__system or 'Transaction')
-    # end
+    # end log
 
     def __enter__(self):
         self.start = time.time()
