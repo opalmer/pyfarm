@@ -26,10 +26,10 @@ class HostNotFound(NameError):
 # end HostNotFound
 
 
-class MultipleResultsFound(NameError):
+class MultipleHostsFound(NameError):
     '''raised if multiple entries for a host are found where we expected one'''
     def __init__(self, hostname):
         msg = "found more than one entry for %s" % hostname
-        super(MultipleResultsFound, self).__init__(msg)
+        super(MultipleHostsFound, self).__init__(msg)
     # end __init__
-# end MultipleResultsFound
+# end MultipleHostsFound
