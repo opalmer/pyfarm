@@ -22,42 +22,53 @@ from pyfarm import datatypes
 from pyfarm.cmdargs import parser
 
 parser.add_option(
-    '--limit-jobtypes', default='*',
+    '--jobtypes', default=datatypes.DEFAULT_JOBTYPES,
     help='comma separated list of jobtypes to include or exclude'
 )
 parser.add_option(
-    '--host-ram', default=None,
+    '--ram', default=None,
     help='sets the total amount of ram available to the farm (in MB)'
 )
 parser.add_option(
-    '--host-cpus', default=None,
+    '--cpus', default=None,
     help='sets the total number of cpus available to the farm'
 )
 parser.add_option(
-    '--host-groups', default='*',
-    help='comma separated list of groups thos host belongs to'
+    '--groups', default='*',
+    help='comma separated list of groups those host belongs to'
 )
 parser.add_option(
-    '--host-software', default='*',
+    '--software', default=datatypes.DEFAULT_SOFTWARE,
     help='comma separated list of software the host can run'
 )
 parser.add_option(
     '--master', default=None,
-    help='sets the master for the current session'
-)
-parser.add_option(
-    '--set-master', default=None,
     help='sets the master for the current session and in the database'
-)
-parser.add_option(
-    '--lookup-master', action='store_true',
-    help='forces the master to be determined from the database'
 )
 
 def processOptions(options):
     '''sets up constants based on input provided by optparse'''
-    __setHostRAM(options.host_ram)
-    __setHostCPU(options.host_cpus)
+    __setHostRAM(options.ram)
+    __setHostCPU(options.cpus)
+
+    # preprocess the software arguments
+    software = []
+    if isinstance(options.software, (str, unicode)):
+        for value in options.software.split(","):
+            v = value.strip()
+            if v not in software:
+                software.append(v)
+
+    # preprocess the jobtype arguments
+    jobtypes = []
+    if isinstance(options.jobtypes, (str, unicode)):
+        for value in options.jobtypes.split(","):
+            v = value.strip()
+            if v not in jobtypes:
+                jobtypes.append(v)
+
+    options.software = software
+    options.jobtypes = jobtypes
 # end processOptions
 
 def __validNumber(value, min, max, name):
@@ -88,7 +99,7 @@ def __setHostRAM(option):
 
     value = __validNumber(
         option, 1, psutil.TOTAL_PHYMEM / 1024 / 1024,
-        '--host-ram'
+        '--ram'
     )
 
     if isinstance(value, int) and not value in datatypes.BOOLEAN_TYPES:
@@ -100,7 +111,7 @@ def __setHostCPU(option):
     value = __validNumber(
         option,
         1, psutil.NUM_CPUS,
-        '--host-cpus'
+        '--cpus'
     )
 
     if isinstance(value, int) and value not in datatypes.BOOLEAN_TYPES:
