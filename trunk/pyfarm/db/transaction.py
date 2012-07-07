@@ -22,6 +22,7 @@ import time
 
 import sqlalchemy
 import sqlalchemy.orm
+import sqlalchemy.schema
 from twisted.python import log
 
 from pyfarm import logger, prefs
@@ -42,6 +43,9 @@ class Transaction(object):
             pass
         # end BaseOjbect
         self.__system = system
+
+        if not isinstance(table, sqlalchemy.schema.Table):
+            raise TypeError("unexpected type %s for table" % type(table))
 
         self.base = base or BaseObject
         self.table = table
