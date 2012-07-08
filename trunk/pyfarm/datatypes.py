@@ -21,7 +21,7 @@ import psutil
 import socket
 import netifaces
 
-from sqlalchemy.types import String
+from sqlalchemy import types as sqltypes
 
 class OperatingSystem:
     LINUX, WINDOWS, MAC, OTHER = range(4)
@@ -221,10 +221,16 @@ State = Enum(
 # python datatypes for type comparison
 LIST_TYPES = (list, tuple, set)
 BOOLEAN_TYPES = (True, False)
-STRING_TYPES = (str, unicode, String)
+STRING_TYPES = (str, unicode, sqltypes.String)
 ACTIVE_JOB_STATES = (State.QUEUED, State.RUNNING)
 
 # defaults when creating host
 DEFAULT_GROUPS = ['*']
 DEFAULT_SOFTWARE = ['*']
 DEFAULT_JOBTYPES = ['*']
+SQL_TYPES = {
+    sqltypes.Integer : (int, ),
+    sqltypes.String : (str, unicode),
+    sqltypes.Float : (float, ),
+    sqltypes.PickleType : (int, float, str, unicode, list, tuple, set)
+}
