@@ -17,6 +17,7 @@
 # along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
 import sys
+import time
 import psutil
 import socket
 import netifaces
@@ -62,27 +63,58 @@ class OperatingSystem:
     # end get
 # end OperatingSystem
 
-class __Localhost:
+class _LocalhostConstructor:
     '''namespaced class for storing information about the local host'''
 
     # constants which do not change at runtime
     OS = OperatingSystem.get()
     OSNAME = OperatingSystem.MAPPINGS.get(OS)
     CPU_COUNT = psutil.NUM_CPUS
-    TOTAL_RAM = int(psutil.total_virtmem() / 1024 / 1024)
+    TOTAL_RAM = int(psutil.TOTAL_PHYMEM / 1024 / 1024)
     TOTAL_SWAP = int(psutil.total_virtmem() / 1024 / 1024)
 
+    @staticmethod
+    def notimplemented(name):
+        msg = "this version of psutil does not implement %s(), " % name
+        msg += "please consider upgrading"
+        raise NotImplementedError(msg)
+    # end notimplemented
+
     class __network:
+        if  hasattr(psutil, 'network_io_counters'):
+            SENT = property(lambda self: psutil.network_io_counters().bytes_sent / 1024 / 1024)
+            RECV = property(lambda self: psutil.network_io_counters().bytes_recv / 1024 / 1024)
+        else:
+            SENT = property(lambda self: _LocalhostConstructor.notimplemented('network_io_counters'))
+            RECV = property(lambda self: _LocalhostConstructor.notimplemented('network_io_counters'))
+
+        HOSTNAME = property(lambda self: socket.gethostname())
+        FQDN = property(lambda self: socket.getfqdn(self.HOSTNAME))
+
         @property
-        def SENT(self): return psutil.network_io_counters().bytes_sent / 1024 / 1024
-        @property
-        def RECV(self): return psutil.network_io_counters().bytes_recv / 1024 / 1024
-        @property
-        def HOSTNAME(self): return socket.gethostname()
-        @property
-        def FQDN(self): return socket.getfqdn(self.HOSTNAME)
-        @property
-        def IP(self): return socket.gethostbyname(self.HOSTNAME)
+        def IP(self):
+            '''
+            returns the best guess ip address for the current host using
+            a combination netifaces loops and dns information
+            '''
+            for ifacename in netifaces.interfaces():
+                interface = netifaces.ifaddresses(ifacename)
+
+                for address in interface.get(socket.AF_INET, []):
+                    # only eval results that contain an address
+                    # and are not considered local
+                    if 'addr' in address and not address['addr'].startswith("127"):
+                        # Attempt to retrieve the correct ip address
+                        # by matching the hostname against the resolved
+                        # hostname and alias list.  This of course throw
+                        # a socket.herror but that's a different issue
+                        addr = address['addr']
+                        name, aliaslist, addresslist = socket.gethostbyaddr(addr)
+                        if name == self.HOSTNAME or self.HOSTNAME in aliaslist:
+                            return addr
+
+            raise socket.herror("failed to retrieve ip for '%s'" % self.HOSTNAME)
+        # end IP
 
         @property
         def SUBNET(self):
@@ -99,58 +131,76 @@ class __Localhost:
     # end __network
 
     class __disk:
-        @property
-        def READ_COUNT(self): return psutil.disk_io_counters().read_count
-        @property
-        def WRITE_COUNT(self): return psutil.disk_io_counters().read_count
-        @property
-        def READ(self): return psutil.disk_io_counters().read_bytes / 1024 / 1024
-        @property
-        def WRITE(self): return psutil.disk_io_counters().write_bytes / 1024 / 1024
-        @property
-        def READ_TIME(self): return psutil.disk_io_counters().read_time
-        @property
-        def WRITE_TIME(self): return psutil.disk_io_counters().write_time
+        if hasattr(psutil, 'disk_io_counters'):
+            READ = property(lambda self: psutil.disk_io_counters().read_bytes / 1024 / 1024)
+            READ_TIME = property(lambda self: psutil.disk_io_counters().read_time)
+            READ_COUNT = property(lambda self: psutil.disk_io_counters().read_count)
+            WRITE = property(lambda self: psutil.disk_io_counters().write_bytes / 1024 / 1024)
+            WRITE_TIME = property(lambda self: psutil.disk_io_counters().write_time)
+            WRITE_COUNT = property(lambda self: psutil.disk_io_counters().read_count)
+        else:
+            READ = property(lambda self: _LocalhostConstructor.notimplemented('disk_io_counters'))
+            READ_TIME = property(lambda self: _LocalhostConstructor.notimplemented('disk_io_counters'))
+            READ_COUNT = property(lambda self: _LocalhostConstructor.notimplemented('disk_io_counters'))
+            WRITE = property(lambda self: _LocalhostConstructor.notimplemented('disk_io_counters'))
+            WRITE_TIME = property(lambda self: _LocalhostConstructor.notimplemented('disk_io_counters'))
+            WRITE_COUNT = property(lambda self: _LocalhostConstructor.notimplemented('disk_io_counters'))
     # end __disk
 
     class __partitions:
-        @property
-        def MOUNTS(self): return [m.mountpoint for m in psutil.disk_partitions()]
-        def usage(self, path): return psutil.disk_usage(path)
+        if not hasattr(psutil, 'disk_partitions'):
+            MOUNTS = property(lambda self: _LocalhostConstructor.notimplemented('disk_partitions'))
+        else:
+            MOUNTS = property(lambda self: [m.mountpoint for m in psutil.disk_partitions()])
+
+        def usage(self, path):
+            if not hasattr(psutil, 'disk_usage'):
+                _LocalhostConstructor.notimplemented('disk_usage')
+
+            return psutil.disk_usage(path)
+        # end usage
+
     # end __partitions
 
     class __cpu:
+        load_loop_count = 2
+        load_loop_sleep = .1
+
+        USER = property(lambda self: psutil.cpu_times().user)
+        SYSTEM = property(lambda self: psutil.cpu_times().system)
+        IDLE = property(lambda self: psutil.cpu_times().idle)
+        #LOAD = property(lambda self: psutil.cpu_percent())
+        #LOAD = property(lambda self: psutil.cpu_percent())
+
         @property
-        def USER(self): return psutil.cpu_times().user
-        @property
-        def SYSTEM(self): return psutil.cpu_times().system
-        @property
-        def IDLE(self): return psutil.cpu_times().idle
+        def LOAD(self):
+            '''
+            calculates the load of the cpu over a shot period of
+            time as specified by load_loop_count and load_loop_sleep
+            '''
+            times = []
+
+            for i in xrange(self.load_loop_count):
+                times.append(psutil.cpu_percent())
+                time.sleep(self.load_loop_sleep)
+
+            return sum(times) / self.load_loop_count
+        # end LOAD
     # end __cpu
+
+
+    if hasattr(psutil, 'phymem_usage'):
+        RAM = property(lambda self: int(psutil.phymem_usage().free / 1024 / 1024))
+        SWAP = property(lambda self: int(psutil.virtmem_usage().free / 1024 / 1024))
+    else:
+        RAM = property(lambda self: self.TOTAL_RAM - (psutil.used_phymem() / 1024 / 1024))
+        SWAP = property(lambda self: self.TOTAL_SWAP - (psutil.used_virtmem() / 1024 / 1024))
 
     # bound internal classes
     net = __network()
     disk = __disk()
     partitions = __partitions()
     cpu = __cpu()
-
-    @property
-    def RAM(self):
-        '''returns the amount of free ram'''
-        return int(psutil.phymem_usage().free / 1024 / 1024)
-    # end RAM
-
-    @property
-    def SWAP(self):
-        '''returns the amount of free swap'''
-        return int(psutil.virtmem_usage().free / 1024 / 1024)
-    # end SWAP
-
-    @property
-    def LOAD(self):
-        '''returns the current average system load'''
-        return psutil.cpu_percent()
-    # end LOAD
 # end __Localhost
 
 
@@ -211,7 +261,7 @@ class Enum(object):
 # end Enum
 
 
-Localhost = __Localhost()
+Localhost = _LocalhostConstructor()
 Software = Enum("MAYA", "HOUDINI", "VRAY", "NUKE", "BLENDER")
 State = Enum(
     "PAUSED", "BLOCKED", "QUEUED", "ASSIGN",
