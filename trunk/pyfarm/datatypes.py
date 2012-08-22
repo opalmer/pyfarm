@@ -100,6 +100,7 @@ class _LocalhostConstructor:
             for ifacename in netifaces.interfaces():
                 interface = netifaces.ifaddresses(ifacename)
 
+                # TODO: add support for IPv6
                 for address in interface.get(socket.AF_INET, []):
                     # only eval results that contain an address
                     # and are not considered local
