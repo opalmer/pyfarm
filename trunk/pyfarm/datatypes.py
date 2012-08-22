@@ -69,8 +69,8 @@ class __Localhost:
     OS = OperatingSystem.get()
     OSNAME = OperatingSystem.MAPPINGS.get(OS)
     CPU_COUNT = psutil.NUM_CPUS
-    TOTAL_RAM = int(psutil.phymem_usage().total / 1024 / 1024)
-    TOTAL_SWAP = int(psutil.virtmem_usage().total / 1024 / 1024)
+    TOTAL_RAM = int(psutil.total_virtmem() / 1024 / 1024)
+    TOTAL_SWAP = int(psutil.total_virtmem() / 1024 / 1024)
 
     class __network:
         @property
