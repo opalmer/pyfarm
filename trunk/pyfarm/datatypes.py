@@ -71,7 +71,13 @@ class _LocalhostConstructor:
     OSNAME = OperatingSystem.MAPPINGS.get(OS)
     CPU_COUNT = psutil.NUM_CPUS
     TOTAL_RAM = int(psutil.TOTAL_PHYMEM / 1024 / 1024)
-    TOTAL_SWAP = int(psutil.total_virtmem() / 1024 / 1024)
+
+    if hasattr(psutil, 'swap_memory'):
+        TOTAL_SWAP = int(psutil.swap_memory().total / 1024 / 1024)
+    elif hasattr(psutil, 'virtmem_usage'):
+        TOTAL_SWAP = int(psutil.virtmem_usage().total / 1024 / 1024)
+    else:
+        TOTAL_SWAP = int(psutil.total_virtmem() / 1024 / 1024)
 
     @staticmethod
     def notimplemented(name):
@@ -170,8 +176,6 @@ class _LocalhostConstructor:
         USER = property(lambda self: psutil.cpu_times().user)
         SYSTEM = property(lambda self: psutil.cpu_times().system)
         IDLE = property(lambda self: psutil.cpu_times().idle)
-        #LOAD = property(lambda self: psutil.cpu_percent())
-        #LOAD = property(lambda self: psutil.cpu_percent())
 
         @property
         def LOAD(self):
@@ -189,12 +193,26 @@ class _LocalhostConstructor:
         # end LOAD
     # end __cpu
 
+    # now to decide what functions to call from psutil for ram and swap
+    RAM = None
+    SWAP = None
 
-    if hasattr(psutil, 'phymem_usage'):
+    if hasattr(psutil, 'virtual_memory'):
+        RAM = property(lambda self: int(psutil.virtual_memory().free / 1024 / 1024))
+
+    if RAM is None and hasattr(psutil, 'phymem_usage'):
         RAM = property(lambda self: int(psutil.phymem_usage().free / 1024 / 1024))
-        SWAP = property(lambda self: int(psutil.virtmem_usage().free / 1024 / 1024))
-    else:
+
+    if RAM is None:
         RAM = property(lambda self: self.TOTAL_RAM - (psutil.used_phymem() / 1024 / 1024))
+
+    if hasattr(psutil, 'swap_memory'):
+        SWAP = property(lambda self: int(psutil.swap_memory().free / 1024 / 1024))
+
+    if SWAP is None and hasattr(psutil, 'virtmem_usage'):
+        SWAP = property(lambda self: int(psutil.virtmem_usage().free / 1024 / 1024))
+
+    if SWAP is None:
         SWAP = property(lambda self: self.TOTAL_SWAP - (psutil.used_virtmem() / 1024 / 1024))
 
     # bound internal classes
