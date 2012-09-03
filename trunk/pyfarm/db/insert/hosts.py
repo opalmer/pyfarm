@@ -19,9 +19,15 @@
 '''inserts network information into the database'''
 
 import logging
-import collections
 import sqlalchemy as sql
 from twisted.python import log
+
+try:
+    from collections import OrderedDict
+
+except ImportError:
+    from ordereddict import OrderedDict
+
 
 from pyfarm import datatypes
 from pyfarm.db import tables, session
@@ -86,7 +92,7 @@ def host(
     '''
     log.msg("preparing to insert new host")
     local = False
-    data = collections.OrderedDict()
+    data = OrderedDict()
 
     # setup hostname
     if hostname is None:
