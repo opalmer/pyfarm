@@ -108,17 +108,21 @@ class _LocalhostConstructor:
 
                 # TODO: add support for IPv6
                 for address in interface.get(socket.AF_INET, []):
-                    # only eval results that contain an address
-                    # and are not considered local
-                    if 'addr' in address and not address['addr'].startswith("127"):
-                        # Attempt to retrieve the correct ip address
-                        # by matching the hostname against the resolved
-                        # hostname and alias list.  This of course throw
-                        # a socket.herror but that's a different issue
-                        addr = address['addr']
-                        name, aliaslist, addresslist = socket.gethostbyaddr(addr)
-                        if name == self.HOSTNAME or self.HOSTNAME in aliaslist:
-                            return addr
+                    # skip addresses that do not contain an address entry
+                    if 'addr' not in address:
+                        continue
+
+                    addr = address['addr']
+
+                    # skip local/private entries
+                    if addr.startswith("127.") or addr.startswith("0."):
+                        continue
+
+                    name, aliaslist, addresslist = socket.gethostbyaddr(addr)
+                    hostname = name.split(".")[0]
+
+                    if hostname == self.HOSTNAME or name in aliaslist or hostname in aliaslist:
+                        return addr
 
             raise socket.herror("failed to retrieve ip for '%s'" % self.HOSTNAME)
         # end IP
