@@ -66,6 +66,3 @@ def host(hostname, **columns):
                 args = (key, value, current_value)
                 trans.log("setting %s to %s from %s" % args)
 # end host
-
-if __name__ == '__main__':
-    host('mactastic.local', subnet='255.255.255.0')
