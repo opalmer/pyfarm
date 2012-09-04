@@ -44,6 +44,16 @@ def tolist(value):
         raise TypeError("failed to convert %s to a list" % value)
 # end tolist
 
+def evalnone(value):
+    '''
+    If the value provided can be converted to None then return None instead
+    of returning a string of None
+    '''
+    if isinstance(value, (str, unicode)) and value in ('none', 'None', 'NONE', 'null'):
+        return None
+    return value
+# end evalnone
+
 def printOptions(options, log):
     '''prints out the keys and values being applied to the options'''
     def _log(msg):
