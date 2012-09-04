@@ -36,7 +36,7 @@ options = cmdargs.parser.parse_args()
 
 from pyfarm.client import system, process, job, master
 from pyfarm import lock, datatypes
-from pyfarm.db import submit, insert
+from pyfarm.db import insert, modify, query
 
 # setup the main log
 from pyfarm import logger, prefs
@@ -49,7 +49,7 @@ from twisted.web import server as _server
 from twisted.python import log
 
 CWD = os.getcwd()
-HOSTNAME = Localhost.net.HOSTNAME
+HOSTNAME = Localhost.net.FQDN
 ADDRESS = Localhost.net.IP
 MASTER = ()
 SERVICE = None
@@ -269,6 +269,30 @@ with lock.ProcessLock(
     # add an observer for the service log
     observer = logger.Observer(SERVICE_LOG)
     observer.start()
+
+    # construct keyword arguments used to update the host in
+    # the database
+    host_table_keywords = {
+        "ram_total" : options.ram,
+        "cpu_count" : options.cpus,
+        "online" : options.online,
+        "groups" : options.groups,
+        "software" : options.software
+    }
+
+    if options.set_master and options.master:
+        host_table_keywords['master'] = options.master
+
+    if query.hosts.exists():
+        log.msg("updating %s in the host table" % HOSTNAME)
+        modify.hosts.host(
+            HOSTNAME,
+            **host_table_keywords
+        )
+
+    else:
+        log.msg("inserting %s into the host table" % HOSTNAME, level="INFO")
+        insert.hosts.host(**host_table_keywords)
 
     MASTER = master.get(options.master)
     client = Client(SERVICE_LOG)
