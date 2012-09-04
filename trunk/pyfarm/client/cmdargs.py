@@ -44,7 +44,7 @@ parser.add_argument(
     help='comma separated list of software the host can run'
 )
 parser.add_argument(
-    '--master', default=evalnone,
+    '--master', default=None, type=evalnone,
     help='sets the master for the current session and in the database'
 )
 parser.add_argument(
