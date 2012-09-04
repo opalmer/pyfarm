@@ -283,6 +283,13 @@ with lock.ProcessLock(
     if options.set_master and options.master:
         host_table_keywords['master'] = options.master
 
+    elif options.set_master and options.master is None:
+        log.msg(
+            "master will be set to None for %s" % HOSTNAME,
+            level=logging.WARNING
+        )
+        host_table_keywords['master'] = options.master
+
     if query.hosts.exists():
         log.msg("updating %s in the host table" % HOSTNAME)
         modify.hosts.host(
