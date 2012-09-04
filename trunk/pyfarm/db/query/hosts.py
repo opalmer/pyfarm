@@ -28,7 +28,7 @@ import logging
 
 from twisted.python import log
 
-from pyfarm import logger
+from pyfarm import datatypes
 from pyfarm.db.transaction import Transaction
 from pyfarm.db.tables import hosts
 
@@ -59,19 +59,24 @@ def __convert_resources(data):
     return results
 # end __convert_resources
 
-def exists(hostname):
+def exists(hostname=None):
     '''
     Returns True if the given hostname is preset in the table.  In
     general this function should not need to be used and is only
     provided for convenience.
     '''
+    hostname = hostname or datatypes.Localhost.net.FQDN
+    log.msg("checking to see if %s is in the host table" % hostname)
+    select = hosts.select(hosts.c.hostname == hostname)
+    return bool(select.execute().first())
+# end exists
+
+def master(hostname):
+    '''returns the master for the provided hostname'''
     with Transaction(hosts) as trans:
         host = trans.query.filter_by(hostname=hostname).first()
-        if host is None:
-            return False
-
-        return False
-# end exists
+        return host.master
+# end master
 
 def update_resources(hostname=None, data=None):
     '''
@@ -82,7 +87,7 @@ def update_resources(hostname=None, data=None):
         returns the fields that were updated for the given host
     '''
     if hostname is None:
-        hostname = socket.getfqdn()
+        hostname = datatypes.Localhost.net.FQDN
 
     log.msg("attempting to update host information for %s" % hostname)
 
