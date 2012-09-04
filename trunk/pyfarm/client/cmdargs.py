@@ -28,11 +28,11 @@ parser.add_argument(
     help='comma separated list of jobtypes to include or exclude'
 )
 parser.add_argument(
-    '--ram', default=None, type=int,
+    '--ram', default=datatypes.Localhost.TOTAL_RAM, type=int,
     help='sets the total amount of ram available to the farm (in MB)'
 )
 parser.add_argument(
-    '--cpus', default=None, type=int,
+    '--cpus', default=psutil.NUM_CPUS, type=int,
     help='sets the total number of cpus available to the farm'
 )
 parser.add_argument(
@@ -51,75 +51,3 @@ parser.add_argument(
     '--set-master', default=True, type=tobool,
     help='if True then set the master to the provided --master input'
 )
-#
-#def processOptions(options):
-#    '''sets up constants based on input provided by optparse'''
-#    __setHostRAM(options.ram)
-#    __setHostCPU(options.cpus)
-#
-#    # preprocess the software arguments
-#    software = []
-#    if isinstance(options.software, (str, unicode)):
-#        for value in options.software.split(","):
-#            v = value.strip()
-#            if v not in software:
-#                software.append(v)
-#
-#    # preprocess the jobtype arguments
-#    jobtypes = []
-#    if isinstance(options.jobtypes, (str, unicode)):
-#        for value in options.jobtypes.split(","):
-#            v = value.strip()
-#            if v not in jobtypes:
-#                jobtypes.append(v)
-#
-#    options.software = software
-#    options.jobtypes = jobtypes
-## end processOptions
-
-def __validNumber(value, min, max, name):
-    '''
-    checks the range of a given value and raise a ValueError if
-    it fails
-    '''
-    if value is None:
-        return False
-
-    try:
-        value = int(value)
-
-    except ValueError:
-        raise ValueError('cannot convert %s to an integer')
-
-    if value > max:
-        raise ValueError("%s cannot be greater than %s" % (name, max))
-
-    elif value < min:
-        raise ValueError("%s cannot be less than %s" % (name, min))
-
-    return value
-# end __validNumber
-
-def __setHostRAM(option):
-    '''sets the host ram amount if the value provided to option is valid'''
-
-    value = __validNumber(
-        option, 1, psutil.TOTAL_PHYMEM / 1024 / 1024,
-        '--ram'
-    )
-
-    if isinstance(value, int) and not value in datatypes.BOOLEAN_TYPES:
-        psutil.TOTAL_PHYMEM = value * 1024 * 1024
-# end __setHostRAM
-
-def __setHostCPU(option):
-    '''sets the host cpu count if the value provided to option is valid'''
-    value = __validNumber(
-        option,
-        1, psutil.NUM_CPUS,
-        '--cpus'
-    )
-
-    if isinstance(value, int) and value not in datatypes.BOOLEAN_TYPES:
-        psutil.NUM_CPUS = value
-# end __setHostCPU
