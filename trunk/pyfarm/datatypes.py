@@ -305,5 +305,6 @@ SQL_TYPES = {
     sqltypes.Integer : (int, ),
     sqltypes.String : (str, unicode),
     sqltypes.Float : (float, ),
-    sqltypes.PickleType : (int, float, str, unicode, list, tuple, set)
+    sqltypes.PickleType : (int, float, str, unicode, list, tuple, set),
+    sqltypes.Boolean : (bool, )
 }
