@@ -48,7 +48,7 @@ parser.add_argument(
     help='sets the master for the current session and in the database'
 )
 parser.add_argument(
-    '--set-master', default=True, type=tobool,
+    '--set-master', default=False, type=tobool,
     help='if True then set the master to the provided --master input'
 )
 parser.add_argument(
