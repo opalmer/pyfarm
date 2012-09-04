@@ -44,10 +44,14 @@ parser.add_argument(
     help='comma separated list of software the host can run'
 )
 parser.add_argument(
-    '--master', default=None,
+    '--master', default=evalnone,
     help='sets the master for the current session and in the database'
 )
 parser.add_argument(
     '--set-master', default=True, type=tobool,
     help='if True then set the master to the provided --master input'
+)
+parser.add_argument(
+    '--online', default=True, type=tobool,
+    help='if True then mark of those as online in the database'
 )
