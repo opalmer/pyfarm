@@ -30,7 +30,7 @@ from pyfarm.client import cmdargs, system, process, job, master
 from pyfarm import lock, datatypes
 from pyfarm.db import submit, insert
 
-options, args = cmdargs.parser.parse_args()
+options = cmdargs.parser.parse_args()
 cmdargs.processOptions(options)
 
 # setup the main log
@@ -262,7 +262,7 @@ with lock.ProcessLock(
     observer = logger.Observer(SERVICE_LOG)
     observer.start()
 
-    MASTER = master.getmaster(options)
+    MASTER = master.get(options.master)
     client = Client(SERVICE_LOG)
     SERVICE = client
 

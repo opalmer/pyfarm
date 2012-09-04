@@ -21,29 +21,33 @@ import psutil
 from pyfarm import datatypes
 from pyfarm.cmdargs import parser
 
-parser.add_option(
+parser.add_argument(
     '--jobtypes', default=datatypes.DEFAULT_JOBTYPES,
     help='comma separated list of jobtypes to include or exclude'
 )
-parser.add_option(
+parser.add_argument(
     '--ram', default=None,
     help='sets the total amount of ram available to the farm (in MB)'
 )
-parser.add_option(
-    '--cpus', default=None,
+parser.add_argument(
+    '--cpus', default=None, type=int,
     help='sets the total number of cpus available to the farm'
 )
-parser.add_option(
+parser.add_argument(
     '--groups', default='*',
     help='comma separated list of groups those host belongs to'
 )
-parser.add_option(
+parser.add_argument(
     '--software', default=datatypes.DEFAULT_SOFTWARE,
     help='comma separated list of software the host can run'
 )
-parser.add_option(
+parser.add_argument(
     '--master', default=None,
     help='sets the master for the current session and in the database'
+)
+parser.add_argument(
+    '--set-master', default=True,
+    type=bool,
 )
 
 def processOptions(options):

@@ -20,22 +20,22 @@ Provides a common set of command line options and arguments.  In future versions
 this may also serve as a common interface to argparse
 '''
 
-import optparse
+import argparse
 
-parser = optparse.OptionParser()
-parser.add_option(
+parser = argparse.ArgumentParser()
+parser.add_argument(
     '--force-kill', action='store_true', default=False,
         help='kill any currently running process before starting'
 )
-parser.add_option(
+parser.add_argument(
     '--wait', action='store_true', default=False,
     help='waits for running processes to terminate first'
 )
-parser.add_option(
+parser.add_argument(
     '--log', default=None,
     help='location to send the logfile to'
 )
-parser.add_option(
+parser.add_argument(
     '--remove-lock', action='store_true', default=False,
     help='Removes the lock file on disk before starting if one exists.  This' +
          ' is mainly used if you already know the process does not exist and' +

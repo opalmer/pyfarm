@@ -32,7 +32,8 @@ from pyfarm.db.query import hosts
 from pyfarm.net import rpc as _rpc
 from pyfarm.datatypes import Localhost
 
-options, args = cmdargs.parser.parse_args()
+options = cmdargs.parser.parse_args()
+
 from pyfarm.server import callbacks
 
 from twisted.internet import reactor, threads
