@@ -38,35 +38,37 @@ class Transaction(object):
     :param object base:
         optional base to map query onto
     '''
-    class Entry(object):
-        '''
-        base object which represents all results and has a "nice"
-        string representation
-        '''
-        def __repr__(self):
-            # iterate over all variables loaded onto self
-            # and generate a meaningful string representation
-            values = []
-            for name, value in vars(self).iteritems():
-                if not name.startswith("_"):
-                    if isinstance(value, (str, unicode)):
-                        value = "%s='%s'" % (name, value)
-                    else:
-                        value = "%s=%s" % (name, value)
+    def __init__(self, table, base=None, system=None):
+        class Entry(object):
+            '''
+            base object which represents all results and has a "nice"
+            string representation.  This class must be defined in __init__
+            otherwise the same class will be mapped to multiple tables
+            resulting in an ArgumentError
+            '''
+            def __repr__(self):
+                # iterate over all variables loaded onto self
+                # and generate a meaningful string representation
+                values = []
+                for name, value in vars(self).iteritems():
+                    if not name.startswith("_"):
+                        if isinstance(value, (str, unicode)):
+                            value = "%s='%s'" % (name, value)
+                        else:
+                            value = "%s=%s" % (name, value)
 
-                    values.append(value)
+                        values.append(value)
 
-            return "%s(%s)" % (self.__class__.__name__, (", ".join(values)))
-        # end __repr__
-    # end Entry
+                return "%s(%s)" % (self.__class__.__name__, (", ".join(values)))
+            # end __repr__
+        # end Entry
 
-    def __init__(self, table, base=Entry, system=None):
         self.__system = system or self.__class__.__name__
 
         if not isinstance(table, sqlalchemy.schema.Table):
             raise TypeError("unexpected type %s for table" % type(table))
 
-        self.base = base
+        self.base = base or Entry
         self.table = table
         self.tablename = self.table.fullname
 
