@@ -47,6 +47,7 @@ def get(master=None):
     # if we cannot resolve the provided master then we will probably
     # have trouble connecting so just fail here
     try:
+        log.msg("ensuring we can resolve %s's address" % master)
         address = socket.gethostbyname(master)
 
     except socket.gaierror:
