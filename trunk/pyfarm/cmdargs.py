@@ -25,10 +25,8 @@ def tobool(value):
     '''converts the incoming value to a boolean'''
     if isinstance(value, bool): return value
     elif isinstance(value, (int, long, float)): return bool(value)
-    elif value.lower() == "false": return False
-    elif value.lower() == "true": return True
-    elif value == "0": return False
-    elif value == "1": return True
+    elif value.lower() in ("false", "no", "0"): return False
+    elif value.lower() in ("true", "yes", "1"): return True
     else:
         raise TypeError("failed to convert %s to a boolean value" % value)
 # end tobool
