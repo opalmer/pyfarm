@@ -46,8 +46,6 @@ def host(hostname, **columns):
     if not columns:
         raise ValueError("no columns provided to update")
 
-    utility.typecheck(hosts, columns)
-
     log.msg("preparing to modify '%s' database information" % hostname)
     with Transaction(hosts) as trans:
         filter = trans.query.filter(hosts.c.hostname == hostname)
