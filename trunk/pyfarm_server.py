@@ -17,7 +17,7 @@
 # along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
 '''
-receieve, process, and handle job requests from the master
+receive, process, and handle job requests from the master
 '''
 
 import os
@@ -25,15 +25,19 @@ import sys
 import time
 import logging
 
-# parse command line arguments (before we setup logging)
-from pyfarm import logger, cmdargs, lock, datatypes, prefs
+from pyfarm.server import cmdargs
+
+# Handle command line input before importing anything else.  This
+# ensures that if -h or --help is requested or if we have trouble
+# parsing the arguments we can run the appropriate action before
+# we setup other modules.
+options = cmdargs.parser.parse_args()
+
+from pyfarm import logger, lock, datatypes, prefs
 from pyfarm.db import tables
 from pyfarm.db.query import hosts
 from pyfarm.net import rpc as _rpc
 from pyfarm.datatypes import Localhost
-
-options = cmdargs.parser.parse_args()
-
 from pyfarm.server import callbacks
 
 from twisted.internet import reactor, threads
@@ -45,6 +49,9 @@ HOSTNAME = Localhost.net.HOSTNAME
 ADDRESS = Localhost.net.IP
 SERVICE = None
 SERVICE_LOG = None
+
+# log the options being produced by the option parser
+cmdargs.printOptions(options, log)
 
 # PYFARM_RESTART should not start out in the environment
 if 'PYFARM_RESTART' in os.environ:

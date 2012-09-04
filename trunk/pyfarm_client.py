@@ -25,13 +25,18 @@ import sys
 import time
 import logging
 
-# parse command line arguments (before we setup logging)
-from pyfarm.client import cmdargs, system, process, job, master
+from pyfarm.client import cmdargs
+
+# Handle command line input before importing anything else.  This
+# ensures that if -h or --help is requested or if we have trouble
+# parsing the arguments we can run the appropriate action before
+# we setup other modules.
+options = cmdargs.parser.parse_args()
+
+
+from pyfarm.client import system, process, job, master
 from pyfarm import lock, datatypes
 from pyfarm.db import submit, insert
-
-options = cmdargs.parser.parse_args()
-cmdargs.processOptions(options)
 
 # setup the main log
 from pyfarm import logger, prefs
@@ -49,6 +54,9 @@ ADDRESS = Localhost.net.IP
 MASTER = ()
 SERVICE = None
 SERVICE_LOG = None
+
+# log the options being produced by the option parser
+cmdargs.printOptions(options, log)
 
 # PYFARM_RESTART should not start out in the environment
 if 'PYFARM_RESTART' in os.environ:

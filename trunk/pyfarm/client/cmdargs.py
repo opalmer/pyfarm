@@ -19,14 +19,16 @@
 import psutil
 
 from pyfarm import datatypes
-from pyfarm.cmdargs import parser
+from pyfarm.cmdargs import *
+
+parser.description = "Entry point for PyFarm's client."
 
 parser.add_argument(
     '--jobtypes', default=datatypes.DEFAULT_JOBTYPES,
     help='comma separated list of jobtypes to include or exclude'
 )
 parser.add_argument(
-    '--ram', default=None,
+    '--ram', default=None, type=int,
     help='sets the total amount of ram available to the farm (in MB)'
 )
 parser.add_argument(
@@ -34,11 +36,11 @@ parser.add_argument(
     help='sets the total number of cpus available to the farm'
 )
 parser.add_argument(
-    '--groups', default='*',
+    '--groups', default='*', type=tolist,
     help='comma separated list of groups those host belongs to'
 )
 parser.add_argument(
-    '--software', default=datatypes.DEFAULT_SOFTWARE,
+    '--software', default=datatypes.DEFAULT_SOFTWARE, type=tolist,
     help='comma separated list of software the host can run'
 )
 parser.add_argument(
@@ -46,34 +48,34 @@ parser.add_argument(
     help='sets the master for the current session and in the database'
 )
 parser.add_argument(
-    '--set-master', default=True,
-    type=bool,
+    '--set-master', default=True, type=tobool,
+    help='if True then set the master to the provided --master input'
 )
-
-def processOptions(options):
-    '''sets up constants based on input provided by optparse'''
-    __setHostRAM(options.ram)
-    __setHostCPU(options.cpus)
-
-    # preprocess the software arguments
-    software = []
-    if isinstance(options.software, (str, unicode)):
-        for value in options.software.split(","):
-            v = value.strip()
-            if v not in software:
-                software.append(v)
-
-    # preprocess the jobtype arguments
-    jobtypes = []
-    if isinstance(options.jobtypes, (str, unicode)):
-        for value in options.jobtypes.split(","):
-            v = value.strip()
-            if v not in jobtypes:
-                jobtypes.append(v)
-
-    options.software = software
-    options.jobtypes = jobtypes
-# end processOptions
+#
+#def processOptions(options):
+#    '''sets up constants based on input provided by optparse'''
+#    __setHostRAM(options.ram)
+#    __setHostCPU(options.cpus)
+#
+#    # preprocess the software arguments
+#    software = []
+#    if isinstance(options.software, (str, unicode)):
+#        for value in options.software.split(","):
+#            v = value.strip()
+#            if v not in software:
+#                software.append(v)
+#
+#    # preprocess the jobtype arguments
+#    jobtypes = []
+#    if isinstance(options.jobtypes, (str, unicode)):
+#        for value in options.jobtypes.split(","):
+#            v = value.strip()
+#            if v not in jobtypes:
+#                jobtypes.append(v)
+#
+#    options.software = software
+#    options.jobtypes = jobtypes
+## end processOptions
 
 def __validNumber(value, min, max, name):
     '''
