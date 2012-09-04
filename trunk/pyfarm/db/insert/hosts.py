@@ -273,7 +273,3 @@ def host(
 
     return hostid
 # end host
-
-if __name__ == "__main__":
-    from pyfarm import logger
-    print host(drop=True)
