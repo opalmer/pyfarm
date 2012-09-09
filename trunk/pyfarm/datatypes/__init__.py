@@ -17,5 +17,9 @@
 # along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
 '''
-consolidated modules which contains code which stores basic data
+consolidated modules which contains code defining some basic data
+for use within pyfarm
 '''
+
+from pyfarm.datatypes.enums import *
+
