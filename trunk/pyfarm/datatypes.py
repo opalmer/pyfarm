@@ -24,6 +24,7 @@ import netifaces
 
 from sqlalchemy import types as sqltypes
 
+
 class OperatingSystem:
     LINUX, WINDOWS, MAC, OTHER = range(4)
     MAPPINGS = {
@@ -145,19 +146,19 @@ class _LocalhostConstructor:
             # our hostname and dns.  The above will take care of the majority of
             # cases however sometimes we have to fall back on DNS alone
             if IP is None:
+                try:
+                    addr = socket.gethostbyname(HOSTNAME)
+                    IP = addr
+                    del addr
+
+                except socket.herror:
                     try:
-                        addr = socket.gethostbyname(HOSTNAME)
+                        addr = socket.gethostbyname(FQDN)
                         IP = addr
                         del addr
 
                     except socket.herror:
-                        try:
-                            addr = socket.gethostbyname(FQDN)
-                            IP = addr
-                            del addr
-
-                        except socket.herror:
-                            pass
+                        pass
 
             if IP is None:
                 raise ValueError("failed to retrieve ip address for %s" % HOSTNAME)
@@ -175,6 +176,10 @@ class _LocalhostConstructor:
                     if interface.get('addr') == IP:
                         INTERFACE = ifacename
                         break
+
+            # if the preferences call for it perform a check to
+            # determine if the 'bound' ip is the same one
+            # we just resolved
 
             del ifacename
             del interface
