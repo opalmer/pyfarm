@@ -39,3 +39,12 @@ heartbeat:
   group: 224.0.0.1
   prefix: pyfarmmulticastheartbeat
   interval: 60
+
+# Used to verify if the address we think we should be using is the
+# one we actually used to communicate with for a remote host.  Turning
+# this feature off will not prevent pyfarm from running but may
+# prevent certain checks from being run.
+remote_check:
+  enable: true
+  hostname: pyfarm.net
+  port: 80
