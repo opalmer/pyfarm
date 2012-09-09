@@ -94,51 +94,90 @@ class _LocalhostConstructor:
             SENT = property(lambda self: _LocalhostConstructor.notimplemented('network_io_counters'))
             RECV = property(lambda self: _LocalhostConstructor.notimplemented('network_io_counters'))
 
-        HOSTNAME = property(lambda self: socket.gethostname())
-        FQDN = property(lambda self: socket.getfqdn(self.HOSTNAME))
+        HOSTNAME = socket.gethostname()
+        FQDN = socket.getfqdn(HOSTNAME)
 
-        @property
-        def IP(self):
-            '''
-            returns the best guess ip address for the current host using
-            a combination netifaces loops and dns information
-            '''
-            for ifacename in netifaces.interfaces():
-                interface = netifaces.ifaddresses(ifacename)
+        # setup network information
+        INTERFACES = {}
+        ADDRESSES = {}
+        IP = None
+        SUBNET = None
+        INTERFACE = None
 
-                # TODO: add support for IPv6
-                for address in interface.get(socket.AF_INET, []):
-                    # skip addresses that do not contain an address entry
-                    if 'addr' not in address:
-                        continue
+        for ifacename in netifaces.interfaces():
+            interface = netifaces.ifaddresses(ifacename)
 
-                    addr = address['addr']
+            # TODO: add support for IPv6
+            for address in interface.get(socket.AF_INET, []):
+                # skip addresses that do not contain an address entry
+                if 'addr' in address:
+                    INTERFACES[ifacename] = address
 
-                    # skip local/private entries
+                addr = address['addr']
+                ADDRESSES[ifacename] = addr
+
+                # skip local/private entries
+                try:
                     if addr.startswith("127.") or addr.startswith("0."):
                         continue
 
-                    name, aliaslist, addresslist = socket.gethostbyaddr(addr)
-                    hostname = name.split(".")[0]
+                    try:
+                        name, aliaslist, addresslist = socket.gethostbyaddr(addr)
+                        hostname = name.split(".")[0]
 
-                    if hostname == self.HOSTNAME or name in aliaslist or hostname in aliaslist:
-                        return addr
+                        if IP is None and \
+                           hostname == HOSTNAME or \
+                           name in aliaslist or \
+                           hostname in aliaslist:
+                            IP = addr
+                            SUBNET = address.get('netmask')
+                            INTERFACE = ifacename
 
-            raise socket.herror("failed to retrieve ip for '%s'" % self.HOSTNAME)
-        # end IP
+                        del hostname, name, aliaslist, addresslist
 
-        @property
-        def SUBNET(self):
-            '''returns the current subnet address'''
-            ip = self.IP
-            for interface in netifaces.interfaces():
-                addresses = netifaces.ifaddresses(interface)
+                    except socket.herror:
+                        continue
 
-                # TODO: add support for IPv6
-                for address in addresses.get(socket.AF_INET, []):
-                    if ip == address.get('addr'):
-                        return address.get('netmask')
-        # end SUBNET
+                finally:
+                    del address, addr
+
+            # One last attempt to retrieve the correct ip using strictly
+            # our hostname and dns.  The above will take care of the majority of
+            # cases however sometimes we have to fall back on DNS alone
+            if IP is None:
+                    try:
+                        addr = socket.gethostbyname(HOSTNAME)
+                        IP = addr
+                        del addr
+
+                    except socket.herror:
+                        try:
+                            addr = socket.gethostbyname(FQDN)
+                            IP = addr
+                            del addr
+
+                        except socket.herror:
+                            pass
+
+            if IP is None:
+                raise ValueError("failed to retrieve ip address for %s" % HOSTNAME)
+
+            if SUBNET is None:
+                for ifacename, interface in INTERFACES.iteritems():
+                    if interface.get('addr') == IP:
+                        SUBNET = interface.get('netmask')
+                        break
+
+            # if the interface has not been setup yet then
+            #
+            if INTERFACE is None:
+                for ifacename, interface in INTERFACES.iteritems():
+                    if interface.get('addr') == IP:
+                        INTERFACE = ifacename
+                        break
+
+            del ifacename
+            del interface
     # end __network
 
     class __disk:
