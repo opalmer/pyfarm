@@ -25,5 +25,3 @@ PYFARM_ETC = os.path.join(PYFARM_ROOT, "etc")
 PYFARM_JOBTYPES = os.path.join(PYFARM_ROOT, "pyfarm", "jobtypes")
 
 site.addsitedir(PYFARM_ROOT)
-
-from pyfarm.preferences import prefs
