@@ -53,7 +53,7 @@ for ifacename in netifaces.interfaces():
             log.msg("%s does not have an address entry, skipping" % ifacename)
             continue
 
-        elif addr.startswith("127.") or addr.startswith("0.0"):
+        if addr.startswith("127.") or addr.startswith("0.0.") or addr.startswith("169.254."):
             log.msg("%s seems to be a local adapter, skipping" % ifacename)
             continue
 
@@ -71,6 +71,8 @@ for ifacename in netifaces.interfaces():
                 IP = addr
                 SUBNET = address.get('netmask')
                 INTERFACE = ifacename
+            else:
+                log.msg("%s does not map to the local host's name" % addr)
 
         except socket.herror:
             log.msg(
