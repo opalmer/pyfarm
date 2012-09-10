@@ -26,7 +26,7 @@ from colorama import Fore, Back, Style
 from logging import handlers
 
 from twisted.python import log
-from pyfarm import datatypes, prefs
+from pyfarm import prefs
 
 log.FileLogObserver.timeFormat = prefs.get('logging.timestamp')
 colorama.init()
@@ -175,7 +175,7 @@ class Observer(log.FileLogObserver):
         if isinstance(self.observe, str):
             return eventDict['system'] == self.observe
 
-        elif isinstance(self.observe, datatypes.LIST_TYPES):
+        elif isinstance(self.observe, (list, tuple, set)):
             return eventDict['system'] in self.observe
 
         return True
