@@ -33,3 +33,9 @@ class MultipleHostsFound(NameError):
         super(MultipleHostsFound, self).__init__(msg)
     # end __init__
 # end MultipleHostsFound
+
+
+class NetworkSetupError(ValueError):
+    '''raised when there were problems setting up the network'''
+    pass
+# end NetworkSetupError
