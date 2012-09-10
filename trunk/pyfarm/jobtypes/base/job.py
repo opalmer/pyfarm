@@ -25,13 +25,12 @@ import getpass
 import logging
 import itertools
 
-from pyfarm import logger, datatypes, prefs
-from pyfarm.db import Transaction
+from pyfarm import datatypes
+from pyfarm.datatypes.system import USER, OS, OperatingSystem
+from pyfarm.logger import LoggingBaseClass
+from pyfarm.preferences import prefs
 
-USERNAME = getpass.getuser()
-HOSTNAME = socket.getfqdn()
-
-class Job(logger.LoggingBaseClass):
+class Job(LoggingBaseClass):
     '''
     Base jobtype inherited by all other jobtypes
 
@@ -196,7 +195,7 @@ class Job(logger.LoggingBaseClass):
             command_names = set()
             command_names.add(self._command)
 
-        if datatypes.OS == datatypes.OperatingSystem.WINDOWS:
+        if OS == OperatingSystem.WINDOWS:
             # construct a list of all possible commands
             command_names.add(self._command.lower())
             command_names.add(self._command.upper())
@@ -259,21 +258,21 @@ class Job(logger.LoggingBaseClass):
         # setup base attributes (overridden below)
         self.uid = None
         self.gid = None
-        self.user = USERNAME
+        self.user = USER
 
         if self.user is None:
-            self.user = USERNAME
+            self.user = USER
 
         if isinstance(self._user, str):
             # if the requested user is not the current user we need
             # to see if we are running as root/admin
             self.log("...checking for admin privileges")
-            if self._user != USERNAME:
+            if self._user != USER:
                 # setting the process owner is only supported on
                 # unix based systems
-                if datatypes.OS in (
-                    datatypes.OperatingSystem.LINUX,
-                    datatypes.OperatingSystem.MAC,
+                if OS in (
+                    OperatingSystem.LINUX,
+                    OperatingSystem.MAC,
                 ):
                     if os.getuid():
                         raise OSError("you must be root to setuid")
@@ -297,13 +296,13 @@ class Job(logger.LoggingBaseClass):
                 else:
                     # if we are running in windows, we should at least
                     # produce warnings if we are not an administrator
-                    if datatypes.OS == datatypes.OperatingSystem.WINDOWS and \
+                    if OS == OperatingSystem.WINDOWS and \
                         ctypes.windll.shell32.IsUserAnAdmin():
                         msg = "not running as an administrator, this may produce "
                         msg += "unexpected results in some cases"
                         self.log(msg, level=logging.WARNING)
 
-                    self.user = USERNAME
+                    self.user = USER
 
         self.log("...job will run as %s" % self.user)
     # end setupUser

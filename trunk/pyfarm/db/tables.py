@@ -19,8 +19,9 @@
 import logging
 import sqlalchemy as sql
 
-from pyfarm import datatypes, prefs
+from pyfarm.preferences import prefs
 from pyfarm.db.session import ENGINE
+from pyfarm.datatypes.enums import State, DEFAULT_JOBTYPES, DEFAULT_GROUPS, DEFAULT_SOFTWARE
 
 from twisted.python import log
 
@@ -57,9 +58,9 @@ hosts = sql.Table('pyfarm_hosts', metadata,
     sql.Column('swap_usage', sql.Integer),
     sql.Column('cpu_count', sql.Integer),
     sql.Column('online', sql.Boolean, nullable=False, default=True),
-    sql.Column('groups', sql.PickleType, default=datatypes.DEFAULT_GROUPS),
-    sql.Column('software', sql.PickleType, default=datatypes.DEFAULT_SOFTWARE),
-    sql.Column('jobtypes', sql.PickleType, default=datatypes.DEFAULT_JOBTYPES)
+    sql.Column('groups', sql.PickleType, default=DEFAULT_GROUPS),
+    sql.Column('software', sql.PickleType, default=DEFAULT_SOFTWARE),
+    sql.Column('jobtypes', sql.PickleType, default=DEFAULT_JOBTYPES)
 )
 
 # create jobs table
@@ -114,7 +115,7 @@ frames = sql.Table('pyfarm_frames', metadata,
     sql.Column('frame', sql.Integer),
     sql.Column('order', sql.Integer, default=None),
     sql.Column('state', sql.Integer,
-               default=datatypes.State.QUEUED),
+               default=State.QUEUED),
     sql.Column('attempts', sql.Integer, default=0),
     sql.Column('ram', sql.Integer, default=None),
     sql.Column('time_start', sql.Float, default=None),

@@ -18,11 +18,12 @@
 
 import logging
 
-from pyfarm import logger, prefs
+from pyfarm.logger import LoggingBaseClass
+from pyfarm.preferences import prefs
 
 from twisted.internet.error import ConnectionRefusedError
 
-class AssignWorkToClient(logger.LoggingBaseClass):
+class AssignWorkToClient(LoggingBaseClass):
     '''
     class which retrieves a job from the database and sends
     it to the requesting client

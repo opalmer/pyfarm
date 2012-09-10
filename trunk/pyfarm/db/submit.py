@@ -28,12 +28,15 @@ import logging
 import pprint
 import sqlalchemy as sql
 
-from pyfarm import logger, datatypes, jobtypes, utility, prefs
+from pyfarm import jobtypes, utility
+from pyfarm.logger import LoggingBaseClass
+from pyfarm.preferences import prefs
+from pyfarm.datatypes.enums import State
 from pyfarm.db import tables, session, transaction, query
 
 __all__ = ['Job', 'Frame']
 
-class SubmitBase(logger.LoggingBaseClass):
+class SubmitBase(LoggingBaseClass):
     def __init__(self):
         self.data = []
     # end __init__
@@ -68,8 +71,8 @@ class SubmitBase(logger.LoggingBaseClass):
 class Frame(SubmitBase):
     '''class for adding frames to an existing job'''
     VALID_STATES = (
-        datatypes.State.PAUSED, datatypes.State.QUEUED, datatypes.State.DONE,
-        datatypes.State.FAILED
+        State.PAUSED, State.QUEUED, State.DONE,
+        State.FAILED
     )
     def __init__(self, jobid=None):
         super(Frame, self).__init__()
@@ -84,7 +87,7 @@ class Frame(SubmitBase):
     # end __init__
 
     def add(self, frame=None, jobid=None, priority=None, ram=None, cpus=None,
-            state=datatypes.State.QUEUED, dependencies=None):
+            state=State.QUEUED, dependencies=None):
         '''
         adds a frame to be committed to the database
 
@@ -240,9 +243,8 @@ class Frame(SubmitBase):
 
 class Job(SubmitBase):
     '''class for submitting multiple jobs as once'''
-    VALID_STATES = (
-        datatypes.State.PAUSED, datatypes.State.QUEUED, datatypes.State.BLOCKED
-    )
+    VALID_STATES = (State.PAUSED, State.QUEUED, State.BLOCKED)
+
     def __init__(self):
         super(Job, self).__init__()
         self.data = []
@@ -262,7 +264,7 @@ class Job(SubmitBase):
 
     def add(self, jobtype, start, end, by=1, data=None, environ=None,
             dependencies=None, priority=None, software=None, ram=None, cpus=None,
-            requeue=True, requeue_max=None, state=datatypes.State.QUEUED):
+            requeue=True, requeue_max=None, state=State.QUEUED):
         '''
         Used to submit a new job with a range of frames.
 

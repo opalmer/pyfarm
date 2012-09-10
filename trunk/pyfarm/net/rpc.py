@@ -23,7 +23,8 @@ import logging
 import socket
 import xmlrpclib
 
-from pyfarm import logger, prefs
+from pyfarm.logger import LoggingBaseClass
+from pyfarm.preferences import prefs
 from pyfarm.db.query import hosts
 
 from twisted.internet import reactor
@@ -32,7 +33,7 @@ from twisted.python import log
 
 TEST_MODE = False
 
-class Service(xmlrpc.XMLRPC, logger.LoggingBaseClass):
+class Service(xmlrpc.XMLRPC, LoggingBaseClass):
     '''
     Base twisted xmlrpc service, contains the stand methods
     and attributes to be inherited by all xmlrpc instances
@@ -238,7 +239,7 @@ class Service(xmlrpc.XMLRPC, logger.LoggingBaseClass):
 # end Service
 
 
-class Connection(logger.LoggingBaseClass):
+class Connection(LoggingBaseClass):
     '''
     Generic rpc object which implements the Twisted xmlrpc
     proxy object.  The constructor for this class will

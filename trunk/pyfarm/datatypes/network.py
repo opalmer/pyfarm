@@ -25,11 +25,6 @@ from twisted.python import log
 from pyfarm.preferences import prefs
 from pyfarm import errors
 
-__all__ = [
-    'INTERFACES', 'ADDRESSES', 'IP', 'SUBNET',
-    'INTERFACE', 'HOSTNAME', 'FQDN'
-]
-
 # setup network information
 INTERFACES = {}
 ADDRESSES = {}

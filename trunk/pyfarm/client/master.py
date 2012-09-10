@@ -24,11 +24,7 @@ import socket
 import logging
 
 from pyfarm.db import query
-from pyfarm import datatypes
-
-from twisted.python import log
-
-HOSTNAME = datatypes.Localhost.net.HOSTNAME
+from pyfarm.datatypes.network import HOSTNAME
 
 def get(master=None):
     '''

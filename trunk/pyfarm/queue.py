@@ -26,11 +26,9 @@ import psutil
 import socket
 import logging
 
+from pyfarm.datatypes.network import HOSTNAME
+
 from twisted.python import log as _log
-
-from pyfarm import logger
-
-HOSTNAME = socket.getfqdn()
 
 
 def allocateFrame(hostname=None, cpus=None, ram=None, update=False):

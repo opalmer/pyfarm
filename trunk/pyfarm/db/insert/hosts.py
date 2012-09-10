@@ -28,13 +28,10 @@ try:
 except ImportError:
     from ordereddict import OrderedDict
 
-
-from pyfarm import datatypes
 from pyfarm.db import tables, session
-from pyfarm.datatypes import Localhost, OperatingSystem
-
-HOSTNAME = Localhost.net.HOSTNAME
-FQDN = Localhost.net.FQDN
+from pyfarm.datatypes import system
+from pyfarm.datatypes.network import HOSTNAME, FQDN, IP, SUBNET
+from pyfarm.datatypes.enums import DEFAULT_GROUPS, DEFAULT_SOFTWARE, DEFAULT_JOBTYPES
 
 __all__ = ['host']
 
@@ -112,7 +109,7 @@ def host(
         raise ValueError("hostname must be provided if ip is None")
 
     elif ip is None:
-        ip = Localhost.net.IP
+        ip = IP
 
     data['ip'] = ip
 
@@ -121,7 +118,7 @@ def host(
         raise ValueError("subnet must be provided if hostname is not local")
 
     elif local and subnet is None:
-        subnet = Localhost.net.SUBNET
+        subnet = SUBNET
 
     data['subnet'] = subnet
 
@@ -130,9 +127,9 @@ def host(
         raise ValueError("os must be provided if hostname is not local")
 
     elif local and os is None:
-        os = Localhost.OS
+        os = system.OS
 
-    elif os not in OperatingSystem.MAPPINGS:
+    elif os not in system.OperatingSystem.MAPPINGS:
         raise KeyError("no such operation system '%s'" % os)
 
     data['os'] = os
@@ -142,13 +139,13 @@ def host(
         raise ValueError("ram_total must be provided if hostname is not local")
 
     elif local and ram_total is None:
-        ram_total = Localhost.TOTAL_RAM
+        ram_total = system.TOTAL_RAM
 
     data['ram_total'] = ram_total
 
     # ram setup - usage
     if local and ram_usage is None:
-        ram_usage = Localhost.RAM
+        ram_usage = system.ram()
 
     elif not local and ram_usage is None:
         raise ValueError("ram_usage must be provided when hostname is not local")
@@ -157,7 +154,7 @@ def host(
 
     # swap setup - total
     if local and swap_total is None:
-        swap_total = Localhost.TOTAL_SWAP
+        swap_total = system.TOTAL_SWAP
 
     elif not local and swap_usage is None:
         raise ValueError("swap_total must be provided when hostname is not local")
@@ -166,7 +163,7 @@ def host(
 
     # swap setup - usage
     if local and swap_usage is None:
-        swap_usage = Localhost.SWAP
+        swap_usage = system.swap()
 
     elif not local and swap_usage is None:
         raise ValueError("swap_usage must be provided when hostname is not local")
@@ -175,7 +172,7 @@ def host(
 
     # setup cpu count
     if local and cpu_count is None:
-        cpu_count = Localhost.CPU_COUNT
+        cpu_count = system.CPU_COUNT
 
     elif not local and cpu_count is None:
         raise ValueError("cpu_count must be provided when hostname is not local")
@@ -190,19 +187,19 @@ def host(
 
     # groups setup
     if groups is None:
-        groups = datatypes.DEFAULT_GROUPS
+        groups = DEFAULT_GROUPS
 
     data['groups'] = groups
 
     # software setup
     if software is None:
-        software = datatypes.DEFAULT_SOFTWARE
+        software = DEFAULT_SOFTWARE
 
     data['software'] = software
 
     # jobtypes setup
     if jobtypes is None:
-        jobtypes = datatypes.DEFAULT_JOBTYPES
+        jobtypes = DEFAULT_JOBTYPES
 
     data['jobtypes'] = jobtypes
 
@@ -211,7 +208,7 @@ def host(
     for key, value in data.iteritems():
         # remap the os key to its 'pretty' name
         if key == "os":
-            value = OperatingSystem.get(value)
+            value = system.OperatingSystem.get(value)
         log.msg("...%s: %s" % (key, value))
 
     # check to ensure all the values we have constructed

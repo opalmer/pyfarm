@@ -24,7 +24,7 @@ from __future__ import with_statement
 
 from twisted.python import log
 
-from pyfarm import datatypes
+from pyfarm.datatypes.network import FQDN
 from pyfarm.db.transaction import Transaction
 from pyfarm.db.tables import hosts
 
@@ -34,7 +34,7 @@ def exists(hostname=None):
     general this function should not need to be used and is only
     provided for convenience.
     '''
-    hostname = hostname or datatypes.Localhost.net.FQDN
+    hostname = hostname or FQDN
     log.msg("checking to see if %s is in the host table" % hostname)
     select = hosts.select(hosts.c.hostname == hostname)
     return bool(select.execute().first())

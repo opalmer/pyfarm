@@ -17,6 +17,6 @@
 # along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
 '''
-consolidated modules which contains code defining some basic data
-for use within pyfarm
+serves as a central location to store data that is meant
+to be static
 '''

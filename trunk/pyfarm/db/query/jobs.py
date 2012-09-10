@@ -26,7 +26,7 @@ import copy
 
 from sqlalchemy import func
 
-from pyfarm import logger, datatypes
+from pyfarm import datatypes
 from pyfarm.db.transaction import Transaction
 from pyfarm.db.tables import jobs
 from pyfarm.db.query import _tables

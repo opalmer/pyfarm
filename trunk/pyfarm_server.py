@@ -33,11 +33,13 @@ from pyfarm.server import cmdargs
 # we setup other modules.
 options = cmdargs.parser.parse_args()
 
-from pyfarm import logger, lock, datatypes, prefs
+from pyfarm import logger, lock
+from pyfarm.preferences import prefs
 from pyfarm.db import tables
 from pyfarm.db.query import hosts
 from pyfarm.net import rpc as _rpc
-from pyfarm.datatypes import Localhost
+from pyfarm.datatypes.network import HOSTNAME
+from pyfarm.datatypes.system import OS, OperatingSystem
 from pyfarm.server import callbacks
 
 from twisted.internet import reactor, threads
@@ -45,8 +47,6 @@ from twisted.web import server as _server
 from twisted.python import log
 
 CWD = os.getcwd()
-HOSTNAME = Localhost.net.HOSTNAME
-ADDRESS = Localhost.net.IP
 SERVICE = None
 SERVICE_LOG = None
 
@@ -135,7 +135,7 @@ if os.environ.get('PYFARM_RESTART') == "true":
 
     args.insert(0, sys.executable)
 
-    if Localhost.OS == datatypes.OperatingSystem.WINDOWS:
+    if OS == OperatingSystem.WINDOWS:
         args = ['"%s"' % arg for arg in args]
 
     os.chdir(CWD)

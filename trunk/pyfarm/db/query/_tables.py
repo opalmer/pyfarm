@@ -22,7 +22,6 @@ Internal library used between modules to query tables
 
 from sqlalchemy import func
 
-from pyfarm import logger
 from pyfarm.db.transaction import Transaction
 from pyfarm.db import tables
 

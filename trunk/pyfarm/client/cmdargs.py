@@ -16,23 +16,22 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
-import psutil
-
-from pyfarm import datatypes
+from pyfarm.datatypes.enums import DEFAULT_JOBTYPES, DEFAULT_SOFTWARE
+from pyfarm.datatypes.system import TOTAL_RAM, CPU_COUNT
 from pyfarm.cmdargs import *
 
 parser.description = "Entry point for PyFarm's client."
 
 parser.add_argument(
-    '--jobtypes', default=datatypes.DEFAULT_JOBTYPES,
+    '--jobtypes', default=DEFAULT_JOBTYPES,
     help='comma separated list of jobtypes to include or exclude'
 )
 parser.add_argument(
-    '--ram', default=datatypes.Localhost.TOTAL_RAM, type=int,
+    '--ram', default=TOTAL_RAM, type=int,
     help='sets the total amount of ram available to the farm (in MB)'
 )
 parser.add_argument(
-    '--cpus', default=psutil.NUM_CPUS, type=int,
+    '--cpus', default=CPU_COUNT, type=int,
     help='sets the total number of cpus available to the farm'
 )
 parser.add_argument(
@@ -40,7 +39,7 @@ parser.add_argument(
     help='comma separated list of groups those host belongs to'
 )
 parser.add_argument(
-    '--software', default=datatypes.DEFAULT_SOFTWARE, type=tolist,
+    '--software', default=DEFAULT_SOFTWARE, type=tolist,
     help='comma separated list of software the host can run'
 )
 parser.add_argument(

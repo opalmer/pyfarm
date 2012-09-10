@@ -22,7 +22,7 @@ Provides common mechanisms for querying frame related information
 
 import copy
 
-from pyfarm import logger, datatypes
+from pyfarm import datatypes
 from pyfarm.db.transaction import Transaction
 from pyfarm.db.tables import frames
 from pyfarm.db.query import hosts, _tables, jobs

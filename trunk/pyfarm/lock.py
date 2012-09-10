@@ -26,7 +26,7 @@ import signal
 import tempfile
 import logging
 
-from pyfarm import logger
+from pyfarm.logger import LoggingBaseClass
 
 from twisted.python import log
 
@@ -46,7 +46,7 @@ class ProcessLockError(Exception):
 # end ProcessLockError
 
 
-class LockFile(logger.LoggingBaseClass):
+class LockFile(LoggingBaseClass):
     '''stores, controls, and maintains a lockfile'''
     def __init__(self, name, pid):
         self.name = name

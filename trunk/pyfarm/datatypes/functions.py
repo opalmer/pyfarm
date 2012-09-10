@@ -20,10 +20,12 @@
 functions for use within the datatypes module
 '''
 
-__all__ = ['notimplemented']
-
 def notimplemented(name, module='psutil'):
     msg = "this version of %s does not implement %s(), " % (module, name)
     msg += "please consider upgrading"
     raise NotImplementedError(msg)
 # end notimplemented
+
+def bytes_to_megabytes(value):
+    return int(value / 1024 / 1024)
+# end bytes_to_megabytes

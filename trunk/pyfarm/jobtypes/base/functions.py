@@ -23,26 +23,27 @@ functions for jobtype system related queries and setup
 from __future__ import with_statement
 
 import os
-import imp
 import copy
 import fnmatch
-import socket
 import inspect
 import logging
 
 from twisted.python import log
 
-from pyfarm import logger, datatypes, fileio, prefs
+from pyfarm import fileio
+from pyfarm.datatypes.enums import State
+from pyfarm.datatypes.network import HOSTNAME
+from pyfarm.logger import LoggingBaseClass
+from pyfarm.preferences import prefs
 from pyfarm.db import Transaction
 from pyfarm.db.query import hosts
 from pyfarm.db import tables
 
-HOSTNAME = socket.getfqdn()
 CWD = os.path.dirname(os.path.abspath(__file__))
 
 __all__ = ['JobData', 'jobtypes', 'load', 'run', 'roots']
 
-class JobData(logger.LoggingBaseClass):
+class JobData(LoggingBaseClass):
     '''
     base object used by jobtypes which provides information about a
     job and frame from the database
@@ -84,7 +85,7 @@ class JobData(logger.LoggingBaseClass):
             # running
             if name == "frame":
                 result.host = hostid
-                result.state = datatypes.State.RUNNING
+                result.state = State.RUNNING
 
         return copy.deepcopy(result)
     # end __lookup

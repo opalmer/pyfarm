@@ -15,13 +15,13 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+'''
+named value mappings which do not change during execution
+'''
 
 from sqlalchemy import types as sqltypes
-
-__all__ = [
-    'LIST_TYPES', 'BOOLEAN_TYPES', 'STRING_TYPES', 'ACTIVE_JOB_STATES',
-    'DEFAULT_GROUPS', 'DEFAULT_SOFTWARE', 'SQL_TYPES'
-]
 
 class Enum(object):
     '''
@@ -79,7 +79,6 @@ class Enum(object):
     def get(self, item): return self.__getitem__(item)
 # end Enum
 
-
 Software = Enum("MAYA", "HOUDINI", "VRAY", "NUKE", "BLENDER")
 State = Enum(
     "PAUSED", "BLOCKED", "QUEUED", "ASSIGN",
@@ -87,9 +86,6 @@ State = Enum(
 )
 
 # python datatypes for type comparison
-LIST_TYPES = (list, tuple, set)
-BOOLEAN_TYPES = (True, False)
-STRING_TYPES = (str, unicode, sqltypes.String)
 ACTIVE_JOB_STATES = (State.QUEUED, State.RUNNING)
 
 # defaults when creating host

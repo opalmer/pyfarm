@@ -29,7 +29,8 @@ from twisted.internet import reactor
 from twisted.python import log
 from twisted.web import xmlrpc, resource
 
-from pyfarm import logger, prefs
+from pyfarm import logger
+from pyfarm.preferences import prefs
 from pyfarm.client import process
 
 class Manager(xmlrpc.XMLRPC):

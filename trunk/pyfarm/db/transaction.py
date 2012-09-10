@@ -22,10 +22,9 @@ import time
 
 import sqlalchemy
 import sqlalchemy.orm
-import sqlalchemy.schema
 from twisted.python import log
 
-from pyfarm import logger, prefs
+from pyfarm.preferences import prefs
 from pyfarm.db import session
 
 class Transaction(object):

@@ -33,15 +33,13 @@ from pyfarm.client import cmdargs
 # we setup other modules.
 options = cmdargs.parser.parse_args()
 
-
+from pyfarm import lock, logger
 from pyfarm.client import system, process, job, master
-from pyfarm import lock, datatypes
 from pyfarm.db import insert, modify, query
-
-# setup the main log
-from pyfarm import logger, prefs
+from pyfarm.datatypes.network import HOSTNAME, IP
+from pyfarm.datatypes.system import OS, OperatingSystem
+from pyfarm.preferences import prefs
 from pyfarm.net import rpc as _rpc
-from pyfarm.datatypes import Localhost
 
 from twisted.internet import reactor
 from twisted.web import xmlrpc
@@ -49,8 +47,6 @@ from twisted.web import server as _server
 from twisted.python import log
 
 CWD = os.getcwd()
-HOSTNAME = Localhost.net.FQDN
-ADDRESS = Localhost.net.IP
 MASTER = ()
 SERVICE = None
 SERVICE_LOG = None
@@ -102,21 +98,21 @@ class Client(_rpc.Service, logger.LoggingBaseClass):
 
     def xmlrpc_setMaster(self, master, force=False):
         '''
-        sets the master server address
+        sets the master server IP
 
         :param boolean force:
             if provided then the value in master will
         '''
         global MASTER
 
-        # if a master address is not provided assume
+        # if a master IP is not provided assume
         # that we are trying to set the master to ()
         if master:
             master = (master, prefs.get('network.ports.server'))
         else:
             master = ()
 
-        # if new address is the current address do nothing
+        # if new IP is the current IP do nothing
         if master == MASTER:
             self.log("master is already set to %s" % str(master))
             return False
@@ -190,7 +186,7 @@ class Client(_rpc.Service, logger.LoggingBaseClass):
         :exception xmlrpc.Fault(3):
             raised if the new state is not in (True, False)
         '''
-        if state in datatypes.BOOLEAN_TYPES:
+        if state in (True, False):
             self.job.online = state
             self.log("client online state set to %s" % str(state))
 
@@ -330,7 +326,7 @@ if os.environ.get('PYFARM_RESTART') == 'true' and prefs.get('network.rpc.restart
     args = sys.argv[:]
 
     args.insert(0, sys.executable)
-    if Localhost.OS == datatypes.OperatingSystem.WINDOWS:
+    if OS == OperatingSystem.WINDOWS:
         args = ['"%s"' % arg for arg in args]
 
     os.chdir(CWD)

@@ -26,7 +26,7 @@ from sqlalchemy import orm
 
 from twisted.python import log
 
-from pyfarm import logger, prefs
+from pyfarm.preferences import prefs
 
 url = prefs.get('database.url')
 config = prefs.get('database.setup.config')
