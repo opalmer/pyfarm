@@ -17,107 +17,97 @@
 # along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
 import socket
-import psutil
+import logging
+
 import netifaces
+from twisted.python import log
 
-from pyfarm.datatypes.functions import notimplemented
+from pyfarm.preferences import prefs
+from pyfarm import errors
 
-__all__ = ['network']
+__all__ = [
+    'INTERFACES', 'ADDRESSES', 'IP', 'SUBNET',
+    'INTERFACE', 'HOSTNAME', 'FQDN'
+]
 
-class network:
-    if  hasattr(psutil, 'network_io_counters'):
-        SENT = property(lambda self: psutil.network_io_counters().bytes_sent / 1024 / 1024)
-        RECV = property(lambda self: psutil.network_io_counters().bytes_recv / 1024 / 1024)
-    else:
-        SENT = property(lambda self: notimplemented('network_io_counters'))
-        RECV = property(lambda self: notimplemented('network_io_counters'))
+# setup network information
+INTERFACES = {}
+ADDRESSES = {}
+IP = None
+SUBNET = None
+INTERFACE = None
+HOSTNAME = socket.gethostname()
+FQDN = socket.getfqdn(HOSTNAME)
 
-    HOSTNAME = socket.gethostname()
-    FQDN = socket.getfqdn(HOSTNAME)
+for ifacename in netifaces.interfaces():
+    interface = netifaces.ifaddresses(ifacename)
 
-    # setup network information
-    INTERFACES = {}
-    ADDRESSES = {}
-    IP = None
-    SUBNET = None
-    INTERFACE = None
-
-    for ifacename in netifaces.interfaces():
-        interface = netifaces.ifaddresses(ifacename)
-
-        # TODO: add support for IPv6
-        for address in interface.get(socket.AF_INET, []):
-            # skip addresses that do not contain an address entry
-            if 'addr' in address:
-                INTERFACES[ifacename] = address
-
+    # TODO: add support for IPv6
+    for address in interface.get(socket.AF_INET, []):
+        if 'addr' in address:
+            INTERFACES[ifacename] = address
             addr = address['addr']
             ADDRESSES[ifacename] = addr
 
-            # skip local/private entries
-            try:
-                if addr.startswith("127.") or addr.startswith("0."):
-                    continue
+        elif 'addr' not in address:
+            log.msg("%s does not have an address entry, skipping" % ifacename)
+            continue
 
-                try:
-                    name, aliaslist, addresslist = socket.gethostbyaddr(addr)
-                    hostname = name.split(".")[0]
+        elif addr.startswith("127.") or addr.startswith("0.0"):
+            log.msg("%s seems to be a local adapter, skipping" % ifacename)
+            continue
 
-                    if IP is None and\
-                       hostname == HOSTNAME or\
-                       name in aliaslist or\
-                       hostname in aliaslist:
-                        IP = addr
-                        SUBNET = address.get('netmask')
-                        INTERFACE = ifacename
+        # try to resolve the hostname and use it for
+        # verification
+        try:
+            name, aliaslist, addresslist = socket.gethostbyaddr(addr)
+            hostname = name.split(".")[0]
 
-                    del hostname, name, aliaslist, addresslist
-
-                except socket.herror:
-                    continue
-
-            finally:
-                del address, addr
-
-        # One last attempt to retrieve the correct ip using strictly
-        # our hostname and dns.  The above will take care of the majority of
-        # cases however sometimes we have to fall back on DNS alone
-        if IP is None:
-            try:
-                addr = socket.gethostbyname(HOSTNAME)
+            if IP is None and \
+               hostname == HOSTNAME or \
+               name in aliaslist or \
+               hostname in aliaslist:
                 IP = addr
-                del addr
+                SUBNET = address.get('netmask')
+                INTERFACE = ifacename
 
-            except socket.herror:
-                try:
-                    addr = socket.gethostbyname(FQDN)
-                    IP = addr
-                    del addr
+        except socket.herror:
+            log.msg(
+                "failed to retrieve hostname for %s" % address,
+                level=logging.WARNING
+            )
+            continue
 
-                except socket.herror:
-                    pass
+# by this point in the process these values should be set to
+# their expected values
+if IP is None: raise errors.NetworkSetupError("failed to resolve ip address")
+if SUBNET is None: raise errors.NetworkSetupError("failed to setup subnet")
 
-        if IP is None:
-            raise ValueError("failed to retrieve ip address for %s" % HOSTNAME)
+# If enabled try and use a remote host to verfy the address we bind
+# to when connecting to a socket.  This does not send any data to the
+# remote host.
+if IP is not None and prefs.get('network.remote_addr_check.enabled'):
+    for address, port in prefs.get('network.remote_addr_check.addresses'):
+        try:
+            s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            s.connect((address, port))
 
-        if SUBNET is None:
-            for ifacename, interface in INTERFACES.iteritems():
-                if interface.get('addr') == IP:
-                    SUBNET = interface.get('netmask')
-                    break
+            if s.getsockname()[0] == IP:
+                args = (IP, address, port)
+                log.msg("%s matches bound ip when connecting to %s:%s" % args)
+                break
 
-        # if the interface has not been setup yet then
-        #
-        if INTERFACE is None:
-            for ifacename, interface in INTERFACES.iteritems():
-                if interface.get('addr') == IP:
-                    INTERFACE = ifacename
-                    break
+        except socket.error, error:
+            msg = "failed to connect to %s:%s to check "  % (address, port)
+            msg += "bound address %s" % error
+            log.msg(msg, level=logging.WARNING)
 
-        # if the preferences call for it perform a check to
-        # determine if the 'bound' ip is the same one
-        # we just resolved
+        finally:
+            s.close()
+    else:
+        msg = "failed to match IP address to bound address using "
+        msg += "remote addresse(s)"
+        log.msg(msg, level=logging.WARNING)
 
-        del ifacename
-        del interface
-# end network
+        if prefs.get('network.remote_addr_check.error'):
+            raise errors.NetworkSetupError(msg)
