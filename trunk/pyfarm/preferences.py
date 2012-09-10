@@ -25,8 +25,9 @@ import logging
 import tempfile
 
 from twisted.python import log
-from pyfarm import datatypes, PYFARM_ETC, PYFARM_ROOT, fileio
-from pyfarm.datatypes import Localhost
+from pyfarm import PYFARM_ETC, PYFARM_ROOT, fileio
+
+from pyfarm.datatypes.system import OperatingSystem, OS, OSNAME
 
 if not os.path.isdir(PYFARM_ETC):
     raise OSError("configuration directory does not exist: %s" % PYFARM_ETC)
@@ -73,7 +74,7 @@ class Preferences(object):
     def __loggingLocations(self, data, kwargs):
         template = string.Template(data)
         template_vars = {
-            "root" : self.get('filesystem.roots.%s' % Localhost.OSNAME, **kwargs),
+            "root" : self.get('filesystem.roots.%s' % OSNAME, **kwargs),
             "temp" : tempfile.gettempdir()
         }
 
@@ -109,7 +110,7 @@ class Preferences(object):
         # finally iterate over each paths and see if anything is
         # pointing to the farm root
         template_vars = {
-            "root" : self.get('filesystem.roots.%s' % Localhost.OSNAME, **kwargs)
+            "root" : self.get('filesystem.roots.%s' % OSNAME, **kwargs)
         }
 
         # remove any keys that are already in kwargs so
@@ -194,17 +195,17 @@ class Preferences(object):
 
         try:
             extensions.extend(
-                self.get('jobtypes.extensions.%s' % Localhost.OSNAME, **kwargs)
+                self.get('jobtypes.extensions.%s' % OSNAME, **kwargs)
             )
 
         except KeyError:
-            self.log('no os entry for %s in extensions' % Localhost.OSNAME)
+            self.log('no os entry for %s in extensions' % OSNAME)
 
         for extension in extensions:
             results.add(extension)
             results.add(extension.lower())
 
-            if datatypes.OS == datatypes.OperatingSystem.WINDOWS:
+            if OS == OperatingSystem.WINDOWS:
                 results.add(extension.upper())
 
         return [ result for result in results if result ]
@@ -218,7 +219,7 @@ class Preferences(object):
             expanded_template = template.safe_substitute(
                     {
                         "pyfarm" : PYFARM_ROOT,
-                        "root" : self.get('filesystem.roots.%s' % Localhost.OSNAME, **kwargs)
+                        "root" : self.get('filesystem.roots.%s' % OSNAME, **kwargs)
                     }
             )
             paths.append(os.path.expandvars(expanded_template))
