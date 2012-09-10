@@ -20,6 +20,3 @@
 consolidated modules which contains code defining some basic data
 for use within pyfarm
 '''
-
-from pyfarm.datatypes.enums import *
-
