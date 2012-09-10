@@ -48,3 +48,21 @@ remote_check:
   enable: true
   hostname: pyfarm.net
   port: 80
+
+# If enabled this will be used during the setup of the network ip
+# to determine if it's the same as the default address we bind to.
+# No host information will be sent to the remote host and keeping
+# this feature disabled will not break default behaviors
+remote_addr_check:
+  enabled: false
+  error: false # if true then raise an exception of the addresses do not match
+
+  # Addresses to iterate over, only the first address which
+  # we successfully resolve will be used.  You are free
+  # to change this list and use either direct ip addresses
+  # or dns resolvable names.
+  addresses:
+    - [8.8.8.8, 53] # google public dns
+    - [8.8.4.4, 53] # google public dns
+    - [208.67.222.222, 53] # opendns
+    - [208.67.220.220, 53] # opendns
