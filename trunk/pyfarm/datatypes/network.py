@@ -60,6 +60,7 @@ for ifacename in netifaces.interfaces():
         # try to resolve the hostname and use it for
         # verification
         try:
+            log.msg("looking up hostname for address %s" % addr)
             name, aliaslist, addresslist = socket.gethostbyaddr(addr)
             hostname = name.split(".")[0]
 
