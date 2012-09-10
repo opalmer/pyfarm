@@ -18,8 +18,9 @@
 
 import sys
 import psutil
+import getpass
 
-__all__ = ['OperatingSystem', 'OS', 'OSNAME', 'CPU_COUNT', 'TOTAL_RAM', 'TOTAL_SWAP']
+from pyfarm.datatypes.functions import bytes_to_megabytes
 
 class OperatingSystem:
     LINUX, WINDOWS, MAC, OTHER = range(4)
@@ -64,10 +65,29 @@ OS = OperatingSystem.get()
 OSNAME = OperatingSystem.MAPPINGS.get(OS)
 CPU_COUNT = psutil.NUM_CPUS
 TOTAL_RAM = int(psutil.TOTAL_PHYMEM / 1024 / 1024)
+USER = getpass.getuser()
 
+# setup total swap and current swap
 if hasattr(psutil, 'swap_memory'):
     TOTAL_SWAP = int(psutil.swap_memory().total / 1024 / 1024)
+    swap = lambda: bytes_to_megabytes(psutil.swap_memory().free)
 elif hasattr(psutil, 'virtmem_usage'):
     TOTAL_SWAP = int(psutil.virtmem_usage().total / 1024 / 1024)
+    swap = lambda : bytes_to_megabytes(psutil.virtmem_usage().free)
 else:
     TOTAL_SWAP = int(psutil.total_virtmem() / 1024 / 1024)
+    swap = lambda: TOTAL_SWAP - bytes_to_megabytes(psutil.used_virtmem())
+
+# setup current ram
+if hasattr(psutil, 'virtual_memory'):
+    ram = lambda: bytes_to_megabytes(psutil.virtual_memory().free)
+
+elif hasattr(psutil, 'phymem_usage'):
+    ram = lambda: bytes_to_megabytes(psutil.phymem_usage().free)
+
+else:
+    ram = lambda: TOTAL_RAM - bytes_to_megabytes(psutil.used_phymem())
+
+# docstrings for swap and ram
+swap.__doc__ = "returns the current swap available"
+ram.__doc__ = "returns the current ram available"
