@@ -19,6 +19,8 @@
 import sys
 import psutil
 
+__all__ = ['OperatingSystem', 'system']
+
 class OperatingSystem:
     LINUX, WINDOWS, MAC, OTHER = range(4)
     MAPPINGS = {

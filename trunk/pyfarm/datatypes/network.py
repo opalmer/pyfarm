@@ -22,6 +22,8 @@ import netifaces
 
 from pyfarm.datatypes.functions import notimplemented
 
+__all__ = ['network']
+
 class network:
     if  hasattr(psutil, 'network_io_counters'):
         SENT = property(lambda self: psutil.network_io_counters().bytes_sent / 1024 / 1024)
