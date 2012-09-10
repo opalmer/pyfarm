@@ -19,7 +19,7 @@
 import sys
 import psutil
 
-__all__ = ['OperatingSystem', 'system']
+__all__ = ['OperatingSystem', 'OS', 'OSNAME', 'CPU_COUNT', 'TOTAL_RAM', 'TOTAL_SWAP']
 
 class OperatingSystem:
     LINUX, WINDOWS, MAC, OTHER = range(4)
@@ -60,18 +60,14 @@ class OperatingSystem:
         # end get
 # end OperatingSystem
 
+OS = OperatingSystem.get()
+OSNAME = OperatingSystem.MAPPINGS.get(OS)
+CPU_COUNT = psutil.NUM_CPUS
+TOTAL_RAM = int(psutil.TOTAL_PHYMEM / 1024 / 1024)
 
-class system:
-    # constants which do not change at runtime
-    OS = OperatingSystem.get()
-    OSNAME = OperatingSystem.MAPPINGS.get(OS)
-    CPU_COUNT = psutil.NUM_CPUS
-    TOTAL_RAM = int(psutil.TOTAL_PHYMEM / 1024 / 1024)
-
-    if hasattr(psutil, 'swap_memory'):
-        TOTAL_SWAP = int(psutil.swap_memory().total / 1024 / 1024)
-    elif hasattr(psutil, 'virtmem_usage'):
-        TOTAL_SWAP = int(psutil.virtmem_usage().total / 1024 / 1024)
-    else:
-        TOTAL_SWAP = int(psutil.total_virtmem() / 1024 / 1024)
-# end system
+if hasattr(psutil, 'swap_memory'):
+    TOTAL_SWAP = int(psutil.swap_memory().total / 1024 / 1024)
+elif hasattr(psutil, 'virtmem_usage'):
+    TOTAL_SWAP = int(psutil.virtmem_usage().total / 1024 / 1024)
+else:
+    TOTAL_SWAP = int(psutil.total_virtmem() / 1024 / 1024)
