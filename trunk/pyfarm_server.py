@@ -69,16 +69,6 @@ class Server(_rpc.Service, logger.LoggingBaseClass):
         _rpc.Service.__init__(self, log_stream)
     # end __init__
 
-    def xmlrpc_addHost(self, hostname, host_data, force=False):
-        '''
-        adds a host url and sets up the host in the database
-        '''
-        host = "%s:%i" % (hostname, prefs.get('network.ports.client'))
-        if not force and host in hosts.hostlist(online=None):
-            self.log("already added host %s" % host)
-            return
-    # end xmlrpc_addHost
-
     def xmlrpc_requestWork(self, hostname):
         '''run when a remote client requests work from the master'''
         assign_work = callbacks.AssignWorkToClient(hostname)
