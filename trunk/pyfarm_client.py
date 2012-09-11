@@ -88,79 +88,31 @@ class Client(_rpc.Service, logger.LoggingBaseClass):
         return MASTER
     # end xmlrpc_master
 
-    def xmlrpc_insertHost(self, drop=True):
-        '''inserts a host into the database and returns the host id'''
-        try:
-            return insert.host(drop=drop)
-
-        except NameError:
-            raise xmlrpc.Fault(
-                10, "%s already exists in the database" % HOSTNAME
-            )
-    # end xmlrpc_insertHost
-
-    def xmlrpc_setMaster(self, master, force=False):
+    def xmlrpc_setMaster(self, new_master, database=False):
         '''
         sets the master server IP
 
-        :param boolean force:
-            if provided then the value in master will
+        :param boolean database:
+            if provided then override the value --set-master provided on
+            the command line
         '''
         global MASTER
+        if not isinstance(new_master, (list, tuple)):
+            raise xmlrpc.Fault(
+                0, "invalid master argument, expected tuple(host, por)"
+            )
 
-        # if a master IP is not provided assume
-        # that we are trying to set the master to ()
-        if master:
-            master = (master, prefs.get('network.ports.server'))
+        log.msg("setting MASTER global to %s" % new_master)
+        MASTER = new_master
+
+        if options.set_master or database:
+            log.msg("setting master in database")
+            modify.hosts.host(
+                HOSTNAME,
+                master=new_master[0]
+            )
         else:
-            master = ()
-
-        # if new IP is the current IP do nothing
-        if master == MASTER:
-            self.log("master is already set to %s" % str(master))
-            return False
-
-        # if master is already set and force is not use do nothing
-        if MASTER and not force:
-            self.log("master is already set, use force to override")
-            return False
-
-        MASTER = master
-        self.log("master set to %s" % str(master))
-
-        if MASTER:
-            self.log("sending host information to %s" % str(MASTER))
-            # generate information about this system and send it to
-            # the master
-
-            hostinfo_sources = {
-                "system" : self.sys,
-                "network" : self.net
-            }
-
-            hostinfo = system.report(hostinfo_sources)
-
-            # update host info with options arguments
-            hostinfo['options'] = {
-                "host_groups" : options.host_groups,
-                "software" : options.host_software
-            }
-
-            rpc = _rpc.Connection(MASTER[0], MASTER[1])
-            rpc.call('addHost', HOSTNAME, hostinfo, force)
-
-            # if we are using sqlite inform master to update our resource
-            # in the database
-            if prefs.get('database.engine') == "sqlite":
-                self.log("informing master to update our resources")
-                rpc.call('resources', HOSTNAME, True)
-
-            # otherwise we update resource information ourselves
-            else:
-                self.log("updating our own resource information")
-                self.xmlrpc_resources('', True)
-
-        return True
+            log.msg("not setting master in database")
     # end xmlrpc_setMaster
 
     def _blockShutdown(self):
