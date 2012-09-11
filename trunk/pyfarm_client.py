@@ -36,7 +36,7 @@ options = cmdargs.parser.parse_args()
 from pyfarm import lock, logger, errors
 from pyfarm.client import process, job, master
 from pyfarm.db import insert, modify, query
-from pyfarm.datatypes.network import HOSTNAME, IP
+from pyfarm.datatypes.network import FQDN
 from pyfarm.datatypes.system import OS, OperatingSystem
 from pyfarm.preferences import prefs
 from pyfarm.net import rpc as _rpc
@@ -104,7 +104,7 @@ class Client(_rpc.Service, logger.LoggingBaseClass):
         if options.store_master or database:
             log.msg("setting master in database")
             modify.hosts.host(
-                HOSTNAME,
+                FQDN,
                 master=new_master[0]
             )
         else:
@@ -209,7 +209,7 @@ with lock.ProcessLock(
     # determine the location we should log to
     if not options.log:
         root = prefs.get('filesystem.locations.general')
-        SERVICE_LOG = os.path.join(root, 'client-%s.log' % HOSTNAME)
+        SERVICE_LOG = os.path.join(root, 'client-%s.log' % FQDN)
     else:
         SERVICE_LOG = os.path.abspath(options.log)
 
@@ -233,20 +233,20 @@ with lock.ProcessLock(
 
     elif options.store_master and options.master is None:
         log.msg(
-            "master will be set to None for %s" % HOSTNAME,
+            "master will be set to None for %s" % FQDN,
             level=logging.WARNING
         )
         host_table_keywords['master'] = options.master
 
     if query.hosts.exists():
-        log.msg("updating %s in the host table" % HOSTNAME)
+        log.msg("updating %s in the host table" % FQDN)
         modify.hosts.host(
-            HOSTNAME,
+            FQDN,
             **host_table_keywords
         )
 
     else:
-        log.msg("inserting %s into the host table" % HOSTNAME, level="INFO")
+        log.msg("inserting %s into the host table" % FQDN, level="INFO")
         insert.hosts.host(**host_table_keywords)
 
     MASTER = (master.get(options.master), prefs.get('network.ports.server'))
@@ -257,12 +257,16 @@ with lock.ProcessLock(
     reactor.listenTCP(options.port, _server.Site(client))
 
     # start reactor
-    args = (HOSTNAME, options.port)
+    args = (FQDN, options.port)
     log.msg(
         "running client at http://%s:%i" % args,
         level=logging.INFO, system="Client"
     )
     reactor.run()
+
+    # set the master as offline
+    log.msg("setting host as offline in database")
+    modify.hosts.host(FQDN, online=False)
 
 # If RESTART has been set to True then restart the client
 # script.  This must be done after the reactor and has been
