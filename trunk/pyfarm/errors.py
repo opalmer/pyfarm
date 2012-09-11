@@ -39,3 +39,11 @@ class NetworkSetupError(ValueError):
     '''raised when there were problems setting up the network'''
     pass
 # end NetworkSetupError
+
+
+class InvalidDatabase(ValueError):
+    '''
+    database provided in the configuration is either unsupported or invalid
+    '''
+    pass
+# end InvalidDatabase

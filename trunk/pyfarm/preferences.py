@@ -25,7 +25,7 @@ import logging
 import tempfile
 
 from twisted.python import log
-from pyfarm import PYFARM_ETC, PYFARM_ROOT, fileio
+from pyfarm import PYFARM_ETC, PYFARM_ROOT, fileio, errors
 
 from pyfarm.datatypes.system import OperatingSystem, OS, OSNAME
 
@@ -161,8 +161,7 @@ class Preferences(object):
         # the start of the url changes slightly for sqlite connections
         url += "://"
         if engine == "sqlite":
-            url += "/"
-            return url + dbname
+            raise errors.InvalidDatabase("sqlite is unsupported")
 
         # setup the username, password, host, and port
         url += "%s:%s@%s" % (dbuser, dbpass, dbhost)
