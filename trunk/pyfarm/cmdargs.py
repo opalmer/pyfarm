@@ -82,3 +82,7 @@ parser.add_argument(
          ' is mainly used if you already know the process does not exist and' +
          ' you do not wish to remove the lock file manually.'
 )
+parser.add_argument(
+    '--port', type=int,
+    help='sets the port the service should run on (default: %(default)s)'
+)

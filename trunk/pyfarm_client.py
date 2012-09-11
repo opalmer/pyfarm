@@ -253,10 +253,10 @@ with lock.ProcessLock(
     SERVICE = client
 
     # start listening for connections with the client
-    reactor.listenTCP(prefs.get('network.ports.client'), _server.Site(client))
+    reactor.listenTCP(options.port, _server.Site(client))
 
     # start reactor
-    args = (HOSTNAME, prefs.get('network.ports.client'))
+    args = (HOSTNAME, options.port)
     log.msg(
         "running client at http://%s:%i" % args,
         level=logging.INFO, system="Client"

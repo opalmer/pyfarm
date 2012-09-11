@@ -102,8 +102,8 @@ with lock.ProcessLock(
     tables.init()
 
     # start the reactor
-    reactor.listenTCP(prefs.get('network.ports.server'), _server.Site(server))
-    args = (HOSTNAME, prefs.get('network.ports.server'))
+    reactor.listenTCP(options.port, _server.Site(server))
+    args = (HOSTNAME, options.port)
     log.msg(
         "running server at http://%s:%i" % args,
         system="Server", level=logging.INFO
