@@ -54,3 +54,7 @@ parser.add_argument(
     '--online', default=True, type=tobool,
     help='if True then mark of those as online in the database'
 )
+parser.add_argument(
+    '--verify-master', default=False, action='store_true',
+    help='if provided then check to make sure we can ping current master'
+)

@@ -33,7 +33,7 @@ from pyfarm.client import cmdargs
 # we setup other modules.
 options = cmdargs.parser.parse_args()
 
-from pyfarm import lock, logger
+from pyfarm import lock, logger, errors
 from pyfarm.client import system, process, job, master
 from pyfarm.db import insert, modify, query
 from pyfarm.datatypes.network import HOSTNAME, IP
@@ -78,6 +78,9 @@ class Client(_rpc.Service, logger.LoggingBaseClass):
             "net" : self.net,
             "job" : self.job
         }
+
+        if options.verify_master and not _rpc.ping(MASTER[0], MASTER[1]):
+            raise errors.NetworkSetupError("failed to ping master")
     # end __init__
 
     def xmlrpc_master(self):
@@ -297,7 +300,7 @@ with lock.ProcessLock(
         log.msg("inserting %s into the host table" % HOSTNAME, level="INFO")
         insert.hosts.host(**host_table_keywords)
 
-    MASTER = master.get(options.master)
+    MASTER = (master.get(options.master), prefs.get('network.ports.server'))
     client = Client(SERVICE_LOG)
     SERVICE = client
 
