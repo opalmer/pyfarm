@@ -36,7 +36,7 @@ options = cmdargs.parser.parse_args()
 from pyfarm import logger, lock
 from pyfarm.preferences import prefs
 from pyfarm.db import tables
-from pyfarm.db.query import hosts
+from pyfarm.server import rpcqueue
 from pyfarm.net import rpc as _rpc
 from pyfarm.datatypes.network import HOSTNAME
 from pyfarm.datatypes.system import OS, OperatingSystem
@@ -67,6 +67,10 @@ class Server(_rpc.Service, logger.LoggingBaseClass):
     '''
     def __init__(self, log_stream):
         _rpc.Service.__init__(self, log_stream)
+        self.queue = rpcqueue.Queue(self)
+        self.subHandlers = {
+            "queue" : self.queue
+        }
     # end __init__
 
     def xmlrpc_requestWork(self, hostname):
@@ -108,6 +112,7 @@ with lock.ProcessLock(
         "running server at http://%s:%i" % args,
         system="Server", level=logging.INFO
     )
+    raise Exception("stopping server, see TODOs in notes")
     reactor.run()
 
 # If RESTART has been set to True then restart the server
