@@ -22,7 +22,7 @@
 #
 # NOTE: not all values are required to be populated, port and driver for example
 #       will be defined my sqlalchemy if they are not provided.
-db-hosted:
+database:
   host:   # hostname to connect to
   port:   # port the server is running on
   user:   # username to connect with
@@ -31,11 +31,7 @@ db-hosted:
   engine: # type of engine (mysql, postgresql, etc)
   driver: # specifies the python module to connect with
 
-db-sqlite:
-  name: pyfarm.db
-  engine: sqlite
-
 setup:
-  config: db-sqlite        # name of the configuration to use
+  config: database         # name of the configuration to use
   rebuild: false           # if true then we drop any existing tables
   close-connections: true  # if true we attempt to close every connection made
