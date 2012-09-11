@@ -105,7 +105,7 @@ class Client(_rpc.Service, logger.LoggingBaseClass):
         log.msg("setting MASTER global to %s" % new_master)
         MASTER = new_master
 
-        if options.set_master or database:
+        if options.store_master or database:
             log.msg("setting master in database")
             modify.hosts.host(
                 HOSTNAME,
@@ -231,10 +231,10 @@ with lock.ProcessLock(
         "software" : options.software
     }
 
-    if options.set_master and options.master:
+    if options.store_master and options.master:
         host_table_keywords['master'] = options.master
 
-    elif options.set_master and options.master is None:
+    elif options.store_master and options.master is None:
         log.msg(
             "master will be set to None for %s" % HOSTNAME,
             level=logging.WARNING
