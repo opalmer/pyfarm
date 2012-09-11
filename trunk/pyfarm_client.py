@@ -34,7 +34,7 @@ from pyfarm.client import cmdargs
 options = cmdargs.parser.parse_args()
 
 from pyfarm import lock, logger, errors
-from pyfarm.client import system, process, job, master
+from pyfarm.client import process, job, master
 from pyfarm.db import insert, modify, query
 from pyfarm.datatypes.network import HOSTNAME, IP
 from pyfarm.datatypes.system import OS, OperatingSystem
@@ -69,13 +69,9 @@ class Client(_rpc.Service, logger.LoggingBaseClass):
         _rpc.Service.__init__(self, log_stream)
 
         # setup sub handlers
-        self.sys = system.SystemInformation()
-        self.net = system.NetworkInformation()
         self.job = job.Manager(self)
 
         self.subHandlers = {
-            "sys": self.sys,
-            "net" : self.net,
             "job" : self.job
         }
 
