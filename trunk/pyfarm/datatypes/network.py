@@ -32,7 +32,17 @@ IP = None
 SUBNET = None
 INTERFACE = None
 HOSTNAME = socket.gethostname()
-FQDN = socket.getfqdn(HOSTNAME)
+
+# get the fully qualified hostname but remove .locahost
+# and .local from the end of the name (typ
+_FQDN = socket.getfqdn(HOSTNAME)
+FQDN = _FQDN.rstrip(".localhost").rstrip(".local")
+
+if _FQDN != FQDN:
+    log.msg(
+        "fqdn has been remapped from %s -> %s" % (_FQDN, FQDN),
+        level=logging.WARNING
+    )
 
 for ifacename in netifaces.interfaces():
     interface = netifaces.ifaddresses(ifacename)
