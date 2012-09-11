@@ -37,16 +37,17 @@ from pyfarm.datatypes.enums import DEFAULT_GROUPS, DEFAULT_SOFTWARE, DEFAULT_JOB
 __all__ = ['host']
 
 def host(
-        hostname=None, master=None, ip=None, subnet=None, os=None,
+        hostname=None, port=None, master=None, ip=None, subnet=None, os=None,
         ram_total=None, ram_usage=None, swap_total=None, swap_usage=None,
         cpu_count=None, online=None, groups=None, software=None, jobtypes=None,
-        typecheck=True, drop=False, port=None
+        typecheck=True, drop=False
     ):
     '''
     inserts a single host into the database
 
     :param string hostname: local hostname if not provided
-    :param string master:
+    :param integer port: the port the client is operating on
+    :param string master: the master the provided host should be communicating with
     :param string ip: local address if not provided
     :param string subnet: local subnet if not provided
     :param integer os: local os if not provided
