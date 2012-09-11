@@ -29,6 +29,7 @@ except ImportError:
     from ordereddict import OrderedDict
 
 from pyfarm.db import tables, session
+from pyfarm.preferences import prefs
 from pyfarm.datatypes import system
 from pyfarm.datatypes.network import HOSTNAME, FQDN, IP, SUBNET
 from pyfarm.datatypes.enums import DEFAULT_GROUPS, DEFAULT_SOFTWARE, DEFAULT_JOBTYPES
@@ -39,7 +40,7 @@ def host(
         hostname=None, master=None, ip=None, subnet=None, os=None,
         ram_total=None, ram_usage=None, swap_total=None, swap_usage=None,
         cpu_count=None, online=None, groups=None, software=None, jobtypes=None,
-        typecheck=True, drop=False
+        typecheck=True, drop=False, port=None
     ):
     '''
     inserts a single host into the database
@@ -203,6 +204,12 @@ def host(
 
     data['jobtypes'] = jobtypes
 
+    # port setup
+    if port is None:
+        port = prefs.get('network.ports.client')
+
+    data['port'] = port
+
     # iterate over all values we just created and
     # log them
     for key, value in data.iteritems():
@@ -220,7 +227,7 @@ def host(
             'subnet' : str, 'os' : int, 'ram_total' : int, 'ram_usage' : int,
             'swap_usage' : int, 'swap_total' : int, 'cpu_count' : int,
             'online' : bool, 'groups' : list, 'software' : list,
-            'jobtypes' : list
+            'jobtypes' : list, 'port' : int
         }
 
         for key, expected_types in type_check.iteritems():

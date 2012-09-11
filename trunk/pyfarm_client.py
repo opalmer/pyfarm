@@ -224,7 +224,8 @@ with lock.ProcessLock(
         "cpu_count" : options.cpus,
         "online" : options.online,
         "groups" : options.groups,
-        "software" : options.software
+        "software" : options.software,
+        "port" : options.port
     }
 
     if options.store_master and options.master:
