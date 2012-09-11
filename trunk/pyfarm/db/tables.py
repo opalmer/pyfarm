@@ -47,7 +47,8 @@ metadata.bind = ENGINE
 #      3 - other/unknown
 hosts = sql.Table('pyfarm_hosts', metadata,
     sql.Column('id', sql.Integer, autoincrement=True, primary_key=True),
-    sql.Column('hostname', sql.String(255)),
+    sql.Column('hostname', sql.String(255), nullable=False),
+    sql.Column('port', sql.Integer, default=prefs.get('network.ports.client'), nullable=False),
     sql.Column('master', sql.String(255), default=None),
     sql.Column('ip', sql.String(16)),
     sql.Column('subnet', sql.String(16)),
@@ -61,6 +62,13 @@ hosts = sql.Table('pyfarm_hosts', metadata,
     sql.Column('groups', sql.PickleType, default=DEFAULT_GROUPS),
     sql.Column('software', sql.PickleType, default=DEFAULT_SOFTWARE),
     sql.Column('jobtypes', sql.PickleType, default=DEFAULT_JOBTYPES)
+)
+
+servers = sql.Table('pyfarm_servers', metadata,
+    sql.Column('id', sql.Integer, autoincrement=True, primary_key=True),
+    sql.Column('hostname', sql.String(255), nullable=False),
+    sql.Column('port', sql.Integer, default=prefs.get('network.ports.server'), nullable=False),
+    sql.Column('online', sql.Boolean, default=False),
 )
 
 # create jobs table
