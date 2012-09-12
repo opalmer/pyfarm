@@ -26,30 +26,49 @@ class Error(Exception):
 
 class HostNotFound(Error):
     '''raised when we failed to requested find the host in the database'''
-    def __init__(self, hostname, database):
+    def __init__(self, hostname, table):
         self.hostname = hostname
-        self.database = database
+        self.table = table
         super(HostNotFound, self).__init__()
-        # end __init__
-
-    def __str__(self):
-        args = (self.hostname, self.database)
-        return "failed to find '%s' in the %s table" % args
-        # end __str__
-# end HostNotFound
-
-
-class MultipleHostsFound(Error):
-    '''raised if multiple entries for a host are found where we expected one'''
-    def __init__(self, hostname):
-        self.hostname = hostname
-        super(MultipleHostsFound, self).__init__()
     # end __init__
 
     def __str__(self):
-        return "found more than one entry for %s" % self.hostname
+        return "failed to find '%s' in the %s table" % (self.hostname, self.table)
     # end __str__
-# end MultipleHostsFound
+# end HostNotFound
+
+
+class DuplicateHost(Error):
+    '''
+    raised if we found more than one entry of the given name
+    in the given table
+    '''
+    def __init__(self, hostname, table):
+        self.hostname = hostname
+        self.table = table
+        super(DuplicateHost, self).__init__()
+    # end __init__
+
+    def __str__(self):
+        return "%s already exists in %s" % (self.hostname, self.table)
+    # end __str__
+# end DuplicateHosts
+
+
+class DuplicateEntry(Error):
+    '''general exception for duplicate entries'''
+    def __init__(self, match_name, entry, table):
+        self.match_name = match_name
+        self.entry = entry
+        self.table = table
+        super(DuplicateEntry, self).__init__()
+    # end __init__
+
+    def __str__(self):
+        args = (self.match_name, self.entry, self.table)
+        return "found duplicate %s %s in %s" % args
+    # end __str__
+# end DuplicateEntry
 
 
 class NetworkSetupError(Error):
