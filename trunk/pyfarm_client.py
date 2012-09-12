@@ -75,7 +75,21 @@ class Client(_rpc.Service, logger.LoggingBaseClass):
             "job" : self.job
         }
 
+        if options.verify_master:
+            if not _rpc.ping(MASTER[0], MASTER[1]):
+                raise errors.NetworkSetupError(
+                    "failed to connect to master at %s:%s" % MASTER
+                )
 
+            try:
+                online = query.master.online(MASTER[0])
+                if not online:
+                    raise errors.NetworkSetupError(
+                        "%s:%s is not online but is reachable" % MASTER
+                    )
+
+            except errors.HostNotFound, error:
+                raise errors.NetworkSetupError(error)
     # end __init__
 
     def xmlrpc_master(self):
