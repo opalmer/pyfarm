@@ -29,27 +29,46 @@ from pyfarm import errors
 INTERFACES = {}
 ADDRESSES = {}
 IP = None
+BOUND_IP = None
 SUBNET = None
 INTERFACE = None
 HOSTNAME = socket.gethostname()
+FQDN = socket.getfqdn(HOSTNAME)
 
-# get the fully qualified hostname but remove .locahost
-# and .local from the end of the name (typ
-_FQDN = socket.getfqdn(HOSTNAME)
-FQDN = _FQDN.rstrip(".localhost").rstrip(".local")
+# Connect to a remote host and bet the bound address.  This is mainly
+# used as a fallback in case the code below cannot resolve the hostname
+# from the ip address
+for address, port in prefs.get('network.remote_addr_check.addresses'):
+    log.msg("using %s:%s to check for bound address" % (address, port))
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect((address, port))
+        BOUND_IP = s.getsockname()[0]
+        log.msg("bound address is %s" % BOUND_IP)
+        break
 
-if _FQDN != FQDN:
-    log.msg(
-        "fqdn has been remapped from %s -> %s" % (_FQDN, FQDN),
-        level=logging.WARNING
-    )
+    except socket.error, error:
+        msg = "failed to connect to %s:%s to check "  % (address, port)
+        msg += "bound address %s" % error
+        log.msg(msg, level=logging.WARNING)
+
+    finally:
+        s.close()
+
+else:
+    msg = "failed to match IP address to bound address using "
+    msg += "remote addresse(s)"
+    log.msg(msg, level=logging.WARNING)
 
 for ifacename in netifaces.interfaces():
     interface = netifaces.ifaddresses(ifacename)
 
     # TODO: add support for IPv6
     for address in interface.get(socket.AF_INET, []):
-        if 'addr' in address:
+        if IP is not None:
+            break
+
+        elif 'addr' in address:
             INTERFACES[ifacename] = address
             addr = address['addr']
             ADDRESSES[ifacename] = addr
@@ -69,6 +88,20 @@ for ifacename in netifaces.interfaces():
             name, aliaslist, addresslist = socket.gethostbyaddr(addr)
             hostname = name.split(".")[0]
 
+        except socket.herror, error:
+            log.msg(
+                "failed to retrieve hostname for %s" % address,
+                level=logging.WARNING
+            )
+
+            if addr == BOUND_IP:
+                IP = addr
+                SUBNET = address.get('netmask')
+                INTERFACE = ifacename
+                log.msg("matched %s to bound ip, using it instead" % addr)
+                break
+
+        else:
             if IP is None and \
                hostname == HOSTNAME or \
                name in aliaslist or \
@@ -79,43 +112,10 @@ for ifacename in netifaces.interfaces():
             else:
                 log.msg("%s does not map to the local host's name" % addr)
 
-        except socket.herror:
-            log.msg(
-                "failed to retrieve hostname for %s" % address,
-                level=logging.WARNING
-            )
-            continue
-
 # by this point in the process these values should be set to
 # their expected values
-if IP is None: raise errors.NetworkSetupError("failed to resolve ip address")
-if SUBNET is None: raise errors.NetworkSetupError("failed to setup subnet")
+if IP is None:
+    raise errors.NetworkSetupError("failed to resolve ip address")
 
-# If enabled try and use a remote host to verfy the address we bind
-# to when connecting to a socket.  This does not send any data to the
-# remote host.
-if IP is not None and prefs.get('network.remote_addr_check.enabled'):
-    for address, port in prefs.get('network.remote_addr_check.addresses'):
-        try:
-            s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-            s.connect((address, port))
-
-            if s.getsockname()[0] == IP:
-                args = (IP, address, port)
-                log.msg("%s matches bound ip when connecting to %s:%s" % args)
-                break
-
-        except socket.error, error:
-            msg = "failed to connect to %s:%s to check "  % (address, port)
-            msg += "bound address %s" % error
-            log.msg(msg, level=logging.WARNING)
-
-        finally:
-            s.close()
-    else:
-        msg = "failed to match IP address to bound address using "
-        msg += "remote addresse(s)"
-        log.msg(msg, level=logging.WARNING)
-
-        if prefs.get('network.remote_addr_check.error'):
-            raise errors.NetworkSetupError(msg)
+if SUBNET is None:
+    raise errors.NetworkSetupError("failed to setup subnet")
