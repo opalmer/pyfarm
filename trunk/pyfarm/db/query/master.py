@@ -66,5 +66,9 @@ def online(hostname):
     with Transaction(masters) as trans:
         host = trans.query.filter_by(hostname=hostname).first()
         if host is None:
-            raise errors.HostNotFound(hostname, masters)
+            raise errors.HostNotFound(
+                match_data=hostname,
+                table=masters
+            )
+        return host.online
 # end hostlist
