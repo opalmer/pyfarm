@@ -64,7 +64,7 @@ hosts = sql.Table('pyfarm_hosts', metadata,
     sql.Column('jobtypes', sql.PickleType, default=DEFAULT_JOBTYPES)
 )
 
-servers = sql.Table('pyfarm_servers', metadata,
+masters = sql.Table('pyfarm_masters', metadata,
     sql.Column('id', sql.Integer, autoincrement=True, primary_key=True),
     sql.Column('hostname', sql.String(255), nullable=False),
     sql.Column('port', sql.Integer, default=prefs.get('network.ports.server'), nullable=False),
