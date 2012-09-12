@@ -67,7 +67,7 @@ class NotFoundError(DatabaseError):
     '''general not found error'''
     def __str__(self):
         args = (self.column_name, self.match_data, self.table)
-        return "failed to find %s matching %s in %s"
+        return "failed to find %s matching %s in %s" % args
     # end __str__
 # end NotFoundError
 
