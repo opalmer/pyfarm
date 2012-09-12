@@ -28,13 +28,14 @@ except ImportError:
     from ordereddict import OrderedDict
 
 from pyfarm import errors
-from pyfarm.db import tables, session
+from pyfarm.db import tables
+from pyfarm.db.insert import base
 from pyfarm.preferences import prefs
 
 __all__ = ['master']
 
 def master(hostname, port=None, online=True, queue=True, assignment=True,
-           typecheck=True, drop=False):
+           error=True, drop=False):
     '''
     inserts a single master into the database
 
@@ -54,6 +55,15 @@ def master(hostname, port=None, online=True, queue=True, assignment=True,
     :param boolean assignment:
         sets the assignment column in the database
 
+    :param boolean drop:
+        if True then existing entries of the same host will be
+        dropped prior to inserting a new entry.  If entries for the provided
+        host already exist and this value is False and error is True
+        then a NameError will be raised
+
+    :param boolean error:
+        if True raise an error if we find duplicate hosts and drop is False
+
     :exception pyfarm.errors.DuplicateHosts:
         raised if we the hosts already exists in the database and drop
         is not True
@@ -66,24 +76,15 @@ def master(hostname, port=None, online=True, queue=True, assignment=True,
     data = OrderedDict()
 
     data['hostname'] = hostname
+    data['online'] = online
+    data['queue'] = queue
+    data['assignment'] = assignment
+    data['port'] = port or prefs.get('network.ports.master')
 
-    if port is None:
-        port = prefs.get('network.ports.master')
-
-    # check to ensure all the values we have constructed
-    # are what we are expecting
-    if typecheck:
-        nonetype = None.__class__
-        type_check = {
-            'hostname' : str, 'port' : int, 'online' : bool,
-            'queue' : bool, 'assignment' : bool
-        }
-
-        for key, expected_types in type_check.iteritems():
-            value = data.get(key)
-            if not isinstance(value, expected_types):
-                args = (key, expected_types, type(value))
-                raise TypeError("unexpected type for %s, expected %s got %s" % args)
+    # iterate over all values we just created and
+    # log them
+    for key, value in data.iteritems():
+        log.msg("...%s: %s" % (key, value))
 
     # find existing hosts
     select = tables.masters.select(tables.masters.c.hostname == data['hostname'])
@@ -91,9 +92,26 @@ def master(hostname, port=None, online=True, queue=True, assignment=True,
     host_count = len(existing_hosts)
 
     if host_count:
-        log.msg("found existing existing entries for %s" % data['hostname'])
-
-        if not drop:
+        if not drop and error:
             raise errors.DuplicateHost(data['hostname'], tables.masters)
+
+        elif not error:
+            log.msg("found existing entries for %s, skipping" % data['hostname'])
+            return
+
+        elif drop:
+            log.msg(
+                "dropping entries for %s" % data['hostname'],
+                level=logging.WARNING
+            )
+            for host in existing_hosts:
+                log.msg("removing host %s" % host.id)
+                delete = tables.masters.delete(tables.masters.c.id == host.id)
+                delete.execute()
+    else:
+        resulting_ids = base.insert(tables.masters, 'hostname', data)
+
+        if isinstance(resulting_ids, list):
+            return resulting_ids[0]
 # end master
 

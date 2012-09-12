@@ -29,7 +29,7 @@ except ImportError:
     from ordereddict import OrderedDict
 
 from pyfarm import errors
-from pyfarm.db import tables, session
+from pyfarm.db import tables
 from pyfarm.db.insert import base
 from pyfarm.preferences import prefs
 from pyfarm.datatypes import system
@@ -42,7 +42,7 @@ def host(
         hostname=None, port=None, master=None, ip=None, subnet=None, os=None,
         ram_total=None, ram_usage=None, swap_total=None, swap_usage=None,
         cpu_count=None, online=None, groups=None, software=None, jobtypes=None,
-        typecheck=True, error=True, drop=False
+        error=True, drop=False
     ):
     '''
     inserts a single host into the database
@@ -80,10 +80,6 @@ def host(
     :param boolean error:
         if True raise an error if we find duplicate hosts and drop is False
 
-    :param boolean typecheck:
-        if True then type check each input for errors prior to making the
-        update or insertion
-
     :exception ValueError:
         raised if we are attempting to autogenerate certain values
         when the hostname provided is not considered local
@@ -95,6 +91,9 @@ def host(
     :exception pyfarm.errors.DuplicateHosts:
         raised if we the hosts already exists in the database and drop
         is not True
+
+    :return:
+        returns the inserted id
     '''
     log.msg("preparing to insert new host")
     local = False
@@ -226,24 +225,6 @@ def host(
             value = system.OperatingSystem.get(value)
         log.msg("...%s: %s" % (key, value))
 
-    # check to ensure all the values we have constructed
-    # are what we are expecting
-    if typecheck:
-        nonetype = None.__class__
-        type_check = {
-            'hostname' : str, 'master' : (str, nonetype), 'ip' : str,
-            'subnet' : str, 'os' : int, 'ram_total' : int, 'ram_usage' : int,
-            'swap_usage' : int, 'swap_total' : int, 'cpu_count' : int,
-            'online' : bool, 'groups' : list, 'software' : list,
-            'jobtypes' : list, 'port' : int
-        }
-
-        for key, expected_types in type_check.iteritems():
-            value = data.get(key)
-            if not isinstance(value, expected_types):
-                args = (key, expected_types, type(value))
-                raise TypeError("unexpected type for %s, expected %s got %s" % args)
-
     # find existing hosts
     select = tables.hosts.select(tables.hosts.c.hostname == data['hostname'])
     existing_hosts = select.execute().fetchall()
@@ -257,7 +238,7 @@ def host(
             log.msg("found existing entries for %s, skipping" % data['hostname'])
             return
 
-        else:
+        elif drop:
             log.msg(
                 "dropping entries for %s" % data['hostname'],
                 level=logging.WARNING
