@@ -24,77 +24,80 @@ class Error(Exception):
 # end Error
 
 
-class HostNotFound(Error):
-    '''raised when we failed to requested find the host in the database'''
-    def __init__(self, hostname, table):
-        self.hostname = hostname
-        self.table = table
-        super(HostNotFound, self).__init__()
+class DatabaseError(Error):
+    '''general database matching error which is meant to be subclassed'''
+    def __init__(self, **kwargs):
+        for key, value in kwargs.iteritems():
+            setattr(self, key, value)
+
+        super(DatabaseError, self).__init__()
     # end __init__
-
-    def __str__(self):
-        return "failed to find '%s' in the %s table" % (self.hostname, self.table)
-    # end __str__
-# end HostNotFound
+# end DatabaseError
 
 
-class DuplicateHost(Error):
-    '''
-    raised if we found more than one entry of the given name
-    in the given table
-    '''
-    def __init__(self, hostname, table):
-        self.hostname = hostname
-        self.table = table
-        super(DuplicateHost, self).__init__()
-    # end __init__
-
-    def __str__(self):
-        return "%s already exists in %s" % (self.hostname, self.table)
-    # end __str__
-# end DuplicateHosts
-
-
-class DuplicateEntry(Error):
+class DuplicateEntry(DatabaseError):
     '''general exception for duplicate entries'''
-    def __init__(self, match_name, entry, table):
-        self.match_name = match_name
-        self.entry = entry
-        self.table = table
-        super(DuplicateEntry, self).__init__()
-    # end __init__
-
     def __str__(self):
-        args = (self.match_name, self.entry, self.table)
+        args = (self.column_name, self.match_data, self.table)
         return "found duplicate %s %s in %s" % args
     # end __str__
 # end DuplicateEntry
 
 
-class NetworkSetupError(Error):
+class DuplicateHost(DatabaseError):
+    '''
+    raised if we found more than one entry of the given name
+    in the given table
+    '''
+    def __str__(self):
+        return "%s already exists in %s" % (self.match_data, self.table)
+    # end __str__
+# end DuplicateHosts
+
+
+class HostNotFound(DatabaseError):
+    '''raised when we failed to requested find the host in the database'''
+    def __str__(self):
+        return "failed to find '%s' in the %s table" % (self.match_data, self.table)
+    # end __str__
+# end HostNotFound
+
+
+class NotFoundError(DatabaseError):
+    '''general not found error'''
+    def __str__(self):
+        args = (self.column_name, self.match_data, self.table)
+        return "failed to find %s matching %s in %s"
+    # end __str__
+# end NotFoundError
+
+
+class InsertionFailure(DatabaseError):
+    '''
+    raised when either an insertion failed or when the results of the
+    insertion are None
+    '''
+    def __str__(self):
+        return "insertion of %s into %s has failed" % (self.data, self.table)
+    # end __str__
+# end InsertionFailure
+
+
+class ConfigurationError(Error):
+    '''basic error having to do with configuration problems'''
+    pass
+# end ConfigurationError
+
+
+class NetworkSetupError(ConfigurationError):
     '''raised when there were problems setting up the network'''
     pass
 # end NetworkSetupError
 
 
-class InvalidDatabase(Error):
+class InvalidDatabase(ConfigurationError):
     '''
     database provided in the configuration is either unsupported or invalid
     '''
     pass
-# end InvalidDatabase
-
-class InsertionFailure(Error):
-    '''
-    raised when either an insertion failed or when the results of the
-    insertion are None
-    '''
-    def __init__(self, data, table):
-        self.data = data
-        self.table = table
-    # end __init__
-
-    def __str__(self):
-        return "insertion of %s into %s has failed" % (self.data, self.table)
-    # end __str__
-# end InsertionFailure
+    # end InvalidDatabase
