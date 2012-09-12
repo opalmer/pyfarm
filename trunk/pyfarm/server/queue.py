@@ -36,7 +36,7 @@ class Queue(xmlrpc.XMLRPC):
         '''queries or sets the assignment'''
         if value in (True, False):
             log.msg(
-                "setting assignment loop to %s" % value,
+#                "setting assignment loop to %s" % value,
                 level=logging.DEBUG
             )
             Queue.ASSIGNMENT = value

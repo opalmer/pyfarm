@@ -36,7 +36,7 @@ options = cmdargs.parser.parse_args()
 from pyfarm import logger, lock
 from pyfarm.preferences import prefs
 from pyfarm.db import tables
-from pyfarm.server import rpcqueue
+from pyfarm.server import queue
 from pyfarm.net import rpc as _rpc
 from pyfarm.datatypes.network import HOSTNAME
 from pyfarm.datatypes.system import OS, OperatingSystem
@@ -67,7 +67,7 @@ class Server(_rpc.Service, logger.LoggingBaseClass):
     '''
     def __init__(self, log_stream):
         _rpc.Service.__init__(self, log_stream)
-        self.queue = rpcqueue.Queue(self)
+        self.queue = queue.Queue(self)
         self.subHandlers = {
             "queue" : self.queue
         }
