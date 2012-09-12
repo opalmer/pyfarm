@@ -54,7 +54,7 @@ def host(hostname, **columns):
             raise errors.HostNotFound(hostname)
 
         elif filter.count() > 1:
-            raise errors.MultipleHostsFound(hostname)
+            raise errors.DuplicateHost(hostname, hosts)
 
         for entry in filter:
             for key, value in columns.iteritems():
