@@ -18,3 +18,4 @@
 
 '''module for inserting new data into the database'''
 
+from pyfarm.db.insert import host, master
