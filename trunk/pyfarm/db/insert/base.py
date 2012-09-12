@@ -69,7 +69,7 @@ class Insert(object):
                 self.results = result.last_inserted_ids()
 
             if not self.results:
-                raise errors.InsertionFailure(self.data, self.table)
+                raise errors.InsertionFailure(data=self.data, table=self.table)
 
         # close the connection
         connection.close()

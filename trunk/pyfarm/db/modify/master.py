@@ -16,4 +16,33 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
-from pyfarm.db.modify import host, master
+
+'''module for modifying network information in the database'''
+
+from pyfarm import errors
+from pyfarm.db.tables import masters
+from pyfarm.db.modify import base
+
+__all__ = ['master']
+
+def master(hostname, **columns):
+    '''
+    :param string hostname:
+        the hostname we are attempting to modify
+
+    :param columns:
+        columns to update for the given host
+
+    :exception pyfarm.errors.HostNotFound:
+        raised if t we could not find the host in
+
+    :exception ValueError:
+        raised if there was a problem with one or more of
+        the input arguments
+    '''
+    return base.modify(
+        masters, 'hostname', hostname,
+        exception_duplicate=errors.DuplicateHost,
+        **columns
+    )
+# end master

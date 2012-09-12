@@ -19,12 +19,9 @@
 
 '''module for modifying network information in the database'''
 
-from twisted.python import log
-
 from pyfarm import errors
 from pyfarm.db.tables import hosts
-from pyfarm.db.transaction import Transaction
-from pyfarm.db import utility
+from pyfarm.db.modify import base
 
 __all__ = ['host']
 
@@ -43,24 +40,10 @@ def host(hostname, **columns):
         raised if there was a problem with one or more of
         the input arguments
     '''
-    if not columns:
-        raise ValueError("no columns provided to update")
-
-    log.msg("preparing to modify '%s' database information" % hostname)
-    with Transaction(hosts) as trans:
-        filter = trans.query.filter(hosts.c.hostname == hostname)
-
-        if not filter.count():
-            raise errors.HostNotFound(hostname)
-
-        elif filter.count() > 1:
-            raise errors.DuplicateHost(hostname, hosts)
-
-        for entry in filter:
-            for key, value in columns.iteritems():
-                # update the current entry
-                current_value = getattr(entry, key)
-                setattr(entry, key, value)
-                args = (key, value, current_value)
-                trans.log("setting %s to %s from %s" % args)
+    return base.modify(
+        hosts, 'hostname', hostname,
+        exception_duplicate=errors.DuplicateHost,
+        exception_notfound=errors.HostNotFound,
+        **columns
+    )
 # end host
