@@ -16,32 +16,49 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
+'''stores all custom errors which can be raised by pyfarm'''
 
-class HostNotFound(NameError):
-    '''raised if the host was not found in database when we expected it to be'''
-    def __init__(self, hostname):
-        msg = "host %s was not found in the database" % hostname
-        super(HostNotFound, self).__init__(msg)
-    # end __init__
+class Error(Exception):
+    '''base exception for all pyfarm errors'''
+    pass
+# end Error
+
+
+class HostNotFound(Error):
+    '''raised when we failed to requested find the host in the database'''
+    def __init__(self, hostname, database):
+        self.hostname = hostname
+        self.database = database
+        super(HostNotFound, self).__init__()
+        # end __init__
+
+    def __str__(self):
+        args = (self.hostname, self.database)
+        return "failed to find '%s' in the %s table" % args
+        # end __str__
 # end HostNotFound
 
 
-class MultipleHostsFound(NameError):
+class MultipleHostsFound(Error):
     '''raised if multiple entries for a host are found where we expected one'''
     def __init__(self, hostname):
-        msg = "found more than one entry for %s" % hostname
-        super(MultipleHostsFound, self).__init__(msg)
+        self.hostname = hostname
+        super(MultipleHostsFound, self).__init__()
     # end __init__
+
+    def __str__(self):
+        return "found more than one entry for %s" % self.hostname
+    # end __str__
 # end MultipleHostsFound
 
 
-class NetworkSetupError(ValueError):
+class NetworkSetupError(Error):
     '''raised when there were problems setting up the network'''
     pass
 # end NetworkSetupError
 
 
-class InvalidDatabase(ValueError):
+class InvalidDatabase(Error):
     '''
     database provided in the configuration is either unsupported or invalid
     '''
