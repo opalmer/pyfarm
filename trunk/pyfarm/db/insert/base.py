@@ -55,14 +55,21 @@ class Insert(object):
 
         elif not self.data:
             log.msg("nothing to commit", level=logging.WARNING)
-            self.results = []
 
         # create a connection and insert all entries
         # at once
         connection = session.ENGINE.connect()
 
         with connection.begin():
-            self.results = connection.execute(self.table.insert(), self.data)
+            result = connection.execute(self.table.insert(), self.data)
+
+            if hasattr(result, 'inserted_primary_key'):
+                self.results = result.inserted_primary_key
+            else:
+                self.results = result.last_inserted_ids()
+
+            if not self.results:
+                raise errors.InsertionFailure(self.data, self.table)
 
         # close the connection
         connection.close()
@@ -123,3 +130,4 @@ def insert(table, match_name, data, error=True, drop=False):
             insert.add(data)
 
         return insert.results
+# end insert
