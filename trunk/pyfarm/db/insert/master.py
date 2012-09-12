@@ -31,11 +31,12 @@ from pyfarm import errors
 from pyfarm.db import tables
 from pyfarm.db.insert import base
 from pyfarm.preferences import prefs
+from pyfarm.datatypes import network
 
 __all__ = ['master']
 
-def master(hostname, port=None, online=True, queue=True, assignment=True,
-           error=True, drop=False):
+def master(hostname, port=None, ip=None, subnet=None, online=True, queue=True,
+           assignment=True, error=True, drop=False):
     '''
     inserts a single master into the database
 
@@ -45,6 +46,12 @@ def master(hostname, port=None, online=True, queue=True, assignment=True,
     :param integer port:
         if provided use insert this port into the database otherwise
         use the default port from the preferences
+
+    :param string ip:
+        sets the ip column in the database
+
+    :param string subnet:
+        sets the subnet column in the database
 
     :param boolean online:
         marks the master as online or offline
@@ -80,6 +87,8 @@ def master(hostname, port=None, online=True, queue=True, assignment=True,
     data['queue'] = queue
     data['assignment'] = assignment
     data['port'] = port or prefs.get('network.ports.master')
+    data['ip'] = ip or network.IP
+    data['subnet'] = subnet or network.SUBNET
 
     # iterate over all values we just created and
     # log them

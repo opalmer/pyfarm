@@ -38,7 +38,7 @@ from pyfarm.preferences import prefs
 from pyfarm.db import tables, query, modify, insert
 from pyfarm.master import queue
 from pyfarm.net import rpc as _rpc
-from pyfarm.datatypes.network import FQDN
+from pyfarm.datatypes.network import FQDN, IP, SUBNET
 from pyfarm.datatypes.system import OS, OperatingSystem
 from pyfarm.master import callbacks
 
@@ -109,7 +109,9 @@ with lock.ProcessLock(
         "port" : options.port,
         "online" : True,
         "queue" : options.queue,
-        "assignment" : options.assignment
+        "assignment" : options.assignment,
+        "ip" : IP,
+        "subnet" : SUBNET
     }
 
     if query.master.exists(FQDN):
