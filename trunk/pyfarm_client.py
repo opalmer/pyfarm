@@ -85,7 +85,7 @@ class Client(_rpc.Service, logger.LoggingBaseClass):
 
     def xmlrpc_setMaster(self, new_master, database=False):
         '''
-        sets the master server IP
+        sets the master master IP
 
         :param boolean database:
             if provided then override the value --set-master provided on
@@ -252,10 +252,9 @@ with lock.ProcessLock(
 
     # try to get the master port from the database before
     # relying on preferences
-#    query.master.port(options.master)
+    master_port = query.master.port(options.master)
 
-
-    MASTER = (master.get(options.master), prefs.get('network.ports.master'))
+    MASTER = (master.get(options.master), master_port)
     client = Client(SERVICE_LOG)
     SERVICE = client
 

@@ -43,6 +43,7 @@ def master(hostname, **columns):
     return base.modify(
         masters, 'hostname', hostname,
         exception_duplicate=errors.DuplicateHost,
+        exception_notfound=errors.NotFoundError,
         **columns
     )
 # end master

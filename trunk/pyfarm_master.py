@@ -25,7 +25,7 @@ import sys
 import time
 import logging
 
-from pyfarm.server import cmdargs
+from pyfarm.master import cmdargs
 
 # Handle command line input before importing anything else.  This
 # ensures that if -h or --help is requested or if we have trouble
@@ -35,12 +35,12 @@ options = cmdargs.parser.parse_args()
 
 from pyfarm import logger, lock
 from pyfarm.preferences import prefs
-from pyfarm.db import tables
-from pyfarm.server import queue
+from pyfarm.db import tables, query, modify, insert
+from pyfarm.master import queue
 from pyfarm.net import rpc as _rpc
-from pyfarm.datatypes.network import HOSTNAME
+from pyfarm.datatypes.network import FQDN
 from pyfarm.datatypes.system import OS, OperatingSystem
-from pyfarm.server import callbacks
+from pyfarm.master import callbacks
 
 from twisted.internet import reactor, threads
 from twisted.web import server as _server
@@ -62,8 +62,8 @@ prefs.set('database.setup.close-connections', False)
 
 class Server(_rpc.Service, logger.LoggingBaseClass):
     '''
-    Main server class to act as an external interface to the
-    data base and job server.
+    Main master class to act as an external interface to the
+    data base and job master.
     '''
     def __init__(self, log_stream):
         _rpc.Service.__init__(self, log_stream)
@@ -85,13 +85,13 @@ class Server(_rpc.Service, logger.LoggingBaseClass):
 # create a lock for the process so we can't run two servers
 # from the same host at once
 with lock.ProcessLock(
-    'server', kill=options.force_kill, wait=options.wait,
+    'master', kill=options.force_kill, wait=options.wait,
     remove=options.remove_lock
 ):
     # determine the location we should log to
     if not options.log:
         root = prefs.get('filesystem.locations.general')
-        SERVICE_LOG = os.path.join(root, 'server-%s.log' % HOSTNAME)
+        SERVICE_LOG = os.path.join(root, 'master-%s.log' % FQDN)
     else:
         SERVICE_LOG = os.path.abspath(options.log)
 
@@ -105,24 +105,39 @@ with lock.ProcessLock(
     # setup the required tables
     tables.init()
 
+    master_table_data = {
+        "port" : options.port,
+        "online" : True,
+        "queue" : options.queue,
+        "assignment" : options.assignment
+    }
+
+    if query.master.exists(FQDN):
+        modify.master.master(FQDN, **master_table_data)
+    else:
+        insert.master.master(FQDN, **master_table_data)
+
     # start the reactor
     reactor.listenTCP(options.port, _server.Site(server))
-    args = (HOSTNAME, options.port)
+    args = (FQDN, options.port)
     log.msg(
-        "running server at http://%s:%i" % args,
+        "running master at http://%s:%i" % args,
         system="Server", level=logging.INFO
     )
-    raise Exception("stopping server, see TODOs in notes")
     reactor.run()
 
-# If RESTART has been set to True then restart the server
+    # set this master as offline
+    log.msg("setting master as offline in database")
+    modify.master.master(FQDN, online=False)
+
+# If RESTART has been set to True then restart the master
 # script.  This must be done after the reactor and has been
 # shutdown and after we have given the port(s) a chance
 # to release.
 if os.environ.get('PYFARM_RESTART') == "true":
     pause = prefs.get('network.rpc.delay')
     log.msg(
-        "preparing to restart the server, pausing %i seconds" % pause,
+        "preparing to restart the master, pausing %i seconds" % pause,
         system="Server"
     )
     time.sleep(pause)

@@ -24,7 +24,7 @@
 #       will be defined my sqlalchemy if they are not provided.
 database:
   host:   # hostname to connect to
-  port:   # port the server is running on
+  port:   # port the master is running on
   user:   # username to connect with
   pass:   # password to connect with
   name:   # name of database

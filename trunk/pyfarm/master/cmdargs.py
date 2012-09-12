@@ -20,3 +20,12 @@ from pyfarm.cmdargs import *
 
 parser.description = "Entry point for PyFarm's master."
 parser.set_defaults(port=prefs.get('network.ports.master'))
+
+parser.add_argument(
+    '--queue', default=True, type=tobool,
+    help='enables or disables queue events'
+)
+parser.add_argument(
+    '--assignment', default=True, type=tobool,
+    help='enables or disables the assignment queue'
+)
