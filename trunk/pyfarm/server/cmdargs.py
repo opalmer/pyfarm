@@ -18,5 +18,5 @@
 from pyfarm.preferences import prefs
 from pyfarm.cmdargs import *
 
-parser.description = "Entry point for PyFarm's server."
-parser.set_defaults(port=prefs.get('network.ports.server'))
+parser.description = "Entry point for PyFarm's master."
+parser.set_defaults(port=prefs.get('network.ports.master'))

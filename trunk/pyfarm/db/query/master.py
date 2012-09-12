@@ -23,8 +23,11 @@ of the master hosts
 
 from __future__ import with_statement
 
+import logging
+
 from twisted.python import log
 
+from pyfarm.preferences import prefs
 from pyfarm.db.transaction import Transaction
 from pyfarm.db.tables import masters
 from pyfarm import errors
@@ -44,6 +47,13 @@ def port(hostname):
     '''returns the master for the provided hostname'''
     with Transaction(masters) as trans:
         host = trans.query.filter_by(hostname=hostname).first()
+        if host is None:
+            log.msg(
+                "master %s is not in the database, using default port",
+                level=logging.WARNING
+            )
+            return prefs.get('network.ports.master')
+
         return host.port
 # end port
 

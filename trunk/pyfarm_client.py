@@ -75,8 +75,7 @@ class Client(_rpc.Service, logger.LoggingBaseClass):
             "job" : self.job
         }
 
-        if options.verify_master and not _rpc.ping(MASTER[0], MASTER[1]):
-            raise errors.NetworkSetupError("failed to ping master")
+
     # end __init__
 
     def xmlrpc_master(self):
@@ -103,7 +102,7 @@ class Client(_rpc.Service, logger.LoggingBaseClass):
 
         if options.store_master or database:
             log.msg("setting master in database")
-            modify.hosts.host(
+            modify.host.host(
                 FQDN,
                 master=new_master[0]
             )
@@ -217,6 +216,8 @@ with lock.ProcessLock(
     observer = logger.Observer(SERVICE_LOG)
     observer.start()
 
+    master_port = query.master.port(options.master)
+
     # construct keyword arguments used to update the host in
     # the database
     host_table_keywords = {
@@ -240,14 +241,19 @@ with lock.ProcessLock(
 
     if query.hosts.exists():
         log.msg("updating %s in the host table" % FQDN)
-        modify.hosts.host(
+        modify.host.host(
             FQDN,
             **host_table_keywords
         )
 
     else:
         log.msg("inserting %s into the host table" % FQDN, level="INFO")
-        insert.hosts.host(**host_table_keywords)
+        insert.host.host(**host_table_keywords)
+
+    # try to get the master port from the database before
+    # relying on preferences
+#    query.master.port(options.master)
+
 
     MASTER = (master.get(options.master), prefs.get('network.ports.server'))
     client = Client(SERVICE_LOG)
@@ -264,9 +270,9 @@ with lock.ProcessLock(
     )
     reactor.run()
 
-    # set the master as offline
+    # set this host as offline
     log.msg("setting host as offline in database")
-    modify.hosts.host(FQDN, online=False)
+    modify.host.host(FQDN, online=False)
 
 # If RESTART has been set to True then restart the client
 # script.  This must be done after the reactor and has been

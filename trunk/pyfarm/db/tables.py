@@ -70,7 +70,7 @@ hosts = sql.Table('pyfarm_hosts', metadata,
 masters = sql.Table('pyfarm_masters', metadata,
     sql.Column('id', sql.Integer, autoincrement=True, primary_key=True),
     sql.Column('hostname', sql.String(255), nullable=False),
-    sql.Column('port', sql.Integer, default=prefs.get('network.ports.server'), nullable=False),
+    sql.Column('port', sql.Integer, default=prefs.get('network.ports.master'), nullable=False),
     sql.Column('online', sql.Boolean, default=False),
     sql.Column('queue', sql.Boolean, default=True),
     sql.Column('assignment', sql.Boolean, default=True)

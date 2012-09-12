@@ -30,7 +30,7 @@ rpc:
 ports:
   heartbeat: 9030
   client: 9031
-  server: 9032
+  master: 9032
 
 # Group and prefix should remain the defaults unless there is
 # a spcific reason to make a change.  Interval will control
