@@ -83,3 +83,18 @@ class InvalidDatabase(Error):
     '''
     pass
 # end InvalidDatabase
+
+class InsertionFailure(Error):
+    '''
+    raised when either an insertion failed or when the results of the
+    insertion are None
+    '''
+    def __init__(self, data, table):
+        self.data = data
+        self.table = table
+    # end __init__
+
+    def __str__(self):
+        return "insertion of %s into %s has failed" % (self.data, self.table)
+    # end __str__
+# end InsertionFailure
