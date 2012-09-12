@@ -255,7 +255,7 @@ with lock.ProcessLock(
 #    query.master.port(options.master)
 
 
-    MASTER = (master.get(options.master), prefs.get('network.ports.server'))
+    MASTER = (master.get(options.master), prefs.get('network.ports.master'))
     client = Client(SERVICE_LOG)
     SERVICE = client
 
