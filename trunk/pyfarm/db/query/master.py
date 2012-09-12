@@ -49,7 +49,7 @@ def port(hostname):
         host = trans.query.filter_by(hostname=hostname).first()
         if host is None:
             log.msg(
-                "master %s is not in the database, using default port",
+                "master %s is not in the database, using default port" % hostname,
                 level=logging.WARNING
             )
             return prefs.get('network.ports.master')
