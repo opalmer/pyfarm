@@ -20,9 +20,18 @@ from pyfarm.preferences import prefs
 from pyfarm.datatypes.enums import DEFAULT_JOBTYPES, DEFAULT_SOFTWARE
 from pyfarm.datatypes.system import TOTAL_RAM, CPU_COUNT
 from pyfarm.cmdargs import *
+from pyfarm.net.functions import openport
 
 parser.description = "Entry point for PyFarm's client."
-parser.set_defaults(port=prefs.get('network.ports.client'))
+
+
+try:
+    port = prefs.get('network.ports.client')
+
+except KeyError:
+    port = openport()
+
+parser.set_defaults(port=port)
 
 parser.add_argument(
     '--jobtypes', default=DEFAULT_JOBTYPES,
