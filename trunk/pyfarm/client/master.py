@@ -18,13 +18,14 @@
 
 '''module for dealing with storage and retrieval of the master'''
 
-from twisted.python import log
-
 import socket
 import logging
 
 from pyfarm.db import query
-from pyfarm.datatypes.network import HOSTNAME
+from pyfarm.datatypes.network import FQDN
+from pyfarm import errors
+
+from twisted.python import log
 
 def get(master=None):
     '''
@@ -33,8 +34,19 @@ def get(master=None):
         the master is in the database or what the hostname is
     '''
     if master is None:
-        master = query.hosts.master(HOSTNAME)
+        try:
+            log.msg("retrieving master from database")
+            master = query.master.get(FQDN)
 
+        except errors.HostNotFound:
+            log.msg(
+                "client %s does not exist in database, cannot determine master",
+                level=logging.WARNING
+            )
+            master = None
+
+    # make sure that the resulting master value
+    # is valid
     if master is None:
         raise ValueError(
             "expected master to be a non-null value please check your input arguments to pyfarm_client"

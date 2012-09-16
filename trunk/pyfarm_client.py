@@ -230,7 +230,11 @@ with lock.ProcessLock(
     observer = logger.Observer(SERVICE_LOG)
     observer.start()
 
-    master_port = query.master.port(options.master)
+    # if the master has not been provided then
+    # we should try and use the entry from the database
+    master = master.get(options.master)
+    master_port = query.master.port(master)
+    MASTER = (master, master_port)
 
     # construct keyword arguments used to update the host in
     # the database
@@ -264,11 +268,6 @@ with lock.ProcessLock(
         log.msg("inserting %s into the host table" % FQDN, level="INFO")
         insert.host.host(**host_table_keywords)
 
-    # try to get the master port from the database before
-    # relying on preferences
-    master_port = query.master.port(options.master)
-
-    MASTER = (master.get(options.master), master_port)
     client = Client(SERVICE_LOG)
     SERVICE = client
 

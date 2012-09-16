@@ -27,9 +27,8 @@ import logging
 
 from twisted.python import log
 
-from pyfarm.preferences import prefs
 from pyfarm.db.transaction import Transaction
-from pyfarm.db.tables import masters
+from pyfarm.db.tables import masters, hosts
 from pyfarm import errors
 
 def exists(hostname):
@@ -38,6 +37,9 @@ def exists(hostname):
     general this function should not need to be used and is only
     provided for convenience.
     '''
+    if not isinstance(hostname, (str, unicode)):
+        raise TypeError("hostname must be a string")
+
     log.msg("checking to see if %s is in the master table" % hostname)
     select = masters.select(masters.c.hostname == hostname)
     return bool(select.execute().first())
@@ -45,6 +47,9 @@ def exists(hostname):
 
 def port(hostname):
     '''returns the master for the provided hostname'''
+    if not isinstance(hostname, (str, unicode)):
+        raise TypeError("hostname must be a string")
+
     with Transaction(masters) as trans:
         host = trans.query.filter_by(hostname=hostname).first()
         if host is None:
@@ -52,7 +57,7 @@ def port(hostname):
                 "master %s is not in the database, using default port" % hostname,
                 level=logging.WARNING
             )
-            return prefs.get('network.ports.master')
+            raise errors.HostNotFound(match_data=hostname, table=masters)
 
         return host.port
 # end port
@@ -63,6 +68,9 @@ def online(hostname):
     on the input keyword this function will either return the online hosts,
     offline hosts, or all hosts if None is provided as a value
     '''
+    if not isinstance(hostname, (str, unicode)):
+        raise TypeError("hostname must be a string")
+
     with Transaction(masters) as trans:
         host = trans.query.filter_by(hostname=hostname).first()
         if host is None:
@@ -72,3 +80,19 @@ def online(hostname):
             )
         return host.online
 # end hostlist
+
+
+def get(hostname):
+    '''returns the master for the provided hostname'''
+    if not isinstance(hostname, (str, unicode)):
+        raise TypeError("hostname must be a string")
+
+    with Transaction(hosts) as trans:
+        host = trans.query.filter_by(hostname=hostname).first()
+        if host is None:
+            raise errors.HostNotFound(
+                match_data=hostname,
+                table=hosts
+            )
+        return host.master
+# end get
