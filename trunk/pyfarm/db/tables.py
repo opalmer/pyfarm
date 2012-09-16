@@ -25,6 +25,9 @@ from pyfarm.datatypes.enums import State, DEFAULT_JOBTYPES, DEFAULT_GROUPS, DEFA
 
 from twisted.python import log
 
+HOSTNAME_LENGTH = 255
+IPV4_LENGTH = 16
+
 # create global metadata object and bind the engine
 metadata = sql.MetaData()
 metadata.bind = ENGINE
@@ -47,11 +50,11 @@ metadata.bind = ENGINE
 #      3 - other/unknown
 hosts = sql.Table('pyfarm_hosts', metadata,
     sql.Column('id', sql.Integer, autoincrement=True, primary_key=True),
-    sql.Column('hostname', sql.String(255), nullable=False),
+    sql.Column('hostname', sql.String(HOSTNAME_LENGTH), nullable=False),
     sql.Column('port', sql.Integer, nullable=False),
-    sql.Column('master', sql.String(255), default=None),
-    sql.Column('ip', sql.String(16)),
-    sql.Column('subnet', sql.String(16)),
+    sql.Column('master', sql.String(HOSTNAME_LENGTH), default=None),
+    sql.Column('ip', sql.String(IPV4_LENGTH)),
+    sql.Column('subnet', sql.String(IPV4_LENGTH)),
     sql.Column('os', sql.Integer),
     sql.Column('ram_total', sql.Integer),
     sql.Column('ram_usage', sql.Integer),
@@ -69,10 +72,10 @@ hosts = sql.Table('pyfarm_hosts', metadata,
 # assignment - sending jobs to hosts when enabled
 masters = sql.Table('pyfarm_masters', metadata,
     sql.Column('id', sql.Integer, autoincrement=True, primary_key=True),
-    sql.Column('hostname', sql.String(255), nullable=False),
+    sql.Column('hostname', sql.String(HOSTNAME_LENGTH), nullable=False),
     sql.Column('port', sql.Integer, nullable=False),
-    sql.Column('ip', sql.String(16)),
-    sql.Column('subnet', sql.String(16)),
+    sql.Column('ip', sql.String(IPV4_LENGTH)),
+    sql.Column('subnet', sql.String(IPV4_LENGTH)),
     sql.Column('online', sql.Boolean, default=False),
     sql.Column('queue', sql.Boolean, default=True),
     sql.Column('assignment', sql.Boolean, default=True)
@@ -126,11 +129,11 @@ frames = sql.Table('pyfarm_frames', metadata,
     sql.Column('id', sql.Integer, autoincrement=True, primary_key=True),
     sql.Column('jobid', sql.Integer, sql.ForeignKey(jobs.c.id)),
     sql.Column('priority', sql.Integer, default=prefs.get('jobsystem.priority-default')),
-    sql.Column('host', sql.Integer, sql.ForeignKey(hosts.c.id), default=None),
+    sql.Column('assigned_by', sql.Integer, sql.ForeignKey(masters.c.id), default=None),
+    sql.Column('hostname', sql.Integer, sql.ForeignKey(hosts.c.id), default=None),
     sql.Column('frame', sql.Integer),
-    sql.Column('order', sql.Integer, default=None),
-    sql.Column('state', sql.Integer,
-               default=State.QUEUED),
+    sql.Column('order', sql.Integer, default=0),
+    sql.Column('state', sql.Integer, default=State.QUEUED),
     sql.Column('attempts', sql.Integer, default=0),
     sql.Column('ram', sql.Integer, default=None),
     sql.Column('time_start', sql.Float, default=None),
