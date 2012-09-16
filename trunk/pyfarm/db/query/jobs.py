@@ -26,25 +26,9 @@ import copy
 
 from sqlalchemy import func
 
-from pyfarm import datatypes
+from pyfarm.datatypes import enums
 from pyfarm.db.transaction import Transaction
 from pyfarm.db.tables import jobs
-from pyfarm.db.query import _tables
-
-def priority(jobid):
-    '''
-    returns the priority of the job
-
-    :exception ValueError:
-        raied if the job id does not exist
-    '''
-    return _tables.priority(jobs, jobid)
-# end priority
-
-def priority_stats():
-    '''returns the priority stats of the current job table'''
-    return _tables.priority_stats(jobs)
-# end priority_stats
 
 def active(priority=True):
     '''
@@ -56,10 +40,14 @@ def active(priority=True):
     # only retrieve jobs which have the highest priority and
     # are currently active
     active_jobs = []
+
     with Transaction(jobs, system="query.jobs.active") as trans:
-        max_priority = trans.session.query(func.max(trans.table.c.priority))
-        query = trans.query.filter(jobs.c.priority == max_priority.first()[0])
-        query = query.filter(jobs.c.state.in_(datatypes.ACTIVE_JOB_STATES))
+        if priority:
+            max_priority = trans.session.query(func.max(trans.table.c.priority))
+            query = trans.query.filter(jobs.c.priority == max_priority.first()[0])
+            query = query.filter(jobs.c.state.in_(enums.ACTIVE_JOB_STATES))
+        else:
+            query = trans.query.filter(jobs.c.state.in_(enums.ACTIVE_JOB_STATES))
 
         # at this points jobs will have the same priority so we add
         # jobs with the lowest number of running frames first
@@ -70,18 +58,3 @@ def active(priority=True):
 
     return active_jobs
 # end running
-
-def job(jobid):
-    '''returns a job object for the given jobid'''
-    with Transaction(jobs, system="query.jobs.job") as trans:
-        query = trans.query.filter(jobs.c.id == jobid)
-        result = query.first()
-        return copy.deepcopy(result)
-# end job
-
-def exists(jobid):
-    '''returns True if the given job id exists, False if it does not'''
-    with Transaction(jobs, system="query.jobs.exists") as trans:
-        query = trans.query.filter(jobs.c.id == jobid)
-        return bool(query.count())
-# end exists
