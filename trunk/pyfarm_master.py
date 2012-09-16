@@ -115,9 +115,16 @@ with lock.ProcessLock(
     }
 
     if query.master.exists(FQDN):
-        modify.master.master(FQDN, **master_table_data)
+        update_function = modify.master.master
+
     else:
-        insert.master.master(FQDN, **master_table_data)
+        update_function = insert.master.master
+
+    # normally we would defer the database update
+    # to a thread to prevent blocking for occurring
+    # but in this case we can't really move on till this
+    # completes
+    update_function(FQDN, **master_table_data)
 
     # start the reactor
     reactor.listenTCP(options.port, _server.Site(server))
