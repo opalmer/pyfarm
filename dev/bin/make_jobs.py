@@ -36,7 +36,8 @@ site.addsitedir(trunk)
 os.chdir(trunk)
 
 # pyfarm libs
-from pyfarm import logger, jobtypes, prefs
+from pyfarm.preferences import prefs
+from pyfarm import logger, jobtypes
 from pyfarm.db import submit
 
 prefs.set('database.setup.close-connections', False)
