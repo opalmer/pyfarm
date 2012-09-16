@@ -18,15 +18,15 @@
 
 import os
 import time
-import inspect
 import logging
 import fnmatch
-import colorama
-from colorama import Fore, Back, Style
 from logging import handlers
 
-from twisted.python import log
 from pyfarm.preferences import prefs
+
+import colorama
+from twisted.python import log
+from colorama import Fore, Back, Style
 
 log.FileLogObserver.timeFormat = prefs.get('logging.timestamp')
 colorama.init()
@@ -326,9 +326,11 @@ class Observer(log.FileLogObserver):
 class LoggingBaseClass(object):
     '''Adds a custom self.log method to an inherited class'''
     def log(self, msg, **kwargs):
-        module = inspect.getmodule(self.__class__).__name__
-        classname = self.__module__ + "." + self.__class__.__name__
-        kwargs['system'] = "%s.%s" % (module, classname)
+        # adds the namespace of the class to the keyword
+        # system argument
+        if 'system' not in kwargs:
+            kwargs['system'] = self.__module__ + "." + self.__class__.__name__
+
         log.msg(msg, **kwargs)
     # end log
 # end LoggingBaseClass
