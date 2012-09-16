@@ -21,6 +21,12 @@
 named value mappings which do not change during execution
 '''
 
+try:
+    from collections import OrderedDict
+
+except ImportError:
+    from ordereddict import OrderedDict
+
 from sqlalchemy import types as sqltypes
 
 class Enum(object):
@@ -49,12 +55,8 @@ class Enum(object):
     def __init__(self, *args, **kwargs):
         self._start = kwargs.get('start', 0)
         self._end = self._start+len(args)
-        self.__mappings = {}
-        self.__range = xrange(*(self._start, self._end, 1))
-
-        # establish name to use when __repr__ is called
-        name = kwargs.get('name') or self.__class__.__name__
-        self.__name = name.upper()
+        self.__mappings = OrderedDict()
+        self.__range = xrange(self._start, self._end, 1)
 
         index = 0
         for arg in args:
@@ -70,13 +72,24 @@ class Enum(object):
 
             # set the attribute on the class
             setattr(self, arg, index_value)
-
             index += 1
 
-    # external methods
-    def __repr__(self): return self.__name
-    def __getitem__(self, item): return self.__mappings[item]
-    def get(self, item): return self.__getitem__(item)
+    def __repr__(self):
+        values = []
+        for key, value in self.__mappings.iteritems():
+            if isinstance(key, (str, unicode)):
+                values.append("%s=%s" % (key, value))
+
+        return "%s(%s)" % (self.__class__.__name__, ", ".join(values))
+    # end __repr__
+
+    def __getitem__(self, item):
+        return self.__mappings[item]
+    # end __getitem__
+
+    def get(self, item):
+        return self.__getitem__(item)
+    # end __getitem__
 # end Enum
 
 Software = Enum("MAYA", "HOUDINI", "VRAY", "NUKE", "BLENDER")
