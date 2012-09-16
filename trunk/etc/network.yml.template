@@ -24,13 +24,13 @@ rpc:
   shutdown: true # allows/disallows RPC to be shutdown remotely
   delay: 3       # seconds between shutdown and restart
 
-# Generally these will not need to be changed
-# unless there is already a service running on
-# the given port or the port has been blocked
-ports:
-  heartbeat: 9030
-  client: 9031
-  master: 9032
+# Optional ports for each service.  If one or more of these values
+# is not provided the an attempt will be make to determine an open
+# port for you
+#ports:
+#  heartbeat: 9030
+#  client: 9031
+#  master: 9032
 
 # Group and prefix should remain the defaults unless there is
 # a spcific reason to make a change.  Interval will control
