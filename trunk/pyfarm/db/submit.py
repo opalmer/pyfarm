@@ -36,6 +36,8 @@ from pyfarm.db import tables, session, transaction, query
 
 __all__ = ['Job', 'Frame']
 
+# TODO: rewrite (currently very slow and error prone for large sets of frames)
+
 class SubmitBase(LoggingBaseClass):
     def __init__(self):
         self.data = []
