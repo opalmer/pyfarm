@@ -36,4 +36,5 @@ ENGINE = sql.create_engine(
     echo_pool=prefs.get('logging.sqlalchemy.pool')
 )
 Session = orm.sessionmaker(bind=ENGINE)
+scoped_session = orm.ScopedSession(Session)()
 log.msg("setup engine: %s, config: %s" % (ENGINE.name, config))
