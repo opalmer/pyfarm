@@ -20,41 +20,11 @@
 Provides common mechanisms for querying job related information
 '''
 
-from __future__ import with_statement
+from pyfarm.db.session import scoped_session
+from pyfarm.db.tables import jobs as _jobs
 
-import copy
 
-from sqlalchemy import func
-
-from pyfarm.datatypes import enums
-from pyfarm.db.transaction import Transaction
-from pyfarm.db.tables import jobs
-
-def active(priority=True):
-    '''
-    returns a list of running job id
-
-    :param boolean priority:
-        only the job(s) with the highest priority will be returned
-    '''
-    # only retrieve jobs which have the highest priority and
-    # are currently active
-    active_jobs = []
-
-    with Transaction(jobs, system="query.jobs.active") as trans:
-        if priority:
-            max_priority = trans.session.query(func.max(trans.table.c.priority))
-            query = trans.query.filter(jobs.c.priority == max_priority.first()[0])
-            query = query.filter(jobs.c.state.in_(enums.ACTIVE_JOB_STATES))
-        else:
-            query = trans.query.filter(jobs.c.state.in_(enums.ACTIVE_JOB_STATES))
-
-        # at this points jobs will have the same priority so we add
-        # jobs with the lowest number of running frames first
-        for job in query.order_by(jobs.c.count_running):
-            active_jobs.append(job)
-
-        trans.log("found %i active jobs" % len(active_jobs))
-
-    return active_jobs
-# end running
+def exists(jobid):
+    '''returns True if the given jobid exists'''
+    return bool(scoped_session.query(_jobs).filter(_jobs.c.id == jobid).first())
+# end exists
