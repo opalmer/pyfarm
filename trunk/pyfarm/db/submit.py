@@ -337,7 +337,7 @@ class Job(SubmitBase):
             "data" : data, "user" : getpass.getuser(), "software" : software,
             "ram" : ram, "cpus" : cpus, "requeue_failed" : requeue,
             "requeue_max" : requeue_max,
-            "count_total" : len(xrange(start, end, by))
+            "count_total" : len(xrange(start, end+1, by))
         }
 
         if dependencies:
