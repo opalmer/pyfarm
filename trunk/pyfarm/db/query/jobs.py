@@ -20,11 +20,14 @@
 Provides common mechanisms for querying job related information
 '''
 
-from pyfarm.db.session import scoped_session
+from sqlalchemy import orm
+
+from pyfarm.db.session import Session
 from pyfarm.db.tables import jobs as _jobs
 
 
 def exists(jobid):
     '''returns True if the given jobid exists'''
-    return bool(scoped_session.query(_jobs).filter(_jobs.c.id == jobid).first())
+    session = orm.scoped_session(Session)
+    return bool(session.query(_jobs).filter(_jobs.c.id == jobid).first())
 # end exists
