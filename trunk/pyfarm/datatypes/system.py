@@ -70,9 +70,11 @@ TOTAL_RAM = int(psutil.TOTAL_PHYMEM / 1024 / 1024)
 # getlogin is the preferred way to get the current
 # login because it does not directly look to the
 # environment for the username
-if hasattr(os, 'getlogin'):
-    USER = os.getlogin()
-else:
+try:
+    import pwd
+    USER = pwd.getpwuid(os.getuid())[0]
+
+except ImportError:
     USER = getpass.getuser()
 
 # setup total swap and current swap
