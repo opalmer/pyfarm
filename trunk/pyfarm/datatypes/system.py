@@ -16,6 +16,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
+import os
 import sys
 import psutil
 import getpass
@@ -65,7 +66,14 @@ OS = OperatingSystem.get()
 OSNAME = OperatingSystem.MAPPINGS.get(OS)
 CPU_COUNT = psutil.NUM_CPUS
 TOTAL_RAM = int(psutil.TOTAL_PHYMEM / 1024 / 1024)
-USER = getpass.getuser()
+
+# getlogin is the preferred way to get the current
+# login because it does not directly look to the
+# environment for the username
+if hasattr(os, 'getlogin'):
+    USER = os.getlogin()
+else:
+    USER = getpass.getuser()
 
 # setup total swap and current swap
 if hasattr(psutil, 'swap_memory'):
