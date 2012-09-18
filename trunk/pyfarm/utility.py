@@ -20,6 +20,19 @@
 General utility functions that are not specific to individual components
 of PyFarm.
 '''
+import sqlalchemy.util
+
+class NamedTupleRow(sqlalchemy.util.NamedTuple):
+    def __repr__(self):
+        values = []
+        for key, value in self.__dict__.iteritems():
+            if key != "_labels":
+                values.append("%s=%s" % (key, repr(value)))
+
+        return "Row(%s)" % ", ".join(values)
+    # end __repr__
+# end NamedTupleRow
+
 
 def framerange(start, end, by=1):
     '''wrapper around xrange() which automatically adds 1 to the end frame'''
