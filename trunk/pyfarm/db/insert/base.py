@@ -18,64 +18,207 @@
 
 '''base function used for performing insertions'''
 
+from __future__ import with_statement
+
+import time
 import logging
 import sqlalchemy
+from sqlalchemy import orm
 
 from pyfarm import errors
 from pyfarm.db import session
+from pyfarm.datatypes.enums import SQL_TYPES
+from pyfarm.logger import LoggingBaseClass
 
 from twisted.python import log
 
-class Insert(object):
-    '''thin wrapper class around insertion statements'''
-    def __init__(self, table):
-        self.table = table
+class Insert(LoggingBaseClass):
+    '''
+    Base insertion class which performs commit on a batch basis while
+    performing type and column checking as each entry is added.  See below
+    for example use case:
+
+    >>> with Insert(tables.foobar) as submit:
+    >>>     data = {"bool" : True, "int" : 1, "string" : "hello world"}
+    >>>     submit.add(checkduplicate=False, **data)
+    >>>     print submit.results
+    [Row(int=1, bool=True, id=64793, string=u'hello world')]
+
+    :param sqlalchmey.Table table:
+        the table definition we will be type checking against
+        and using for insertions
+
+    :param boolean getresults:
+        if True then populate self.results when the resulting column ids
+        after the commit
+
+    '''
+    count = property(lambda self: len(self.data))
+
+    def __init__(self, table, getresults=True):
+        if not isinstance(table, sqlalchemy.Table):
+            raise TypeError(
+                "table argument must be an instance of sqlalchemy.Table"
+            )
+
         self.data = []
-        self.results = None
+        self.table = table
+        self.results = []
+        self.connection = None
+        self.column_names = []
+        self.column_types = {}
+        self.getresults = getresults
+        self.primary_key = None
 
-        if not isinstance(self.table, sqlalchemy.Table):
-            raise TypeError("table must be a sqlalchemy.Table object")
-    # end __init___
+        # create a list of column names, their expected type(s), and
+        # retrieve the primary key
+        for column in self.table.columns:
+            self.column_types[column.name] = SQL_TYPES[column.type.__class__]
 
-    def add(self, data):
-        self.data.append(data)
-    # end add
+            if self.primary_key is None and column.primary_key:
+                self.primary_key = column.name
+
+        self.column_names = self.column_types.keys()
+       # end __init__
+
+    # pre/post commit and add methods which are meant
+    # to be overridden by the subclass
+    def precommit(self): pass
+    def postcommit(self): pass
+    def preadd(self, data): pass
+    def postadd(self, data): pass
 
     def __enter__(self):
         return self
     # end __enter__
 
     def __exit__(self, exc_type, exc_val, exc_tb):
+        '''calls self.commit() so long as no exceptions have been raised'''
         if exc_type is not None:
             log.msg(
-                "exception occurred, cannot insert entries",
+                "exception occurred, cannot commit entries",
                 level=logging.WARNING
             )
+
+        else:
+            self.commit()
+    # end __exit__
+
+    def add(self, checktype=True, checkcolumn=True, checkduplicate=True,
+            **kwargs):
+        '''
+        Adds to self.data and may be expanded upon in subclasses.  This method
+        will also provide some insurance that the data being committed to
+        the database is valid based on the current table definition.
+
+        :param boolean checktype:
+            when True (default) check each value against expected type for the
+            given column
+
+        :param boolean checkcolumn:
+            when True (default) check each column to ensure it is currently
+            defined in the table definiion
+
+        :param boolean checkduplicate:
+            when True (default) check ensure the the values we are adding
+            are not already pending to be committed
+
+        :exception ValueError:
+            raised if the columns you are attempting to add do not exist in the
+            table or if the values have already been added before
+
+        :exception TypeError:
+            raised if the values argument is not a dictionary or if
+            some of the column type provided will not work with the current
+            table definition
+        '''
+        if not kwargs:
+            raise ValueError("no data provided to add")
+
+        self.preadd(kwargs)
+
+        for key, value in kwargs.iteritems():
+            if checkcolumn and key not in self.column_names:
+                # ensure the provided key actually exists in
+                # the current table definition
+                raise ValueError(
+                    "requested column '%s' does not exist in %s" % (key, self.table)
+                )
+
+            if checktype:
+                # ensure the provided value is of the correct type when
+                # compared to the current table definition
+                if not isinstance(value, self.column_types[key]):
+                    raise TypeError(
+                        "invalid type for %s, expected %s" % (key, self.column_types[key])
+                    )
+
+        # duplicate checking
+        if checkduplicate and kwargs in self.data:
+            raise ValueError("%s has already been added" % kwargs)
+
+        self.data.append(kwargs)
+        self.postadd(kwargs)
+    # end add
+
+    def commit(self):
+        '''commits the data to self.table'''
+        if not self.data:
+            self.log("no data to commit", level=logging.WARNING)
             return
 
-        elif not self.data:
-            log.msg("nothing to commit", level=logging.WARNING)
+        self.connection = session.ENGINE.connect()
 
-        # create a connection and insert all entries
-        # at once
-        connection = session.ENGINE.connect()
+        # if we're expecting to get
+        if self.getresults:
+            results_start = time.time()
+            log.msg("retrieving all records and storing their primary keys")
+            scoped_session = orm.scoped_session(session.Session)
+            query = scoped_session.query(self.table)
+            primary_keys = set([getattr(i, self.primary_key) for i in query])
+            log.msg("...%s" % (time.time()-results_start))
 
-        with connection.begin():
-            result = connection.execute(self.table.insert(), self.data)
+        self.precommit()
 
-            if hasattr(result, 'inserted_primary_key'):
-                self.results = result.inserted_primary_key
-            else:
-                self.results = result.last_inserted_ids()
+        with self.connection.begin() as trans:
+            self.log("inserting %i records into %s" % (self.count, self.table))
+            start = time.time()
+            trans.connection.execute(self.table.insert(), self.data)
+            trans.commit()
 
-            if not self.results:
-                raise errors.InsertionFailure(data=self.data, table=self.table)
+        args = (self.count, (time.time()-start), self.table)
+        msg = "committed %i entries in %ss to %s" % args
+        self.log(msg, level=logging.INFO)
+
+        if self.getresults:
+            results_start = time.time()
+            log.msg("retrieving all records and calculating results")
+            query = scoped_session.query(self.table)
+            new_primary_keys = set([getattr(i, self.primary_key) for i in query])
+            primary_column = getattr(self.table.c, self.primary_key)
+            in_list = primary_column.in_(list(new_primary_keys-primary_keys))
+            self.results = list(query.filter(in_list))
+            log.msg("...%s" % (time.time()-results_start))
+
+        self.postcommit()
 
         # close the connection
-        connection.close()
+        self.connection.close()
         session.ENGINE.dispose()
-    # end __exit__
-# end Insert
+
+        # remove the data we just committed
+        del self.data[:]
+    # end commit
+
+
+    def close(self, conn=None):
+        '''closes the given connection and clears self.data'''
+        if conn is not None:
+            conn.close()
+            session.ENGINE.dispose()
+
+        del self.data[:]
+    # end close
 
 def insert(table, match_name, data, error=True, drop=False):
     '''
@@ -131,3 +274,4 @@ def insert(table, match_name, data, error=True, drop=False):
 
         return insert.results
 # end insert
+
