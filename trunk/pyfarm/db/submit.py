@@ -26,10 +26,9 @@ import os
 import getpass
 import logging
 import pprint
-import sqlalchemy as sql
 
 from pyfarm import jobtypes, utility
-from pyfarm.logger import LoggingBaseClass
+from pyfarm.db.insert.base import Insert
 from pyfarm.preferences import prefs
 from pyfarm.datatypes.enums import State
 from pyfarm.db import tables, session, transaction, query
@@ -38,45 +37,14 @@ __all__ = ['Job', 'Frame']
 
 # TODO: rewrite (currently very slow and error prone for large sets of frames)
 
-class SubmitBase(LoggingBaseClass):
-    def __init__(self):
-        self.data = []
-    # end __init__
-
-    @property
-    def count(self):
-        return len(self.data)
-    # end count
-
-    def getPriority(self, priority):
-        '''ensures the priority provided is within an allowable range'''
-        if priority is None:
-            return prefs.get('jobsystem.priority-default')
-
-        elif isinstance(priority, int):
-            return priority
-
-        raise TypeError("invalid type provided to priority")
-    # end getPriority
-
-    def close(self, conn=None):
-        '''closes the given connection and clears self.data'''
-        if conn is not None:
-            conn.close()
-            session.ENGINE.dispose()
-
-        del self.data[:]
-    # end close
-# end SubmitBase
-
-
-class Frame(SubmitBase):
+class Frame(Insert):
     '''class for adding frames to an existing job'''
     VALID_STATES = (
         State.PAUSED, State.QUEUED, State.DONE,
         State.FAILED
     )
     def __init__(self, jobid=None):
+        raise NotImplementedError("TODO: replace with new __init__")
         super(Frame, self).__init__()
         self.jobid = jobid
         self.jobvalid = None
@@ -115,6 +83,7 @@ class Frame(SubmitBase):
         :exception ValueError:
             raised if a jobid was not provided or the sate was invalid
         '''
+        raise NotImplementedError("TODO: replace with new pre/post add")
         if jobid is None and self.jobid is None:
             msg = "you must either setup Frame() with a parent job id "
             msg += "or provide one to Frame.add()"
@@ -160,6 +129,7 @@ class Frame(SubmitBase):
         :return:
             a dictionary of jobs and frame(s) added to each job
         '''
+        raise NotImplementedError("TODO: replace with pre/post commit")
         if not self.data:
             self.log(
                 "no frames to commit, stopping submission",
@@ -243,11 +213,12 @@ class Frame(SubmitBase):
 # end Frame
 
 
-class Job(SubmitBase):
+class Job(Insert):
     '''class for submitting multiple jobs as once'''
     VALID_STATES = (State.PAUSED, State.QUEUED, State.BLOCKED)
 
     def __init__(self):
+        raise NotImplementedError("TODO: replace with new __init__")
         super(Job, self).__init__()
         self.data = []
     # end __init__
@@ -315,6 +286,7 @@ class Job(SubmitBase):
         :exception ValueError:
             raised if the submitted state is invalid
         '''
+        raise NotImplementedError("TODO: replace with new pre/post add")
         # ensure the provided jobtype is valid before we
         # attempt to build data
         if jobtype not in jobtypes.jobtypes():
@@ -358,6 +330,7 @@ class Job(SubmitBase):
         :return:
             a dictionary of jobs and frame(s) added to each job
         '''
+        raise NotImplementedError("TODO: replace with pre/post commit")
         if not self.data:
             self.log(
                 "no jobs to commit, stopping submission",
@@ -421,11 +394,3 @@ class Job(SubmitBase):
         return committed_frames
     # end commit
 # end Job
-
-if __name__ == '__main__':
-#    submit = Frame(590)
-    submit = Job()
-    submit.add('mayatomr', 1, 10)
-    submit.add('mayatomr', 1, 10)
-    print submit.commit()
-    #    submit.log('test')

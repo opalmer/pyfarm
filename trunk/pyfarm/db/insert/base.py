@@ -239,6 +239,7 @@ def insert(table, match_name, data, error=True, drop=False):
     :return:
         None or the newly inserted id
     '''
+    raise NotImplementedError("TODO: replace with wrapped Insert class")
     match_column = getattr(table.c, match_name)
     match_entry = data[match_name]
 
