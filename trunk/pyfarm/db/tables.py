@@ -143,6 +143,14 @@ frames = sql.Table('pyfarm_frames', metadata,
     sql.Column('uuid', sql.String(36), default=""),
 )
 
+# scratch table used for various testing
+foobar = sql.Table('pyfarm_foobar', metadata,
+    sql.Column('id', sql.Integer, autoincrement=True, primary_key=True),
+    sql.Column('bool', sql.Boolean, default=False),
+    sql.Column('int', sql.Integer),
+    sql.Column('string', sql.String(36))
+)
+
 def init(rebuild=False):
     '''initializes the tables according the the preferences'''
     if rebuild or prefs.get('database.setup.rebuild'):
