@@ -3,7 +3,7 @@ DB_REBUILD = True
 PYTHON = python
 
 shell:
-	@env PYTHONPATH=. ipython
+	@env PYTHONPATH=lib/python ipython
 
 clean:
 	@echo "running clean"
@@ -22,12 +22,7 @@ tables:
 db: tables jobs
 	@echo "rebuilding database"
 
-pyfarm.%: SCRIPT=pyfarm_$(subst pyfarm.,,$@.py)
-pyfarm.%:
-	@echo "running $(SCRIPT)"
-	@$(PYTHON) $(SCRIPT)
-
-run.%: SCRIPT=run_$(subst run.,,$@.py)
-run.%:
+bin.%: SCRIPT=bin/pyf$(subst bin.,,$@)
+bin.%:
 	@echo "running $(SCRIPT)"
 	@$(PYTHON) $(SCRIPT)

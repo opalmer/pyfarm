@@ -23,7 +23,13 @@ run commands and manage host information and resources
 import os
 import sys
 import time
+import site
 import logging
+
+CWD = os.path.realpath(os.path.dirname(__file__))
+ROOT = os.path.realpath(os.path.join(CWD, '..'))
+PYTHONLIB = os.environ.get('PYFARM_PYTHONLIB') or os.path.join(ROOT, 'lib', 'python')
+site.addsitedir(PYTHONLIB)
 
 from pyfarm.client import cmdargs
 
