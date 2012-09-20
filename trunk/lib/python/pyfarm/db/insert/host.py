@@ -108,7 +108,9 @@ def host(
         local = True
 
     data['hostname'] = hostname
-    data['master'] = master
+
+    if master is not None:
+        data['master'] = master
 
     # setup ip address
     # hostname must be provided in order to discover
