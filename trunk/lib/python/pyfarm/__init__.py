@@ -32,5 +32,5 @@ site.addsitedir(PYFARM_PYTHONROOT)
 
 # override the default sqlalchemy named tuple
 # with a slightly easier to read version
-from pyfarm.utility import *
+from pyfarm.utility import NamedTupleRow
 sqlalchemy.util.NamedTuple = NamedTupleRow
