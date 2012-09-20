@@ -149,8 +149,9 @@ class Insert(LoggingBaseClass):
                 # ensure the provided value is of the correct type when
                 # compared to the current table definition
                 if not isinstance(value, self.column_types[key]):
+                    args = (key, self.column_types[key], type(value))
                     raise TypeError(
-                        "invalid type for %s, expected %s" % (key, self.column_types[key])
+                        "invalid type for %s, expected %s got %s" % args
                     )
 
         # duplicate checking
