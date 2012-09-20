@@ -77,7 +77,7 @@ parser.add_argument(
     help='location to send the logfile to'
 )
 parser.add_argument(
-    '--remove-lock', default=False, type=tobool,
+    '--remove-lock', action='store_true', default=False,
     help='Removes the lock file on disk before starting if one exists.  This' +
          ' is mainly used if you already know the process does not exist and' +
          ' you do not wish to remove the lock file manually.'
