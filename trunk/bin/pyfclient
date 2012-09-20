@@ -32,6 +32,9 @@ PYTHONLIB = os.environ.get('PYFARM_PYTHONLIB') or os.path.join(ROOT, 'lib', 'pyt
 site.addsitedir(PYTHONLIB)
 
 from pyfarm.client import cmdargs
+from pyfarm import logger, lock
+from pyfarm.preferences import prefs
+from pyfarm.datatypes.network import FQDN
 
 # Handle command line input before importing anything else.  This
 # ensures that if -h or --help is requested or if we have trouble
@@ -39,14 +42,30 @@ from pyfarm.client import cmdargs
 # we setup other modules.
 options = cmdargs.parser.parse_args()
 
-from pyfarm import lock, logger, errors
+# setup the process lock before starting the log
+PROCESS_LOCK = lock.ProcessLock(
+    'client',
+    kill=options.force_kill, wait=options.wait,
+    remove=options.remove_lock
+)
+
+# determine the location we should log to
+if not options.log:
+    root = prefs.get('filesystem.locations.general')
+    SERVICE_LOG = os.path.join(root, 'client-%s.log' % FQDN)
+else:
+    SERVICE_LOG = os.path.abspath(options.log)
+
+# add an observer for the service log
+LOG_OBSERVER = logger.Observer(SERVICE_LOG)
+LOG_OBSERVER.start()
+
+from pyfarm import errors
 from pyfarm.client import process, job, master
 from pyfarm.db import insert, modify, query
-from pyfarm.datatypes.network import FQDN
-from pyfarm.datatypes.system import OS, OperatingSystem
-from pyfarm.preferences import prefs
-from pyfarm.net import rpc as _rpc
 
+from pyfarm.datatypes.system import OS, OperatingSystem
+from pyfarm.net import rpc as _rpc
 from twisted.internet import reactor
 from twisted.web import xmlrpc
 from twisted.web import server as _server
@@ -55,7 +74,6 @@ from twisted.python import log
 CWD = os.getcwd()
 MASTER = ()
 SERVICE = None
-SERVICE_LOG = None
 
 # log the options being produced by the option parser
 cmdargs.printOptions(options, log)
@@ -221,21 +239,7 @@ class Client(_rpc.Service, logger.LoggingBaseClass):
 
 # create a lock for the process so we can't run two clients
 # from the same host at once
-with lock.ProcessLock(
-    'client', kill=options.force_kill, wait=options.wait,
-    remove=options.remove_lock
-):
-    # determine the location we should log to
-    if not options.log:
-        root = prefs.get('filesystem.locations.general')
-        SERVICE_LOG = os.path.join(root, 'client-%s.log' % FQDN)
-    else:
-        SERVICE_LOG = os.path.abspath(options.log)
-
-    # add an observer for the service log
-    observer = logger.Observer(SERVICE_LOG)
-    observer.start()
-
+with PROCESS_LOCK:
     # if the master has not been provided then
     # we should try and use the entry from the database
     master = master.get(options.master)
@@ -274,11 +278,10 @@ with lock.ProcessLock(
         log.msg("inserting %s into the host table" % FQDN, level="INFO")
         insert.host.host(**host_table_keywords)
 
-    client = Client(SERVICE_LOG)
-    SERVICE = client
+    SERVICE = Client(SERVICE_LOG)
 
     # start listening for connections with the client
-    reactor.listenTCP(options.port, _server.Site(client))
+    reactor.listenTCP(options.port, _server.Site(SERVICE))
 
     # start reactor
     args = (FQDN, options.port)

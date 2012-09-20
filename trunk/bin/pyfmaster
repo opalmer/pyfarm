@@ -32,6 +32,9 @@ PYTHONLIB = os.environ.get('PYFARM_PYTHONLIB') or os.path.join(ROOT, 'lib', 'pyt
 site.addsitedir(PYTHONLIB)
 
 from pyfarm.master import cmdargs
+from pyfarm import logger, lock
+from pyfarm.preferences import prefs
+from pyfarm.datatypes.network import FQDN
 
 # Handle command line input before importing anything else.  This
 # ensures that if -h or --help is requested or if we have trouble
@@ -39,12 +42,28 @@ from pyfarm.master import cmdargs
 # we setup other modules.
 options = cmdargs.parser.parse_args()
 
-from pyfarm import logger, lock
-from pyfarm.preferences import prefs
+# setup the process lock before starting the log
+PROCESS_LOCK = lock.ProcessLock(
+    'master',
+    kill=options.force_kill, wait=options.wait,
+    remove=options.remove_lock
+)
+
+# determine the location we should log to
+if not options.log:
+    root = prefs.get('filesystem.locations.general')
+    SERVICE_LOG = os.path.join(root, 'client-%s.log' % FQDN)
+else:
+    SERVICE_LOG = os.path.abspath(options.log)
+
+# add an observer for the service log
+LOG_OBSERVER = logger.Observer(SERVICE_LOG)
+LOG_OBSERVER.start()
+
 from pyfarm.db import tables, query, modify, insert
 from pyfarm.master import queue
 from pyfarm.net import rpc as _rpc
-from pyfarm.datatypes.network import FQDN, IP, SUBNET
+from pyfarm.datatypes.network import IP, SUBNET
 from pyfarm.datatypes.system import OS, OperatingSystem
 from pyfarm.master import callbacks
 
@@ -53,7 +72,6 @@ from twisted.web import server as _server
 from twisted.python import log
 
 SERVICE = None
-SERVICE_LOG = None
 
 # log the options being produced by the option parser
 cmdargs.printOptions(options, log)
@@ -89,10 +107,7 @@ class Server(_rpc.Service, logger.LoggingBaseClass):
 
 # create a lock for the process so we can't run two servers
 # from the same host at once
-with lock.ProcessLock(
-    'master', kill=options.force_kill, wait=options.wait,
-    remove=options.remove_lock
-):
+with PROCESS_LOCK:
     # determine the location we should log to
     if not options.log:
         root = prefs.get('filesystem.locations.general')
@@ -100,12 +115,7 @@ with lock.ProcessLock(
     else:
         SERVICE_LOG = os.path.abspath(options.log)
 
-    # add an observer for the service log
-    observer = logger.Observer(SERVICE_LOG)
-    observer.start()
-
-    server = Server(SERVICE_LOG)
-    SERVICE = server
+    SERVICE = Server(SERVICE_LOG)
 
     # setup the required tables
     tables.init()
@@ -132,7 +142,7 @@ with lock.ProcessLock(
     update_function(FQDN, **master_table_data)
 
     # start the reactor
-    reactor.listenTCP(options.port, _server.Site(server))
+    reactor.listenTCP(options.port, _server.Site(SERVICE))
     args = (FQDN, options.port)
     log.msg(
         "running master at http://%s:%i" % args,
