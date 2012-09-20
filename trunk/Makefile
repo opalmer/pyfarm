@@ -1,9 +1,10 @@
 DB_ECHO = True
 DB_REBUILD = True
 PYTHON = python
+PYTHONPATH = lib/python
 
 shell:
-	@env PYTHONPATH=lib/python ipython
+	@env PYTHONPATH=$(PYTHONPATH) ipython
 
 clean:
 	@echo "running clean"
@@ -13,11 +14,11 @@ clean:
 
 jobs:
 	@echo "adding random job data"
-	@$(PYTHON) ../dev/bin/make_jobs.py
+	@env PYTHONPATH=$(PYTHONPATH) $(PYTHON) ../dev/bin/make_jobs.py
 
 tables:
 	@echo "rebuilding tables"
-	@$(PYTHON) -c 'from pyfarm.db import tables; tables.init(rebuild=True)'
+	@env PYTHONPATH=$(PYTHONPATH) $(PYTHON) -c 'from pyfarm.db import tables; tables.init(rebuild=True)'
 
 db: tables jobs
 	@echo "rebuilding database"
