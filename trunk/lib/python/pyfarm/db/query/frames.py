@@ -23,7 +23,7 @@ Provides common mechanisms for querying frame related information
 import copy
 
 from pyfarm import datatypes
-from pyfarm.db.transaction import Transaction
+from pyfarm.db.contexts import Session
 from pyfarm.db.tables import frames
 from pyfarm.db.query import hosts, _tables, jobs
 
@@ -58,7 +58,7 @@ def select(job=None, assign=True, hostname=None):
     selected_frames = []
     jobids = [job.id for job in active_jobs]
 
-    with Transaction(frames, system="query.frames.select") as trans:
+    with Session(frames, system="query.frames.select") as trans:
         # construct a query to find frames that:
         # - are part of a running job
         # - are marked as waiting to run
@@ -99,7 +99,7 @@ def select(job=None, assign=True, hostname=None):
     if assign:
         sysname = "query.frames.select.set_running"
 
-        with Transaction(jobs.jobs, system=sysname) as trans:
+        with Session(jobs.jobs, system=sysname) as trans:
             query = trans.query.filter_by(id=frame.jobid)
             entry = query.first()
             running = entry.count_running + 1

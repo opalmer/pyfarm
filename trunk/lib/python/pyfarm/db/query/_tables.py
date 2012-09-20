@@ -22,7 +22,7 @@ Internal library used between modules to query tables
 
 from sqlalchemy import func
 
-from pyfarm.db.transaction import Transaction
+from pyfarm.db.contexts import Session
 from pyfarm.db import tables
 
 def priority(table, jobid, frameid=None, frame=None):
@@ -45,7 +45,7 @@ def priority(table, jobid, frameid=None, frame=None):
         if frame is not None:
             query.update(frame=frame)
 
-    with Transaction(table, system="query._tables.priority") as trans:
+    with Session(table, system="query._tables.priority") as trans:
         msg = "retrieving priority for %i" % jobid
         if frameid is not None:
             msg += ".%i" % frameid
@@ -62,7 +62,7 @@ def priority(table, jobid, frameid=None, frame=None):
 
 def priority_stats(table):
     '''returns the priority stats of the current job table'''
-    with Transaction(table, system="query._tables.priority_stats") as trans:
+    with Session(table, system="query._tables.priority_stats") as trans:
         # query for min priority
         query = trans.session.query(func.min(trans.table.c.priority))
 

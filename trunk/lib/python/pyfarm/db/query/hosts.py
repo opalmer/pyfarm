@@ -25,7 +25,7 @@ from __future__ import with_statement
 from twisted.python import log
 
 from pyfarm.datatypes.network import FQDN
-from pyfarm.db.transaction import Transaction
+from pyfarm.db.contexts import Session
 from pyfarm.db.tables import hosts
 
 def exists(hostname=None):
@@ -42,7 +42,7 @@ def exists(hostname=None):
 
 def master(hostname):
     '''returns the master for the provided hostname'''
-    with Transaction(hosts) as trans:
+    with Session(hosts) as trans:
         host = trans.query.filter_by(hostname=hostname).first()
         return host.master
 # end master
@@ -54,7 +54,7 @@ def hostlist(online=True):
     offline hosts, or all hosts if None is provided as a value
     '''
     results = []
-    with Transaction(hosts) as trans:
+    with Session(hosts) as trans:
         if online is None:
             for instance in trans.query:
                 results.append(instance.hostname)
@@ -74,7 +74,7 @@ def hostid(hostname):
 
     :rtype None or string:
     '''
-    with Transaction(hosts, system="common.db.query.hosts.hostid") as trans:
+    with Session(hosts, system="common.db.query.hosts.hostid") as trans:
         query = trans.query.filter(hosts.c.hostname == hostname).first()
         if query is None:
             trans.log("failed to find host %s in the database" % hostname)

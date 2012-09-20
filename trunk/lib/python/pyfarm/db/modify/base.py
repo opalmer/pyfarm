@@ -18,7 +18,7 @@
 
 from __future__ import with_statement
 
-from pyfarm.db import transaction
+from pyfarm.db import contexts
 from pyfarm import errors
 
 from twisted.python import log
@@ -37,7 +37,7 @@ def modify(table, match_column_name, match_data,
     args = (match_column_name, match_data, table)
     log.msg("preparing to modify columns %s matching %s in %s" % args)
 
-    with transaction.Transaction(table) as trans:
+    with contexts.Session(table) as trans:
         match_column = getattr(table.c, match_column_name)
         filter = trans.query.filter(match_column == match_data)
         count = filter.count()

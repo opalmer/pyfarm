@@ -35,7 +35,7 @@ from pyfarm.datatypes.enums import State
 from pyfarm.datatypes.network import HOSTNAME
 from pyfarm.logger import LoggingBaseClass
 from pyfarm.preferences import prefs
-from pyfarm.db import Transaction
+from pyfarm.db import Session
 from pyfarm.db.query import hosts
 from pyfarm.db import tables
 
@@ -72,7 +72,7 @@ class JobData(LoggingBaseClass):
         if name == "frame":
             hostid = hosts.hostid(HOSTNAME)
 
-        with Transaction(table) as trans:
+        with Session(table) as trans:
             query = trans.query.filter_by(id=id)
             result = query.first()
 
@@ -205,7 +205,7 @@ def run(jobid, frameid):
     jobtype = None
 
     # retrieve the jobtype
-    with Transaction(tables.jobs, system="jobtypes.functions.run") as trans:
+    with Session(tables.jobs, system="jobtypes.functions.run") as trans:
         trans.log("searching for jobtype for job %i" % jobid)
         query = trans.query.filter_by(id=frameid)
         result = query.first()

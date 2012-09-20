@@ -31,7 +31,7 @@ from pyfarm import jobtypes, utility
 from pyfarm.db.insert.base import Insert
 from pyfarm.preferences import prefs
 from pyfarm.datatypes.enums import State
-from pyfarm.db import tables, session, transaction, query
+from pyfarm.db import tables, session, contexts, query
 
 __all__ = ['Job', 'Frame']
 
@@ -201,7 +201,7 @@ class Frame(Insert):
         added_frames = {}
         select = sql.select(tables.frames.c)
         query = select.where(sql.or_(*search_clauses))
-        with transaction.Connection() as conn:
+        with contexts.Connection() as conn:
             for result in conn.execute(query):
                 if result.jobid not in added_frames:
                     added_frames[result.jobid] = []

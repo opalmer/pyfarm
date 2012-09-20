@@ -28,7 +28,7 @@ import random
 
 from twisted.python import log
 
-from pyfarm.db.transaction import Transaction
+from pyfarm.db.contexts import Session
 from pyfarm.db.tables import masters, hosts
 from pyfarm import errors
 
@@ -51,7 +51,7 @@ def port(hostname):
     if not isinstance(hostname, (str, unicode)):
         raise TypeError("hostname must be a string")
 
-    with Transaction(masters) as trans:
+    with Session(masters) as trans:
         host = trans.query.filter_by(hostname=hostname).first()
         if host is None:
             log.msg(
@@ -75,7 +75,7 @@ def online(hostname=None):
     :exception pyfarm.errors.HostsOffline:
         raised if we did not find any online hosts
     '''
-    with Transaction(masters) as trans:
+    with Session(masters) as trans:
         if isinstance(hostname, (str, unicode)):
             host = trans.query.filter_by(hostname=hostname).first()
             if host is None:
@@ -100,7 +100,7 @@ def get(hostname):
     if not isinstance(hostname, (str, unicode)):
         raise TypeError("hostname must be a string")
 
-    with Transaction(hosts) as trans:
+    with Session(hosts) as trans:
         host = trans.query.filter_by(hostname=hostname).first()
         if host is None:
             raise errors.HostNotFound(

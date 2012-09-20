@@ -27,9 +27,9 @@ from twisted.python import log
 from pyfarm.preferences import prefs
 from pyfarm.db import session
 
-class Transaction(object):
+class Session(object):
     '''
-    context manager for transactions
+    context manager for for queries and modifications
 
     :param sqlalchemy.Table table:
         the table to perform the query on
