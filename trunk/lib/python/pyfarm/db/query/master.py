@@ -24,6 +24,7 @@ of the master hosts
 from __future__ import with_statement
 
 import logging
+import random
 
 from twisted.python import log
 
@@ -62,24 +63,35 @@ def port(hostname):
         return host.port
 # end port
 
-def online(hostname):
+def online(hostname=None):
     '''
-    Returns a lists of hosts currently in the database.  Depending
-    on the input keyword this function will either return the online hosts,
-    offline hosts, or all hosts if None is provided as a value
-    '''
-    if not isinstance(hostname, (str, unicode)):
-        raise TypeError("hostname must be a string")
+    If hostname is a string then query if the master with the provided
+    hostname is onine.  If hostname is not provided however then
+    return any master that is currently online
 
+    :exception pyfarm.errors.HostNotFound:
+        raised if the requested master is not in the master table
+
+    :exception pyfarm.errors.HostsOffline:
+        raised if we did not find any online hosts
+    '''
     with Transaction(masters) as trans:
-        host = trans.query.filter_by(hostname=hostname).first()
-        if host is None:
-            raise errors.HostNotFound(
-                match_data=hostname,
-                table=masters
-            )
-        return host.online
-# end hostlist
+        if isinstance(hostname, (str, unicode)):
+            host = trans.query.filter_by(hostname=hostname).first()
+            if host is None:
+                raise errors.HostNotFound(
+                    match_data=hostname,
+                    table=masters
+                )
+            return host.online
+
+        elif hostname is None:
+            online_hosts = trans.query.filter_by(online=True).all()
+            if not online_hosts:
+                raise errors.HostsOffline(table=masters)
+            else:
+                return random.choice([entry.hostname for entry in online_hosts])
+# end online
 
 
 def get(hostname):

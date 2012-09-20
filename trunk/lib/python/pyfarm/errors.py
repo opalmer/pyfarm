@@ -63,6 +63,17 @@ class HostNotFound(DatabaseError):
 # end HostNotFound
 
 
+class HostsOffline(DatabaseError):
+    '''
+    raised if the table we are currently looking in does not have any
+    hosts currently online
+    '''
+    def __str__(self):
+        return "failed to find any hosts online in the %s table" % self.table
+    # end __repr__
+# end HostsOffline
+
+
 class NotFoundError(DatabaseError):
     '''general not found error'''
     def __str__(self):

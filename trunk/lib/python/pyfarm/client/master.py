@@ -19,9 +19,11 @@
 '''module for dealing with storage and retrieval of the master'''
 
 import socket
+import random
 import logging
 
 from pyfarm.db import query
+from pyfarm.db.tables import masters
 from pyfarm.datatypes.network import FQDN
 from pyfarm import errors
 
@@ -39,11 +41,9 @@ def get(master=None):
             master = query.master.get(FQDN)
 
         except errors.HostNotFound:
-            log.msg(
-                "client %s does not exist in database, cannot determine master",
-                level=logging.WARNING
-            )
-            master = None
+            msg = "client %s does not exist in database, randomly selecting master" % FQDN
+            log.msg(msg, level=logging.INFO)
+            master = query.master.online()
 
     # make sure that the resulting master value
     # is valid
@@ -64,6 +64,6 @@ def get(master=None):
             level=logging.ERROR
         )
         raise
-
+    
     return master
 # end get
