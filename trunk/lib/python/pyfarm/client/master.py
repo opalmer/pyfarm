@@ -41,9 +41,10 @@ def get(master=None):
             master = query.master.get(FQDN)
 
         except errors.HostNotFound:
-            msg = "client %s does not exist in database, randomly selecting master" % FQDN
-            log.msg(msg, level=logging.INFO)
-            master = query.master.online()
+            pass
+
+    if master is None:
+        master = query.master.online()
 
     # make sure that the resulting master value
     # is valid
