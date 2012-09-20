@@ -224,7 +224,6 @@ def insert(table, match_name, data, error=True, drop=False):
     '''
     performs a single insertion will providing some validation to ensure
 
-
     :param sqlalchemy.Table table:
         the table
 
@@ -239,7 +238,6 @@ def insert(table, match_name, data, error=True, drop=False):
     :return:
         None or the newly inserted id
     '''
-    raise NotImplementedError("TODO: replace with wrapped Insert class")
     match_column = getattr(table.c, match_name)
     match_entry = data[match_name]
 
@@ -271,7 +269,7 @@ def insert(table, match_name, data, error=True, drop=False):
                 delete.execute()
     else:
         with Insert(table) as insert:
-            insert.add(data)
+            insert.add(**data)
 
         return insert.results
 # end insert
