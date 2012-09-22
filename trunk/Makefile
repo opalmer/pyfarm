@@ -12,18 +12,21 @@ clean:
 	@find . -name "*.pyo" -exec rm {} \;
 	@find . -name "*~" -exec rm {} \;
 
-jobs:
-	@echo "adding random job data"
-	@env PYTHONPATH=$(PYTHONPATH) $(PYTHON) ../dev/bin/make_jobs.py
+jobs: dev.make_jobs
 
 tables:
 	@echo "rebuilding tables"
 	@env PYTHONPATH=$(PYTHONPATH) $(PYTHON) -c 'from pyfarm.db import tables; tables.init(rebuild=True)'
 
-db: tables jobs
+db: tables dev.make_jobs
 	@echo "rebuilding database"
 
 bin.%: SCRIPT=bin/pyf$(subst bin.,,$@)
 bin.%:
 	@echo "running $(SCRIPT)"
 	@$(PYTHON) $(SCRIPT)
+
+dev.%: SCRIPT=../dev/bin/$(subst dev.,,$@).py
+dev.%:
+	@echo "running $(SCRIPT)"
+	@env PYTHONPATH=$(PYTHONPATH) $(PYTHON) $(SCRIPT)
