@@ -25,8 +25,6 @@ PYFARM_ROOT = os.path.abspath(os.path.join(PYFARM_PACKAGE, "..", "..", ".."))
 PYFARM_PYTHONROOT = os.path.join(PYFARM_ROOT, "lib", "python")
 PYFARM_ETC = os.environ.get('PYFARM_ETC') or \
              os.path.join(PYFARM_ROOT, "etc")
-PYFARM_JOBTYPES = os.environ.get('PYFARM_JOBTYPES') or \
-                  os.path.join(PYFARM_PYTHONROOT, "pyfarm", "jobtypes")
 
 site.addsitedir(PYFARM_PYTHONROOT)
 
