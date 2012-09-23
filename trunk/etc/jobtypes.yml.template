@@ -21,7 +21,7 @@ excluded-names:
 
 # path(s) to search for jobtypes
 search-paths:
-  - $pyfarm/pyfarm/jobtypes
+  - $pyfarm/lib/python/pyfarm/jobtypes
   - $root/pyfarm/jobtypes
 
 # The path(s) to search for executable files. All environment
