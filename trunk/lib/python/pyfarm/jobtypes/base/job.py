@@ -17,20 +17,16 @@
 # along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
-import copy
 import string
 import ctypes
-import socket
-import getpass
 import logging
 import itertools
 
-from pyfarm import datatypes
+from pyfarm import logger
 from pyfarm.datatypes.system import USER, OS, OperatingSystem
-from pyfarm.logger import LoggingBaseClass
 from pyfarm.preferences import prefs
 
-class Job(LoggingBaseClass):
+class Job(logger.LoggingBaseClass):
     '''
     Base jobtype inherited by all other jobtypes
 
@@ -58,17 +54,18 @@ class Job(LoggingBaseClass):
     def __init__(self, command, args, frame, user=None, environ=None):
         # base arguments which are used to set the non-private
         # class attributes
-        self._jobid = None
-        self._frameid = None
-        self._command = command
-        self._args = args
-        self._user = user
-        self._environ = environ
+        self.__jobid = None
+        self.__frameid = None
+        self.__command = command
+        self.__args = args
+        self.__user = user
+        self.__environ = environ
 
         self.frame = frame
 
-        # first setup logging so we can capture output from the
-        self.setupLog()
+        # first setup logging so we can capture output moving
+        # forward
+        self.setup_log()
 
         # performs the setup to setup the class attributes
         self.log(
@@ -153,9 +150,9 @@ class Job(LoggingBaseClass):
         values provided by self._environ along with the os environment.
         '''
         self.environ = {}
-        if isinstance(self._environ, dict) and self._environ:
+        if isinstance(self.__environ, dict) and self.__environ:
             self.log("...setting up custom base environment")
-            self.environ = copy.deepcopy(self._environ)
+            self.environ = self.__environ.copy()
 
         # add the native os environment if it does not match our
         # current env
@@ -178,8 +175,8 @@ class Job(LoggingBaseClass):
         self.log("...setting up command")
 
         # not much to do if the path we were provided already exists
-        if os.path.isfile(self._command):
-            self.command = os.path.abspath(self._command)
+        if os.path.isfile(self.__command):
+            self.command = os.path.abspath(self.__command)
             self.log("...command set to %s" % self.command)
             return
 
@@ -193,12 +190,12 @@ class Job(LoggingBaseClass):
                     paths.insert(0, entry)
 
             command_names = set()
-            command_names.add(self._command)
+            command_names.add(self.__command)
 
         if OS == OperatingSystem.WINDOWS:
             # construct a list of all possible commands
-            command_names.add(self._command.lower())
-            command_names.add(self._command.upper())
+            command_names.add(self.__command.lower())
+            command_names.add(self.__command.upper())
 
             # iterate over all possible command names and extensions
             # and construct a list of commands
@@ -225,17 +222,17 @@ class Job(LoggingBaseClass):
 
         # ensure the command was setup properly created
         if self.command is None or not os.path.isfile(self.command):
-            raise OSError("failed to find the '%s' command" % self._command)
+            raise OSError("failed to find the '%s' command" % self.__command)
 
         self.log("...command set to %s" % self.command)
     # end setupCommand
 
     def setupArguments(self):
         '''Sets of arguments to use for the command'''
-        if isinstance(self._args, str):
-            self.args = self._args.split()
+        if isinstance(self.__args, (str, unicode)):
+            self.args = self.__args.split()
         else:
-            self.args = self._args[:]
+            self.args = self.__args[:]
 
         if not self.args:
             self.log("...no arguments constructed", level=logging.WARNING)
@@ -263,33 +260,29 @@ class Job(LoggingBaseClass):
         if self.user is None:
             self.user = USER
 
-        if isinstance(self._user, str):
+        if isinstance(self.__user, (str, unicode)):
             # if the requested user is not the current user we need
             # to see if we are running as root/admin
             self.log("...checking for admin privileges")
-            if self._user != USER:
+            if self.__user != USER:
                 # setting the process owner is only supported on
                 # unix based systems
-                if OS in (
-                    OperatingSystem.LINUX,
-                    OperatingSystem.MAC,
-                ):
+                if OS in (OperatingSystem.LINUX, OperatingSystem.MAC):
                     if os.getuid():
                         raise OSError("you must be root to setuid")
 
                     # if we are running at root set the user name
                     # and retrieve the user id and group ids
-
                     try:
                         import pwd
-                        ids = pwd.getpwnam(self._user)
+                        ids = pwd.getpwnam(self.__user)
                         self.uid = ids.pw_uid
                         self.gid = ids.pw_gid
-                        self.user = self._user
+                        self.user = self.__user
 
                     except KeyError:
                         self.log(
-                            "...no such user '%s' on system" % self._user,
+                            "...no such user '%s' on system" % self.__user,
                             level=logging.ERROR
                         )
 
@@ -305,7 +298,7 @@ class Job(LoggingBaseClass):
                     self.user = USER
 
         self.log("...job will run as %s" % self.user)
-    # end setupUser
+    # end setup_user
 
     def preJob(self):
         '''Runs before the start of the job'''
@@ -322,36 +315,13 @@ class Job(LoggingBaseClass):
         self.log("nothing to be done for postJob")
     # end postJob
 
-    def postJob_success(self):
-        '''Runs after a job completes successfully'''
-        self.log("nothing to be done for postJob_success")
-    # end postJob_success
-
-    def postJob_failure(self):
-        '''Runs after a job fails'''
-        self.log("nothing to be done for postJob_failure")
-    # end postJob_failure
-
     def postFrame(self):
         '''Runs after a frame completes, regardless of success'''
         self.log("nothing to be done for postFrame")
     # end postFrame
 
-    def postFrame_success(self):
-        '''Runs after a frame completes successfully'''
-        self.log("nothing to be done for postFrame_success")
-    # end postFrame_success
-
-    def postFrame_failure(self):
-        '''Runs after a frame fails'''
-        self.log("nothing to be done for postFrame_failure")
-    # end postFrame_failure
-
     def run(self):
+        '''runs the job itself'''
         pass
     # end run
 # end Job
-
-if __name__ == '__main__':
-    base = Job('ping', '-c 1 localhost', 123, 1004)
-    base.run()
