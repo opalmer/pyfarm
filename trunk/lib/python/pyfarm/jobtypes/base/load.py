@@ -61,15 +61,21 @@ def paths():
     return PATHS
 # end paths
 
-def find(name):
-    '''iterates over the search paths and finds the requested jobtype'''
-    if name in JOBTYPES:
+def find(name=None):
+    '''
+    Depending on the value of name either find the requested name or all
+    results.
+    '''
+    if name is not None and name in JOBTYPES:
         log.msg("jobtype %s is already loaded" % name)
         return JOBTYPES[name]
 
     jobtype_path = None
     search_paths = paths()
-    log.msg("searching for jobtype %s in %s" % (name, search_paths))
+    jobtypes = {}
+
+    if name is not None:
+        log.msg("searching for jobtype %s in %s" % (name, search_paths))
 
     for path in search_paths:
         for filename in os.listdir(path):
@@ -80,10 +86,21 @@ def find(name):
             jobtype_path = os.path.join(path, filename)
             if os.path.isfile(jobtype_path):
                 fname, fextension = os.path.splitext(filename)
-                if fname == name and fextension == ".py":
-                    break
+
+                if name is not None:
+                    if fname == name and fextension == ".py":
+                        break
+                    else:
+                        jobtype_path = None
                 else:
-                    jobtype_path = None
+                    if fname not in jobtypes:
+                        jobtypes[fname] = []
+
+                    if fextension == ".py":
+                        jobtypes[fname].append(jobtype_path)
+
+    if name is None:
+        return jobtypes
 
     if jobtype_path is None:
         raise errors.JobTypeNotFoundError(jobtype=name, paths=search_paths)
@@ -119,3 +136,8 @@ def jobtype(name):
 
     return module.Job
 # end jobtype
+
+def jobtypes():
+    '''returns a list of jobtype names from all locations'''
+    return find().keys()
+# end jobtypes
