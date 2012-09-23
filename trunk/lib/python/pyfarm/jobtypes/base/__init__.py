@@ -17,3 +17,6 @@
 # along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
 from job import Job
+
+from pyfarm.preferences import prefs
+
