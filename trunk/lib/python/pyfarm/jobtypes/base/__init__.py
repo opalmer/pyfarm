@@ -16,7 +16,4 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
-from job import Job
-
-from pyfarm.preferences import prefs
-
+from pyfarm.jobtypes.base.job import Job
