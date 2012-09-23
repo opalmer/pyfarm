@@ -17,15 +17,18 @@
 # along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
-import fnmatch
+import imp
+import inspect
 import logging
 
-from pyfarm import logger
+from pyfarm import logger, errors
 from pyfarm.preferences import prefs
+from pyfarm.jobtypes.base.job import Job
 
 from twisted.python import log
 
 PATHS = []
+JOBTYPES = {}
 
 def paths():
     '''
@@ -57,4 +60,62 @@ def paths():
 
     return PATHS
 # end paths
-#
+
+def find(name):
+    '''iterates over the search paths and finds the requested jobtype'''
+    if name in JOBTYPES:
+        log.msg("jobtype %s is already loaded" % name)
+        return JOBTYPES[name]
+
+    jobtype_path = None
+    search_paths = paths()
+    log.msg("searching for jobtype %s in %s" % (name, search_paths))
+
+    for path in search_paths:
+        for filename in os.listdir(path):
+            # skip special files
+            if filename.startswith("__") or filename.startswith("."):
+                continue
+
+            jobtype_path = os.path.join(path, filename)
+            if os.path.isfile(jobtype_path):
+                fname, fextension = os.path.splitext(filename)
+                if fname == name and fextension == ".py":
+                    break
+                else:
+                    jobtype_path = None
+
+    if jobtype_path is None:
+        raise errors.JobTypeNotFoundError(jobtype=name, paths=search_paths)
+
+    return jobtype_path
+# end find
+
+def jobtype(name):
+    if name in JOBTYPES:
+        return JOBTYPES[name]
+
+    jobtype_path = find(name)
+    log.msg("preparing to load jobtype: %s" % jobtype_path)
+
+    # load the module itself but dont' catch any exceptions that may occur
+    try:
+        paths = [os.path.dirname(jobtype_path)]
+        stream, path, description = imp.find_module(name, paths)
+        module = imp.load_module(name, stream, path, description)
+
+    finally:
+        stream.close()
+
+    # make sure
+    if not hasattr(module, 'Job'):
+        raise AttributeError("%s does not contain a Job class" % stream.name)
+
+    elif not inspect.isclass(module.Job):
+        raise TypeError("%s must be a class" % module.Job)
+
+    elif not issubclass(module.Job, Job):
+        raise TypeError("%s class must subclass %s" % (module.Job, Job))
+
+    return module.Job
+# end jobtype
