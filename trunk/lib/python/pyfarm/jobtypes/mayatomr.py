@@ -26,8 +26,4 @@ class Job(base.Job):
     def __init__(self, data):
         self.data = data
     # end __init__
-
 # end Job
-
-if __name__ == '__main__':
-    Job(1, 1)
