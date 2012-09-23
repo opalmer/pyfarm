@@ -15,10 +15,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
-# names to exclude from the jobtypes list
-excluded-names:
- - __init__*
-
 # path(s) to search for jobtypes
 search-paths:
   - $pyfarm/lib/python/pyfarm/jobtypes
