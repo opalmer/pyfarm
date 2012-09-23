@@ -65,7 +65,7 @@ class Job(logger.LoggingBaseClass):
 
         # first setup logging so we can capture output moving
         # forward
-        self.setup_log()
+        self.setupLog()
 
         # performs the setup to setup the class attributes
         self.log(
