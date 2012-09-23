@@ -20,18 +20,16 @@
 
 class Error(Exception):
     '''base exception for all pyfarm errors'''
-    pass
+    def __init__(self, **kwargs):
+        for key, value in kwargs.iteritems():
+            setattr(self, key, value)
+    # end __init__
 # end Error
 
 
 class DatabaseError(Error):
     '''general database matching error which is meant to be subclassed'''
-    def __init__(self, **kwargs):
-        for key, value in kwargs.iteritems():
-            setattr(self, key, value)
-
-        super(DatabaseError, self).__init__()
-    # end __init__
+    pass
 # end DatabaseError
 
 
@@ -81,6 +79,14 @@ class NotFoundError(DatabaseError):
         return "failed to find %s matching %s in %s" % args
     # end __str__
 # end NotFoundError
+
+
+class JobTypeNotFoundError(Error):
+    '''raised if the requested jobtype could not be found'''
+    def __str__(self):
+        return "no such jobtype %s found in %s" % (self.jobtype, self.paths)
+    # end __str__
+# end JobTypeNotFoundError
 
 
 class InsertionFailure(DatabaseError):
