@@ -30,6 +30,8 @@ from twisted.python import log
 PATHS = []
 JOBTYPES = {}
 
+__all__ = ['find', 'jobtype', 'jobtypes', 'paths']
+
 def paths():
     '''
     returns the paths we should be searching in when looking for
