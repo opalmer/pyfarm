@@ -21,38 +21,38 @@ creates a random assortment of jobs in the database based on the current
 setup
 '''
 
-JOB_COUNT = 100
-
-import os
-import site
 import random
 
 from twisted.python import log as _log
-
-# initial setup
-cwd = os.path.dirname(os.path.abspath(__file__))
-trunk = os.path.abspath(os.path.join(cwd, "..", "..", "trunk"))
-site.addsitedir(trunk)
-os.chdir(trunk)
 
 # pyfarm libs
 from pyfarm.preferences import prefs
 from pyfarm import logger, jobtypes
 from pyfarm.db import submit
 
+JOB_COUNT = 100
+
 prefs.set('database.setup.close-connections', False)
 
 def log(msg):
     _log.msg(msg, system="make-jobs")
 
-typnames = jobtypes.jobtypes()
-log("jobtypes: %s" % typnames)
+typenames = jobtypes.jobtypes()
+log("jobtypes: %s" % typenames)
 
 submit_jobs = submit.Job()
-for i in range(JOB_COUNT):
-    submit_jobs.add(
-        random.choice(typnames), 1, 10, priority=random.randint(1, 1000),
-        cpus=random.randint(1, 16), ram=random.randint(128, 4096)
-    )
+
+for i in xrange(JOB_COUNT+1):
+    job_data = {
+        'state' : random.choice(submit_jobs.VALID_STATES),
+        'start_frame' : random.randint(1, 10),
+        'end_frame' : random.randint(11, 100),
+        'by_frame' : random.randint(1, 3),
+        'jobtype' : random.choice(typenames),
+        'ram' : random.randint(512, 4096),
+        'cpus' : random.randint(1, 16)
+    }
+    submit_jobs.add(**job_data)
 
 submit_jobs.commit()
+log('DONE!')
