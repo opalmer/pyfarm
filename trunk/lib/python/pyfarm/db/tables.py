@@ -16,7 +16,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
-import uuid
 import logging
 import datetime
 import sqlalchemy as sql
@@ -34,31 +33,8 @@ IPV4_LENGTH = 16
 metadata = sql.MetaData()
 metadata.bind = ENGINE
 
-#def getuuid():
-#    '''generates the string representation of a uuid for use in columns'''
-#    return str(uuid.uuid4())
-## end getuuid
-
-
-# HOSTS TABLE ATTRIBUTES
-# hold - if True the given client cannot accept jobs until hold is False again
-# frames - csv list of frames current running (from frames.c.id)
-# cpus - number of cpus on the system
-# online - True if we are able to reach and communicate with the host.  This
-#          value can only be set if:
-#           - the host shuts down
-#           - an operation times out and we are unable to ping the host
-#             after an exception is raised
-# software - csv list of software that the host can run
-# jobtypes - csv list of jobtypes that the host can run
-# os - the operating system of the host
-#      0 - linux
-#      1 - mac
-#      2 - window
-#      3 - other/unknown
 hosts = sql.Table('pyfarm_hosts', metadata,
     sql.Column('id', sql.Integer, autoincrement=True, primary_key=True),
-#    sql.Column('uuid', sql.String(36), default=getuuid),
     sql.Column('hostname', sql.String(HOSTNAME_LENGTH), nullable=False),
     sql.Column('port', sql.Integer, nullable=False),
     sql.Column('master', sql.String(HOSTNAME_LENGTH), default=None),
@@ -81,7 +57,6 @@ hosts = sql.Table('pyfarm_hosts', metadata,
 # assignment - sending jobs to hosts when enabled
 masters = sql.Table('pyfarm_masters', metadata,
     sql.Column('id', sql.Integer, autoincrement=True, primary_key=True),
-#    sql.Column('uuid', sql.String(36), default=getuuid),
     sql.Column('hostname', sql.String(HOSTNAME_LENGTH), nullable=False),
     sql.Column('port', sql.Integer, nullable=False),
     sql.Column('ip', sql.String(IPV4_LENGTH)),
@@ -91,10 +66,8 @@ masters = sql.Table('pyfarm_masters', metadata,
     sql.Column('assignment', sql.Boolean, default=True)
 )
 
-# create jobs table
 jobs = sql.Table('pyfarm_jobs', metadata,
     sql.Column('id', sql.Integer, autoincrement=True, primary_key=True),
-#    sql.Column('uuid', sql.String(36), default=getuuid),
     sql.Column('state', sql.Integer, default=0),
     sql.Column('priority', sql.Integer, default=prefs.get('jobsystem.priority-default')),
 
@@ -136,11 +109,11 @@ jobs = sql.Table('pyfarm_jobs', metadata,
                default=prefs.get('jobtypes.defaults.requeue-max'))
 )
 
-# create frames table
-# uuid - uuid of job on client
+# FRAMES TABLE ATTRIBUTES
+# client - host id currently running the frame
 frames = sql.Table('pyfarm_frames', metadata,
     sql.Column('id', sql.Integer, autoincrement=True, primary_key=True),
-#    sql.Column('uuid', sql.String(36), default=getuuid),
+    sql.Column('client', sql.Integer, sql.ForeignKey(hosts.c.id), default=None),
     sql.Column('jobid', sql.Integer, sql.ForeignKey(jobs.c.id)),
     sql.Column('priority', sql.Integer, default=prefs.get('jobsystem.priority-default')),
     sql.Column('assigned_by', sql.Integer, sql.ForeignKey(masters.c.id), default=None),
@@ -155,7 +128,6 @@ frames = sql.Table('pyfarm_frames', metadata,
     sql.Column('time_submitted', sql.DateTime, default=datetime.datetime.now),
     sql.Column('dependencies', sql.PickleType, default=[])
 )
-
 
 def init(rebuild=False):
     '''initializes the tables according the the preferences'''
