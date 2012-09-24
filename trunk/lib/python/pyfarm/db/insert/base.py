@@ -83,10 +83,10 @@ class Insert(LoggingBaseClass):
 
     # pre/post commit and add methods which are meant
     # to be overridden by the subclass
-    def precommit(self): pass
-    def postcommit(self): pass
-    def preadd(self, data): pass
-    def postadd(self, data): pass
+    def preCommit(self): pass
+    def postCommit(self): pass
+    def preAdd(self, data): pass
+    def postAdd(self, data): pass
 
     def __enter__(self):
         return self
@@ -135,7 +135,7 @@ class Insert(LoggingBaseClass):
         if not kwargs:
             raise ValueError("no data provided to add")
 
-        self.preadd(kwargs)
+        self.preAdd(kwargs)
 
         for key, value in kwargs.iteritems():
             if checkcolumn and key not in self.column_names:
@@ -159,7 +159,7 @@ class Insert(LoggingBaseClass):
             raise ValueError("%s has already been added" % kwargs)
 
         self.data.append(kwargs)
-        self.postadd(kwargs)
+        self.postAdd(kwargs)
     # end add
 
     def commit(self):
@@ -169,6 +169,7 @@ class Insert(LoggingBaseClass):
             return
 
         self.connection = session.ENGINE.connect()
+        self.log("preparing to commit %s entries" % self.count)
 
         # if we're expecting to get
         if self.getresults:
@@ -179,7 +180,8 @@ class Insert(LoggingBaseClass):
             primary_keys = set([getattr(i, self.primary_key) for i in query])
             log.msg("...%s" % (time.time()-results_start))
 
-        self.precommit()
+        self.log("running preCommit()")
+        self.preCommit()
 
         with self.connection.begin() as trans:
             self.log("inserting %i records into %s" % (self.count, self.table))
@@ -201,7 +203,8 @@ class Insert(LoggingBaseClass):
             self.results = list(query.filter(in_list))
             log.msg("...%s" % (time.time()-results_start))
 
-        self.postcommit()
+        self.log("running postCommit()")
+        self.postCommit()
 
         # close the connection
         self.connection.close()
