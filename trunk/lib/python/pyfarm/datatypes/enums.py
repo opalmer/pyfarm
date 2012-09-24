@@ -110,7 +110,7 @@ DEFAULT_JOBTYPES = ['*']
 SQL_TYPES = {
     sqltypes.Integer : (int, ),
     sqltypes.String : (str, unicode),
-    sqltypes.Float : (float, ),
+    sqltypes.Float : (float, int),
     sqltypes.PickleType : (int, float, str, unicode, list, tuple, set),
     sqltypes.Boolean : (bool, ),
     sqltypes.DateTime : (datetime.datetime, )
