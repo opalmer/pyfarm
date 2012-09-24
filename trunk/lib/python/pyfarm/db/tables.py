@@ -17,6 +17,7 @@
 # along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
 import logging
+from datetime import datetime
 import sqlalchemy as sql
 
 from pyfarm.preferences import prefs
@@ -102,9 +103,10 @@ jobs = sql.Table('pyfarm_jobs', metadata,
     sql.Column('frame_average', sql.Float, default=0),
 
     # timers
-    sql.Column('time_start', sql.Float, default=None),
-    sql.Column('time_end', sql.Float, default=None),
-    sql.Column('time_elapsed', sql.Float, default=None),
+    sql.Column('time_start', sql.DateTime, default=None),
+    sql.Column('time_end', sql.DateTime, default=None),
+    sql.Column('time_elapsed', sql.DateTime, default=None),
+    sql.Column('time_submitted', sql.DateTime, default=datetime.now),
 
     # job setup
     # isolate - if True this job must run by itself (no other jobs on host)
@@ -137,8 +139,8 @@ frames = sql.Table('pyfarm_frames', metadata,
     sql.Column('state', sql.Integer, default=State.QUEUED),
     sql.Column('attempts', sql.Integer, default=0),
     sql.Column('ram', sql.Integer, default=None),
-    sql.Column('time_start', sql.Float, default=None),
-    sql.Column('time_end', sql.Float, default=None),
+    sql.Column('time_start', sql.DateTime, default=None),
+    sql.Column('time_end', sql.DateTime, default=None),
     sql.Column('dependencies', sql.PickleType, default=[]),
     sql.Column('uuid', sql.String(36), default=""),
 )

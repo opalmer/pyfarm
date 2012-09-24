@@ -21,6 +21,8 @@
 named value mappings which do not change during execution
 '''
 
+import datetime
+
 try:
     from collections import OrderedDict
 
@@ -110,5 +112,6 @@ SQL_TYPES = {
     sqltypes.String : (str, unicode),
     sqltypes.Float : (float, ),
     sqltypes.PickleType : (int, float, str, unicode, list, tuple, set),
-    sqltypes.Boolean : (bool, )
+    sqltypes.Boolean : (bool, ),
+    sqltypes.DateTime : (datetime.datetime, )
 }
