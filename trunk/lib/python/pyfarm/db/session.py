@@ -28,7 +28,7 @@ from twisted.python import log
 
 from pyfarm.preferences import prefs
 
-config =prefs.get('database.setup.config')
+config = prefs.get('database.setup.config')
 ENGINE = sqlalchemy.create_engine(
     prefs.get('database.url'),
     echo=prefs.get('logging.sqlalchemy.echo'),
