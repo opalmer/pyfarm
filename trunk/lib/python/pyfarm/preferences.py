@@ -59,7 +59,9 @@ class Preferences(object):
 
         data = fileio.yml.load(path)
         self.data[name] = data
-        self.loaded.append(path)
+
+        if path not in self.loaded:
+            self.loaded.append(path)
     # end __load
 
     def __pathjoin(self, value):
