@@ -21,17 +21,16 @@ Retains the global instance of the session maker object and returns new
 sessions for use in transactions and other procedures
 '''
 
-import sqlalchemy as sql
+import sqlalchemy
 from sqlalchemy import orm
 
 from twisted.python import log
 
 from pyfarm.preferences import prefs
 
-url = prefs.get('database.url')
-config = prefs.get('database.setup.config')
-ENGINE = sql.create_engine(
-    url,
+config =prefs.get('database.setup.config')
+ENGINE = sqlalchemy.create_engine(
+    prefs.get('database.url'),
     echo=prefs.get('logging.sqlalchemy.echo'),
     echo_pool=prefs.get('logging.sqlalchemy.pool')
 )

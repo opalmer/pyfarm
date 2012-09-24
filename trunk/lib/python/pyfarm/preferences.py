@@ -139,7 +139,7 @@ class Preferences(object):
 
     def __dburl(self):
         '''returns the url use for connecting to the database'''
-        db = self.get('database.setup.config')
+        db = os.environ.get('PYFARM_DB_CONFIG') or self.get('database.setup.config')
         config = self.get('database.%s' % db)
 
         # retrieve the settings from the config
@@ -322,6 +322,9 @@ class Preferences(object):
 
         elif key == 'jobtypes.extensions':
             return self.__extensions(kwargs)
+
+        elif key == 'database.setup.config' and os.environ.get('PYFARM_DB_CONFIG'):
+            return os.environ.get('PYFARM_DB_CONFIG')
 
         # traverse the values and retrieve the data
         try:
