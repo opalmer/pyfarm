@@ -30,3 +30,10 @@ dev.%: SCRIPT=../dev/bin/$(subst dev.,,$@).py
 dev.%:
 	@echo "running $(SCRIPT)"
 	@env PYTHONPATH=$(PYTHONPATH) $(PYTHON) $(SCRIPT)
+
+test.%: SCRIPT=tests/test_$(subst test.,,$@).py
+test.%:
+	@echo "running $(SCRIPT)"
+	@env PYTHONPATH=$(PYTHONPATH) $(PYTHON) $(SCRIPT)
+
+tests: test.preferences
