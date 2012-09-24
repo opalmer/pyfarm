@@ -23,8 +23,8 @@ import string
 
 import setuptests
 
-from pyfarm import fileio, PYFARM_ETC, PYFARM_ROOT
-from pyfarm.datatypes.system import OSNAME
+from pyfarm import fileio, PYFARM_ETC
+from pyfarm.datatypes.system import OS, OSNAME, OperatingSystem
 from pyfarm import preferences as p
 
 SPECIAL_PREFS_KEYS = (
@@ -97,9 +97,10 @@ def test_db_envconfig():
 
 def test_dburl():
     db = p.prefs.get('database.setup.config')
-    prefs_config = p.prefs.get('database.%s' % db)
+    prefs_url = p.prefs.get('database.url')
+    prefs_data = p.prefs.get('database.%s' % db)
     data = p.prefs.data['database'][db]
-    
+
     # retrieve the settings from the config
     driver = data.get('driver')
     engine = data.get('engine')
@@ -126,8 +127,37 @@ def test_dburl():
 
     data_url += "/%s" % dbname
 
-
+    assert tuple(data.iteritems()) == tuple(prefs_data.iteritems())
+    assert data_url == prefs_url
 # end test_dburl
+
+def test_extensions():
+    current_os = p.OS
+    p.OS = OperatingSystem.WINDOWS
+    prefs = p.prefs.get('jobtypes.extensions')
+
+    results = set()
+
+    # retrieve
+    extensions = p.prefs.get('jobtypes.extensions.common')
+
+    try:
+        extensions.extend(
+            p.prefs.get('jobtypes.extensions.%s' % OSNAME)
+        )
+
+    except KeyError:
+        pass
+
+    for extension in extensions:
+        results.add(extension)
+        results.add(extension.lower())
+        results.add(extension.upper()) # windows
+
+    results = [ result for result in results if result ]
+    assert results == prefs
+    p.OS = OperatingSystem.get()
+# end test_extensions
 
 if __name__ == '__main__':
     nose.runmodule()
