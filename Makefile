@@ -26,7 +26,7 @@ bin.%:
 	@echo "running $(SCRIPT)"
 	@$(PYTHON) $(SCRIPT)
 
-dev.%: SCRIPT=../dev/bin/$(subst dev.,,$@).py
+dev.%: SCRIPT=dev/bin/$(subst dev.,,$@).py
 dev.%:
 	@echo "running $(SCRIPT)"
 	@env PYTHONPATH=$(PYTHONPATH) $(PYTHON) $(SCRIPT)
