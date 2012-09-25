@@ -24,6 +24,7 @@ import sqlalchemy
 import sqlalchemy.orm
 from twisted.python import log
 
+from pyfarm.logger import LoggingBaseClass
 from pyfarm.preferences import prefs
 from pyfarm.db import session
 
@@ -119,13 +120,14 @@ class Session(object):
 # end Transaction
 
 
-class Connection(object):
+class Connection(LoggingBaseClass):
     '''manages a single connection to the database'''
     def __init__(self, connection=None):
         self.connection = connection
     # end __init__
 
     def __enter__(self):
+        self.start = time.time()
         if self.connection is None:
             self.connection = session.ENGINE.connect()
 
@@ -135,5 +137,6 @@ class Connection(object):
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.connection.close()
         session.ENGINE.dispose()
+        self.log("closed connections, %s elapased" % (time.time()-self.start))
     # end __exit__
 # end Connection
