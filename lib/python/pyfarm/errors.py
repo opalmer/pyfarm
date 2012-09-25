@@ -46,7 +46,16 @@ class JobNotFound(NotFoundError):
     '''raised if we failed to find the requested job in the database'''
     def __str__(self):
         return "job id %s does not exist" % self.id
+    # end __str__
 # end JobNotFound
+
+
+class FrameNotFound(NotFoundError):
+    '''raised if we failed to find the requested frame in the database'''
+    def __str__(self):
+        return "frame id %s does not exist" % self.id
+    # end __str__
+# end FrameNotFound
 
 
 class DuplicateEntry(DatabaseError):
@@ -124,4 +133,4 @@ class InvalidDatabase(ConfigurationError):
     database provided in the configuration is either unsupported or invalid
     '''
     pass
-    # end InvalidDatabase
+# end InvalidDatabase
