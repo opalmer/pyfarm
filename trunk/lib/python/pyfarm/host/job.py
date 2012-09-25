@@ -31,7 +31,7 @@ from twisted.web import xmlrpc, resource
 
 from pyfarm import logger
 from pyfarm.preferences import prefs
-from pyfarm.client import process
+from pyfarm.host import process
 
 class Manager(xmlrpc.XMLRPC):
     '''

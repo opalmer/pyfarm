@@ -52,7 +52,7 @@ PROCESS_LOCK = lock.ProcessLock(
 # determine the location we should log to
 if not options.log:
     root = prefs.get('filesystem.locations.general')
-    SERVICE_LOG = os.path.join(root, 'client-%s.log' % FQDN)
+    SERVICE_LOG = os.path.join(root, 'host-%s.log' % FQDN)
 else:
     SERVICE_LOG = os.path.abspath(options.log)
 
@@ -97,7 +97,7 @@ class Server(_rpc.Service, logger.LoggingBaseClass):
     # end __init__
 
     def xmlrpc_requestWork(self, hostname):
-        '''run when a remote client requests work from the master'''
+        '''run when a remote host requests work from the master'''
         assign_work = callbacks.AssignWorkToClient(hostname)
         deferred = threads.deferToThread(assign_work)
         deferred.addCallback(assign_work.sendWork)

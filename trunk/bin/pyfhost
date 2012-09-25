@@ -31,7 +31,7 @@ ROOT = os.path.realpath(os.path.join(CWD, '..'))
 PYTHONLIB = os.environ.get('PYFARM_PYTHONLIB') or os.path.join(ROOT, 'lib', 'python')
 site.addsitedir(PYTHONLIB)
 
-from pyfarm.client import cmdargs
+from pyfarm.host import cmdargs
 from pyfarm import logger, lock
 from pyfarm.preferences import prefs
 from pyfarm.datatypes.network import FQDN
@@ -52,7 +52,7 @@ PROCESS_LOCK = lock.ProcessLock(
 # determine the location we should log to
 if not options.log:
     root = prefs.get('filesystem.locations.general')
-    SERVICE_LOG = os.path.join(root, 'client-%s.log' % FQDN)
+    SERVICE_LOG = os.path.join(root, 'host-%s.log' % FQDN)
 else:
     SERVICE_LOG = os.path.abspath(options.log)
 
@@ -61,7 +61,7 @@ LOG_OBSERVER = logger.Observer(SERVICE_LOG)
 LOG_OBSERVER.start()
 
 from pyfarm import errors
-from pyfarm.client import process, job, master
+from pyfarm.host import process, job, master
 from pyfarm.db import insert, modify, query
 
 from pyfarm.datatypes.system import OS, OperatingSystem
@@ -84,7 +84,7 @@ if 'PYFARM_RESTART' in os.environ:
 
 class Client(_rpc.Service, logger.LoggingBaseClass):
     '''
-    Main xmlrpc service which controls the client.  Most methods
+    Main xmlrpc service which controls the host.  Most methods
     are handled entirely outside of this class for the purposes of
     separation of service and logic.
     '''
@@ -165,7 +165,7 @@ class Client(_rpc.Service, logger.LoggingBaseClass):
 
     def xmlrpc_online(self, state=None):
         '''
-        Return True of the client is currently online or set
+        Return True of the host is currently online or set
         the online state if a valid state argument is provided
 
         :param boolean state:
@@ -176,7 +176,7 @@ class Client(_rpc.Service, logger.LoggingBaseClass):
         '''
         if state in (True, False):
             self.job.online = state
-            self.log("client online state set to %s" % str(state))
+            self.log("host online state set to %s" % str(state))
 
         elif state is not None:
             raise xmlrpc.Fault(3, "%s is not a valid state" % str(state))
@@ -280,7 +280,7 @@ with PROCESS_LOCK:
 
     SERVICE = Client(SERVICE_LOG)
 
-    # start listening for connections with the client
+    # start listening for connections with the host
     reactor.listenTCP(options.port, _server.Site(SERVICE))
 
     # start reactor
@@ -295,14 +295,14 @@ with PROCESS_LOCK:
     log.msg("setting host as offline in database")
     modify.host.host(FQDN, online=False)
 
-# If RESTART has been set to True then restart the client
+# If RESTART has been set to True then restart the host
 # script.  This must be done after the reactor and has been
 # shutdown and after we have given the port(s) a chance
 # to release.
 if os.environ.get('PYFARM_RESTART') == 'true' and prefs.get('network.rpc.restart'):
     pause = prefs.get('network.rpc.delay')
     log.msg(
-        "preparing to restart the client, pausing %i seconds" % pause,
+        "preparing to restart the host, pausing %i seconds" % pause,
         system="Client"
     )
     time.sleep(pause)

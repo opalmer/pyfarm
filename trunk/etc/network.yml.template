@@ -29,7 +29,7 @@ rpc:
 # port for you
 #ports:
 #  heartbeat: 9030
-#  client: 9031
+#  host: 9031
 #  master: 9032
 
 # Group and prefix should remain the defaults unless there is

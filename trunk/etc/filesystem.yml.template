@@ -34,7 +34,7 @@ roots:
 #
 # Variables which are not defined above but included below
 # would be substituted when the log is created.  For example $jobid or
-# $frame would be included when a new job starts on a client
+# $frame would be included when a new job starts on a host
 locations:
   general: $root/log
   jobs: $root/log/jobs/$jobid/$frame.log
