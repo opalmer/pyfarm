@@ -23,7 +23,6 @@ import logging
 
 from pyfarm import logger, errors
 from pyfarm.preferences import prefs
-from pyfarm.jobtypes.base.job import Job
 
 from twisted.python import log
 
