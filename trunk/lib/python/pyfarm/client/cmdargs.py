@@ -22,11 +22,11 @@ from pyfarm.datatypes.system import TOTAL_RAM, CPU_COUNT
 from pyfarm.cmdargs import *
 from pyfarm.net.functions import openport
 
-parser.description = "Entry point for PyFarm's client."
+parser.description = "Entry point for PyFarm's host."
 
 
 try:
-    port = prefs.get('network.ports.client')
+    port = prefs.get('network.ports.host')
 
 except KeyError:
     port = openport()

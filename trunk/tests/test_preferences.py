@@ -29,7 +29,7 @@ from pyfarm import preferences as p
 
 SPECIAL_PREFS_KEYS = (
     'jobtypes.path', 'jobtypes.search-paths', 'jobtypes.extensions',
-    'client.max-jobs',
+    'host.max-jobs',
 )
 
 def test_prefssetup():

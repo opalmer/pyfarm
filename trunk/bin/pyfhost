@@ -44,7 +44,7 @@ options = cmdargs.parser.parse_args()
 
 # setup the process lock before starting the log
 PROCESS_LOCK = lock.ProcessLock(
-    'client',
+    'host',
     kill=options.force_kill, wait=options.wait,
     remove=options.remove_lock
 )
@@ -286,7 +286,7 @@ with PROCESS_LOCK:
     # start reactor
     args = (FQDN, options.port)
     log.msg(
-        "running client at http://%s:%i" % args,
+        "running host at http://%s:%i" % args,
         level=logging.INFO, system="Client"
     )
     reactor.run()

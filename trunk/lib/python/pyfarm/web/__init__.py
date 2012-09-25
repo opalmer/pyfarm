@@ -17,5 +17,5 @@
 # along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
 '''
-minor library used by client for services provided by html
+minor library used by host for services provided by html
 '''

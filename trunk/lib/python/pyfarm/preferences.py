@@ -183,7 +183,7 @@ class Preferences(object):
             return data
 
         elif data == "relative" or not data:
-            return psutil.NUM_CPUS / self.get('client.relative-value', **kwargs)
+            return psutil.NUM_CPUS / self.get('host.relative-value', **kwargs)
 
     # end  __calculateMaxJobs
 
@@ -268,10 +268,10 @@ class Preferences(object):
     def get(self, key, **kwargs):
         '''
         Retrieve the preferences when provided a key.  For example
-        to retrieve the port setting for the client:
+        to retrieve the port setting for the host:
 
             >>> prefs = Preferences()
-            >>> prefs.get('network.ports.client')
+            >>> prefs.get('network.ports.host')
             9031
 
         :param string key:
@@ -348,7 +348,7 @@ class Preferences(object):
         elif key == 'jobtypes.path':
             data = self.__expandSearchPaths(data, kwargs)
 
-        elif key == 'client.max-jobs':
+        elif key == 'host.max-jobs':
             data = self.__calculateMaxJobs(data, kwargs)
 
         Preferences.PREFERENCES[key] = data

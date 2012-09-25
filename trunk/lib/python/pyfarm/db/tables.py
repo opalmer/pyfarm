@@ -93,7 +93,7 @@ jobs = sql.Table('pyfarm_jobs', metadata,
 
     # job setup
     # isolate - if True this job must run by itself (no other jobs on host)
-    # cpus - number of cpus required to be free on the client
+    # cpus - number of cpus required to be free on the host
     # enviro - pickle of an environment dictionary
     sql.Column('notes', sql.String(512, convert_unicode=True), default=""),
     sql.Column('enviro', sql.PickleType),
@@ -110,10 +110,10 @@ jobs = sql.Table('pyfarm_jobs', metadata,
 )
 
 # FRAMES TABLE ATTRIBUTES
-# client - host id currently running the frame
+# host - host id currently running the frame
 frames = sql.Table('pyfarm_frames', metadata,
     sql.Column('id', sql.Integer, autoincrement=True, primary_key=True),
-    sql.Column('client', sql.Integer, sql.ForeignKey(hosts.c.id), default=None),
+    sql.Column('host', sql.Integer, sql.ForeignKey(hosts.c.id), default=None),
     sql.Column('jobid', sql.Integer, sql.ForeignKey(jobs.c.id)),
     sql.Column('priority', sql.Integer, default=prefs.get('jobsystem.priority-default')),
     sql.Column('assigned_by', sql.Integer, sql.ForeignKey(masters.c.id), default=None),

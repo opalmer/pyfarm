@@ -26,7 +26,7 @@ from twisted.internet.error import ConnectionRefusedError
 class AssignWorkToClient(LoggingBaseClass):
     '''
     class which retrieves a job from the database and sends
-    it to the requesting client
+    it to the requesting host
     '''
     def __init__(self, hostname):
         self.hostname = hostname
@@ -38,14 +38,14 @@ class AssignWorkToClient(LoggingBaseClass):
         self.log("retrieving work for %s" % self.hostname)
         frame = frames.select(hostname=self.hostname)
         args = (self.hostname, frame.job.id, frame.id)
-        self.log("found work for client %s (jobid: %i frameid: %i)" % args)
+        self.log("found work for host %s (jobid: %i frameid: %i)" % args)
         self.frame = frame
         return frame
     # end __call__
 
     def rejectRequest(self, error):
         '''
-        if the query failed then inform the client we cannot accept the request
+        if the query failed then inform the host we cannot accept the request
         right now
         '''
         self.log(
@@ -95,7 +95,7 @@ class AssignWorkToClient(LoggingBaseClass):
 
         self.log("attempting to send work to %s" % self.hostname)
         rpc = _rpc.Connection(
-            self.hostname, prefs.get("network.ports.client"),
+            self.hostname, prefs.get("network.ports.host"),
             success=success, failure=failure
         )
         rpc.call("job.assign", frame.job.id, frame.id)
