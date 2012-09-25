@@ -33,6 +33,22 @@ class DatabaseError(Error):
 # end DatabaseError
 
 
+class NotFoundError(DatabaseError):
+    '''general not found error'''
+    def __str__(self):
+        args = (self.column_name, self.match_data, self.table)
+        return "failed to find %s matching %s in %s" % args
+        # end __str__
+# end NotFoundError
+
+
+class JobNotFound(NotFoundError):
+    '''raised if we failed to find the requested job in the database'''
+    def __str__(self):
+        return "job id %s does not exist" % self.id
+# end JobNotFound
+
+
 class DuplicateEntry(DatabaseError):
     '''general exception for duplicate entries'''
     def __str__(self):
@@ -53,7 +69,7 @@ class DuplicateHost(DatabaseError):
 # end DuplicateHosts
 
 
-class HostNotFound(DatabaseError):
+class HostNotFound(NotFoundError):
     '''raised when we failed to requested find the host in the database'''
     def __str__(self):
         return "failed to find '%s' in the %s table" % (self.match_data, self.table)
@@ -70,15 +86,6 @@ class HostsOffline(DatabaseError):
         return "failed to find any hosts online in the %s table" % self.table
     # end __repr__
 # end HostsOffline
-
-
-class NotFoundError(DatabaseError):
-    '''general not found error'''
-    def __str__(self):
-        args = (self.column_name, self.match_data, self.table)
-        return "failed to find %s matching %s in %s" % args
-    # end __str__
-# end NotFoundError
 
 
 class JobTypeNotFoundError(Error):
