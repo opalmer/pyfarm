@@ -41,16 +41,18 @@ typenames = jobtypes.jobtypes()
 log("jobtypes: %s" % typenames)
 
 submit_jobs = submit.Job()
+test_hosts = ('localhost', 'foobar')
 
 for i in xrange(JOB_COUNT+1):
     job_data = {
         'state' : random.choice(submit_jobs.VALID_STATES),
         'start_frame' : random.randint(1, 10),
-        'end_frame' : random.randint(11, 100),
+        'end_frame' : random.randint(11, 20),
         'by_frame' : random.randint(1, 3),
         'jobtype' : random.choice(typenames),
         'ram' : random.randint(512, 4096),
-        'cpus' : random.randint(1, 16)
+        'cpus' : random.randint(1, 16),
+        'command' : 'ping -c ${frame} %s' % random.choice(test_hosts)
     }
     submit_jobs.add(**job_data)
 
