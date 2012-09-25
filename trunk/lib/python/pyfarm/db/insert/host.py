@@ -48,7 +48,7 @@ def host(
     inserts a single host into the database
 
     :param string hostname: local hostname if not provided
-    :param integer port: the port the client is operating on
+    :param integer port: the port the host is operating on
     :param string master: the master the provided host should be communicating with
     :param string ip: local address if not provided
     :param string subnet: local subnet if not provided
@@ -215,7 +215,7 @@ def host(
 
     # port setup
     if port is None:
-        port = prefs.get('network.ports.client')
+        port = prefs.get('network.ports.host')
 
     data['port'] = port
 

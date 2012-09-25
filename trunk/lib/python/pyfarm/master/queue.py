@@ -29,7 +29,7 @@ class Queue(xmlrpc.XMLRPC):
 
     def __init__(self, service):
         resource.Resource.__init__(self)
-        self.service = service # connection back to main client methods
+        self.service = service # connection back to main host methods
     # end __init__
 
     def xmlrpc_assignment(self, value=None):

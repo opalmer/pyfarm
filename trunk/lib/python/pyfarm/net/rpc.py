@@ -87,7 +87,7 @@ class Service(xmlrpc.XMLRPC, LoggingBaseClass):
 
     def xmlrpc_test_mode(self, value):
         '''
-        used for testing this will prevent the client from actually restarting
+        used for testing this will prevent the host from actually restarting
         or shutting down
         '''
         global TEST_MODE
@@ -115,7 +115,7 @@ class Service(xmlrpc.XMLRPC, LoggingBaseClass):
 
     def xmlrpc_shutdown(self, force=False):
         '''
-        shutdown the client and reactor
+        shutdown the host and reactor
 
         :param boolean force:
             if True run shutdown reguardless of the block state
@@ -148,7 +148,7 @@ class Service(xmlrpc.XMLRPC, LoggingBaseClass):
 
     def xmlrpc_restart(self, force=False):
         '''
-        restart the client
+        restart the host
 
         :exception xmlrpc.Fault(10):
             raised if restart is disabled via the preferences

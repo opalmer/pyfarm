@@ -43,8 +43,8 @@ class Manager(xmlrpc.XMLRPC):
         self.online = True
         self.jobs = {}
         self.job_count = 0
-        self.service = service # connection back to main client methods
-        self.job_count_max = prefs.get('client.max-jobs')
+        self.service = service # connection back to main host methods
+        self.job_count_max = prefs.get('host.max-jobs')
         log.msg("job manager initialized")
     # end __init__
 
@@ -100,14 +100,14 @@ class Manager(xmlrpc.XMLRPC):
 
     def xmlrpc_run(self, command, arguments, environ=None, force=False):
         '''setup and return instances of the job object'''
-        # client must be online in order to submit jobs
+        # host must be online in order to submit jobs
         if not self.online:
             raise xmlrpc.Fault(4, '%s is offline' % socket.getfqdn())
 
         # log a warning if we are over the max job count
         if not force and not self.service.xmlrpc_free():
             args = (self.job_count, self.job_count_max)
-            raise xmlrpc.Fault(2, 'client already running %i/%i jobs' % args)
+            raise xmlrpc.Fault(2, 'host already running %i/%i jobs' % args)
 
         # create, manages, and returns information about a job
         job = Job(self, command, arguments, environ)
@@ -228,7 +228,7 @@ class Manager(xmlrpc.XMLRPC):
 class Job(object):
     '''
     Maintains, controls, and sets up a job.  This class should always
-    setup and instanced by _Manager to maintain the state of the client.
+    setup and instanced by _Manager to maintain the state of the host.
 
     :param Manager manager:
         the manager class we're we will modify the running job count, state,
