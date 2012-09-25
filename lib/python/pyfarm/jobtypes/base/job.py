@@ -16,17 +16,23 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import with_statement
+
 import os
+import time
 import string
 import ctypes
 import logging
 import itertools
+from sqlalchemy import orm
 
-from pyfarm import logger
+from pyfarm import logger, errors
 from pyfarm.datatypes.system import USER, OS, OperatingSystem
 from pyfarm.preferences import prefs
+from pyfarm.db import session, contexts
+from pyfarm.db.tables import jobs, frames
 
-class Job(logger.LoggingBaseClass):
+class Command(logger.LoggingBaseClass):
     '''
     Base jobtype inherited by all other jobtypes
 
@@ -324,4 +330,70 @@ class Job(logger.LoggingBaseClass):
         '''runs the job itself'''
         pass
     # end run
-# end Job
+# end Command
+
+
+class Frame(Command):
+    def __init__(self, id):
+        self.row_frame = None
+        self.row_job = None
+        self.id = id
+
+        self.retrieveRows()
+        command, args = self.parseCommand()
+        super(Frame, self).__init__(command, args, self.row_frame.frame)
+    # end __init__
+
+    def retrieveRows(self):
+        '''retrieves the frame and job rows from the database'''
+        # don't do anything if we have already fetched
+        # the required rows
+        if self.row_frame is not None and self.row_frame is not None:
+            return
+
+        self.log("retrieving database entry for frame id %s" % self.id)
+        scoped_session = orm.scoped_session(session.Session)
+
+        with contexts.Connection(scoped_session.connection()):
+            self.log("...querying frame id %s" % self.id)
+            frames_query = scoped_session.query(frames)
+            self.row_frame = frames_query.filter(frames.c.id == self.id).first()
+
+            # raise an exception if we fail to find the frame
+            # we're looking for
+            if self.row_frame is None:
+                raise errors.FrameNotFound(id=self.id)
+
+            self.log("...querying jobid id %s" % self.row_frame.jobid)
+            jobs_query = scoped_session.query(jobs)
+            self.row_job = jobs_query.filter(jobs.c.id == self.row_frame.jobid).first()
+
+            # raise an exception if we fail to find the job
+            # we're looking for
+            if self.row_job is None:
+                raise errors.JobNotFound(id=self.__jobid)
+    # end retrieveRows
+
+    @property
+    def command_template_data(self):
+        '''
+        returns the data which will be used by string template
+        when creating the command
+        '''
+        return {"frame" : int(self.row_frame.frame)}
+    # end templateData
+
+    def parseCommand(self):
+        '''
+        parses the command and returns the command to call and its arguments
+        '''
+        template = string.Template(self.row_job.command)
+        result = template.safe_substitute(**self.command_template_data).split()
+        return result[0], [ str(entry) for entry in result[1:]]
+    # end parseCommand
+# end Frame
+
+if __name__ == '__main__':
+    frame = Frame(5)
+    print frame.row_frame
+    print frame.row_job
