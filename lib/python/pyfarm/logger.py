@@ -17,6 +17,7 @@
 # along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
+import sys
 import time
 import logging
 import fnmatch
@@ -30,10 +31,6 @@ from colorama import Fore, Back, Style
 
 log.FileLogObserver.timeFormat = prefs.get('logging.timestamp')
 colorama.init()
-
-# lists of currently instanced stream and observers
-STREAMS = {}
-OBSERVERS = []
 
 # dictionary of log levels and their associated
 # styles and colors
@@ -50,7 +47,7 @@ TERMCOLOR = {
 
 class Observer(log.FileLogObserver):
     '''
-    Logging observer for sys.stdout and sys.stderr
+    Logging observer for streams
 
     :param None or string or file stream:
         The path or stream to log to.  If the argument provided
@@ -92,28 +89,25 @@ class Observer(log.FileLogObserver):
     :exception KeyError:
         raised if the provided format is not defined
     '''
-    def __init__(self, stream, mode='a',
-                 backups=prefs.get('logging.backups'), observe=None,
-                 format='default', level=None):
-        self.observe = observe
-        self.format = format
-        self.formats = prefs.get('logging.formats')
-        self.level = level or prefs.get('logging.level')
+    STREAMS = {}
+    FORMATS = prefs.get('logging.formats')
+    BACKUPS = prefs.get('logging.backups')
+    LEVEL = prefs.get('logging.level')
+    
+    def __init__(self, stream=sys.stderr, format='default'):
+        self.level = self.LEVEL
         self.custom_levels = prefs.get('logging.custom-levels')
+        self.format = self.FORMATS[format]
 
-        self.__running = False
+        # resolve the full path to the file we intend to write to
+        if isinstance(stream, (str, unicode)):
+            stream = os.path.abspath(os.path.expandvars(stream))
 
-        # ensure the requested format exists before we setup the logger
-        if format not in self.formats:
-            raise KeyError("no such format '%s' exists")
-        else:
-            self.format = self.formats.get(format)
-
-        # if we are provided a string then prepare and
-        # attempt to log the the provided location
-        if isinstance(stream, str):
-            path = os.path.abspath(stream)
-            dirname = os.path.dirname(path)
+        # if we are provided a string and it's not something that
+        # we're already logging to then create the required directories,
+        # rollover existing files and start writing
+        if isinstance(stream, (str, unicode)) and stream not in self.STREAMS:
+            dirname = os.path.dirname(stream)
 
             # if the directory does not exist create it
             if not os.path.isdir(dirname):
@@ -121,13 +115,15 @@ class Observer(log.FileLogObserver):
 
             # if the file already exists and the mode
             # is append then rollover the file on disk
-            if os.path.isfile(path) and mode == 'a':
-                rotate = handlers.RotatingFileHandler(path, backupCount=backups)
+            if os.path.isfile(stream) and self.BACKUPS:
+                rotate = handlers.RotatingFileHandler(stream, backupCount=self.BACKUPS)
                 rotate.doRollover()
 
-            stream = open(path, mode)
+            stream = open(stream, 'w')
 
-        # attributes for external use
+        elif stream in self.STREAMS:
+            stream = self.STREAMS[stream]
+
         self.stream = stream
         if stream is not None:
             if not isinstance(stream, file):
@@ -135,51 +131,9 @@ class Observer(log.FileLogObserver):
 
             self.name = self.stream.name
             log.FileLogObserver.__init__(self, stream)
-
         else:
             self.name = 'print()'
     # end __init__
-
-    def __isstream(self):
-        '''returns true if we are logging to a file stream'''
-        return isinstance(self.stream, file)
-    # end __isstream
-
-    def __log(self, msg, level=logging.DEBUG):
-        '''used for internal calls to log'''
-        log.msg(msg, system='logger.Observer', level=level, observe=True)
-    # end __log
-
-    def __observable(self, eventDict):
-        '''
-        Returns True if we should be observing the given system based on the
-        value(s) in self.observe or if eventDict['observe'] is True
-        '''
-        # only filter if filtering is enabled
-        if prefs.get('logging.enable-filtering'):
-            for filter in prefs.get('logging.filter-systems'):
-                if not fnmatch.fnmatchcase(eventDict['system'], filter):
-                    continue
-
-                for pattern in prefs.get('logging.exclude-message-filter'):
-                    for message in eventDict['message']:
-                        if fnmatch.fnmatchcase(message, pattern):
-                            return False
-
-        # see if the we have explicitly silenced the system
-        silenced = prefs.get('logging.silence-systems')
-        if silenced:
-            if eventDict['system'] in silenced:
-                return False
-
-        if isinstance(self.observe, str):
-            return eventDict['system'] == self.observe
-
-        elif isinstance(self.observe, (list, tuple, set)):
-            return eventDict['system'] in self.observe
-
-        return True
-    # end __observable
 
     def __colorize(self, eventDict, msg):
         '''
@@ -196,7 +150,11 @@ class Observer(log.FileLogObserver):
         return style_start + msg + style_end
     # end __colorize
 
-    def emit(self, eventDict):
+    def __call__(self, eventDict):
+        msg = self.emit(eventDict)
+    # end __call__
+
+    def emit(self, eventDict, stdout=True):
         '''
         Takes an incoming event dictionary and determines if we should
         be logging its data and to what format.
@@ -209,21 +167,13 @@ class Observer(log.FileLogObserver):
         # scrub __main__. from the start of system names
         eventDict['system'] = eventDict['system'].replace("__main__.", "")
 
-        # if we are observing a specific system and the
-        # emitted system does not match that system
-        # then skip the rest of the function
-        if not self.__observable(eventDict):
-            return
-
         # systems of HTTPChannel should really be xmlrpc in our
         # case
         if eventDict['system'].startswith("HTTPChannel"):
             eventDict['system'] = 'XML-RPC'
 
         # retrieve the logging string
-        level = eventDict.get('level') or\
-                eventDict.get('logLevel') or \
-                logging.DEBUG
+        level = eventDict.get('level') or logging.DEBUG
         integer = isinstance(level, int)
 
         # determine if we should even emit the given log level
@@ -250,7 +200,7 @@ class Observer(log.FileLogObserver):
             'level' : level.upper()
         }
 
-        msg = timeStr + " " + log._safeFormat(self.format, fmtDict)
+        msg = timeStr + " " + self.format % fmtDict
 
         if self.stream is not None:
             log.util.untilConcludes(self.write, msg+"\n")
@@ -258,69 +208,13 @@ class Observer(log.FileLogObserver):
 
         else:
             msg = self.__colorize(eventDict, msg)
-            print msg.strip()
+            msg = msg.strip()
+            if stdout:
+                print msg
+            return msg
     # end emit
-
-    def start(self):
-        '''
-        Start observing log events and produce warnings if we have started
-        logging to a file to which we are already logging.
-        '''
-        if self.__running:
-            self.__log("%s is already running" % self)
-            return
-
-        log.addObserver(self.emit)
-        self.__running = True
-
-        # add self to observers
-        OBSERVERS.append(self)
-
-        # tell us where we are logging and if
-        # we are observing a specific system
-        msg = "logging to %s" % self.name
-        if self.observe is not None:
-            observing = self.observe
-            if isinstance(observing, str):
-                observing = [observing]
-            msg += " (observing: %s)" % ", ".join(observing)
-
-        self.__log(msg, level=logging.INFO)
-
-        # if the current stream name is not in STREAM we need
-        # add a new entry
-        if self.__isstream() and self.name not in STREAMS:
-            STREAMS[self.name] = 1
-
-        # warn about stream reuse
-        elif self.__isstream() and STREAMS.get(self.name) > 1:
-            msg = "already logging to %s, this could produce " % self.name
-            msg += "unexpected results"
-            self.__log(msg, level=logging.WARNING)
-            STREAMS[self.name] += 1
-    # end start
-
-    def stop(self):
-        '''
-        Stop observing log events and remove any necessary entries from
-        the STREAMS global
-        '''
-        if not self.__running:
-            self.__log("%s is not running" % self)
-            return
-
-        log.removeObserver(self.emit)
-        self.__running = False
-        self.__log("stopped logging to %s" % self.name)
-        OBSERVERS.remove(self)
-
-        if self.__isstream() and STREAMS.get(self.name) == 1:
-            del STREAMS[self.name]
-
-        elif self.__isstream() and STREAMS.get(self.name) > 1:
-            STREAMS[self.name] -= 1
-    # end stop
 # end Observer
+
 
 
 class LoggingBaseClass(object):
