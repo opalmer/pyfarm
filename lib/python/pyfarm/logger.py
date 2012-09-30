@@ -238,7 +238,3 @@ def timestamp():
     format = prefs.get('logging.timestamp')
     return time.strftime(format)
 # end timestamp
-
-# setup a default observer
-observer = Observer(None)
-observer.start()
