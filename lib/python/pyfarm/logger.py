@@ -93,13 +93,15 @@ class Observer(log.FileLogObserver):
     FORMATS = prefs.get('logging.formats')
     BACKUPS = prefs.get('logging.backups')
     LEVEL = prefs.get('logging.level')
+    DEFAULT_STREAM = sys.stderr
     
-    def __init__(self, stream=sys.stderr, format='default'):
+    def __init__(self, stream=None, format='default'):
         self.level = self.LEVEL
         self.custom_levels = prefs.get('logging.custom-levels')
         self.format = self.FORMATS[format]
 
         # resolve the full path to the file we intend to write to
+        stream = stream or self.DEFAULT_STREAM
         if isinstance(stream, (str, unicode)):
             stream = os.path.abspath(os.path.expandvars(stream))
 
@@ -116,10 +118,12 @@ class Observer(log.FileLogObserver):
             # if the file already exists and the mode
             # is append then rollover the file on disk
             if os.path.isfile(stream) and self.BACKUPS:
+                self.log('rolling over existing log %s' % stream)
                 rotate = handlers.RotatingFileHandler(stream, backupCount=self.BACKUPS)
                 rotate.doRollover()
 
             stream = open(stream, 'w')
+            self.log('creating log %s' % stream.name)
 
         elif stream in self.STREAMS:
             stream = self.STREAMS[stream]
@@ -130,6 +134,7 @@ class Observer(log.FileLogObserver):
                 raise TypeError("provided argument is not a file stream or ")
 
             self.name = self.stream.name
+            self.isfile = os.path.isfile(self.name)
             log.FileLogObserver.__init__(self, stream)
         else:
             self.name = 'print()'
@@ -150,9 +155,10 @@ class Observer(log.FileLogObserver):
         return style_start + msg + style_end
     # end __colorize
 
-    def __call__(self, eventDict):
-        msg = self.emit(eventDict)
-    # end __call__
+    def log(self, msg, level=None):
+        l = level or logging.DEBUG
+        log.msg(msg, level=l, system='logger.Observer')
+    # end log
 
     def emit(self, eventDict, stdout=True):
         '''
@@ -202,16 +208,15 @@ class Observer(log.FileLogObserver):
 
         msg = timeStr + " " + self.format % fmtDict
 
-        if self.stream is not None:
+        # add color if this message is not meant to go into
+        # a file on disk
+        if not self.isfile:
+            msg = self.__colorize(eventDict, msg)
+
+        filepath = 'filepath' in eventDict and eventDict['filepath'] == self.stream.name
+        if  filepath or 'filepath' not in eventDict:
             log.util.untilConcludes(self.write, msg+"\n")
             log.util.untilConcludes(self.flush)
-
-        else:
-            msg = self.__colorize(eventDict, msg)
-            msg = msg.strip()
-            if stdout:
-                print msg
-            return msg
     # end emit
 # end Observer
 
@@ -238,3 +243,6 @@ def timestamp():
     format = prefs.get('logging.timestamp')
     return time.strftime(format)
 # end timestamp
+
+observer = Observer()
+observer.start()
