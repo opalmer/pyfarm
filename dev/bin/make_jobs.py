@@ -21,6 +21,7 @@ creates a random assortment of jobs in the database based on the current
 setup
 '''
 
+import os
 import random
 
 from twisted.python import log as _log
@@ -52,7 +53,9 @@ for i in xrange(JOB_COUNT+1):
         'jobtype' : random.choice(typenames),
         'ram' : random.randint(512, 4096),
         'cpus' : random.randint(1, 16),
-        'command' : 'ping -c ${frame} %s' % random.choice(test_hosts)
+        'cmd' : 'ping',
+        'args' : ['-c', '${frame}', random.choice(test_hosts)],
+        'environ' : dict(os.environ)
     }
     submit_jobs.add(**job_data)
 
