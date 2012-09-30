@@ -119,18 +119,12 @@ class Process(object):
         else:
             self.uid = None
             self.gid = None
-    # end __init__
 
-    def spawnArguments(self):
-        '''returns the arguments to pass to reactor.spawnProcess'''
-        return [self.protocol, self._command]
-    # end spawnArguments
-
-    def spawnKeywords(self):
-        '''returns the keyword arguments to pass to reactor.spawnProcess'''
-        keywords = {
+        # construct the arguments and keywords for spawn process
+        self.args = [self.protocol, self._command]
+        self.kwargs = {
             'args' : self._args,
-            'env' : self.environ
+            'env' : self.environ.copy()
         }
 
         if OS in (OperatingSystem.LINUX, OperatingSystem.MAC) and pwd:
@@ -138,14 +132,12 @@ class Process(object):
             # user's id and group
             entry = pwd.getpwnam(USER)
             if entry.pw_uid != self.uid and entry.pwd_gid != self.gid:
-                keywords.update(uid=self.uid, gid=self.gid)
+                self.kwargs.update(uid=self.uid, gid=self.gid)
             else:
                 msg = "no need to change uid/gid, they are the same as "
                 msg += "the current user's group and id"
                 self._log(msg)
-
-        return keywords
-    # end spawnKeywords
+    # end __init__
 
     def log(self, msg, **kwargs):
         '''send a log message the the process log file'''
@@ -166,9 +158,8 @@ class Process(object):
             # possible this may fail if we don't have permission
             # to do something like setuid
             try:
-                self.process = reactor.spawnProcess(
-                    *self.spawnArguments(), **self.spawnKeywords()
-                )
+                self.process = reactor.spawnProcess(*self.args, **self.kwargs)
+
             except OSError, error:
                 e = "Failed to spawn process! This most likely because "
                 e += "we could not setuid, original error was: %s" % error
