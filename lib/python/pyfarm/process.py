@@ -16,9 +16,18 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
+import os
 import logging
+from UserDict import UserDict
+
+try:
+    import pwd
+
+except ImportError:
+    pwd = None
 
 from pyfarm import logger
+from pyfarm.datatypes.system import OS, OperatingSystem, USER
 
 from twisted.internet import protocol, reactor, error
 from twisted.python import log
@@ -59,7 +68,10 @@ class ProcessProtocol(protocol.ProcessProtocol):
     def processExited(self, reason):
         exit_code = reason.value.exitCode
         args = (self.process.pid, exit_code)
-        self.log("process %s exited with status %s" % args, parent=True)
+        self.log(
+            "process %s exited with status %s" % args, parent=True,
+            level=logging.INFO
+        )
 
         if exit_code != 0:
             args = (self.process.command, exit_code, self.process.pid)
@@ -76,20 +88,64 @@ class ProcessProtocol(protocol.ProcessProtocol):
 
 class Process(object):
     '''wraps the process protocol'''
-    # TODO: uid, gid handling (os dependent)
-    # TODO:
-    def __init__(self, command, args, environ, log):
+    def __init__(self, command, args, environ, log, user=None):
         self._command = command
         self._args = args
-        self._environ = environ
-        self._spawnargs = [
-            self._command, self._args, self._environ
-        ]
+        self.user = user or USER
         self.process = None
+        self.environ = {}
         self.command = "%s %s" % (command, " ".join(args))
         self.observer = logger.Observer(log)
         self.observer.start()
+        self.protocol = ProcessProtocol(self, self._args, self.observer)
+
+        # populate the initial environment from the
+        # incoming dictionary
+        if isinstance(environ, (dict, UserDict)):
+            self.environ.update(environ)
+
+        # Update the environment with the current environment to make
+        # sure we're not missing any required variables.  This should
+        # also take care of a bug on the windows implementation
+        # of spawnProcess that causes win32 programs to crash when the
+        # environment is not populated properly
+        self.environ.update(os.environ.copy())
+
+        # retrieve the uid/gid entries
+        if OS in (OperatingSystem.LINUX, OperatingSystem.MAC) and pwd:
+            entry = pwd.getpwnam(self.user)
+            self.uid = entry.pw_uid
+            self.gid = entry.pw_gid
+        else:
+            self.uid = None
+            self.gid = None
     # end __init__
+
+    def spawnArguments(self):
+        '''returns the arguments to pass to reactor.spawnProcess'''
+        return [self.protocol, self._command]
+    # end spawnArguments
+
+    def spawnKeywords(self):
+        '''returns the keyword arguments to pass to reactor.spawnProcess'''
+        keywords = {
+            'args' : self._args,
+            'env' : self.environ
+        }
+
+        if OS in (OperatingSystem.LINUX, OperatingSystem.MAC) and pwd:
+            # only add uid/gid if they differ from the current
+            # user's id and group
+            entry = pwd.getpwnam(USER)
+            if entry.pw_uid != self.uid and entry.pwd_gid != self.gid:
+                keywords.update(uid=self.uid, gid=self.gid)
+            else:
+                msg = "no need to change uid/gid, they are the same as "
+                msg += "the current user's group and id"
+                self._log(msg)
+
+        return keywords
+    # end spawnKeywords
 
     def log(self, msg, **kwargs):
         '''send a log message the the process log file'''
@@ -105,12 +161,24 @@ class Process(object):
     def start(self):
         if self.process is None:
             self.log('running: %s' % self.command)
-            self.protocol = ProcessProtocol(self, self._args, self.observer)
-            self._spawnargs.insert(0, self.protocol)
-            self.process = reactor.spawnProcess(*self._spawnargs)
+
+            # try to spawn the process though it's
+            # possible this may fail if we don't have permission
+            # to do something like setuid
+            try:
+                self.process = reactor.spawnProcess(
+                    *self.spawnArguments(), **self.spawnKeywords()
+                )
+            except OSError, error:
+                e = "Failed to spawn process! This most likely because "
+                e += "we could not setuid, original error was: %s" % error
+                self._log(e, level=logging.ERROR)
+                raise
+
             self.pid = self.process.pid
             self._log(
-                'process %s started' % self.pid
+                'process %s started' % self.pid,
+                level=logging.INFO
             )
         else:
             self._log(
@@ -152,4 +220,5 @@ class ProcessFrame(Process):
     wraps Process and provides input based on a database
     entry
     '''
+
 # end ProcessRow
