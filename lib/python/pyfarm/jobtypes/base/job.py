@@ -19,55 +19,47 @@
 from __future__ import with_statement
 
 import os
-import time
 import string
 import ctypes
 import logging
 import itertools
 from sqlalchemy import orm
 
-from pyfarm import logger, errors
+from pyfarm import logger, errors, process
 from pyfarm.datatypes.system import USER, OS, OperatingSystem
 from pyfarm.preferences import prefs
 from pyfarm.db import session, contexts
 from pyfarm.db.tables import jobs, frames
 
-class Command(logger.LoggingBaseClass):
+class BaseJob(logger.LoggingBaseClass):
     '''
     Base jobtype inherited by all other jobtypes
 
-    :param string command:
-        The full path or name of the command to run.  If a full path is not
-        proived it will based resolved prior to being set.
-
-    :param string or list args:
-        arguments to provide to the command when being run
-
-    :param integer jobid:
-        the id of the job in the database
-
-    :param string frame:
-        the frame we will expect to be running
-
-    :param string user:
-        If a user is not provided then we assume we will run the job as the
-        current user.  Providing a string will set self.user to the provided
-        value but only if we have permission to run processes as other users.
-
-    :param dict environ:
-        custom environment variables to pass along
+    :param dict substitute_data:
+        data which can be used to into each argument
     '''
-    def __init__(self, command, args, frame, user=None, environ=None):
+    def __init__(self, row_job, row_frame, substitute_data=None):
+        self.__row_job = row_job
+        self.__row_frame = row_frame
+
         # base arguments which are used to set the non-private
         # class attributes
-        self.__jobid = None
-        self.__frameid = None
-        self.__command = command
-        self.__args = args
-        self.__user = user
-        self.__environ = environ
+        self.__jobid = self.__row_job.id
+        self.__frameid = self.__row_frame.id
+        self.__command = self.__row_job.cmd
+        self.__args = self.__row_job.args
+        self.__user = self.__row_job.user
+        self.__environ = self.__row_job.environ
+        self.frame = int(self.__row_frame.frame)
+        self.logfile = None
+        self.process = None
 
-        self.frame = frame
+        self.substitute_data = substitute_data or {
+            'frame' : self.frame,
+            'jobid' : self.__jobid,
+            'frameid' : self.__frameid,
+            'user' : self.__user
+        }
 
         # first setup logging so we can capture output moving
         # forward
@@ -75,10 +67,11 @@ class Command(logger.LoggingBaseClass):
 
         # performs the setup to setup the class attributes
         self.log(
-            "Setting up jobtype: %s" % self.__class__.__name__,
+            "Setting up %s" % self.__class__.__name__,
             level=logging.INFO
         )
 
+        # prep environment and user name
         self.setupEnvironment()
         self.setupUser()
         self.setupCommand()
@@ -138,16 +131,15 @@ class Command(logger.LoggingBaseClass):
 
     def setupLog(self):
         '''Sets up the log file and begins logging the progress of the job'''
-        self.log("...setting up log")
-        root = prefs.get('logging.locations.jobs')
-        template_vars = {
-            "jobid" : self.frame.job.id,
-            "frame" : self.frame.frame
-        }
-        template = string.Template(root)
-        self.logfile = template.substitute(template_vars)
-        self.observer = logger.Observer(self.logfile)
-        self.observer.start()
+        if self.logfile is None:
+            self.log("...setting up log")
+            root = prefs.get('filesystem.locations.jobs')
+            template = string.Template(root)
+            self.logfile = template.substitute(self.substitute_data)
+            self.observer = logger.Observer(self.logfile)
+            self.observer.start()
+        else:
+            self.log("logfile already setup: %s" % self.logfile)
     # end setupLog
 
     def setupEnvironment(self):
@@ -231,14 +223,18 @@ class Command(logger.LoggingBaseClass):
             raise OSError("failed to find the '%s' command" % self.__command)
 
         self.log("...command set to %s" % self.command)
-    # end setupCommand
+    # end setupCommanda
 
     def setupArguments(self):
         '''Sets of arguments to use for the command'''
-        if isinstance(self.__args, (str, unicode)):
-            self.args = self.__args.split()
-        else:
-            self.args = self.__args[:]
+        args = []
+
+        for arg in self.__args:
+            template = string.Template(arg)
+            value = template.safe_substitute(self.substitute_data)
+            args.append(value)
+
+        self.args = args
 
         if not self.args:
             self.log("...no arguments constructed", level=logging.WARNING)
@@ -328,20 +324,20 @@ class Command(logger.LoggingBaseClass):
 
     def run(self):
         '''runs the job itself'''
-        pass
+        cmd = "%s %s" % (self.command, " ".join(self.args))
+        self.process = None
     # end run
-# end Command
+# end BaseJob
 
 
-class Frame(Command):
+class Frame(BaseJob):
     def __init__(self, id):
         self.row_frame = None
         self.row_job = None
         self.id = id
-
         self.retrieveRows()
-        command, args = self.parseCommand()
-        super(Frame, self).__init__(command, args, self.row_frame.frame)
+
+        super(Frame, self).__init__(self.row_job, self.row_frame)
     # end __init__
 
     def retrieveRows(self):
@@ -373,27 +369,8 @@ class Frame(Command):
             if self.row_job is None:
                 raise errors.JobNotFound(id=self.__jobid)
     # end retrieveRows
-
-    @property
-    def command_template_data(self):
-        '''
-        returns the data which will be used by string template
-        when creating the command
-        '''
-        return {"frame" : int(self.row_frame.frame)}
-    # end templateData
-
-    def parseCommand(self):
-        '''
-        parses the command and returns the command to call and its arguments
-        '''
-        template = string.Template(self.row_job.command)
-        result = template.safe_substitute(**self.command_template_data).split()
-        return result[0], [ str(entry) for entry in result[1:]]
-    # end parseCommand
 # end Frame
 
 if __name__ == '__main__':
     frame = Frame(5)
-    print frame.row_frame
-    print frame.row_job
+    frame.run()
