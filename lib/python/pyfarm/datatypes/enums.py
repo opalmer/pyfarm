@@ -112,7 +112,7 @@ SQL_TYPES = {
     sqltypes.String : (str, unicode),
     sqltypes.Text : (str, unicode),
     sqltypes.Float : (float, int),
-    sqltypes.PickleType : (int, float, str, unicode, list, tuple, set),
+    sqltypes.PickleType : (int, float, str, unicode, list, tuple, set, dict),
     sqltypes.Boolean : (bool, ),
     sqltypes.DateTime : (datetime.datetime, )
 }
