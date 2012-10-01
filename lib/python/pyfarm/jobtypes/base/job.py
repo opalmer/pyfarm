@@ -25,7 +25,7 @@ import logging
 import itertools
 from sqlalchemy import orm
 
-from pyfarm import logger, errors, process
+from pyfarm import logger, errors
 from pyfarm.datatypes.system import USER, OS, OperatingSystem
 from pyfarm.preferences import prefs
 from pyfarm.db import session, contexts
@@ -370,7 +370,3 @@ class Frame(BaseJob):
                 raise errors.JobNotFound(id=self.__jobid)
     # end retrieveRows
 # end Frame
-
-if __name__ == '__main__':
-    frame = Frame(5)
-    frame.run()
