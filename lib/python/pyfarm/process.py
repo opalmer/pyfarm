@@ -27,6 +27,7 @@ except ImportError:
     pwd = None
 
 from pyfarm import logger
+from pyfarm.jobtypes.base import job
 from pyfarm.datatypes.system import OS, OperatingSystem, USER
 
 from twisted.internet import protocol, reactor, error
@@ -95,8 +96,16 @@ class Process(object):
         self.process = None
         self.environ = {}
         self.command = "%s %s" % (command, " ".join(args))
-        self.observer = logger.Observer(log)
-        self.observer.start()
+
+        # setup the logging instance if one was
+        # not provided
+        if isinstance(log, (str, unicode)):
+            self.observer = logger.Observer(log)
+            self.observer.start()
+
+        elif isinstance(log, logger.Observer):
+            self.observer = log
+
         self.protocol = ProcessProtocol(self, self._args, self.observer)
 
         # populate the initial environment from the
@@ -211,5 +220,17 @@ class ProcessFrame(Process):
     wraps Process and provides input based on a database
     entry
     '''
+    def __init__(self, frame):
+        self.frame = frame
 
+        if not isinstance(self.frame, job.BaseJob):
+            args = (self.frame, job.BaseJob)
+            raise TypeError("expected %s to be an instance of %s" % args)
+
+        super(ProcessFrame, self).__init__(
+            self.frame.command, self.frame.args,
+            self.frame.environ, self.frame.observer,
+            user=self.frame.user
+        )
+    # end __init__
 # end ProcessRow
