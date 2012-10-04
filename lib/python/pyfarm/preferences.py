@@ -328,6 +328,9 @@ class Preferences(object):
         elif key == 'database.setup.config' and os.environ.get('PYFARM_DB_CONFIG'):
             return os.environ.get('PYFARM_DB_CONFIG')
 
+        elif key == 'filesystem.root':
+            return self.get('filesystem.roots.%s' % OSNAME)
+
         # traverse the values and retrieve the data
         try:
             value = name
