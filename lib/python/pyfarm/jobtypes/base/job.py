@@ -59,7 +59,8 @@ class BaseJob(logger.LoggingBaseClass):
             'jobid' : self.__jobid,
             'frameid' : self.__frameid,
             'user' : self.__user,
-            'cpus' : self.__row_job.cpus
+            'cpus' : self.__row_job.cpus,
+            'root' : prefs.get('filesystem.root')
         }
 
         # first setup logging so we can capture output moving
