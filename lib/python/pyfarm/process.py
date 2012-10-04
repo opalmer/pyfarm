@@ -82,13 +82,17 @@ class ProcessProtocol(protocol.ProcessProtocol):
                 parent=True
             )
 
+        self.process.postexit(self)
         self.observer.stop()
     # end processExited
 # end ProcessProtocol
 
 
 class Process(object):
-    '''wraps the process protocol'''
+    '''
+    wraps the process protocol
+
+    '''
     def __init__(self, command, args, environ, log, user=None):
         self._command = command
         self._args = args
@@ -159,8 +163,34 @@ class Process(object):
         log.msg(msg, **kwargs)
     # end _log
 
+    def prestart(self):
+        '''
+        Called before the command has started and can be overridden
+        by subclasses looking to define a behavior after starting.
+        '''
+        pass
+    # end prestart
+
+    def poststart(self):
+        '''
+        Called after the command has started and can be overridden
+        by subclasses looking to define a behavior after starting.
+        '''
+        pass
+    # end poststart
+
+    def postexit(self, protocol):
+        '''
+        Called after the process has exited and should be overridden
+        by subclasses looking to define a behavior after the process exits
+        '''
+        pass
+    # end postexit
+
     def start(self):
         if self.process is None:
+            self.log("calling prerun")
+            self.prestart()
             self.log('running: %s' % self.command)
 
             # try to spawn the process though it's
@@ -180,6 +210,8 @@ class Process(object):
                 'process %s started' % self.pid,
                 level=logging.INFO
             )
+            self.log("calling poststart")
+            self.poststart()
         else:
             self._log(
                 'process already started (pid %s)' % self.pid,
@@ -217,8 +249,10 @@ class Process(object):
 
 class ProcessFrame(Process):
     '''
-    wraps Process and provides input based on a database
-    entry
+    Wraps Process when provided input based on the frame id.  This class
+    should be inherited by any job class looking to setup and
+    run a command.  See the methods on the Process class to determine
+    prerun, postrun, and exit behaviors.
     '''
     def __init__(self, frame):
         self.frame = frame
