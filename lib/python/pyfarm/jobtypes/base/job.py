@@ -58,7 +58,8 @@ class BaseJob(logger.LoggingBaseClass):
             'frame' : self.frame,
             'jobid' : self.__jobid,
             'frameid' : self.__frameid,
-            'user' : self.__user
+            'user' : self.__user,
+            'cpus' : self.__row_job.cpus
         }
 
         # first setup logging so we can capture output moving
@@ -174,7 +175,7 @@ class BaseJob(logger.LoggingBaseClass):
 
         # not much to do if the path we were provided already exists
         if os.path.isfile(self.__command):
-            self.command = os.path.abspath(self.__command)
+            self.command = str(os.path.realpath(self.__command))
             self.log("...command set to %s" % self.command)
             return
 
@@ -210,20 +211,20 @@ class BaseJob(logger.LoggingBaseClass):
             for path, command in itertools.product(paths, commands):
                 path = os.path.join(path, command)
                 if os.path.isfile(path):
-                    self.command = path
+                    self.command = str(os.path.realpath(path))
 
         else:
             for path, command in itertools.product(paths, command_names):
                 path = os.path.join(path, command)
                 if os.path.isfile(path):
-                    self.command = path
+                    self.command = str(os.path.realpath(path))
 
         # ensure the command was setup properly created
         if self.command is None or not os.path.isfile(self.command):
             raise OSError("failed to find the '%s' command" % self.__command)
 
         self.log("...command set to %s" % self.command)
-    # end setupCommanda
+    # end setupCommand
 
     def setupArguments(self):
         '''Sets of arguments to use for the command'''
@@ -233,6 +234,10 @@ class BaseJob(logger.LoggingBaseClass):
             template = string.Template(arg)
             value = template.safe_substitute(self.substitute_data)
             args.append(value)
+
+        if self.command != args[0]:
+            self.log("...inserting command as first argument")
+            args.insert(0, str(self.command))
 
         self.args = args
 
