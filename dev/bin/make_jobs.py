@@ -30,6 +30,7 @@ from twisted.python import log as _log
 from pyfarm.preferences import prefs
 from pyfarm import logger, jobtypes
 from pyfarm.db import submit
+from pyfarm.datatypes.enums import State
 
 JOB_COUNT = 100
 
@@ -42,22 +43,44 @@ typenames = jobtypes.jobtypes()
 log("jobtypes: %s" % typenames)
 
 submit_jobs = submit.Job()
-test_hosts = ('localhost', 'foobar')
 
-for i in xrange(JOB_COUNT+1):
-    job_data = {
-        'state' : random.choice(submit_jobs.VALID_STATES),
-        'start_frame' : random.randint(1, 10),
-        'end_frame' : random.randint(11, 20),
-        'by_frame' : random.randint(1, 3),
-        'jobtype' : random.choice(typenames),
-        'ram' : random.randint(512, 4096),
-        'cpus' : random.randint(1, 16),
-        'cmd' : 'ping',
-        'args' : ['-c', '${frame}', random.choice(test_hosts)],
-        'environ' : dict(os.environ)
-    }
-    submit_jobs.add(**job_data)
+# create four jobs with more realistic test
+# data
+base_data = {
+    'state' : State.QUEUED,
+    'by_frame' : 1,
+    'jobtype' : 'mayatomr',
+    'ram' : 512,
+    'cpus' : 4,
+    'cmd' : 'Render',
+    'args' : [
+        '-r', 'mr', '-v', '5',
+        '-s', '$frame', '-e', '$frame', '-rt', '$cpus',
+        # TODO: provide path sep conversion on pyfarm's side
+        '$root/projects/pyfarm/mayatomr/scenes/dynamics_v03.ma'
+    ],
+    'environ' : dict(os.environ)
+}
+job_data = base_data.copy()
+job_data['start_frame'] = 1000
+job_data['end_frame'] = 1100
+job_data['priority'] = 500
+submit_jobs.add(**job_data)
+job_data = base_data.copy()
+job_data['start_frame'] = 1101
+job_data['end_frame'] = 1200
+job_data['priority'] = 500
+submit_jobs.add(**job_data)
+job_data = base_data.copy()
+job_data['start_frame'] = 1201
+job_data['end_frame'] = 1300
+job_data['priority'] = 750
+submit_jobs.add(**job_data)
+job_data = base_data.copy()
+job_data['start_frame'] = 1301
+job_data['end_frame'] = 1400
+job_data['priority'] = 100
+submit_jobs.add(**job_data)
 
 submit_jobs.commit()
 log('DONE!')
