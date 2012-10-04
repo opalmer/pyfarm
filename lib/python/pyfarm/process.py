@@ -99,7 +99,7 @@ class Process(object):
         self.user = user or USER
         self.process = None
         self.environ = {}
-        self.command = "%s %s" % (command, " ".join(args))
+        self.command = " ".join(args)
 
         # setup the logging instance if one was
         # not provided
