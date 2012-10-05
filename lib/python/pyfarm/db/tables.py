@@ -75,6 +75,7 @@ jobs = sql.Table('pyfarm_jobs', metadata,
     sql.Column('start_frame', sql.Float),
     sql.Column('end_frame', sql.Float),
     sql.Column('by_frame', sql.Float),
+    sql.Column('batch_frame', sql.Integer, default=1),
 
     # frame statistics
     sql.Column('count_success', sql.Integer, default=0),
