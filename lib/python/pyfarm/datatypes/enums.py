@@ -40,9 +40,6 @@ class Enum(object):
         string arguments which will create instance
         attributes
 
-    :param integer start:
-        keyword argument which controls the start of the sequence
-
     :param string name:
         the name to provide when str(<enum instance>) is called
 
@@ -54,44 +51,27 @@ class Enum(object):
         a string provided as an argument to __init__ or an integer
         which was mapped to an argument
     '''
-    def __init__(self, *args, **kwargs):
-        self._start = kwargs.get('start', 0)
-        self._end = self._start+len(args)
+    def __init__(self, *args):
         self.__mappings = OrderedDict()
-        self.__range = xrange(self._start, self._end, 1)
+        self.__args = list(args)
+        self.__repr = "%s(%s)" % (self.__class__.__name__, ", ".join(self.__args))
 
-        index = 0
-        for arg in args:
-            if not isinstance(arg, str):
+        for index, arg in enumerate(self.__args):
+            if not isinstance(arg, (str, unicode)):
                 raise TypeError("%s is not a string" % str(arg))
-
-            index_value = self.__range[index]
 
             # provide both a string mapping and an integer
             # mapping for use with __getitem__ and get()
-            self.__mappings[index_value] = arg
-            self.__mappings[arg] = index_value
+            self.__mappings[index] = arg
+            self.__mappings[arg] = index
 
             # set the attribute on the class
-            setattr(self, arg, index_value)
-            index += 1
+            setattr(self, arg, index)
+    # end __init__
 
-    def __repr__(self):
-        values = []
-        for key, value in self.__mappings.iteritems():
-            if isinstance(key, (str, unicode)):
-                values.append("%s=%s" % (key, value))
-
-        return "%s(%s)" % (self.__class__.__name__, ", ".join(values))
-    # end __repr__
-
-    def __getitem__(self, item):
-        return self.__mappings[item]
-    # end __getitem__
-
-    def get(self, item):
-        return self.__getitem__(item)
-    # end __getitem__
+    def get(self, item): return self.__getitem__(item)
+    def __repr__(self): return self.__repr
+    def __getitem__(self, item): return self.__mappings[item]
 # end Enum
 
 Software = Enum("MAYA", "HOUDINI", "VRAY", "NUKE", "BLENDER")
