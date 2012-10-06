@@ -141,44 +141,64 @@ class Preferences(object):
 
     def __dburl(self):
         '''returns the url use for connecting to the database'''
-        db = os.environ.get('PYFARM_DB_CONFIG') or self.get('database.setup.config')
-        config = self.get('database.%s' % db)
+        urls = []
+        for db in self.get('database.setup.config'):
+            config = self.get('database.%s' % db)
 
-        # retrieve the settings from the config
-        driver = config.get('driver')
-        engine = config.get('engine')
-        dbname = config.get('name')
-        dbuser = config.get('user')
-        dbpass = config.get('pass')
-        dbhost = config.get('host')
-        dbport = config.get('dbport')
-        url = engine
+            # retrieve the settings from the config
+            driver = config.get('driver')
+            engine = config.get('engine')
+            dbname = config.get('name')
+            dbuser = config.get('user')
+            dbpass = config.get('pass')
+            dbhost = config.get('host')
+            dbport = config.get('dbport')
+            url = engine
 
-        # adds the driver if it was found in the preferences
-        if driver:
-            # One last check before we do anything else.  If we happen to be
-            # using the ctypes version of the psycopg2 driver then we need
-            # it in sys.modules (this is here mainly for some pypy support)
-            if driver == "psycopg2ct":
-                log.msg("registering psycopg2ct")
-                from psycopg2ct import compat
-                compat.register()
-                driver = "psycopg2"
+            # adds the driver if it was found in the preferences
+            if driver:
+                # One last check before we do anything else.  If we happen to be
+                # using the ctypes version of the psycopg2 driver then we need
+                # it in sys.modules (this is here mainly for some pypy support)
+                if driver == "psycopg2ct":
+                    try:
+                        from psycopg2ct import compat
+                        compat.register()
+                        log.msg("registered psycopg2ct")
 
-            url += "+%s" % driver
+                    except ImportError:
+                        log.msg(
+                            "failed to import psycopg2ct, skipping",
+                            level=logging.WARNING
+                        )
+                        continue
 
-        url += "://"
-        if engine == "sqlite":
-            raise errors.InvalidDatabase("sqlite is unsupported")
+                    driver = "psycopg2"
 
-        # setup the username, password, host, and port
-        url += "%s:%s@%s" % (dbuser, dbpass, dbhost)
-        if isinstance(dbport, int):
-            url += ":%i" % dbport
+                url += "+%s" % driver
 
-        url += "/%s" % dbname
+            url += "://"
+            if engine == "sqlite":
+                log.msg(
+                    "sqlite is unsupported, skipping",
+                    level=logging.ERROR
+                )
+                continue
 
-        return url
+            # setup the username, password, host, and port
+            url += "%s:%s@%s" % (dbuser, dbpass, dbhost)
+            if isinstance(dbport, int):
+                url += ":%i" % dbport
+
+            url += "/%s" % dbname
+            urls.append(url)
+
+        if not urls:
+            raise errors.ConfigurationError(
+                msg="failed to retrieve any database urls based on the current config"
+            )
+
+        return urls
     # end __dburl
 
     def __calculateMaxJobs(self, data, kwargs):
@@ -321,18 +341,14 @@ class Preferences(object):
 
         # keys that will never resolve on their own but are provided for
         # convenience
-        if key == 'database.url':
+        if key == 'database.urls':
             return self.__dburl()
-
-        elif key == 'database.engine':
-            config_name = self.get('database.setup.config')
-            return self.get('database.%s.engine' % config_name)
 
         elif key == 'jobtypes.extensions':
             return self.__extensions(kwargs)
 
         elif key == 'database.setup.config' and os.environ.get('PYFARM_DB_CONFIG'):
-            return os.environ.get('PYFARM_DB_CONFIG')
+            return [ i.split() for i in os.environ.get('PYFARM_DB_CONFIG').split(',') ]
 
         elif key == 'filesystem.root':
             return self.get('filesystem.roots.%s' % OSNAME)
@@ -359,6 +375,9 @@ class Preferences(object):
 
         elif key == 'host.max-jobs':
             data = self.__calculateMaxJobs(data, kwargs)
+
+        elif key == 'database.setup.config' and isinstance(data, (str, unicode)):
+            data = [data]
 
         Preferences.PREFERENCES[key] = data
         return data

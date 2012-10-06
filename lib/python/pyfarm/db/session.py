@@ -21,18 +21,42 @@ Retains the global instance of the session maker object and returns new
 sessions for use in transactions and other procedures
 '''
 
+import logging
+from itertools import izip
+
 import sqlalchemy
 from sqlalchemy import orm
 
 from twisted.python import log
 
 from pyfarm.preferences import prefs
+from pyfarm import errors
 
-config = prefs.get('database.setup.config')
-ENGINE = sqlalchemy.create_engine(
-    prefs.get('database.url'),
-    echo=prefs.get('logging.sqlalchemy.echo'),
-    echo_pool=prefs.get('logging.sqlalchemy.pool')
-)
-Session = orm.sessionmaker(bind=ENGINE)
-log.msg("setup engine: %s, config: %s" % (ENGINE.name, config))
+configs = prefs.get('database.setup.config')
+urls = prefs.get('database.urls')
+
+for config, url in izip(configs, urls):
+    try:
+        ENGINE = sqlalchemy.create_engine(
+            url,
+            echo=prefs.get('logging.sqlalchemy.echo'),
+            echo_pool=prefs.get('logging.sqlalchemy.pool')
+        )
+        Session = orm.sessionmaker(bind=ENGINE)
+        log.msg("setup engine: %s, config: %s" % (ENGINE.name, config))
+
+        # if the session was setup properly then
+        # we don't need to move onto the next possible
+        # configuration
+        break
+
+    except Exception, error:
+        log.msg(
+            'failed using %s for config: %s' % (config, error),
+            level=logging.WARNING
+        )
+
+else:
+    raise errors.DatabaseError(
+        "failed to find a valid configuration in %s" % configs
+    )

@@ -29,7 +29,9 @@ class Error(Exception):
 
 class DatabaseError(Error):
     '''general database matching error which is meant to be subclassed'''
-    pass
+    def __str__(self):
+        return self.msg
+    # end __str__
 # end DatabaseError
 
 
@@ -118,7 +120,9 @@ class InsertionFailure(DatabaseError):
 
 class ConfigurationError(Error):
     '''basic error having to do with configuration problems'''
-    pass
+    def __str__(self):
+        return self.msg
+    # end __str__
 # end ConfigurationError
 
 
