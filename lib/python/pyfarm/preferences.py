@@ -152,8 +152,6 @@ class Preferences(object):
         dbpass = config.get('pass')
         dbhost = config.get('host')
         dbport = config.get('dbport')
-
-        # configure the url
         url = engine
 
         # adds the driver if it was found in the preferences
