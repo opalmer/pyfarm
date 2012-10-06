@@ -55,7 +55,7 @@ PROCESS_LOCK = lock.ProcessLock(
 # determine the location we should log to
 if not options.log:
     root = prefs.get('filesystem.locations.general')
-    SERVICE_LOG = os.path.join(root, 'host-%s.log' % FQDN)
+    SERVICE_LOG = os.path.join(root, 'master-%s.log' % FQDN)
 else:
     SERVICE_LOG = os.path.abspath(options.log)
 
