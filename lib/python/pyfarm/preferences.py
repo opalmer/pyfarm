@@ -159,7 +159,8 @@ class Preferences(object):
         # adds the driver if it was found in the preferences
         if driver:
             # One last check before we do anything else.  If we happen to be
-            # using the ctypes version of the psycopg2 driver
+            # using the ctypes version of the psycopg2 driver then we need
+            # it in sys.modules (this is here mainly for some pypy support)
             if driver == "psycopg2ct":
                 log.msg("registering psycopg2ct")
                 from psycopg2ct import compat
