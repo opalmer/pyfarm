@@ -167,7 +167,6 @@ class Preferences(object):
 
             url += "+%s" % driver
 
-        # the start of the url changes slightly for sqlite connections
         url += "://"
         if engine == "sqlite":
             raise errors.InvalidDatabase("sqlite is unsupported")
