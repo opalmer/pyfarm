@@ -158,6 +158,14 @@ class Preferences(object):
 
         # adds the driver if it was found in the preferences
         if driver:
+            # One last check before we do anything else.  If we happen to be
+            # using the ctypes version of the psycopg2 driver
+            if driver == "psycopg2ct":
+                log.msg("registering psycopg2ct")
+                from psycopg2ct import compat
+                compat.register()
+                driver = "psycopg2"
+
             url += "+%s" % driver
 
         # the start of the url changes slightly for sqlite connections
@@ -171,6 +179,7 @@ class Preferences(object):
             url += ":%i" % dbport
 
         url += "/%s" % dbname
+
         return url
     # end __dburl
 
@@ -184,7 +193,6 @@ class Preferences(object):
 
         elif data == "relative" or not data:
             return psutil.NUM_CPUS / self.get('host.relative-value', **kwargs)
-
     # end  __calculateMaxJobs
 
     def __extensions(self, kwargs):
