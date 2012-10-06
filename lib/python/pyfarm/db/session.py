@@ -58,5 +58,5 @@ for config, url in izip(configs, urls):
 
 else:
     raise errors.DatabaseError(
-        "failed to find a valid configuration in %s" % configs
+        msg="failed to find a valid configuration in %s" % configs
     )

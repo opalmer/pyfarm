@@ -42,6 +42,9 @@ from pyfarm.datatypes.network import FQDN
 # we setup other modules.
 options = cmdargs.parser.parse_args()
 
+if options.db is not None:
+    prefs.set('database.setup.config', options.db)
+
 # setup the process lock before starting the log
 PROCESS_LOCK = lock.ProcessLock(
     'master',

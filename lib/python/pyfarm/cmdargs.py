@@ -86,3 +86,8 @@ parser.add_argument(
     '--port', type=int,
     help='sets the port the service should run on (default: %(default)s)'
 )
+parser.add_argument(
+    '--db', default=None, type=tolist,
+    help='Overrides the base database configuration name(s).  Entries should' +
+         ' either be in csv form or a single entry string.'
+)
