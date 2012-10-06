@@ -65,11 +65,11 @@ def printOptions(options, log):
 # common argument handling setup
 parser = argparse.ArgumentParser()
 parser.add_argument(
-    '--force-kill', default=False, type=tobool,
+    '--force-kill', action='store_true',
     help='kill any currently running process before starting'
 )
 parser.add_argument(
-    '--wait', default=False, type=tobool,
+    '--wait', action='store_true',
     help='waits for running processes to terminate first'
 )
 parser.add_argument(
@@ -77,7 +77,7 @@ parser.add_argument(
     help='location to send the logfile to'
 )
 parser.add_argument(
-    '--remove-lock', action='store_true', default=False,
+    '--remove-lock', action='store_true',
     help='Removes the lock file on disk before starting if one exists.  This' +
          ' is mainly used if you already know the process does not exist and' +
          ' you do not wish to remove the lock file manually.'
