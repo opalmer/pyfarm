@@ -21,18 +21,17 @@ from __future__ import with_statement
 import os
 import string
 import psutil
-import logging
 import tempfile
 
-from twisted.python import log
 from pyfarm import PYFARM_ETC, PYFARM_ROOT, fileio, errors
+from pyfarm.logger import Logger
 
 from pyfarm.datatypes.system import OperatingSystem, OS, OSNAME
 
 if not os.path.isdir(PYFARM_ETC):
     raise OSError("configuration directory does not exist: %s" % PYFARM_ETC)
 
-class Preferences(object):
+class Preferences(Logger):
     '''
     Preferences object which handles loading of configuration
     files and handling of specific special case (such as logging
@@ -43,6 +42,7 @@ class Preferences(object):
     PREFERENCES = {}
 
     def __init__(self):
+        Logger.__init__(self, self)
         self.loaded = []
         self.data = {}
     # end __init__
@@ -128,9 +128,7 @@ class Preferences(object):
             # only add paths which are not already part of results
             path = template.safe_substitute(template_vars)
             if not os.path.isdir(path):
-                self.log(
-                    "skipping %s, not a directory" % path, level=logging.DEBUG
-                )
+                self.debug("skipping %s, not a directory" % path)
                 continue
 
             if path not in results:
@@ -164,13 +162,10 @@ class Preferences(object):
                     try:
                         from psycopg2ct import compat
                         compat.register()
-                        log.msg("registered psycopg2ct")
+                        self.debug("registered psycopg2ct")
 
                     except ImportError:
-                        log.msg(
-                            "failed to import psycopg2ct, skipping",
-                            level=logging.WARNING
-                        )
+                        self.warning("failed to import psycopg2ct, skipping")
                         continue
 
                     driver = "psycopg2"
@@ -179,10 +174,7 @@ class Preferences(object):
 
             url += "://"
             if engine == "sqlite":
-                log.msg(
-                    "sqlite is unsupported, skipping",
-                    level=logging.ERROR
-                )
+                self.error("sqlite is unsupported, skipping")
                 continue
 
             # setup the username, password, host, and port
@@ -226,7 +218,7 @@ class Preferences(object):
             )
 
         except KeyError:
-            self.log('no os entry for %s in extensions' % OSNAME)
+            self.debug('no os entry for %s in extensions' % OSNAME)
 
         for extension in extensions:
             results.add(extension)
@@ -253,10 +245,6 @@ class Preferences(object):
         return paths
     # end __jobtypeSearchPaths
 
-    def log(self, msg, level=logging.INFO):
-        log.msg(msg, system='Preferences', level=level)
-    # end log
-
     def set(self, key, value, overwrite=True):
         '''
         Sets a preference to the provided value that will override the
@@ -276,7 +264,7 @@ class Preferences(object):
         '''
         if value is None and key in Preferences.PREFERENCES:
             del Preferences.PREFERENCES[key]
-            self.log("deleted frozen preference %s" % key)
+            self.debug("deleted frozen preference %s" % key)
 
         else:
             # skip if the key already exists and overwrite is
@@ -285,10 +273,7 @@ class Preferences(object):
                 return
 
             Preferences.PREFERENCES[key] = value
-            self.log(
-                "freezing preference %s to %s" % (key, value),
-                level=logging.WARNING
-            )
+            self.warning("freezing preference %s to %s" % (key, value))
     # end set
 
     def get(self, key, **kwargs):
