@@ -25,7 +25,7 @@ import itertools
 from sqlalchemy import orm
 
 from pyfarm import errors
-from pyfarm.logger import Logger
+from pyfarm.logger import Logger, Observer
 from pyfarm.datatypes.system import USER, OS, OperatingSystem
 from pyfarm.preferences import prefs
 from pyfarm.db import session, contexts
@@ -136,7 +136,7 @@ class BaseJob(Logger):
             root = prefs.get('filesystem.locations.jobs')
             template = string.Template(root)
             self.logfile = template.substitute(self.substitute_data)
-            self.observer = logger.Observer(self.logfile)
+            self.observer = Observer(self.logfile)
             self.addObserver(self.observer)
         else:
             self.debug("logfile already setup: %s" % self.logfile)
@@ -331,14 +331,15 @@ class BaseJob(Logger):
 # end BaseJob
 
 
-class Frame(BaseJob):
+class Frame(Logger, BaseJob):
     def __init__(self, id):
+        self.id = id
         self.row_frame = None
         self.row_job = None
-        self.id = id
-        self.retrieveRows()
 
-        super(Frame, self).__init__(self.row_job, self.row_frame)
+        Logger.__init__(self, self)
+        self.retrieveRows()
+        BaseJob.__init__(self, self.row_job, self.row_frame)
     # end __init__
 
     def retrieveRows(self):
@@ -364,6 +365,7 @@ class Frame(BaseJob):
             self.debug("...querying jobid id %s" % self.row_frame.jobid)
             jobs_query = scoped_session.query(jobs)
             self.row_job = jobs_query.filter(jobs.c.id == self.row_frame.jobid).first()
+
 
             # raise an exception if we fail to find the job
             # we're looking for

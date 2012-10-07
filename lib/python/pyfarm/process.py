@@ -25,7 +25,6 @@ try:
 except ImportError:
     pwd = None
 
-#from pyfarm import logger
 from pyfarm.logger import Logger, Observer
 from pyfarm.jobtypes.base import job
 from pyfarm.datatypes.system import OS, OperatingSystem, USER
@@ -40,44 +39,49 @@ class ProcessProtocol(protocol.ProcessProtocol, Logger):
         Logger.__init__(self, self)
         self.process = process
         self.arguments = arguments
+
+        # setup the logger
         self.observer = Observer(log)
+        self.process_logger = Logger(stdout_observer=False, inherit_observers=False)
         self.addObserver(self.observer)
+        self.process_logger.addObserver(self.observer)
     # end __init__
 
     def connectionMade(self):
         '''send a log message the the process log file'''
         self.transport.write(" ".join(self.arguments))
         self.transport.closeStdin()
-        self.debug('process started')
     # end connectionMade
 
     def outReceived(self, data):
-        self.debug(data.strip(), level='STDOUT')
+        self.process_logger.msg(data.strip(), level='STDOUT', system=None)
     # end outReceived
 
     def errReceived(self, data):
-        self.debug(data.strip(), level='STDERR')
+        self.process_logger.msg(data.strip(), level='STDERR', system=None)
     # end errReceived
 
     def processExited(self, reason):
         exit_code = reason.value.exitCode
-        args = (self.process.pid, exit_code)
-        self.info("process %s exited with status %s" % args)
+        info = "process %s exited with status %s" % (self.process.pid, exit_code)
+        self.info(info)
 
         if exit_code != 0:
             args = (self.process.command, exit_code, self.process.pid)
-            self.error("'%s' failed (exit %s, pid %s)" % args)
+            error = "'%s' failed (exit %s, pid %s)" % args
+            self.error(error)
 
+        self.debug("calling post exit")
         self.process.postexit(self)
-        self.observer.stop()
+        self.removeObserver(self.observer)
     # end processExited
 # end ProcessProtocol
 
 
 class Process(Logger):
     '''
-    wraps the process protocol
-
+    wraps the process protocol and separates the start, stop, and signaling
+    from the  process protocol itself
     '''
     def __init__(self, command, args, environ, log, user=None):
         Logger.__init__(self, self)
@@ -200,25 +204,20 @@ class Process(Logger):
 # end Process
 
 
-class ProcessFrame(Process):
+class ProcessFrame(job.Frame, Process):
     '''
     Wraps Process when provided input based on the frame id.  This class
     should be inherited by any job class looking to setup and
     run a command.  See the methods on the Process class to determine
     prerun, postrun, and exit behaviors.
     '''
-    def __init__(self, frame):
-        self.frame = frame
-
-        if not isinstance(self.frame, job.BaseJob):
-            args = (self.frame, job.BaseJob)
-            raise TypeError("expected %s to be an instance of %s" % args)
+    def __init__(self, id):
+        job.Frame.__init__(self, id)
 
         Process.__init__(self,
-            self.frame.command, self.frame.args,
-            self.frame.environ, self.frame.observer,
-            user=self.frame.user
+            self.command, self.args,
+            self.environ, self.logfile,
+            user=self.user
         )
-
     # end __init__
 # end ProcessRow
