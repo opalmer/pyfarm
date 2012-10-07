@@ -20,6 +20,8 @@
 General utility functions that are not specific to individual components
 of PyFarm.
 '''
+
+import datetime
 import sqlalchemy.util
 
 class NamedTupleRow(sqlalchemy.util.NamedTuple):
@@ -34,7 +36,28 @@ class NamedTupleRow(sqlalchemy.util.NamedTuple):
 # end NamedTupleRow
 
 
-def framerange(start, end, by=1):
-    '''wrapper around xrange() which automatically adds 1 to the end frame'''
-    return xrange(start, end+1, by)
-# end framerange
+# old style class since twisted classes are also old style
+class ScheduledRun:
+    '''
+    Basic class which informs child classes if they should
+    perform their indicated function
+    '''
+    def __init__(self, timeout):
+        self.timeout = timeout
+        self.lastrun = None
+    # end __init__
+
+    @property
+    def lastupdate(self):
+        if self.lastrun is None:
+            return self.timeout
+
+        else:
+            delta = datetime.datetime.now() - self.lastrun
+            return delta.seconds
+    # end lastupdate
+
+    def shouldRun(self, force=False):
+        return force or self.lastupdate >= self.timeout
+    # end shouldRun
+# end ScheduledRun

@@ -28,6 +28,7 @@ from pyfarm.db.modify import base
 from pyfarm.datatypes.network import HOSTNAME
 from pyfarm.datatypes import system
 from pyfarm.preferences import prefs
+from pyfarm.utility import ScheduledRun
 
 __all__ = ['host']
 
@@ -55,33 +56,16 @@ def host(hostname, **columns):
 # end host
 
 
-class UpdateMemory(Logger):
+class UpdateMemory(ScheduledRun, Logger):
     '''
     Ensures that we do not attempt to update the ram
     entry for the current host more often than needed.
     '''
     def __init__(self):
+        ScheduledRun.__init__(self, prefs.get('host.ram-update-interval'))
         Logger.__init__(self, self)
-        self.__lastupdate = None
         self.hostname = HOSTNAME
-        self.timeout = prefs.get('host.ram-update-interval')
     # end __init__
-
-    @property
-    def lastupdate(self):
-        '''property which returns the time since last update in seconds'''
-        if self.__lastupdate is None:
-            return self.timeout
-
-        else:
-            delta = datetime.datetime.now() - self.__lastupdate
-            return delta.seconds
-    # end lastupdate
-
-    def shouldUpdate(self, force=False):
-        '''returns True if we should update the database entry'''
-        return force or self.lastupdate >= self.timeout
-    # end shouldUpdate
 
     def update(self, force=False, reset=True):
         '''
@@ -96,12 +80,12 @@ class UpdateMemory(Logger):
             if True then reset the time since last update back to
             zero
         '''
-        if self.shouldUpdate(force):
+        if self.shouldRun(force):
             if reset:
                 # update the time that we made the last update
                 # first just in case we encounter some excessive
                 # slowness in the db update
-                self.__lastupdate = datetime.datetime.now()
+                self.lastrun = datetime.datetime.now()
 
             # calculate the current resource usage
             ramuse = system.TOTAL_RAM - system.ram()
