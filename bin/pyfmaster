@@ -65,6 +65,7 @@ else:
 
 _logger.logger.addObserver(_logger.Observer(SERVICE_LOG))
 logger = _logger.logger
+assignment_loop = None
 
 from pyfarm.db import tables, query, modify, insert
 from pyfarm.net import rpc as _rpc
@@ -101,6 +102,32 @@ class Master(_rpc.Service, _logger.Logger):
         if self.assign.shouldRun():
             reactor.callInThread(self.assign.run)
     # end xmlrpc_assign
+
+    def xmlrpc_assignment(self, enabled):
+        '''enables or disables the assignment loop'''
+        global assignment_loop
+
+        if enabled and assignment_loop is None:
+            assignment_loop = task.LoopingCall(SERVICE.xmlrpc_assign)
+            assignment_loop.start(prefs.get('master.assignment-interval'))
+
+        elif enabled and isinstance(assignment_loop, task.LoopingCall):
+            if assignment_loop.running:
+                self.debug("assignment loop is already running, nothing to do")
+            else:
+                self.info("restarting assignment loop")
+                assignment_loop.start(assignment_loop.interval)
+
+        elif not enabled and isinstance(assignment_loop, task.LoopingCall):
+            if assignment_loop.running:
+                assignment_loop.stop()
+                self.info("assignment loop as been stopped")
+            else:
+                self.debug("nothing not stop, assignment loop not running")
+
+        elif assignment_loop is None:
+            self.info("nothing to do, assignment loop is None")
+    # end xmlrpc_assignment
 # end Server
 
 # create a lock for the process so we can't run two servers
@@ -115,8 +142,9 @@ with PROCESS_LOCK:
 
     SERVICE = Master()
 
-    t = task.LoopingCall(SERVICE.xmlrpc_assign)
-    t.start(prefs.get('master.assignment-interval'))
+    if options.assignment:
+        assignment_loop = task.LoopingCall(SERVICE.xmlrpc_assign)
+        assignment_loop.start(prefs.get('master.assignment-interval'))
 
     # setup the required tables
     tables.init()
