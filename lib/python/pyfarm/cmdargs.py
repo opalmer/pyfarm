@@ -54,12 +54,8 @@ def evalnone(value):
 
 def printOptions(options, log):
     '''prints out the keys and values being applied to the options'''
-    def _log(msg):
-        log.msg(msg, system="argparse")
-
     for key, value in vars(options).iteritems():
-        _log("%s: %s" % (key, value))
-#        _log(msg)
+        log("%s: %s" % (key, value))
 # end printOptions
 
 # common argument handling setup
