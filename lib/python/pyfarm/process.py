@@ -28,6 +28,7 @@ except ImportError:
 from pyfarm.logger import Logger, Observer
 from pyfarm.jobtypes.base import job
 from pyfarm.datatypes.system import OS, OperatingSystem, USER
+from pyfarm.db.modify.host import update_memory
 
 from twisted.internet import protocol, reactor, error
 
@@ -51,6 +52,7 @@ class ProcessProtocol(protocol.ProcessProtocol, Logger):
         '''send a log message the the process log file'''
         self.transport.write(" ".join(self.arguments))
         self.transport.closeStdin()
+        update_memory.update(force=True)
     # end connectionMade
 
     def outReceived(self, data):
@@ -74,6 +76,7 @@ class ProcessProtocol(protocol.ProcessProtocol, Logger):
         self.debug("calling post exit")
         self.process.postexit(self)
         self.removeObserver(self.observer)
+        update_memory.update(force=True)
     # end processExited
 # end ProcessProtocol
 
