@@ -24,6 +24,10 @@ import os
 import sys
 import time
 import site
+import threading
+
+from twisted.internet import reactor, task
+from twisted.web import server as _server
 
 CWD = os.path.realpath(os.path.dirname(__file__))
 ROOT = os.path.realpath(os.path.join(CWD, '..'))
@@ -66,10 +70,7 @@ from pyfarm.db import tables, query, modify, insert
 from pyfarm.net import rpc as _rpc
 from pyfarm.datatypes.network import IP, SUBNET
 from pyfarm.datatypes.system import OS, OperatingSystem
-from pyfarm.master import callbacks
-
-from twisted.internet import reactor, threads
-from twisted.web import server as _server
+from pyfarm.master import assign
 
 SERVICE = None
 
@@ -85,12 +86,21 @@ class Master(_rpc.Service, _logger.Logger):
     Main master class to act as an external interface to the
     data base and job master.
     '''
+    THREAD_LOCK = threading.Lock()
     def __init__(self):
         _logger.Logger.__init__(self, self)
         _rpc.Service.__init__(self, SERVICE_LOG)
 
         cmdargs.printOptions(options, self.debug)
+        self.count = 0
+        self.assign = assign.Assignment()
     # end __init__
+
+    def xmlrpc_assign(self):
+        '''assigns work to individual hosts'''
+        if self.assign.shouldRun():
+            reactor.callInThread(self.assign.run)
+    # end xmlrpc_assign
 # end Server
 
 # create a lock for the process so we can't run two servers
@@ -104,6 +114,9 @@ with PROCESS_LOCK:
         SERVICE_LOG = os.path.abspath(options.log)
 
     SERVICE = Master()
+
+    t = task.LoopingCall(SERVICE.xmlrpc_assign)
+    t.start(prefs.get('master.assignment-interval'))
 
     # setup the required tables
     tables.init()
