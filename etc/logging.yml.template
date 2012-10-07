@@ -30,3 +30,6 @@ level: 8
 sqlalchemy:
   echo: false
   pool: false
+
+locations:
+  jobs: $root/logs/$jobid/$frame.log
