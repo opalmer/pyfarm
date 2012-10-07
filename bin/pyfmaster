@@ -24,7 +24,6 @@ import os
 import sys
 import time
 import site
-import logging
 
 CWD = os.path.realpath(os.path.dirname(__file__))
 ROOT = os.path.realpath(os.path.join(CWD, '..'))
@@ -32,7 +31,8 @@ PYTHONLIB = os.environ.get('PYFARM_PYTHONLIB') or os.path.join(ROOT, 'lib', 'pyt
 site.addsitedir(PYTHONLIB)
 
 from pyfarm.master import cmdargs
-from pyfarm import logger, lock
+from pyfarm import lock
+from pyfarm import logger as _logger
 from pyfarm.preferences import prefs
 from pyfarm.datatypes.network import FQDN
 
@@ -59,9 +59,8 @@ if not options.log:
 else:
     SERVICE_LOG = os.path.abspath(options.log)
 
-# add an observer for the service log
-LOG_OBSERVER = logger.Observer(SERVICE_LOG)
-LOG_OBSERVER.start()
+_logger.logger.addObserver(_logger.Observer(SERVICE_LOG))
+logger = _logger.logger
 
 from pyfarm.db import tables, query, modify, insert
 from pyfarm.master import queue
@@ -72,12 +71,8 @@ from pyfarm.master import callbacks
 
 from twisted.internet import reactor, threads
 from twisted.web import server as _server
-from twisted.python import log
 
 SERVICE = None
-
-# log the options being produced by the option parser
-cmdargs.printOptions(options, log)
 
 # PYFARM_RESTART should not start out in the environment
 if 'PYFARM_RESTART' in os.environ:
@@ -86,13 +81,17 @@ if 'PYFARM_RESTART' in os.environ:
 # setup preferences
 prefs.set('database.setup.close-connections', False)
 
-class Server(_rpc.Service, logger.LoggingBaseClass):
+class Master(_rpc.Service, _logger.Logger):
     '''
     Main master class to act as an external interface to the
     data base and job master.
     '''
-    def __init__(self, log_stream):
-        _rpc.Service.__init__(self, log_stream)
+    def __init__(self):
+        _logger.Logger.__init__(self, self)
+        _rpc.Service.__init__(self, SERVICE_LOG)
+
+        cmdargs.printOptions(options, self.debug)
+
         self.queue = queue.Queue(self)
         self.subHandlers = {
             "queue" : self.queue
@@ -118,7 +117,7 @@ with PROCESS_LOCK:
     else:
         SERVICE_LOG = os.path.abspath(options.log)
 
-    SERVICE = Server(SERVICE_LOG)
+    SERVICE = Master()
 
     # setup the required tables
     tables.init()
@@ -146,15 +145,11 @@ with PROCESS_LOCK:
 
     # start the reactor
     reactor.listenTCP(options.port, _server.Site(SERVICE))
-    args = (FQDN, options.port)
-    log.msg(
-        "running master at http://%s:%i" % args,
-        system="Server", level=logging.INFO
-    )
+    SERVICE.info("running master at http://%s:%i" % (FQDN, options.port))
     reactor.run()
 
     # set this master as offline
-    log.msg("setting master as offline in database")
+    SERVICE.debug("setting master as offline in database")
     modify.master.master(FQDN, online=False)
 
 # If RESTART has been set to True then restart the master
@@ -163,10 +158,7 @@ with PROCESS_LOCK:
 # to release.
 if os.environ.get('PYFARM_RESTART') == "true":
     pause = prefs.get('network.rpc.delay')
-    log.msg(
-        "preparing to restart the master, pausing %i seconds" % pause,
-        system="Server"
-    )
+    SERVICE.info("preparing to restart the master, pausing %i seconds" % pause)
     time.sleep(pause)
     args = sys.argv[:]
 
