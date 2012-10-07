@@ -15,17 +15,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
-termcolor: true
-timestamp: '%m-%d-%Y %H:%M:%S'
-
-# format to use for the level name when it's unknown
-unknown-level: 'Level %i'
-
-# general formats for the loggers
-formats:
-  default: '%(level)s [%(system)s] %(text)s'
-  process: '%(level)s - %(text)s'
-
 # Default level logging level, anything lower than this level
 # will not be displayed.  Level must be an integer however
 # custom level names can be mapped in the custom-levels dictionary.
@@ -37,32 +26,6 @@ formats:
 #   DEBUG:    10
 #   NOTSET:    0
 level: 8
-
-# custom levels associated with names (should be in uppcase)
-custom-levels:
-  DBSQL: 8
-
-# list of system loggers we will silence logs for
-silence-systems:
-  - twisted.web.server.Site
-
-# list of
-exclude-message-filter:
- - '*POST*HTTP*'
- - 'St*ing protocol*'
- - 'St*ing factory*'
-
-# list of systems to filter using the above list
-filter-systems:
-- '*HTTPChannel*'
-- '*QueryProtocol*'
-
-# enables/disables the above filtering
-enable-filtering: false
-
-# Number of backups to keep for every logfile
-# that is created with a duplicate name
-backups: 5
 
 sqlalchemy:
   echo: false

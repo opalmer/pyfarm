@@ -23,10 +23,9 @@ import logging
 from logging.handlers import  RotatingFileHandler
 from twisted.python import log
 from colorama import Fore, Back, Style, init
-from pyfarm.preferences import  prefs
 init()
 
-log.FileLogObserver.timeFormat = prefs.get('logging.timestamp')
+log.FileLogObserver.timeFormat = '%m-%d-%Y %H:%M:%S'
 
 # add a verbose level
 logging.addLevelName(15, 'VERBOSE')
@@ -34,7 +33,8 @@ logging.VERBOSE = 15
 
 logger = None
 
-ENABLE_TERMCOLOR = prefs.get('logging.termcolor')
+BACKUP_COUNT = True
+ENABLE_TERMCOLOR = True
 TERMCOLOR = {
     logging.DEBUG : (Style.DIM, Style.RESET_ALL),
     logging.INFO : (Fore.GREEN, Fore.RESET),
@@ -170,7 +170,7 @@ class Observer(log.FileLogObserver):
             # if the file already exists roll it over first
             else:
                 rotating = RotatingFileHandler(
-                    stream, backupCount=prefs.get('logging.backups')
+                    stream, backupCount=BACKUP_COUNT
                 )
                 rotating.doRollover()
                 logger.debug("rolling over existing log: %s" % stream)
