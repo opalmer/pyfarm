@@ -65,10 +65,11 @@ PROCESS_LOCK = lock.ProcessLock(
 from pyfarm import errors
 from pyfarm.host import master
 from pyfarm.db import insert, modify, query
+from pyfarm.db.modify.host import update_memory
 
 from pyfarm.datatypes.system import OS, OperatingSystem
 from pyfarm.net import rpc as _rpc
-from twisted.internet import reactor
+from twisted.internet import reactor, task
 from twisted.web import xmlrpc
 from twisted.web import server as _server
 
@@ -190,6 +191,10 @@ with PROCESS_LOCK:
         insert.host.host(**host_table_keywords)
 
     SERVICE = Host()
+
+    # schedule memory updates
+    update_memory_task = task.LoopingCall(update_memory.update)
+    update_memory_task.start(prefs.get('host.ram-update-interval'), now=False)
 
     # start listening for connections with the host
     reactor.listenTCP(options.port, _server.Site(SERVICE))
