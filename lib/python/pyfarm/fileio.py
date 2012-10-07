@@ -28,8 +28,6 @@ import imp
 import yaml
 import tempfile
 
-from twisted.python import log
-
 # import the fastest loader/dumper
 try:
     from yaml import CLoader as Loader, CDumper as Dumper
@@ -53,7 +51,6 @@ class yml:
         if force or abspath not in cls.CACHE:
             with open(path, 'r') as stream:
                 cls.CACHE[abspath] = yaml.load(stream, Loader=Loader)
-                log.msg("Loaded: %s" % abspath, system="loader.yml")
 
         return cls.CACHE[abspath]
     # end load
@@ -114,7 +111,6 @@ class module:
         if force or namespace not in cls.CACHE:
             stream, path, description = imp.find_module(name, paths)
             module = imp.load_module(name, stream, path, description)
-            log.msg("loading module %s from %s" % (name, path))
             cls.CACHE[namespace] = module
 
         return cls.CACHE[namespace]
