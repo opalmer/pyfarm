@@ -83,16 +83,25 @@ class UpdateMemory(Logger):
         return force or self.lastupdate >= self.timeout
     # end shouldUpdate
 
-    def update(self, force=False):
+    def update(self, force=False, reset=True):
         '''
         updates the ram used in the database if the last update
         has exceeded or met the timeout criteria
+
+        :param boolean force:
+            for the update to occur regardless of time elapsed
+            since last update
+
+        :param boolean reset:
+            if True then reset the time since last update back to
+            zero
         '''
         if self.shouldUpdate(force):
-            # update the time that we made the last update
-            # first just in case we encounter some excessive
-            # slowness in the db update
-            self.__lastupdate = datetime.datetime.now()
+            if reset:
+                # update the time that we made the last update
+                # first just in case we encounter some excessive
+                # slowness in the db update
+                self.__lastupdate = datetime.datetime.now()
 
             # calculate the current resource usage
             ramuse = system.TOTAL_RAM - system.ram()
