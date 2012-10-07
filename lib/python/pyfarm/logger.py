@@ -65,7 +65,7 @@ class Logger(log.LogPublisher):
             else:
                 system = classname
 
-        self.system = system
+        self.system = system.replace("pyfarm.", "") # don't need the full name  
         self.disabled = 0
         self.level = logging.DEBUG
         self.__observers = []
