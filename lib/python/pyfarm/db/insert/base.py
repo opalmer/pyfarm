@@ -21,18 +21,17 @@
 from __future__ import with_statement
 
 import time
-import logging
 import sqlalchemy
 from sqlalchemy import orm
 
 from pyfarm import errors
 from pyfarm.db import session
 from pyfarm.datatypes.enums import SQL_TYPES
-from pyfarm.logger import LoggingBaseClass
+from pyfarm.logger import Logger
 
-from twisted.python import log
+logger = Logger(__name__)
 
-class Insert(LoggingBaseClass):
+class Insert(Logger):
     '''
     Base insertion class which performs commit on a batch basis while
     performing type and column checking as each entry is added.  See below
@@ -60,6 +59,7 @@ class Insert(LoggingBaseClass):
             raise TypeError(
                 "table argument must be an instance of sqlalchemy.Table"
             )
+        Logger.__init__(self, self)
 
         self.data = []
         self.table = table
@@ -95,10 +95,7 @@ class Insert(LoggingBaseClass):
     def __exit__(self, exc_type, exc_val, exc_tb):
         '''calls self.commit() so long as no exceptions have been raised'''
         if exc_type is not None:
-            log.msg(
-                "exception occurred, cannot commit entries",
-                level=logging.WARNING
-            )
+            self.error("exception occurred cannot commit entries: %s" % exc_val)
 
         else:
             self.commit()
@@ -165,45 +162,45 @@ class Insert(LoggingBaseClass):
     def commit(self):
         '''commits the data to self.table'''
         if not self.data:
-            self.log("no data to commit", level=logging.WARNING)
+            self.warning("no data to commit")
             return
 
         self.connection = session.ENGINE.connect()
-        self.log("preparing to commit %s entries" % self.count)
+        self.debug("preparing to commit %s entries" % self.count)
 
         # if we're expecting to get
         if self.getresults:
             results_start = time.time()
-            log.msg("retrieving all records and storing their primary keys")
+            self.debug("retrieving all records and storing their primary keys")
             scoped_session = orm.scoped_session(session.Session)
             query = scoped_session.query(self.table)
             primary_keys = set([getattr(i, self.primary_key) for i in query])
-            log.msg("...%s" % (time.time()-results_start))
+            self.debug("...%s" % (time.time()-results_start))
 
-        self.log("running preCommit()")
+        self.debug("running preCommit()")
         self.preCommit()
 
         with self.connection.begin() as trans:
-            self.log("inserting %i records into %s" % (self.count, self.table))
+            self.debug("inserting %i records into %s" % (self.count, self.table))
             start = time.time()
             trans.connection.execute(self.table.insert(), self.data)
             trans.commit()
 
         args = (self.count, (time.time()-start), self.table)
         msg = "committed %i entries in %ss to %s" % args
-        self.log(msg, level=logging.INFO)
+        self.info(msg)
 
         if self.getresults:
             results_start = time.time()
-            log.msg("retrieving all records and calculating results")
+            self.debug("retrieving all records and calculating results")
             query = scoped_session.query(self.table)
             new_primary_keys = set([getattr(i, self.primary_key) for i in query])
             primary_column = getattr(self.table.c, self.primary_key)
             in_list = primary_column.in_(list(new_primary_keys-primary_keys))
             self.results = list(query.filter(in_list))
-            log.msg("...%s" % (time.time()-results_start))
+            self.debug("...%s" % (time.time()-results_start))
 
-        self.log("running postCommit()")
+        self.debug("running postCommit()")
         self.postCommit()
 
         # close the connection
@@ -257,18 +254,18 @@ def insert(table, match_name, data, error=True, drop=False):
         elif not error:
             args = (match_entry, table)
             msg = "found existing entries for %s in %s, skipping" % args
-            log.msg(msg, level=logging.WARNING)
+            logger.warning(msg)
             return
 
         else:
             args = (match_name, match_entry, table)
             msg ="dropping entries of %s %s in %s" % args
-            log.msg(msg, level=logging.WARNING)
+            logger.warning(msg)
 
             # delete all entries we found using their id
             for entry in existing_entries:
                 args = (match_name, getattr(entry, match_name), table)
-                log.msg("removing %s %s from %s" % args)
+                logger.debug("removing %s %s from %s" % args)
                 delete = table.delete(table.c.id == entry.id)
                 delete.execute()
     else:

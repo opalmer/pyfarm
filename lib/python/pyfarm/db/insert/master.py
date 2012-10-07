@@ -18,9 +18,6 @@
 
 '''inserts master information into the database'''
 
-import logging
-from twisted.python import log
-
 try:
     from collections import OrderedDict
 
@@ -28,10 +25,13 @@ except ImportError:
     from ordereddict import OrderedDict
 
 from pyfarm import errors
+from pyfarm.logger import Logger
 from pyfarm.db import tables
 from pyfarm.db.insert import base
 from pyfarm.preferences import prefs
 from pyfarm.datatypes import network
+
+logger = Logger(__name__)
 
 __all__ = ['master']
 
@@ -78,8 +78,7 @@ def master(hostname, port=None, ip=None, subnet=None, online=True, queue=True,
     :return:
         returns the inserted id
     '''
-    log.msg("preparing to insert new master")
-
+    logger.debug("preparing to insert new master")
     data = OrderedDict()
 
     data['hostname'] = hostname
@@ -93,7 +92,7 @@ def master(hostname, port=None, ip=None, subnet=None, online=True, queue=True,
     # iterate over all values we just created and
     # log them
     for key, value in data.iteritems():
-        log.msg("...%s: %s" % (key, value))
+        logger.debug("...%s: %s" % (key, value))
 
     # find existing hosts
     select = tables.masters.select(tables.masters.c.hostname == data['hostname'])
@@ -105,16 +104,14 @@ def master(hostname, port=None, ip=None, subnet=None, online=True, queue=True,
             raise errors.DuplicateHost(data['hostname'], tables.masters)
 
         elif not error:
-            log.msg("found existing entries for %s, skipping" % data['hostname'])
+            logger.debug("found existing entries for %s, skipping" % data['hostname'])
             return
 
         elif drop:
-            log.msg(
-                "dropping entries for %s" % data['hostname'],
-                level=logging.WARNING
-            )
+            logger.warning("dropping entries for %s" % data['hostname'])
+
             for host in existing_hosts:
-                log.msg("removing host %s" % host.id)
+                logger.debug("removing host %s" % host.id)
                 delete = tables.masters.delete(tables.masters.c.id == host.id)
                 delete.execute()
     else:

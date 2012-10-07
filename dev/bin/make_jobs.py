@@ -28,19 +28,18 @@ from twisted.python import log as _log
 
 # pyfarm libs
 from pyfarm.preferences import prefs
-from pyfarm import logger, jobtypes
+from pyfarm import jobtypes
+from pyfarm.logger import Logger
 from pyfarm.db import submit
 from pyfarm.datatypes.enums import State
 
 JOB_COUNT = 100
 
+logger = Logger(__name__)
 prefs.set('database.setup.close-connections', False)
 
-def log(msg):
-    _log.msg(msg, system="make-jobs")
-
 typenames = jobtypes.jobtypes()
-log("jobtypes: %s" % typenames)
+logger.debug("jobtypes: %s" % typenames)
 
 submit_jobs = submit.Job()
 
@@ -83,4 +82,4 @@ job_data['priority'] = 100
 submit_jobs.add(**job_data)
 
 submit_jobs.commit()
-log('DONE!')
+logger.debug('DONE!')

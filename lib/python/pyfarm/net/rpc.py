@@ -19,38 +19,29 @@
 from __future__ import with_statement
 
 import os
-import logging
 import socket
 import xmlrpclib
 
-from pyfarm.logger import LoggingBaseClass
+from pyfarm.logger import Logger
 from pyfarm.preferences import prefs
-from pyfarm.db.query import hosts
 
 from twisted.internet import reactor
 from twisted.web import resource, xmlrpc
-from twisted.python import log
 
 TEST_MODE = False
+logger = Logger(__name__)
 
-class Service(xmlrpc.XMLRPC, LoggingBaseClass):
+class Service(xmlrpc.XMLRPC, Logger):
     '''
     Base twisted xmlrpc service, contains the stand methods
     and attributes to be inherited by all xmlrpc instances
     '''
     def __init__(self, log_stream):
         resource.Resource.__init__(self)
+        Logger.__init__(self, self)
         self.allowNone = True
         self.useDateTime = True
         self.log_stream = log_stream
-
-        # do not setup the log stream if what was passed
-        # in was not actually a file stream
-        if not isinstance(log_stream, file):
-            self.log_stream = None
-            msg = "service log stream established, some logging methods "
-            msg += "will not function"
-            self.log(msg, level=logging.WARNING)
     # end __init__
 
     def _blockShutdown(self):
@@ -92,7 +83,7 @@ class Service(xmlrpc.XMLRPC, LoggingBaseClass):
         '''
         global TEST_MODE
         TEST_MODE = value
-        self.log("test mode set to %s" % TEST_MODE)
+        self.debug("test mode set to %s" % TEST_MODE)
     # end xmlrpc_test_mode
 
     def xmlrpc_ping(self, hostname=None, port=None, success=None, failure=None):
@@ -106,7 +97,7 @@ class Service(xmlrpc.XMLRPC, LoggingBaseClass):
         :param integer port:
             the remote port to ping the given hostname on
         '''
-        self.log("incoming ping request")
+        self.debug("incoming ping request")
         if hostname and port:
             return ping(hostname, port, success, failure)
 
@@ -137,7 +128,7 @@ class Service(xmlrpc.XMLRPC, LoggingBaseClass):
             raise xmlrpc.Fault(9, msg)
 
         elif block and force:
-            self.log("shutdown forced!", level=logging.WARNING)
+            self.warning("shutdown forced!")
 
         if not TEST_MODE:
             self._runShutdown()
@@ -176,7 +167,7 @@ class Service(xmlrpc.XMLRPC, LoggingBaseClass):
 # end Service
 
 
-class Connection(LoggingBaseClass):
+class Connection(Logger):
     '''
     Generic rpc object which implements the Twisted xmlrpc
     proxy object.  The constructor for this class will
@@ -204,6 +195,7 @@ class Connection(LoggingBaseClass):
     '''
     def __init__(self, hostname,
                     port=None, success=None, failure=None):
+        Logger.__init__(self.__class__.__name__)
         # split the hostname into port and hostname if
         # port is None and ":" in hostname
         if port is None and ':' in hostname:
@@ -228,13 +220,13 @@ class Connection(LoggingBaseClass):
         If no other deferred error handlers are defined, this will
         be the default
         '''
-        self.log("rpc call to %s failed, iterating over failure below" % self.url)
+        self.debug("rpc call to %s failed, iterating over failure below" % self.url)
 
         for error in args:
             if hasattr(error, 'printTraceback') and callable(error.printTraceback):
                 error.printTraceback()
             else:
-                self.log(str(error), level=logging.ERROR)
+                self.error(str(error))
     # end __fail
 
     def call(self, *args):
@@ -269,9 +261,7 @@ def ping(hostname, port, success=None, failure=None):
         try:
             rpc = xmlrpclib.ServerProxy(url, allow_none=True)
             rpc.ping()
-            log.msg(
-                "successfully received ping from %s" % ident, system="rpc.ping"
-            )
+            logger.debug("successfully received ping from %s" % ident)
 
             if callable(success):
                 success(hostname, port)
@@ -279,10 +269,7 @@ def ping(hostname, port, success=None, failure=None):
             return True
 
         except socket.error:
-            log.msg(
-                "failed to ping %s" % ident, level=logging.WARNING,
-                system="rpc.ping"
-            )
+            logger.warning("failed to ping %s" % ident)
 
             if callable(failure):
                 failure(hostname, port)
@@ -295,7 +282,7 @@ def ping(hostname, port, success=None, failure=None):
 
         if not callable(failure):
             def failure(value):
-                log.msg("failed to ping %s" % ident, system="rpc.ping")
+                logger.error("failed to ping %s" % ident)
 
         rpc = xmlrpc.Proxy(url)
         return rpc.callRemote('ping').addCallbacks(success, failure)

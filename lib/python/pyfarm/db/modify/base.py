@@ -20,8 +20,9 @@ from __future__ import with_statement
 
 from pyfarm.db import contexts
 from pyfarm import errors
+from pyfarm.logger import Logger
 
-from twisted.python import log
+logger = Logger(__name__)
 
 def modify(table, match_column_name, match_data,
            exception_notfound=errors.NotFoundError,
@@ -35,7 +36,7 @@ def modify(table, match_column_name, match_data,
         raise ValueError("no columns provided to update")
 
     args = (match_column_name, match_data, table)
-    log.msg("preparing to modify columns %s matching %s in %s" % args)
+    logger.debug("preparing to modify columns %s matching %s in %s" % args)
 
     with contexts.Session(table) as trans:
         match_column = getattr(table.c, match_column_name)
@@ -65,7 +66,7 @@ def modify(table, match_column_name, match_data,
 
                 # only set the value if it has changed
                 if value != current_value:
-                    trans.log("setting %s from %s to %s" % args)
+                    trans.debug("setting %s from %s to %s" % args)
                     setattr(entry, key, value)
                     modified = True
 

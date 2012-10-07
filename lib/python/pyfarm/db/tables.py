@@ -16,15 +16,15 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
-import logging
 import datetime
 import sqlalchemy as sql
 
 from pyfarm.preferences import prefs
 from pyfarm.db.session import ENGINE
+from pyfarm.logger import Logger
 from pyfarm.datatypes.enums import State, DEFAULT_JOBTYPES, DEFAULT_GROUPS, DEFAULT_SOFTWARE
 
-from twisted.python import log
+logger = Logger(__name__)
 
 HOSTNAME_LENGTH = 255
 IPV4_LENGTH = 16
@@ -135,7 +135,7 @@ frames = sql.Table('pyfarm_frames', metadata,
 def init(rebuild=False):
     '''initializes the tables according the the preferences'''
     if rebuild or prefs.get('database.setup.rebuild'):
-        log.msg('dropping all tables before rebuilding', level=logging.WARNING)
+        logger.warning('dropping all tables before rebuilding')
         metadata.drop_all()
 
     metadata.create_all()

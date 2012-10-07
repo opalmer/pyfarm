@@ -51,7 +51,7 @@ def priority(table, jobid, frameid=None, frame=None):
             msg += ".%i" % frameid
         elif frame is not None:
             msg += ".%i" % frame
-        trans.log(msg)
+        trans.debug(msg)
 
         for result in trans.query.filter_by(**query):
             return int(result.priority)

@@ -19,15 +19,13 @@
 '''module for dealing with storage and retrieval of the master'''
 
 import socket
-import random
-import logging
 
 from pyfarm.db import query
-from pyfarm.db.tables import masters
+from pyfarm.logger import Logger
 from pyfarm.datatypes.network import FQDN
 from pyfarm import errors
 
-from twisted.python import log
+logger = Logger(__name__)
 
 def get(master=None):
     '''
@@ -37,7 +35,7 @@ def get(master=None):
     '''
     if master is None:
         try:
-            log.msg("retrieving master from database")
+            logger.debug("retrieving master from database")
             master = query.master.get(FQDN)
 
         except errors.HostNotFound:
@@ -56,14 +54,11 @@ def get(master=None):
     # if we cannot resolve the provided master then we will probably
     # have trouble connecting so just fail here
     try:
-        log.msg("ensuring we can resolve %s's address" % master)
+        logger.debug("ensuring we can resolve %s's address" % master)
         address = socket.gethostbyname(master)
 
     except socket.gaierror:
-        log.msg(
-            "master '%s' failed to resolve to a valid address" % master,
-            level=logging.ERROR
-        )
+        logger.error("master '%s' failed to resolve to a valid address" % master)
         raise
     
     return master

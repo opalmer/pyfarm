@@ -63,7 +63,6 @@ _logger.logger.addObserver(_logger.Observer(SERVICE_LOG))
 logger = _logger.logger
 
 from pyfarm.db import tables, query, modify, insert
-from pyfarm.master import queue
 from pyfarm.net import rpc as _rpc
 from pyfarm.datatypes.network import IP, SUBNET
 from pyfarm.datatypes.system import OS, OperatingSystem
@@ -91,11 +90,6 @@ class Master(_rpc.Service, _logger.Logger):
         _rpc.Service.__init__(self, SERVICE_LOG)
 
         cmdargs.printOptions(options, self.debug)
-
-        self.queue = queue.Queue(self)
-        self.subHandlers = {
-            "queue" : self.queue
-        }
     # end __init__
 
     def xmlrpc_requestWork(self, hostname):

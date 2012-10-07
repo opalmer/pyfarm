@@ -24,9 +24,10 @@ from __future__ import with_statement
 
 import time
 
+from pyfarm.logger import Logger
 from pyfarm.db.insert.base import Insert
 from pyfarm.datatypes.enums import State
-from pyfarm.db import tables, session
+from pyfarm.db import tables
 
 __all__ = ['Job', 'Frames']
 
@@ -37,7 +38,7 @@ class Frames(Insert):
         State.FAILED
     )
     def __init__(self, jobid=None):
-        super(Frames, self).__init__(tables.frames)
+        Insert.__init__(self, tables.frames)
         self.jobid = jobid
     # end __init__
 
@@ -52,14 +53,15 @@ class Frames(Insert):
 # end Frames
 
 
-class Job(Insert):
+class Job(Insert, Logger):
     '''class for submitting multiple jobs as once'''
     VALID_STATES = (
         State.PAUSED, State.QUEUED, State.BLOCKED
     )
 
     def __init__(self):
-        super(Job, self).__init__(tables.jobs)
+        Insert.__init__(self, tables.jobs)
+        Logger.__init__(self, self)
     # end __init__
 
     def postAdd(self, entry):
@@ -80,7 +82,7 @@ class Job(Insert):
 
     def postCommit(self):
         total_frames = sum([ job.count_total for job in self.results ])
-        self.log("constructing frame entries for %s frames" % total_frames)
+        self.debug("constructing frame entries for %s frames" % total_frames)
         start = time.time()
         frames = Frames()
 
@@ -95,17 +97,17 @@ class Job(Insert):
 
                 if completion >= .25 and 25 not in percents:
                     percents.append(25)
-                    self.log("...25% complete")
+                    self.debug("...25% complete")
 
                 elif completion >= .5 and 50 not in percents:
                     percents.append(50)
-                    self.log("...50% complete")
+                    self.debug("...50% complete")
 
                 elif completion >= .75 and 75 not in percents:
                     percents.append(75)
-                    self.log("...75% complete")
+                    self.debug("...75% complete")
 
-        self.log("frame construction complete %s" % (time.time()-start))
+        self.debug("frame construction complete %s" % (time.time()-start))
         frames.commit()
     # end postCommit
 # end Job

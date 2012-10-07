@@ -24,7 +24,6 @@ import os
 import sys
 import time
 import site
-import logging
 
 CWD = os.path.realpath(os.path.dirname(__file__))
 ROOT = os.path.realpath(os.path.join(CWD, '..'))
@@ -72,7 +71,6 @@ from pyfarm.net import rpc as _rpc
 from twisted.internet import reactor
 from twisted.web import xmlrpc
 from twisted.web import server as _server
-from twisted.python import log
 
 CWD = os.getcwd()
 MASTER = ()
@@ -131,17 +129,17 @@ class Host(_rpc.Service, _logger.Logger):
                 0, "invalid master argument, expected tuple(host, por)"
             )
 
-        log.msg("setting MASTER global to %s" % new_master)
+        self.debug("setting MASTER global to %s" % new_master)
         MASTER = new_master
 
         if options.store_master or database:
-            log.msg("setting master in database")
+            self.debug("setting master in database")
             modify.host.host(
                 FQDN,
                 master=new_master[0]
             )
         else:
-            log.msg("not setting master in database")
+            self.debug("not setting master in database")
     # end xmlrpc_setMaster
 
     def _blockShutdown(self):
@@ -198,14 +196,11 @@ with PROCESS_LOCK:
 
     # start reactor
     args = (FQDN, options.port)
-    log.msg(
-        "running host at http://%s:%i" % args,
-        level=logging.INFO, system="Client"
-    )
+    SERVICE.info("running host at http://%s:%i" % args)
     reactor.run()
 
     # set this host as offline
-    log.msg("setting host as offline in database")
+    SERVICE.debug("setting host as offline in database")
     modify.host.host(FQDN, online=False)
 
 # If RESTART has been set to True then restart the host
@@ -214,10 +209,7 @@ with PROCESS_LOCK:
 # to release.
 if os.environ.get('PYFARM_RESTART') == 'true' and prefs.get('network.rpc.restart'):
     pause = prefs.get('network.rpc.delay')
-    log.msg(
-        "preparing to restart the host, pausing %i seconds" % pause,
-        system="Client"
-    )
+    SERVICE.debug("preparing to restart the host, pausing %i seconds" % pause)
     time.sleep(pause)
     args = sys.argv[:]
 

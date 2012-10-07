@@ -23,14 +23,14 @@ of the master hosts
 
 from __future__ import with_statement
 
-import logging
 import random
-
-from twisted.python import log
 
 from pyfarm.db.contexts import Session
 from pyfarm.db.tables import masters, hosts
 from pyfarm import errors
+from pyfarm.logger import Logger
+
+logger = Logger(__name__)
 
 def exists(hostname):
     '''
@@ -41,7 +41,7 @@ def exists(hostname):
     if not isinstance(hostname, (str, unicode)):
         raise TypeError("hostname must be a string")
 
-    log.msg("checking to see if %s is in the master table" % hostname)
+    logger.debug("checking to see if %s is in the master table" % hostname)
     select = masters.select(masters.c.hostname == hostname)
     return bool(select.execute().first())
 # end exists
@@ -54,9 +54,8 @@ def port(hostname):
     with Session(masters) as trans:
         host = trans.query.filter_by(hostname=hostname).first()
         if host is None:
-            log.msg(
-                "master %s is not in the database, using default port" % hostname,
-                level=logging.WARNING
+            logger.warning(
+                "master %s is not in the database, using default port" % hostname
             )
             raise errors.HostNotFound(match_data=hostname, table=masters)
 
@@ -87,7 +86,7 @@ def online(hostname=None):
 
         elif hostname is None:
             online_hosts = trans.query.filter_by(online=True).all()
-            log.msg("randomly selecting online host")
+            logger.debug("randomly selecting online host")
             if not online_hosts:
                 raise errors.HostsOffline(table=masters)
             else:

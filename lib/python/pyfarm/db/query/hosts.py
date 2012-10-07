@@ -22,11 +22,12 @@ Provides common mechanisms for manipulating host information in the database
 
 from __future__ import with_statement
 
-from twisted.python import log
-
 from pyfarm.datatypes.network import FQDN
 from pyfarm.db.contexts import Session
 from pyfarm.db.tables import hosts
+from pyfarm.logger import Logger
+
+logger = Logger(__name__)
 
 def exists(hostname=None):
     '''
@@ -35,7 +36,7 @@ def exists(hostname=None):
     provided for convenience.
     '''
     hostname = hostname or FQDN
-    log.msg("checking to see if %s is in the host table" % hostname)
+    logger.debug("checking to see if %s is in the host table" % hostname)
     select = hosts.select(hosts.c.hostname == hostname)
     return bool(select.execute().first())
 # end exists

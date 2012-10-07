@@ -18,10 +18,6 @@
 
 '''inserts network information into the database'''
 
-import logging
-import sqlalchemy as sql
-from twisted.python import log
-
 try:
     from collections import OrderedDict
 
@@ -29,6 +25,7 @@ except ImportError:
     from ordereddict import OrderedDict
 
 from pyfarm import errors
+from pyfarm.logger import Logger
 from pyfarm.db import tables
 from pyfarm.db.insert import base
 from pyfarm.preferences import prefs
@@ -37,6 +34,8 @@ from pyfarm.datatypes.network import HOSTNAME, FQDN, IP, SUBNET
 from pyfarm.datatypes.enums import DEFAULT_GROUPS, DEFAULT_SOFTWARE, DEFAULT_JOBTYPES
 
 __all__ = ['host']
+
+logger = Logger(__name__)
 
 def host(
         hostname=None, port=None, master=None, ip=None, subnet=None, os=None,
@@ -95,7 +94,7 @@ def host(
     :return:
         returns the inserted id
     '''
-    log.msg("preparing to insert new host")
+    logger.debug("preparing to insert new host")
     local = False
     data = OrderedDict()
 
@@ -225,7 +224,7 @@ def host(
         # remap the os key to its 'pretty' name
         if key == "os":
             value = system.OperatingSystem.get(value)
-        log.msg("...%s: %s" % (key, value))
+        logger.debug("...%s: %s" % (key, value))
 
     # find existing hosts
     select = tables.hosts.select(tables.hosts.c.hostname == data['hostname'])
@@ -237,16 +236,16 @@ def host(
             raise errors.DuplicateHost(data['hostname'], tables.hosts)
 
         elif not error:
-            log.msg("found existing entries for %s, skipping" % data['hostname'])
+            logger.debug(
+                "found existing entries for %s, skipping" % data['hostname']
+            )
             return
 
         elif drop:
-            log.msg(
-                "dropping entries for %s" % data['hostname'],
-                level=logging.WARNING
-            )
+            logger.warning("dropping entries for %s" % data['hostname'])
+
             for host in existing_hosts:
-                log.msg("removing host %s" % host.id)
+                logger.debug("removing host %s" % host.id)
                 delete = tables.hosts.delete(tables.hosts.c.id == host.id)
                 delete.execute()
     else:

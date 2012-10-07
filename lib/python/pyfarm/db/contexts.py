@@ -22,13 +22,12 @@ import time
 
 import sqlalchemy
 import sqlalchemy.orm
-from twisted.python import log
 
-from pyfarm.logger import LoggingBaseClass
+from pyfarm.logger import Logger
 from pyfarm.preferences import prefs
 from pyfarm.db import session
 
-class Session(object):
+class Session(Logger):
     '''
     context manager for for queries and modifications
 
@@ -63,7 +62,7 @@ class Session(object):
             # end __repr__
         # end Entry
 
-        self.__system = system or self.__class__.__name__
+        Logger.__init__(self, system or self.__class__.__name__)
 
         if not isinstance(table, sqlalchemy.schema.Table):
             raise TypeError("unexpected type %s for table" % type(table))
@@ -77,13 +76,9 @@ class Session(object):
         self.Session = sqlalchemy.orm.scoped_session(session.Session)
     # end __init__
 
-    def log(self, msg, level='SQL'):
-        log.msg(msg, level=level, system=self.__system)
-    # end log
-
     def __enter__(self):
         self.start = time.time()
-        self.log("opening database transaction on %s" % self.tablename)
+        self.debug("opening database transaction on %s" % self.tablename)
 
         # map the object and prepare the session
         sqlalchemy.orm.mapper(self.base, self.table)
@@ -96,33 +91,34 @@ class Session(object):
     def __exit__(self, exc_type, exc_val, exc_tb):
         # roll back the transaction in the event of an error
         if exc_type is not None:
-            self.log("rolling back database transaction: %s" % exc_val)
+            self.debug("rolling back database transaction: %s" % exc_val)
             self.session.rollback()
 
         # commit changes if there are any pending
         else:
             if self.session.dirty or self.session.new:
                 self.session.commit()
-                log.msg("committing database entry to %s" % self.tablename)
+                self.debug("committing database entry to %s" % self.tablename)
 
         # close the session
         self.query.session.close()
 
         # close the database connection
         if prefs.get('database.setup.close-connections'):
-            self.log("closing connections")
+            self.debug("closing connections")
             self.query.session.bind.dispose()
 
         self.end = time.time()
         args = (self.tablename, self.end-self.start)
-        self.log("closed database transaction on %s (%ss)" % args)
+        self.debug("closed database transaction on %s (%ss)" % args)
     # end __exit__
 # end Transaction
 
 
-class Connection(LoggingBaseClass):
+class Connection(Logger):
     '''manages a single connection to the database'''
     def __init__(self, connection=None):
+        Logger.__init__(self, self)
         self.connection = connection
     # end __init__
 
@@ -137,6 +133,6 @@ class Connection(LoggingBaseClass):
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.connection.close()
         session.ENGINE.dispose()
-        self.log("closed connections, %s elapased" % (time.time()-self.start))
+        self.debug("closed connections, %s elapsed" % (time.time()-self.start))
     # end __exit__
 # end Connection

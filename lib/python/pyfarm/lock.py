@@ -22,21 +22,18 @@ import os
 import time
 import atexit
 import psutil
-import signal
 import tempfile
-import logging
 
-from pyfarm.logger import LoggingBaseClass
-
-from twisted.python import log
+from pyfarm.logger import Logger
 
 KILL_SLEEP = 2
 LOCK_ROOT = os.path.join(tempfile.gettempdir(), 'pyfarm', 'lock')
+logger = Logger(__name__)
 
 # create root lock folder if it does not exist
 if not os.path.isdir(LOCK_ROOT):
     os.makedirs(LOCK_ROOT)
-    log.msg("created directory: %s" % LOCK_ROOT)
+    logger.debug("created directory: %s" % LOCK_ROOT)
 
 class ProcessLockError(Exception):
     '''raised when we had trouble acquiring a lock'''
@@ -46,16 +43,17 @@ class ProcessLockError(Exception):
 # end ProcessLockError
 
 
-class LockFile(LoggingBaseClass):
+class LockFile(Logger):
     '''stores, controls, and maintains a lockfile'''
     def __init__(self, name, pid):
+        Logger.__init__(self, self)
         self.name = name
         self.pid = pid
         self.path = os.path.join(LOCK_ROOT, name)
 
         pid = self.filepid()
         if pid is not None and not psutil.pid_exists(pid):
-            self.log("removing stale lock file")
+            self.warning("removing stale lock file")
             self.remove()
     # end __init__
 
@@ -63,7 +61,7 @@ class LockFile(LoggingBaseClass):
         '''removes the lock file on disk'''
         if os.path.isfile(self.path):
             os.remove(self.path)
-            self.log("removed lock file %s" % self.path)
+            self.debug("removed lock file %s" % self.path)
     # end remove
 
     def filepid(self):
@@ -113,10 +111,7 @@ class LockFile(LoggingBaseClass):
         # if it is, remove it
         filepid = self.filepid()
         if isinstance(filepid, int) and not psutil.pid_exists(filepid):
-            self.log(
-                "process id in lock file is stale and will be removed",
-                level=logging.WARNING
-            )
+            self.warning("process id in lock file is stale and will be removed")
             self.remove()
 
         # If self.path already exists check to see if the
@@ -128,18 +123,18 @@ class LockFile(LoggingBaseClass):
                 msg = "'%s' is already running with pid %s" % (self.name, pid)
                 raise ProcessLockError(msg)
 
-            log.msg("force overwriting lock file %s!" % self.path)
+            self.warning("force overwriting lock file %s!" % self.path)
             self.remove()
 
         with open(self.path, 'w') as lockfile:
             lockfile.write(str(self.pid))
             args = (self.name, self.pid)
-            log.msg("wrote lock file for '%s' with pid %s" % args)
+            self.debug("wrote lock file for '%s' with pid %s" % args)
     # end lock
 # end LockFile
 
 
-class ProcessLock(object):
+class ProcessLock(object, Logger):
     '''
     provides a locking mechanism when provided a name and process id
 
@@ -165,6 +160,7 @@ class ProcessLock(object):
     '''
     def __init__(self, name, pid=None, force=False, wait=False, kill=False,
                  register=True, remove=False):
+        Logger.__init__(self, self)
         self.name = name
         self.pid = pid or os.getpid()
         self.lock = LockFile(name, self.pid)
@@ -176,14 +172,14 @@ class ProcessLock(object):
         if kill and self.lock.locked():
             pid = self.lock.filepid()
             process = psutil.Process(pid)
-            process.kill(signal.SIGTERM)
-            log.msg("killed %s, pausing for %i seconds" % (pid, KILL_SLEEP))
+            process.kill()
+            self.info("killed %s, pausing for %i seconds" % (pid, KILL_SLEEP))
             time.sleep(KILL_SLEEP)
 
         # wait for process to finish if wait is True
         if wait and self.lock.locked():
             filepid = self.lock.filepid()
-            log.msg("waiting for process %s to release the lock" % filepid)
+            self.info("waiting for process %s to release the lock" % filepid)
             while self.lock.locked():
                 time.sleep(1)
 
@@ -202,7 +198,7 @@ class ProcessLock(object):
             # ProcessLock's self.lock.remove method
             if function == self.lock.remove:
                 atexit._exithandlers.remove((function, args, kwargs))
-                log.msg("removed exit handler ProcessLock(%s)" % self.name)
+                self.debug("removed exit handler ProcessLock(%s)" % self.name)
 
         return self
     # end __enter__
@@ -219,6 +215,6 @@ class ProcessLock(object):
     def addExitAction(self, method, args=(), kwargs={}):
         '''adds a method to be called on exit'''
         self.actions.append((method, args, kwargs))
-        log.msg("added exit action - %s" % method.func_name)
+        self.debug("added exit action - %s" % method.func_name)
     # end addExitAction
 # end ProcessLock

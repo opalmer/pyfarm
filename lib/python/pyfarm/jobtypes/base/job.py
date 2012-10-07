@@ -21,17 +21,17 @@ from __future__ import with_statement
 import os
 import string
 import ctypes
-import logging
 import itertools
 from sqlalchemy import orm
 
-from pyfarm import logger, errors
+from pyfarm import errors
+from pyfarm.logger import Logger
 from pyfarm.datatypes.system import USER, OS, OperatingSystem
 from pyfarm.preferences import prefs
 from pyfarm.db import session, contexts
 from pyfarm.db.tables import jobs, frames
 
-class BaseJob(logger.LoggingBaseClass):
+class BaseJob(Logger):
     '''
     Base jobtype inherited by all other jobtypes
 
@@ -39,6 +39,7 @@ class BaseJob(logger.LoggingBaseClass):
         data which can be used to into each argument
     '''
     def __init__(self, row_job, row_frame, substitute_data=None):
+        Logger.__init__(self, self)
         self.__row_job = row_job
         self.__row_frame = row_frame
 
@@ -68,10 +69,7 @@ class BaseJob(logger.LoggingBaseClass):
         self.setupLog()
 
         # performs the setup to setup the class attributes
-        self.log(
-            "Setting up %s" % self.__class__.__name__,
-            level=logging.INFO
-        )
+        self.info("Setting up %s" % self.__class__.__name__)
 
         # prep environment and user name
         self.setupEnvironment()
@@ -101,7 +99,7 @@ class BaseJob(logger.LoggingBaseClass):
         if not hasattr(self.__class__, 'DATA_REQUIREMENTS'):
             msg = "cannot validate requirements, class does not contain "
             msg += "the required DATA_REQUIREMENTS"
-            self.log(msg, level=logging.WARNING)
+            self.warning(msg)
             return
 
         # raise a TypeError if DATA_REQUIREMENTS exists but
@@ -111,7 +109,7 @@ class BaseJob(logger.LoggingBaseClass):
 
         # do nothing if DATA_REQUIREMENTS is empty
         if not self.DATA_REQUIREMENTS:
-            self.log("DATA_REQUIREMENTS is empty, skipping validateRequirements")
+            self.debug("DATA_REQUIREMENTS is empty, skipping validateRequirements")
             return
 
         # ensure the frame object has been setup
@@ -134,14 +132,14 @@ class BaseJob(logger.LoggingBaseClass):
     def setupLog(self):
         '''Sets up the log file and begins logging the progress of the job'''
         if self.logfile is None:
-            self.log("...setting up log")
+            self.debug("...setting up log")
             root = prefs.get('filesystem.locations.jobs')
             template = string.Template(root)
             self.logfile = template.substitute(self.substitute_data)
             self.observer = logger.Observer(self.logfile)
-            self.observer.start()
+            self.addObserver(self.observer)
         else:
-            self.log("logfile already setup: %s" % self.logfile)
+            self.debug("logfile already setup: %s" % self.logfile)
     # end setupLog
 
     def setupEnvironment(self):
@@ -151,13 +149,13 @@ class BaseJob(logger.LoggingBaseClass):
         '''
         self.environ = {}
         if isinstance(self.__environ, dict) and self.__environ:
-            self.log("...setting up custom base environment")
+            self.debug("...setting up custom base environment")
             self.environ = self.__environ.copy()
 
         # add the native os environment if it does not match our
         # current env
         if os.environ != self.environ:
-            self.log("...updating environment with os environment")
+            self.debug("...updating environment with os environment")
             data = dict(os.environ)
             self.environ.update(data)
     # end setupEnvironment
@@ -172,12 +170,12 @@ class BaseJob(logger.LoggingBaseClass):
             event loop this error will need to be handled externally.
         '''
         self.command = None
-        self.log("...setting up command")
+        self.debug("...setting up command")
 
         # not much to do if the path we were provided already exists
         if os.path.isfile(self.__command):
             self.command = str(os.path.realpath(self.__command))
-            self.log("...command set to %s" % self.command)
+            self.debug("...command set to %s" % self.command)
             return
 
         else:
@@ -186,7 +184,7 @@ class BaseJob(logger.LoggingBaseClass):
             paths = prefs.get('jobtypes.path')
             for entry in self.environ.get('PATH').split(os.pathsep):
                 if entry not in paths:
-                    self.log(".....inserting %s from the environment" % entry)
+                    self.debug(".....inserting %s from the environment" % entry)
                     paths.insert(0, entry)
 
             command_names = set()
@@ -224,7 +222,7 @@ class BaseJob(logger.LoggingBaseClass):
         if self.command is None or not os.path.isfile(self.command):
             raise OSError("failed to find the '%s' command" % self.__command)
 
-        self.log("...command set to %s" % self.command)
+        self.debug("...command set to %s" % self.command)
     # end setupCommand
 
     def setupArguments(self):
@@ -237,15 +235,15 @@ class BaseJob(logger.LoggingBaseClass):
             args.append(value)
 
         if self.command != args[0]:
-            self.log("...inserting command as first argument")
+            self.debug("...inserting command as first argument")
             args.insert(0, str(self.command))
 
         self.args = args
 
         if not self.args:
-            self.log("...no arguments constructed", level=logging.WARNING)
+            self.warning("...no arguments constructed")
         else:
-            self.log("...arguments: %s" % self.args)
+            self.debug("...arguments: %s" % self.args)
     # end setupArguments
 
     def setupUser(self):
@@ -271,7 +269,7 @@ class BaseJob(logger.LoggingBaseClass):
         if isinstance(self.__user, (str, unicode)):
             # if the requested user is not the current user we need
             # to see if we are running as root/admin
-            self.log("...checking for admin privileges")
+            self.debug("...checking for admin privileges")
             if self.__user != USER:
                 # setting the process owner is only supported on
                 # unix based systems
@@ -289,10 +287,7 @@ class BaseJob(logger.LoggingBaseClass):
                         self.user = self.__user
 
                     except KeyError:
-                        self.log(
-                            "...no such user '%s' on system" % self.__user,
-                            level=logging.ERROR
-                        )
+                        self.error("...no such user '%s' on system" % self.__user)
 
                 else:
                     # if we are running in windows, we should at least
@@ -301,31 +296,31 @@ class BaseJob(logger.LoggingBaseClass):
                         ctypes.windll.shell32.IsUserAnAdmin():
                         msg = "not running as an administrator, this may produce "
                         msg += "unexpected results in some cases"
-                        self.log(msg, level=logging.WARNING)
+                        self.warning(msg)
 
                     self.user = USER
 
-        self.log("...job will run as %s" % self.user)
+        self.debug("...job will run as %s" % self.user)
     # end setup_user
 
     def preJob(self):
         '''Runs before the start of the job'''
-        self.log("nothing to be done for preJob")
+        self.debug("nothing to be done for preJob")
     # end preJob
 
     def preFrame(self):
         '''Runs before the start of a frame'''
-        self.log("nothing to be done for preFrame")
+        self.debug("nothing to be done for preFrame")
     # end preFrame
 
     def postJob(self):
         '''Runs after a job completes, regardless of success'''
-        self.log("nothing to be done for postJob")
+        self.debug("nothing to be done for postJob")
     # end postJob
 
     def postFrame(self):
         '''Runs after a frame completes, regardless of success'''
-        self.log("nothing to be done for postFrame")
+        self.debug("nothing to be done for postFrame")
     # end postFrame
 
     def run(self):
@@ -353,11 +348,11 @@ class Frame(BaseJob):
         if self.row_frame is not None and self.row_frame is not None:
             return
 
-        self.log("retrieving database entry for frame id %s" % self.id)
+        self.debug("retrieving database entry for frame id %s" % self.id)
         scoped_session = orm.scoped_session(session.Session)
 
         with contexts.Connection(scoped_session.connection()):
-            self.log("...querying frame id %s" % self.id)
+            self.debug("...querying frame id %s" % self.id)
             frames_query = scoped_session.query(frames)
             self.row_frame = frames_query.filter(frames.c.id == self.id).first()
 
@@ -366,7 +361,7 @@ class Frame(BaseJob):
             if self.row_frame is None:
                 raise errors.FrameNotFound(id=self.id)
 
-            self.log("...querying jobid id %s" % self.row_frame.jobid)
+            self.debug("...querying jobid id %s" % self.row_frame.jobid)
             jobs_query = scoped_session.query(jobs)
             self.row_job = jobs_query.filter(jobs.c.id == self.row_frame.jobid).first()
 

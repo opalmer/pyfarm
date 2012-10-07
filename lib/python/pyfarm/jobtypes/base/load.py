@@ -19,17 +19,17 @@
 import os
 import imp
 import inspect
-import logging
 
-from pyfarm import logger, errors
+from pyfarm import errors
+from pyfarm.logger import Logger
 from pyfarm.preferences import prefs
-
-from twisted.python import log
 
 PATHS = []
 JOBTYPES = {}
 
 __all__ = ['find', 'jobtype', 'jobtypes', 'paths']
+
+logger = Logger(__name__)
 
 def paths():
     '''
@@ -40,15 +40,16 @@ def paths():
     if PATHS:
         return PATHS
 
-    log.msg("searching for jobtype paths as defined in preferences and $PYFARM_JOBTYPES")
+    logger.debug(
+        "searching for jobtype paths as defined in preferences and $PYFARM_JOBTYPES"
+    )
 
     def addpath(path):
         if path in PATHS: return
         elif not path: return
         elif not os.path.isdir(path):
-            log.msg(
-                "%s is not a directory, skipping for jobtype search" % path,
-                level=logging.WARNING
+            logger.warning(
+                "%s is not a directory, skipping for jobtype search" % path
             )
         else:
             PATHS.append(path)
@@ -68,7 +69,7 @@ def find(name=None):
     results.
     '''
     if name is not None and name in JOBTYPES:
-        log.msg("jobtype %s is already loaded" % name)
+        logger.debug("jobtype %s is already loaded" % name)
         return JOBTYPES[name]
 
     jobtype_path = None
@@ -76,7 +77,7 @@ def find(name=None):
     jobtypes = {}
 
     if name is not None:
-        log.msg("searching for jobtype %s in %s" % (name, search_paths))
+        logger.debug("searching for jobtype %s in %s" % (name, search_paths))
 
     for path in search_paths:
         for filename in os.listdir(path):
@@ -114,7 +115,7 @@ def jobtype(name):
         return JOBTYPES[name]
 
     jobtype_path = find(name)
-    log.msg("preparing to load jobtype: %s" % jobtype_path)
+    logger.debug("preparing to load jobtype: %s" % jobtype_path)
 
     # load the module itself but dont' catch any exceptions that may occur
     try:

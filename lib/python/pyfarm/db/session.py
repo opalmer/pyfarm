@@ -21,17 +21,16 @@ Retains the global instance of the session maker object and returns new
 sessions for use in transactions and other procedures
 '''
 
-import logging
 from itertools import izip
 
 import sqlalchemy
 from sqlalchemy import orm
 
-from twisted.python import log
-
 from pyfarm.preferences import prefs
 from pyfarm import errors
+from pyfarm.logger import Logger
 
+logger = Logger(__name__)
 configs = prefs.get('database.setup.config')
 urls = prefs.get('database.urls')
 
@@ -43,7 +42,7 @@ for config, url in izip(configs, urls):
             echo_pool=prefs.get('logging.sqlalchemy.pool')
         )
         Session = orm.sessionmaker(bind=ENGINE)
-        log.msg("setup engine: %s, config: %s" % (ENGINE.name, config))
+        logger.debug("setup engine: %s, config: %s" % (ENGINE.name, config))
 
         # if the session was setup properly then
         # we don't need to move onto the next possible
@@ -51,10 +50,7 @@ for config, url in izip(configs, urls):
         break
 
     except Exception, error:
-        log.msg(
-            'failed using %s for config: %s' % (config, error),
-            level=logging.WARNING
-        )
+        logger.warning('failed using %s for config: %s' % (config, error))
 
 else:
     raise errors.DatabaseError(

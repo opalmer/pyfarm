@@ -20,7 +20,6 @@
 handler module used to handle incoming requests
 '''
 
-from twisted.python import log
 from twisted.web import http
 from twisted.internet import reactor
 

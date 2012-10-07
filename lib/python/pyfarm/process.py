@@ -17,7 +17,6 @@
 # along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
-import logging
 from UserDict import UserDict
 
 try:
@@ -26,61 +25,48 @@ try:
 except ImportError:
     pwd = None
 
-from pyfarm import logger
+#from pyfarm import logger
+from pyfarm.logger import Logger, Observer
 from pyfarm.jobtypes.base import job
 from pyfarm.datatypes.system import OS, OperatingSystem, USER
 
 from twisted.internet import protocol, reactor, error
-from twisted.python import log
 
 # TODO: documentation
 # TODO: db handling on process success/finish
 
-class ProcessProtocol(protocol.ProcessProtocol):
-    def __init__(self, process, arguments, observer):
+class ProcessProtocol(protocol.ProcessProtocol, Logger):
+    def __init__(self, process, arguments, log):
+        Logger.__init__(self, self)
         self.process = process
-        self.observer = observer
         self.arguments = arguments
+        self.observer = Observer(log)
+        self.addObserver(self.observer)
     # end __init__
-
-    def log(self, msg, **kwargs):
-        if kwargs.get('parent'):
-            self.process._log(msg, **kwargs)
-
-        kwargs.setdefault('filepath', self.observer.stream.name)
-        log.msg(msg, **kwargs)
-# end log
 
     def connectionMade(self):
         '''send a log message the the process log file'''
         self.transport.write(" ".join(self.arguments))
         self.transport.closeStdin()
-        self.log('process started')
+        self.debug('process started')
     # end connectionMade
 
     def outReceived(self, data):
-        self.log(data.strip(), level='STDOUT')
+        self.debug(data.strip(), level='STDOUT')
     # end outReceived
 
     def errReceived(self, data):
-        self.log(data.strip(), level='STDERR')
+        self.debug(data.strip(), level='STDERR')
     # end errReceived
 
     def processExited(self, reason):
         exit_code = reason.value.exitCode
         args = (self.process.pid, exit_code)
-        self.log(
-            "process %s exited with status %s" % args, parent=True,
-            level=logging.INFO
-        )
+        self.info("process %s exited with status %s" % args)
 
         if exit_code != 0:
             args = (self.process.command, exit_code, self.process.pid)
-            self.log(
-                "'%s' failed (exit %s, pid %s)" % args,
-                level=logging.ERROR,
-                parent=True
-            )
+            self.error("'%s' failed (exit %s, pid %s)" % args)
 
         self.process.postexit(self)
         self.observer.stop()
@@ -88,29 +74,20 @@ class ProcessProtocol(protocol.ProcessProtocol):
 # end ProcessProtocol
 
 
-class Process(object):
+class Process(Logger):
     '''
     wraps the process protocol
 
     '''
     def __init__(self, command, args, environ, log, user=None):
+        Logger.__init__(self, self)
         self._command = command
         self._args = args
         self.user = user or USER
         self.process = None
         self.environ = {}
         self.command = " ".join(args)
-
-        # setup the logging instance if one was
-        # not provided
-        if isinstance(log, (str, unicode)):
-            self.observer = logger.Observer(log)
-            self.observer.start()
-
-        elif isinstance(log, logger.Observer):
-            self.observer = log
-
-        self.protocol = ProcessProtocol(self, self._args, self.observer)
+        self.protocol = ProcessProtocol(self, self._args, log)
 
         # populate the initial environment from the
         # incoming dictionary
@@ -149,19 +126,8 @@ class Process(object):
             else:
                 msg = "no need to change uid/gid, they are the same as "
                 msg += "the current user's group and id"
-                self._log(msg)
+                self.debug(msg)
     # end __init__
-
-    def log(self, msg, **kwargs):
-        '''send a log message the the process log file'''
-        kwargs.setdefault('filepath', self.observer.stream.name)
-        log.msg(msg, **kwargs)
-    # end log
-
-    def _log(self, msg, **kwargs):
-        kwargs.setdefault('system', self.__class__.__name__)
-        log.msg(msg, **kwargs)
-    # end _log
 
     def prestart(self):
         '''
@@ -189,9 +155,9 @@ class Process(object):
 
     def start(self):
         if self.process is None:
-            self.log("calling prerun")
+            self.debug("calling prerun")
             self.prestart()
-            self.log('running: %s' % self.command)
+            self.debug('running: %s' % self.command)
 
             # try to spawn the process though it's
             # possible this may fail if we don't have permission
@@ -202,42 +168,29 @@ class Process(object):
             except OSError, error:
                 e = "Failed to spawn process! This most likely because "
                 e += "we could not setuid, original error was: %s" % error
-                self._log(e, level=logging.ERROR)
+                self.error(e)
                 raise
 
             self.pid = self.process.pid
-            self._log(
-                'process %s started' % self.pid,
-                level=logging.INFO
-            )
-            self.log("calling poststart")
+            self.info("process %s started" % self.pid)
+            self.debug("calling poststart")
             self.poststart()
         else:
-            self._log(
-                'process already started (pid %s)' % self.pid,
-                level=logging.WARNING
-            )
+            self.warning("process already started (pid %s)" % self.pid)
     # end start
 
     def signal(self, signal):
         try:
-            self._log(
-                "sending SIG%s signal to %s" % (signal, self.pid),
-                level=logging.WARNING
-            )
+            self.warning("sending SIG%s signal to %s" % (signal, self.pid))
             self.process.signalProcess(signal)
 
         except error.ProcessExitedAlready:
-            self._log(
-                "process %s has already stopped" % self.pid,
-                level=logging.WARNING
-            )
+            self.warning("process %s has already stopped" % self.pid)
     # end signal
 
     def stop(self, wait=False):
         '''sends SIGHUP to the process asking it to terminate'''
         self.signal('HUP')
-        self._log("deferred wait not implemented", level='NOTIMPLEMENTED')
     # end stop
 
     def kill(self):
@@ -261,10 +214,11 @@ class ProcessFrame(Process):
             args = (self.frame, job.BaseJob)
             raise TypeError("expected %s to be an instance of %s" % args)
 
-        super(ProcessFrame, self).__init__(
+        Process.__init__(self,
             self.frame.command, self.frame.args,
             self.frame.environ, self.frame.observer,
             user=self.frame.user
         )
+
     # end __init__
 # end ProcessRow
