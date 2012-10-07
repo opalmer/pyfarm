@@ -20,6 +20,7 @@ import os
 import sys
 import inspect
 import logging
+import traceback
 from logging.handlers import  RotatingFileHandler
 from twisted.python import log
 from colorama import Fore, Back, Style, init
@@ -231,3 +232,17 @@ class Observer(log.FileLogObserver):
 
 logger = Logger('pyfarm')
 logger.start()
+
+exception = Logger('exception')
+exception.start()
+
+original_excepthook = sys.excepthook
+
+def excepthook(exctype, value, tb):
+    exception.warning("unhandled exception caught!")
+    formatted = traceback.format_exception(exctype, value, tb)
+    exception.debug(os.linesep.join(formatted))
+    original_excepthook(exctype, value, tb)
+# end excepthook
+
+sys.excepthook = excepthook
