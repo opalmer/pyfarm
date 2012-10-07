@@ -20,8 +20,6 @@
 Provides common mechanisms for manipulating host information in the database
 '''
 
-from __future__ import with_statement
-
 from pyfarm.datatypes.network import FQDN
 from pyfarm.db.contexts import Session
 from pyfarm.db.tables import hosts

@@ -21,8 +21,6 @@ module which contains functions for loading information
 from disk
 '''
 
-from __future__ import with_statement
-
 import os
 import imp
 import yaml

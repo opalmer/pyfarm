@@ -18,8 +18,6 @@
 
 '''base function used for performing insertions'''
 
-from __future__ import with_statement
-
 import time
 import sqlalchemy
 from sqlalchemy import orm

@@ -20,8 +20,6 @@
 Used to verify and submit jobs
 '''
 
-from __future__ import with_statement
-
 import time
 
 from pyfarm.logger import Logger

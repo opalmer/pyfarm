@@ -21,8 +21,6 @@ functions for querying information related to one or more
 of the master hosts
 '''
 
-from __future__ import with_statement
-
 import random
 
 from pyfarm.db.contexts import Session
