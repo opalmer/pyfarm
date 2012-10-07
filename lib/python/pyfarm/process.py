@@ -52,7 +52,7 @@ class ProcessProtocol(protocol.ProcessProtocol, Logger):
         '''send a log message the the process log file'''
         self.transport.write(" ".join(self.arguments))
         self.transport.closeStdin()
-        update_memory.update(force=True)
+        update_memory.update(force=True, reset=False)
     # end connectionMade
 
     def outReceived(self, data):
@@ -76,7 +76,7 @@ class ProcessProtocol(protocol.ProcessProtocol, Logger):
         self.debug("calling post exit")
         self.process.postexit(self)
         self.removeObserver(self.observer)
-        update_memory.update(force=True)
+        update_memory.update(force=True, reset=False)
     # end processExited
 # end ProcessProtocol
 
