@@ -55,7 +55,7 @@ def host(hostname, **columns):
 # end host
 
 
-class UpdateRam(Logger):
+class UpdateMemory(Logger):
     '''
     Ensures that we do not attempt to update the ram
     entry for the current host more often than needed.
@@ -89,8 +89,21 @@ class UpdateRam(Logger):
         has exceeded or met the timeout criteria
         '''
         if self.shouldUpdate(force):
-            ramuse = system.TOTAL_RAM - system.ram()
-            self.info("updating ram use for %s to %smb" % (self.hostname, ramuse))
+            # update the time that we made the last update
+            # first just in case we encounter some excessive
+            # slowness in the db update
             self.__lastupdate = datetime.datetime.now()
+
+            # calculate the current resource usage
+            ramuse = system.TOTAL_RAM - system.ram()
+            swapuse = system.TOTAL_SWAP - system.swap()
+
+            # log our current results
+            args = (self.hostname, ramuse, swapuse)
+            msg = "updating memory usage for %s (ram: %s, swap: %s)" % args
+            self.info(msg)
+
+            # finally, update the database
+            host(self.hostname, ram_usage=ramuse, swap_usage=swapuse)
     # end update
-# end UpdateRam
+# end UpdateMemory
