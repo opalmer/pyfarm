@@ -154,7 +154,7 @@ def host(
 
     # ram setup - usage
     if local and ram_usage is None:
-        ram_usage = system.ram()
+        ram_usage = system.TOTAL_RAM - system.ram()
 
     elif not local and ram_usage is None:
         raise ValueError("ram_usage must be provided when hostname is not local")
@@ -172,7 +172,7 @@ def host(
 
     # swap setup - usage
     if local and swap_usage is None:
-        swap_usage = system.swap()
+        swap_usage = system.TOTAL_SWAP - system.swap()
 
     elif not local and swap_usage is None:
         raise ValueError("swap_usage must be provided when hostname is not local")
