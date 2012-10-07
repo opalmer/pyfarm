@@ -78,7 +78,6 @@ class Session(Logger):
 
     def __enter__(self):
         self.start = time.time()
-        self.debug("opening database transaction on %s" % self.tablename)
 
         # map the object and prepare the session
         sqlalchemy.orm.mapper(self.base, self.table)
@@ -105,7 +104,6 @@ class Session(Logger):
 
         # close the database connection
         if prefs.get('database.setup.close-connections'):
-            self.debug("closing connections")
             self.query.session.bind.dispose()
 
         self.end = time.time()
