@@ -18,22 +18,22 @@
 
 import os
 import sys
-import time
+import inspect
 import logging
-import fnmatch
-from logging import handlers
-
-from pyfarm.preferences import prefs
-
-import colorama
+from logging.handlers import  RotatingFileHandler
 from twisted.python import log
-from colorama import Fore, Back, Style
+from colorama import Fore, Back, Style, init
+from pyfarm.preferences import  prefs
+init()
 
 log.FileLogObserver.timeFormat = prefs.get('logging.timestamp')
-colorama.init()
 
-# dictionary of log levels and their associated
-# styles and colors
+# add a verbose level
+logging.addLevelName(15, 'VERBOSE')
+logging.VERBOSE = 15
+
+logger = None
+
 ENABLE_TERMCOLOR = prefs.get('logging.termcolor')
 TERMCOLOR = {
     logging.DEBUG : (Style.DIM, Style.RESET_ALL),
@@ -42,207 +42,192 @@ TERMCOLOR = {
     logging.ERROR : (Fore.RED, Fore.RESET),
     logging.CRITICAL : (
         Back.RED+Fore.WHITE+Style.BRIGHT, Back.RESET+Fore.RESET+Style.RESET_ALL
-    )
+       )
 }
 
-class Observer(log.FileLogObserver):
-    '''
-    Logging observer for streams
+class Logger(log.LogPublisher):
+    def __init__(self, system=None, stdout_observer=True, inherit_observers=True):
+        log.LogPublisher.__init__(self)
 
-    :param None or string or file stream:
-        The path or stream to log to.  If the argument provided
-        is a string then we will attempt to create a log file
-        at the given location.  In the event the provided 'stream'
-        is actually None then send everything out via print.
+        if inherit_observers and logger is not None:
+            for observer in logger.observers:
+                self.addObserver(observer)
 
-    :param string mode:
-        the mode to open stream in (only applies to file streams)
+        if system is None:
+            system = 'pyfarm'
 
-    :param integer backups:
-        number of backups to keep of logfiles
+        elif not isinstance(system, (str, unicode)) and system is not None:
+            module = inspect.getmodule(system)
+            classname = system.__class__.__name__
 
-    :param string or list observe:
-        If provided then this observer will only listen to a
-        specific system.  This can be extremely useful when
-        we only want to listen to output from a specific source
-        to a specific location.
+            if module.__name__ != '__main__':
+                system = module.__name__ + "." + classname
+            else:
+                system = classname
 
-        >>> from twisted.python import log
-        >>> observer = LogObserver('/tmp/test.log', observe='ProcessLog')
-        >>> observer.start()
-        >>> log.msg("test", system="PorcessLog") # sent to /tmp/test.log
+        self.system = system
+        self.disabled = 0
+        self.level = logging.DEBUG
+        self.__observers = []
 
-        If observe is a list then any system which appears in the observe
-        list will be displayed or output.
-
-    :param string format:
-        key to use to lookup the logger format from prefs.get('logging.formats')
-
-    :param integer level:
-        Sets the log level for this specific observer.  If no level is provided
-        then logging.level will be used from the preferences
-
-    :exception TypeError:
-        raised if the provided or resolved stream argument is
-        not a file stream
-
-    :exception KeyError:
-        raised if the provided format is not defined
-    '''
-    STREAMS = {}
-    FORMATS = prefs.get('logging.formats')
-    BACKUPS = prefs.get('logging.backups')
-    LEVEL = prefs.get('logging.level')
-    DEFAULT_STREAM = sys.stderr
-    
-    def __init__(self, stream=None, format='default'):
-        self.level = self.LEVEL
-        self.custom_levels = prefs.get('logging.custom-levels')
-        self.format = self.FORMATS[format]
-
-        # resolve the full path to the file we intend to write to
-        stream = stream or self.DEFAULT_STREAM
-        if isinstance(stream, (str, unicode)):
-            stream = os.path.abspath(os.path.expandvars(stream))
-
-        # if we are provided a string and it's not something that
-        # we're already logging to then create the required directories,
-        # rollover existing files and start writing
-        if isinstance(stream, (str, unicode)) and stream not in self.STREAMS:
-            dirname = os.path.dirname(stream)
-
-            # if the directory does not exist create it
-            if not os.path.isdir(dirname):
-                os.makedirs(dirname)
-
-            # if the file already exists and the mode
-            # is append then rollover the file on disk
-            if os.path.isfile(stream) and self.BACKUPS:
-                self.log('rolling over existing log %s' % stream)
-                rotate = handlers.RotatingFileHandler(stream, backupCount=self.BACKUPS)
-                rotate.doRollover()
-
-            stream = open(stream, 'w')
-            self.log('creating log %s' % stream.name)
-
-        elif stream in self.STREAMS:
-            stream = self.STREAMS[stream]
-
-        self.stream = stream
-        if stream is not None:
-            if not isinstance(stream, file):
-                raise TypeError("provided argument is not a file stream or ")
-
-            self.name = self.stream.name
-            self.isfile = os.path.isfile(self.name)
-            log.FileLogObserver.__init__(self, stream)
-        else:
-            self.name = 'print()'
+        if stdout_observer:
+            self.start()
     # end __init__
 
-    def __colorize(self, eventDict, msg):
+    def start(self):
         '''
-        given information from the event dictionary and a message
-        output a properly colorized message
+        starts the logger by either adding a default observer or
+        restoring any previous observers
         '''
-        style_start = ""
-        style_end = ""
+        if self.__observers:
+            self.observers = self.__observers[:]
+            del self.__observers[:]
 
-        if ENABLE_TERMCOLOR:
-            level = eventDict.get('level', logging.DEBUG)
-            style_start, style_end = TERMCOLOR.get(level, ('', ''))
+        elif not self.observers:
+            self.addObserver()
+    # end start
 
-        return style_start + msg + style_end
-    # end __colorize
+    def stop(self):
+        self.__observers = self.observers[:]
+        del self.observers[:]
+    # end stop
 
-    def log(self, msg, level=None):
-        l = level or logging.DEBUG
-        log.msg(msg, level=l, system='logger.Observer')
-    # end log
+    def addObserver(self, other=None):
+        if other is None:
+            other = Observer()
+        log.LogPublisher.addObserver(self, other)
+    # end addObserver
 
-    def emit(self, eventDict, stdout=True):
-        '''
-        Takes an incoming event dictionary and determines if we should
-        be logging its data and to what format.
-        '''
-        text = log.textFromEventDict(eventDict)
-
-        if text is None:
-            return
-
-        # scrub __main__. from the start of system names
-        eventDict['system'] = eventDict['system'].replace("__main__.", "")
-
-        # systems of HTTPChannel should really be xmlrpc in our
-        # case
-        if eventDict['system'].startswith("HTTPChannel"):
-            eventDict['system'] = 'XML-RPC'
-
-        # retrieve the logging string
-        level = eventDict.get('level') or logging.DEBUG
-        integer = isinstance(level, int)
-
-        # determine if we should even emit the given log level
-        if integer and level < self.level:
-            return
-
-        elif isinstance(level, str):
-            level = level.upper()
-            if level in self.custom_levels and self.custom_levels.get(level) < self.level:
-                return
-
-        # if level is an integer then we need to either
-        # retrieve the name or construct one
-        if integer and level in logging._levelNames:
+    def setLevel(self, level):
+        if isinstance(level, int):
             level = logging.getLevelName(level)
 
-        elif integer:
-            level = prefs.get('logging.unknown-level') % level
+        logger.debug("setting level for %s to %s" % (self.system, level))
+        self.level = level
+    # end addLogger
+
+    def msg(self, *message, **kw):
+        if self.disabled or kw['level'] < self.level:
+            return
+
+        kw.setdefault('system', self.system)
+        log.LogPublisher.msg(self, *message, **kw)
+    # end msg
+
+    def debug(self, *args, **kwargs):
+        kwargs.setdefault('level', logging.DEBUG)
+        self.msg(*args, **kwargs)
+    # end debug
+
+    def verbose(self, *args, **kwargs):
+        kwargs.setdefault('level', logging.VERBOSE)
+        self.msg(*args, **kwargs)
+    # end verbose
+
+    def info(self, *args, **kwargs):
+        kwargs.setdefault('level', logging.INFO)
+        self.msg(*args, **kwargs)
+    # end info
+
+    def warning(self, *args, **kwargs):
+        kwargs.setdefault('level', logging.WARNING)
+        self.msg(*args, **kwargs)
+    # end warning
+
+    def error(self, *args, **kwargs):
+        kwargs.setdefault('level', logging.ERROR)
+        self.msg(*args, **kwargs)
+    # end error
+
+    def critical(self, *args, **kwargs):
+        kwargs.setdefault('level', logging.CRITICAL)
+        self.msg(*args, **kwargs)
+    # end critical
+# end Logger
+
+
+class Observer(log.FileLogObserver):
+    STREAMS = {}
+
+    def __init__(self, stream=sys.stdout):
+        self.addcolor = False
+
+        if stream in (sys.stdout, sys.stderr) and ENABLE_TERMCOLOR:
+            self.addcolor = True
+
+        # if the value provided is a string then
+        # we need to create a logfile
+        if isinstance(stream, (str, unicode)):
+            if stream in self.STREAMS:
+                pass
+
+            elif not os.path.isfile(stream):
+                # first make the directory if it does not exist
+                dirname = os.path.dirname(stream)
+                if not os.path.isdir(dirname):
+                    os.makedirs(dirname)
+
+            # if the file already exists roll it over first
+            else:
+                rotating = RotatingFileHandler(
+                    stream, backupCount=prefs.get('logging.backups')
+                )
+                rotating.doRollover()
+                logger.debug("rolling over existing log: %s" % stream)
+
+            _stream = stream
+            stream = open(_stream, 'a')
+            if _stream not in self.STREAMS:
+                logger.info("started logging to: %s" % stream.name)
+                self.STREAMS[_stream] = stream
+
+        self.stream = stream
+        log.FileLogObserver.__init__(self, stream)
+    # end __init__
+
+    def emit(self, eventDict):
+        text = log.textFromEventDict(eventDict)
+        if text is None:
+            return
 
         timeStr = self.formatTime(eventDict['time'])
         fmtDict = {
             'system': eventDict['system'],
-            'text': text.replace("\n", "\n\t"),
-            'level' : level.upper()
+            'text': text.replace("\n", "\n\t")
         }
 
-        msg = timeStr + " " + self.format % fmtDict
+        # assign the level in the format dict and retrieve
+        # the proper level for either the given name or integer
+        level = logging.DEBUG
+        if 'level' in eventDict:
+            if isinstance(eventDict['level'], int):
+                fmtDict['level'] = logging.getLevelName(eventDict['level'])
+                level = eventDict['level']
 
-        # add color if this message is not meant to go into
-        # a file on disk
-        if not self.isfile:
-            msg = self.__colorize(eventDict, msg)
+            elif isinstance(eventDict['level'], (str, unicode)):
+                level = fmtDict['level'] = eventDict['level'].upper()
+                if level in logging._levelNames:
+                    level = logging.getLevelName(level)
 
-        filepath = 'filepath' in eventDict and eventDict['filepath'] == self.stream.name
-        if  filepath or 'filepath' not in eventDict:
-            log.util.untilConcludes(self.write, msg+"\n")
-            log.util.untilConcludes(self.flush)
+        msgStr = log._safeFormat(
+            "%(level)-8s  [%(system)s] %(text)s\n", fmtDict
+        )
+        message = timeStr + " " + msgStr
+
+        # add color if it's enabled and the level we are
+        # logging has a TERMCOLOR assigned
+        if self.addcolor and level in TERMCOLOR:
+            prefix, suffix = TERMCOLOR[level]
+            message = prefix + message + suffix
+
+        log.util.untilConcludes(self.write, message)
+        log.util.untilConcludes(self.flush)
     # end emit
+
+    def __call__(self, eventDict):
+        self.emit(eventDict)
+    # end __call__
 # end Observer
 
-
-
-class LoggingBaseClass(object):
-    '''Adds a custom self.log method to an inherited class'''
-    def log(self, msg, **kwargs):
-        # adds the namespace of the class to the keyword
-        # system argument
-        if 'system' not in kwargs:
-            kwargs['system'] = self.__module__ + "." + self.__class__.__name__
-
-        log.msg(msg, **kwargs)
-    # end log
-# end LoggingBaseClass
-
-
-def timestamp():
-    '''
-    returns a preformatted timestamp based on either an
-    argument or preference
-    '''
-    format = prefs.get('logging.timestamp')
-    return time.strftime(format)
-# end timestamp
-
-observer = Observer()
-observer.start()
+logger = Logger('pyfarm')
+logger.start()
