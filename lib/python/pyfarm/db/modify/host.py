@@ -19,9 +19,15 @@
 
 '''module for modifying network information in the database'''
 
+import datetime
+
 from pyfarm import errors
+from pyfarm.logger import Logger
 from pyfarm.db.tables import hosts
 from pyfarm.db.modify import base
+from pyfarm.datatypes.network import HOSTNAME
+from pyfarm.datatypes import system
+from pyfarm.preferences import prefs
 
 __all__ = ['host']
 
@@ -47,3 +53,44 @@ def host(hostname, **columns):
         **columns
     )
 # end host
+
+
+class UpdateRam(Logger):
+    '''
+    Ensures that we do not attempt to update the ram
+    entry for the current host more often than needed.
+    '''
+    def __init__(self):
+        Logger.__init__(self, self)
+        self.__lastupdate = None
+        self.hostname = HOSTNAME
+        self.timeout = prefs.get('host.ram-update-interval')
+    # end __init__
+
+    @property
+    def lastupdate(self):
+        '''property which returns the time since last update in seconds'''
+        if self.__lastupdate is None:
+            return self.timeout
+
+        else:
+            delta = datetime.datetime.now() - self.__lastupdate
+            return delta.seconds
+    # end lastupdate
+
+    def shouldUpdate(self, force=False):
+        '''returns True if we should update the database entry'''
+        return force or self.lastupdate >= self.timeout
+    # end shouldUpdate
+
+    def update(self, force=False):
+        '''
+        updates the ram used in the database if the last update
+        has exceeded or met the timeout criteria
+        '''
+        if self.shouldUpdate(force):
+            ramuse = system.TOTAL_RAM - system.ram()
+            self.info("updating ram use for %s to %smb" % (self.hostname, ramuse))
+            self.__lastupdate = datetime.datetime.now()
+    # end update
+# end UpdateRam
