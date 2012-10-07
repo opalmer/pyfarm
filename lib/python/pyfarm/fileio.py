@@ -27,13 +27,12 @@ import os
 import imp
 import yaml
 import tempfile
+try: from yaml import CLoader as Loader, CDumper as Dumper
+except ImportError: from yaml import Loader, Dumper
 
-# import the fastest loader/dumper
-try:
-    from yaml import CLoader as Loader, CDumper as Dumper
+from pyfarm.logger import Logger
 
-except ImportError:
-    from yaml import Loader, Dumper
+logger = Logger(__name__)
 
 class yml:
     CACHE = {}
@@ -51,6 +50,7 @@ class yml:
         if force or abspath not in cls.CACHE:
             with open(path, 'r') as stream:
                 cls.CACHE[abspath] = yaml.load(stream, Loader=Loader)
+                logger.debug("loaded %s" % abspath)
 
         return cls.CACHE[abspath]
     # end load
@@ -77,6 +77,7 @@ class yml:
 
         with open(path, 'w') as stream:
             yaml.dump(data, stream, Dumper=Dumper)
+            logger.debug("dumped %s" % path)
 
             return path
     # end dump
@@ -112,5 +113,6 @@ class module:
             stream, path, description = imp.find_module(name, paths)
             module = imp.load_module(name, stream, path, description)
             cls.CACHE[namespace] = module
+            logger.debug("loaded %s" % stream.name)
 
         return cls.CACHE[namespace]
