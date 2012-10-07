@@ -78,10 +78,6 @@ jobs = sql.Table('pyfarm_jobs', metadata,
     sql.Column('batch_frame', sql.Integer, default=1),
 
     # frame statistics
-    sql.Column('count_success', sql.Integer, default=0),
-    sql.Column('count_failed', sql.Integer, default=0),
-    sql.Column('count_running', sql.Integer, default=0),
-    sql.Column('count_total', sql.Integer, default=0),
     sql.Column('frame_longest', sql.Float, default=0),
     sql.Column('frame_shortest', sql.Float, default=0),
     sql.Column('frame_average', sql.Float, default=0),

@@ -67,19 +67,13 @@ class Job(Insert, Logger):
             msg = "%s is not a valid state, valid states" % entry['state']
             msg += "are %s" % self.VALID_STATES
             raise ValueError(msg)
-
-        if 'count_total' not in entry:
-            entry['count_total'] = len(
-                xrange(
-                    entry['start_frame'],
-                    entry['end_frame']+1,
-                    entry['by_frame']
-                )
-            )
     # end postAdd
 
     def postCommit(self):
-        total_frames = sum([ job.count_total for job in self.results ])
+        total_frames = 0
+        for job in self.results:
+            total_frames += len(range(job.start_frame, job.end_frame, job.by_frame))
+
         self.debug("constructing frame entries for %s frames" % total_frames)
         start = time.time()
         frames = Frames()
