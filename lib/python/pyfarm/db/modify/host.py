@@ -104,6 +104,14 @@ class UpdateMemory(Logger):
             self.info(msg)
 
             # finally, update the database
-            host(self.hostname, ram_usage=ramuse, swap_usage=swapuse)
+            try:
+                host(self.hostname, ram_usage=ramuse, swap_usage=swapuse)
+
+            except errors.HostNotFound:
+                msg = "%s does not exist in the table, " % self.hostname
+                msg += "cannot update memory"
+                self.error(msg)
     # end update
 # end UpdateMemory
+
+update_memory = UpdateMemory()
