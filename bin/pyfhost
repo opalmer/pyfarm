@@ -32,7 +32,8 @@ PYTHONLIB = os.environ.get('PYFARM_PYTHONLIB') or os.path.join(ROOT, 'lib', 'pyt
 site.addsitedir(PYTHONLIB)
 
 from pyfarm.host import cmdargs
-from pyfarm import logger, lock
+from pyfarm import lock
+from pyfarm import logger as _logger
 from pyfarm.preferences import prefs
 from pyfarm.datatypes.network import FQDN
 
@@ -45,13 +46,6 @@ options = cmdargs.parser.parse_args()
 if options.db is not None:
     prefs.set('database.setup.config', options.db)
 
-# setup the process lock before starting the log
-PROCESS_LOCK = lock.ProcessLock(
-    'host',
-    kill=options.force_kill, wait=options.wait,
-    remove=options.remove_lock
-)
-
 # determine the location we should log to
 if not options.log:
     root = prefs.get('filesystem.locations.general')
@@ -59,12 +53,18 @@ if not options.log:
 else:
     SERVICE_LOG = os.path.abspath(options.log)
 
-# add an observer for the service log
-LOG_OBSERVER = logger.Observer(SERVICE_LOG)
-LOG_OBSERVER.start()
+_logger.logger.addObserver(_logger.Observer(SERVICE_LOG))
+logger = _logger.logger
+
+# setup the process lock before starting the log
+PROCESS_LOCK = lock.ProcessLock(
+    'host',
+    kill=options.force_kill, wait=options.wait,
+    remove=options.remove_lock
+)
 
 from pyfarm import errors
-from pyfarm.host import process, job, master
+from pyfarm.host import master
 from pyfarm.db import insert, modify, query
 
 from pyfarm.datatypes.system import OS, OperatingSystem
@@ -78,29 +78,22 @@ CWD = os.getcwd()
 MASTER = ()
 SERVICE = None
 
-# log the options being produced by the option parser
-cmdargs.printOptions(options, log)
-
 # PYFARM_RESTART should not start out in the environment
 if 'PYFARM_RESTART' in os.environ:
     del os.environ['PYFARM_RESTART']
 
-class Client(_rpc.Service, logger.LoggingBaseClass):
+class Host(_rpc.Service, _logger.Logger):
     '''
     Main xmlrpc service which controls the host.  Most methods
     are handled entirely outside of this class for the purposes of
     separation of service and logic.
     '''
     # provides a location to store our call to reactor.callLater
-    def __init__(self, log_stream):
-        _rpc.Service.__init__(self, log_stream)
+    def __init__(self):
+        _logger.Logger.__init__(self, self)
+        _rpc.Service.__init__(self, SERVICE_LOG)
 
-        # setup sub handlers
-        self.job = job.Manager(self)
-
-        self.subHandlers = {
-            "job" : self.job
-        }
+        cmdargs.printOptions(options, self.debug)
 
         if options.verify_master:
             if not _rpc.ping(MASTER[0], MASTER[1]):
@@ -152,93 +145,13 @@ class Client(_rpc.Service, logger.LoggingBaseClass):
     # end xmlrpc_setMaster
 
     def _blockShutdown(self):
-        return self.job.xmlrpc_running()
+        return False
     # end _blockShutdown
 
     def _blockRestart(self):
         return self._blockShutdown()
     # end _blockRestart
-
-    def xmlrpc_running(self):
-        '''returns True if there are jobs marked as running by the manager'''
-        if self.job.xmlrpc_running():
-            return True
-        return False
-    # end xmlrpc_running
-
-    def xmlrpc_online(self, state=None):
-        '''
-        Return True of the host is currently online or set
-        the online state if a valid state argument is provided
-
-        :param boolean state:
-            the new online state to set
-
-        :exception xmlrpc.Fault(3):
-            raised if the new state is not in (True, False)
-        '''
-        if state in (True, False):
-            self.job.online = state
-            self.log("host online state set to %s" % str(state))
-
-        elif state is not None:
-            raise xmlrpc.Fault(3, "%s is not a valid state" % str(state))
-
-        return self.job.online
-    # end xmlrpc_online
-
-    def xmlrpc_jobs_max(self, count=None):
-        '''
-        Much like online() this method will return self.jobs_max unless
-        a value for count is provided.
-
-        :param integer count:
-            the new value to set self.max_jobs to
-
-        :exception xmlrpc.Fault(3):
-            raised if the new count is not an integer
-
-        :exception xmlrpc.Fault(8):
-            raised if we attempt to set max jobs to 0
-        '''
-        if count is 0:
-            raise xmlrpc.Fault(8, "cannot set jobs_max to zero")
-
-        if not isinstance(count, int) and not count == None:
-            raise xmlrpc.Fault(3, "%s is not an integer" % str(count))
-
-        elif isinstance(count, int):
-            self.job.job_count_max = count
-
-        # if the current job_count_max is greater
-        # than the processor count then send a warning to the console
-        if self.job.job_count_max > process.CPU_COUNT:
-            args = (self.job.job_count_max, process.CPU_COUNT)
-            self.log(
-                "max job count (%i) is greater than the cpu count (%i)!" % args,
-                level=logging.WARNING
-            )
-
-        # if the job count is unlimited show a warning
-        elif self.job.job_count_max == -1:
-            self.log("max job count is unlimited!", level=logging.WARNING)
-
-        return self.job.job_count_max
-    # end xmlrpc_jobs_max
-
-    def xmlrpc_free(self):
-        '''
-        returns True if there is additional space for processing or if
-        the max number of jobs is unlimited (-1)
-        '''
-        max_count = self.job.job_count_max
-        if max_count == -1 or self.job.job_count < max_count:
-            return True
-
-        return False
-    # end xmlrpc_free
 # end Client
-
 
 # create a lock for the process so we can't run two clients
 # from the same host at once
@@ -264,24 +177,21 @@ with PROCESS_LOCK:
         host_table_keywords['master'] = options.master
 
     elif options.store_master and options.master is None:
-        log.msg(
-            "master will be set to None for %s" % FQDN,
-            level=logging.WARNING
-        )
+        logger.warning("master will be set to None for %s" % FQDN)
         host_table_keywords['master'] = options.master
 
     if query.hosts.exists():
-        log.msg("updating %s in the host table" % FQDN)
+        logger.debug("updating %s in the host table" % FQDN)
         modify.host.host(
             FQDN,
             **host_table_keywords
         )
 
     else:
-        log.msg("inserting %s into the host table" % FQDN, level="INFO")
+        logger.info("inserting %s into the host table" % FQDN)
         insert.host.host(**host_table_keywords)
 
-    SERVICE = Client(SERVICE_LOG)
+    SERVICE = Host()
 
     # start listening for connections with the host
     reactor.listenTCP(options.port, _server.Site(SERVICE))
