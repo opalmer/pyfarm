@@ -116,33 +116,6 @@ class Host(_rpc.Service, _logger.Logger):
         return MASTER
     # end xmlrpc_master
 
-    def xmlrpc_setMaster(self, new_master, database=False):
-        '''
-        sets the master master IP
-
-        :param boolean database:
-            if provided then override the value --set-master provided on
-            the command line
-        '''
-        global MASTER
-        if not isinstance(new_master, (list, tuple)):
-            raise xmlrpc.Fault(
-                0, "invalid master argument, expected tuple(host, por)"
-            )
-
-        self.debug("setting MASTER global to %s" % new_master)
-        MASTER = new_master
-
-        if options.store_master or database:
-            self.debug("setting master in database")
-            modify.host.host(
-                FQDN,
-                master=new_master[0]
-            )
-        else:
-            self.debug("not setting master in database")
-    # end xmlrpc_setMaster
-
     def _blockShutdown(self):
         return False
     # end _blockShutdown
