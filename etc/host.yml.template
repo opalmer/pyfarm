@@ -15,30 +15,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
-# This key can have one of four values, null, -1, relative or any other integer.
-# For more information see below:
-#  Values:
-#     null     - equal to the number of cpus on the system
-#     -1       - unlimited
-#     relative - number of cpus on the system / relative-value
-#     integer  - specific number of max jobs
-#
-max-jobs: relative
-relative-value: 2
-
-# The master to connect to.  This value will be used
-# as the master master by default unless one of
-# the following command line arguments are provided:
-# * --master
-# * --set-master
-# * --lookup-master
-#
-# After the preference has been queried and the above
-# flags are not present then the master will be set in the 
-# database.
-master:
-
-# Equivalent to the --lookup-master flag this will ensure
-# that the master is always looked up in the database instead
-# of using the master setting above.
-lookup-master: false
+# min. time between ram updates for the
+# host in seconds
+ram-update-interval: 300
