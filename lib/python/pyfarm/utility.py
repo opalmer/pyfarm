@@ -49,15 +49,20 @@ class ScheduledRun:
 
     @property
     def lastupdate(self):
+        '''
+        returns the time since last update or the timeout itself
+        if lastrun has not been set
+        '''
         if self.lastrun is None:
             return self.timeout
 
         else:
             delta = datetime.datetime.now() - self.lastrun
-            return delta.seconds
+            return delta.seconds + 1 # accounts for most inaccuracies in time calc
     # end lastupdate
 
     def shouldRun(self, force=False):
-        return force or self.lastupdate >= self.timeout
+        '''return True if the update process should run'''
+        return force or self.lastupdate >= self.timeout-1
     # end shouldRun
 # end ScheduledRun
