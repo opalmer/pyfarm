@@ -22,7 +22,6 @@ import os
 import sys
 import inspect
 import logging
-import traceback
 from logging.handlers import  RotatingFileHandler
 from twisted.python import log
 from colorama import Fore, Back, Style, init
