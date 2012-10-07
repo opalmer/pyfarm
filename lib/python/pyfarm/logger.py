@@ -72,10 +72,10 @@ class Logger(log.LogPublisher):
         self.__observers = []
 
         if stdout_observer:
-            self.start()
+            self.startLogger()
     # end __init__
 
-    def start(self):
+    def startLogger(self):
         '''
         starts the logger by either adding a default observer or
         restoring any previous observers
@@ -231,4 +231,4 @@ class Observer(log.FileLogObserver):
 # end Observer
 
 logger = Logger('pyfarm')
-logger.start()
+logger.startLogger()
