@@ -49,6 +49,7 @@ TERMCOLOR = {
 class Logger(log.LogPublisher):
     def __init__(self, system=None, stdout_observer=True, inherit_observers=True):
         log.LogPublisher.__init__(self)
+        self.stdout_observer = stdout_observer
 
         if inherit_observers and logger is not None:
             for observer in logger.observers:
@@ -84,7 +85,7 @@ class Logger(log.LogPublisher):
             self.observers = self.__observers[:]
             del self.__observers[:]
 
-        elif not self.observers:
+        elif not self.observers and self.stdout_observer:
             self.addObserver()
     # end start
 
@@ -210,9 +211,15 @@ class Observer(log.FileLogObserver):
                 if level in logging._levelNames:
                     level = logging.getLevelName(level)
 
-        msgStr = log._safeFormat(
-            "%(level)-8s  [%(system)s] %(text)s\n", fmtDict
-        )
+        if fmtDict['system'] is not None:
+            msgStr = log._safeFormat(
+                "%(level)-8s  [%(system)s] %(text)s\n", fmtDict
+            )
+        else:
+            msgStr = log._safeFormat(
+                "%(level)-8s %(text)s\n", fmtDict
+            )
+
         message = timeStr + " " + msgStr
 
         # add color if it's enabled and the level we are
