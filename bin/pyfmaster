@@ -91,14 +91,6 @@ class Master(_rpc.Service, _logger.Logger):
 
         cmdargs.printOptions(options, self.debug)
     # end __init__
-
-    def xmlrpc_requestWork(self, hostname):
-        '''run when a remote host requests work from the master'''
-        assign_work = callbacks.AssignWorkToClient(hostname)
-        deferred = threads.deferToThread(assign_work)
-        deferred.addCallback(assign_work.sendWork)
-        deferred.addErrback(assign_work.rejectRequest)
-    # end xmlrpc_requestWork
 # end Server
 
 # create a lock for the process so we can't run two servers
