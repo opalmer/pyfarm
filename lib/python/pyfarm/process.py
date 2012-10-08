@@ -212,16 +212,17 @@ class Process(Logger):
 
             args = (State.get(self.job.row_frame.state), state_name)
             self.info("updating frame state from %s to %s" % args)
-            args = (frame.attempts, frame.attempts + 1)
-            self.info("updating frame attempts from %s to %s" % args)
             frame.state = state
-            frame.attempts += 1
 
             if state == State.RUNNING:
                 start = datetime.datetime.now()
+                self.info("updating frame start to %s" % start)
                 frame.time_start = start
                 frame.time_end = None
-                self.info("updating frame start to %s" % start)
+
+                args = (frame.attempts, frame.attempts + 1)
+                self.info("updating frame attempts from %s to %s" % args)
+                frame.attempts += 1
             else:
                 end = datetime.datetime.now()
                 frame.time_end = end
