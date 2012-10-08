@@ -66,11 +66,10 @@ from pyfarm import errors
 from pyfarm.host import master
 from pyfarm.db import insert, modify, query
 from pyfarm.db.modify.host import update_memory
-
 from pyfarm.datatypes.system import OS, OperatingSystem
+from pyfarm.datatypes import network
 from pyfarm.net import rpc as _rpc
 from twisted.internet import reactor, task
-from twisted.web import xmlrpc
 from twisted.web import server as _server
 
 CWD = os.getcwd()
@@ -164,6 +163,9 @@ with PROCESS_LOCK:
         insert.host.host(**host_table_keywords)
 
     SERVICE = Host()
+
+    # assign the host id
+    network.HOSTNAME = query.hosts.hostid(network.FQDN)
 
     # schedule memory updates
     update_memory_task = task.LoopingCall(update_memory.update)
