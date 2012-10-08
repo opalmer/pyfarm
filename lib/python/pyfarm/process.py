@@ -33,7 +33,6 @@ from pyfarm.logger import Logger, Observer
 from pyfarm.jobtypes.base import job
 from pyfarm.datatypes.enums import State
 from pyfarm.datatypes.system import OS, OperatingSystem, USER
-from pyfarm.datatypes.network import HOSTID
 from pyfarm.db.modify.host import update_memory
 from pyfarm.db.contexts import Session
 from pyfarm.db import tables
@@ -228,14 +227,7 @@ class Process(Logger):
                 frame.time_end = end
                 self.info("updating frame end to %s" % end)
 
-            # This value should be populated before
-            # we try to use it.  The only reason why this
-            # check is even here is because we are expecting the top
-            # level script to set this up for us
-            if HOSTID is None:
-                raise ValueError("expected network.HOSTID to be set")
-
-            frame.host = HOSTID
+            raise NotImplementedError("!!! TODO :hostid should be set by master")
 
             if state in (State.DONE, State.FAILED):
                 ramuse = max(self.memsurvey.rss)
@@ -288,6 +280,7 @@ class Process(Logger):
         # turn off the memory survey
         self.memsurvey.process = None
         self.memsurvey_task.stop()
+        self.process = None
 
         exit_code = reason.value.exitCode
         info = "process %s exited with status %s" % (self.pid, exit_code)
@@ -302,7 +295,10 @@ class Process(Logger):
             elif exit_code is None:
                 self.error("%s failed to return an exit code" % self.pid)
 
-            self.updateState(State.FAILED)
+            self.updateState(State.ASSIGN)
+            raise NotImplementedError(
+                "!!! TODO: rerun failed frames locally (not via master)"
+            )
         else:
             self.updateState(State.DONE)
 

@@ -18,9 +18,9 @@
 
 import datetime
 import threading
-from itertools import chain, ifilter
-from sqlalchemy import func
+from itertools import chain
 
+from pyfarm import errors
 from pyfarm.logger import Logger
 from pyfarm.preferences import prefs
 from pyfarm.utility import ScheduledRun
@@ -220,6 +220,19 @@ class Assignment(ScheduledRun, Logger):
             host = query.get(job.ram, job.cpus)
             if host:
                 print "=== assign ",frame
+
+#                with session.Session(tables.frames) as trans:
+#                    dbframe = trans.query.filter(
+#                        tables.frames.c.id == frame.id
+#                    ).first()
+#
+#                    if dbframe is None:
+#                        raise errors.FrameNotFound(id=frame.id)
+
+                    # TODO: set frame state == State.ASSIGN
+                    # TODO: set frame.hostid == host.id
+                    #dbframe.hostid = host.id
+                    #dbframe.state = State.ASSIGN
 
 
     # end getWork
