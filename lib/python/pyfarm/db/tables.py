@@ -72,20 +72,11 @@ jobs = sql.Table('pyfarm_jobs', metadata,
     sql.Column('priority', sql.Integer, default=prefs.get('jobsystem.priority-default')),
 
     # frame range declaration
-    sql.Column('start_frame', sql.Float),
-    sql.Column('end_frame', sql.Float),
-    sql.Column('by_frame', sql.Float),
+    sql.Column('start_frame', sql.Integer),
+    sql.Column('end_frame', sql.Integer),
+    sql.Column('by_frame', sql.Integer, default=1),
     sql.Column('batch_frame', sql.Integer, default=1),
 
-    # frame statistics
-    sql.Column('frame_longest', sql.Float, default=0),
-    sql.Column('frame_shortest', sql.Float, default=0),
-    sql.Column('frame_average', sql.Float, default=0),
-
-    # timers
-    sql.Column('time_start', sql.DateTime, default=None),
-    sql.Column('time_end', sql.DateTime, default=None),
-    sql.Column('time_elapsed', sql.DateTime, default=None),
     sql.Column('time_submitted', sql.DateTime, default=datetime.datetime.now),
 
     # job setup
@@ -116,7 +107,7 @@ frames = sql.Table('pyfarm_frames', metadata,
     sql.Column('jobid', sql.Integer, sql.ForeignKey(jobs.c.id)),
     sql.Column('priority', sql.Integer, default=prefs.get('jobsystem.priority-default')),
     sql.Column('host', sql.Integer, sql.ForeignKey(hosts.c.id), default=None),
-    sql.Column('frame', sql.Float),
+    sql.Column('frame', sql.Integer),
     sql.Column('state', sql.Integer, default=State.QUEUED),
     sql.Column('attempts', sql.Integer, default=0),
     sql.Column('ram', sql.Integer, default=None),
