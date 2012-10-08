@@ -82,6 +82,7 @@ State = Enum(
 
 # python datatypes for type comparison
 ACTIVE_JOB_STATES = (State.QUEUED, State.RUNNING)
+ACTIVE_FRAME_STATES = (State.QUEUED, State.FAILED)
 
 # defaults when creating host
 DEFAULT_GROUPS = ['*']
