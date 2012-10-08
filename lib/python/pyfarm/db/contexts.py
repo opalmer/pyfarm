@@ -37,7 +37,9 @@ class Session(Logger):
     :param object base:
         optional base to map query onto
     '''
-    def __init__(self, table, base=None, system=None):
+    def __init__(self, table, base=None, system=None,
+                 close_connections=prefs.get('database.setup.close-connections')
+        ):
         class Entry(object):
             '''
             base object which represents all results and has a "nice"
@@ -70,6 +72,7 @@ class Session(Logger):
         self.base = base or Entry
         self.table = table
         self.tablename = self.table.fullname
+        self.close_connections = close_connections
 
         # single engine per run (this MAY be needed later)
         self.engine = session.ENGINE
@@ -103,7 +106,7 @@ class Session(Logger):
         self.query.session.close()
 
         # close the database connection
-        if prefs.get('database.setup.close-connections'):
+        if  self.close_connections:
             self.query.session.bind.dispose()
 
         self.end = time.time()
