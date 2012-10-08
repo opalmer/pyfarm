@@ -116,3 +116,5 @@ if IP is None:
 
 if SUBNET is None:
     raise errors.NetworkSetupError("failed to setup subnet")
+
+HOSTID = None # populated by the top level process
