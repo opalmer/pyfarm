@@ -73,10 +73,10 @@ def hostid(hostname):
 
     :rtype None or string:
     '''
-    with Session(hosts, system="common.db.query.hosts.hostid") as trans:
+    with Session(hosts) as trans:
         query = trans.query.filter(hosts.c.hostname == hostname).first()
         if query is None:
-            trans.log("failed to find host %s in the database" % hostname)
+            trans.error("failed to find host %s in the database" % hostname)
             return None
 
         return query.id
