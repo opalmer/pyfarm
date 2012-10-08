@@ -16,12 +16,14 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
-import threading
 import datetime
+import threading
+from sqlalchemy import orm
 
 from pyfarm.logger import Logger
 from pyfarm.preferences import prefs
 from pyfarm.utility import ScheduledRun
+from pyfarm.db import session, tables, contexts
 
 class Assignment(ScheduledRun, Logger):
     '''
@@ -34,13 +36,42 @@ class Assignment(ScheduledRun, Logger):
         ScheduledRun.__init__(self, prefs.get('master.assignment-interval'))
     # end __init__
 
+    def getWork(self):
+        '''
+        return a dictionary of hosts and frame ids to assign to assign to
+        each host
+        '''
+        assignments = {}
+        connection = session.ENGINE.connect()
+
+        with contexts.Connection(connection):
+            scoped_session = orm.scoped_session(session.Session)
+            query = scoped_session.query(tables.hosts)
+            online_hosts = query.filter(tables.hosts.c.online == True)
+
+            # nothing we can do of there are not any hosts
+            # online
+            if not online_hosts.count():
+                self.warning("no hosts online to assign to")
+                return
+
+            for host in online_hosts:
+                print host
+    # end getWork
+
     def run(self, force=False):
         with Assignment.LOCK: # only want one thread at a time to have access
+            # check one last time before we attempt to run
+            # the assignment
             if not self.shouldRun(force):
                 self.warning("skipping assignment, lastrun < interval")
                 return
 
-            self.lastrun = datetime.datetime.now()
             self.info("running assignment")
+
+            work = self.getWork()
+
+            self.debug("finished assignment")
+            self.lastrun = datetime.datetime.now()
     # end run
 # end Assignment

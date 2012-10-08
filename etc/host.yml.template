@@ -18,3 +18,10 @@
 # min. time between ram updates for the
 # host in seconds
 ram-update-interval: 300
+
+# How often we should check the current process
+# for ram usage.  This is different
+# from ram-update-interval in that we use the
+# results from this check to update a frame's
+# max ram usage when the process exits
+proc-mem-survey-interval: 5

@@ -17,7 +17,11 @@
 # along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
+import psutil
+import datetime
+from itertools import imap
 from UserDict import UserDict
+from twisted.internet import task
 
 try:
     import pwd
@@ -27,13 +31,68 @@ except ImportError:
 
 from pyfarm.logger import Logger, Observer
 from pyfarm.jobtypes.base import job
+from pyfarm.datatypes.enums import State
 from pyfarm.datatypes.system import OS, OperatingSystem, USER
+from pyfarm.datatypes.network import HOSTID
 from pyfarm.db.modify.host import update_memory
+from pyfarm.db.contexts import Session
+from pyfarm.db import tables
+from pyfarm import errors
+from pyfarm.utility import ScheduledRun
+from pyfarm.preferences import prefs
 
 from twisted.internet import protocol, reactor, error
 
 # TODO: documentation
 # TODO: db handling on process success/finish
+
+class MemorySurvey(ScheduledRun, Logger):
+    def __init__(self):
+        ScheduledRun.__init__(self, prefs.get('host.proc-mem-survey-interval'))
+        Logger.__init__(self, self)
+        self.process = None
+        self.pid = None
+        self.vms = []
+        self.rss = []
+    # end __init__
+
+    def setup(self, pid):
+        if self.process is None:
+            self.process = psutil.Process(pid)
+            self.pid = pid
+    # end process
+
+    def run(self, force=False):
+        if self.process is None:
+            self.error("process has not been setup yet")
+
+        elif self.shouldRun(force):
+            meminfo = self.process.get_memory_info()
+            vms = [ meminfo.vms ]
+            rss = [ meminfo.rss ]
+
+            for process in self.process.get_children(recursive=True):
+                child_meminfo = process.get_memory_info()
+                vms.append(child_meminfo.vms)
+                rss.append(child_meminfo.rss)
+
+            # get the total ram usage across all processes (children
+            # included)
+            vms = sum(vms) / 1024 / 1024
+            rss = sum(rss) / 1024 / 1024
+
+            # since could be
+            if vms not in self.vms:
+                self.vms.append(vms)
+
+            if rss not in self.rss:
+                self.rss.append(rss)
+
+            args = (self.pid, vms, rss)
+            self.debug("ran memory survey for parent %s (vms: %s, rss: %s)" % args)
+    # end run
+# end MemorySurvey
+
 
 class ProcessProtocol(protocol.ProcessProtocol, Logger):
     def __init__(self, process, arguments, log):
@@ -52,7 +111,7 @@ class ProcessProtocol(protocol.ProcessProtocol, Logger):
         '''send a log message the the process log file'''
         self.transport.write(" ".join(self.arguments))
         self.transport.closeStdin()
-        update_memory.update(force=True, reset=False)
+        self.process.running = True
     # end connectionMade
 
     def outReceived(self, data):
@@ -64,19 +123,8 @@ class ProcessProtocol(protocol.ProcessProtocol, Logger):
     # end errReceived
 
     def processExited(self, reason):
-        exit_code = reason.value.exitCode
-        info = "process %s exited with status %s" % (self.process.pid, exit_code)
-        self.info(info)
-
-        if exit_code != 0:
-            args = (self.process.command, exit_code, self.process.pid)
-            error = "'%s' failed (exit %s, pid %s)" % args
-            self.error(error)
-
-        self.debug("calling post exit")
-        self.process.postexit(self)
+        self.process.stopped(reason)
         self.removeObserver(self.observer)
-        update_memory.update(force=True, reset=False)
     # end processExited
 # end ProcessProtocol
 
@@ -86,15 +134,20 @@ class Process(Logger):
     wraps the process protocol and separates the start, stop, and signaling
     from the  process protocol itself
     '''
-    def __init__(self, command, args, environ, log, user=None):
+    def __init__(self, command, args, environ, log, user=None, job=None):
         Logger.__init__(self, self)
         self._command = command
         self._args = args
+        self.job = job
         self.user = user or USER
         self.process = None
+        self.pid = None
+        self.runnning = False
         self.environ = {}
         self.command = " ".join(args)
         self.protocol = ProcessProtocol(self, self._args, log)
+        self.memsurvey = MemorySurvey()
+        self.memsurvey_task = task.LoopingCall(self.memsurvey.run)
 
         # populate the initial environment from the
         # incoming dictionary
@@ -136,34 +189,61 @@ class Process(Logger):
                 self.debug(msg)
     # end __init__
 
-    def prestart(self):
-        '''
-        Called before the command has started and can be overridden
-        by subclasses looking to define a behavior after starting.
-        '''
-        pass
-    # end prestart
+    def updateState(self, state):
+        state_name = State.get(state)
 
-    def poststart(self):
-        '''
-        Called after the command has started and can be overridden
-        by subclasses looking to define a behavior after starting.
-        '''
-        pass
-    # end poststart
+        if self.job is None:
+            self.error("cannot update database, job is None")
+            return
 
-    def postexit(self, protocol):
-        '''
-        Called after the process has exited and should be overridden
-        by subclasses looking to define a behavior after the process exits
-        '''
-        pass
-    # end postexit
+        elif state not in (State.FAILED, State.DONE, State.RUNNING):
+            msg = "not updating state to %s in db, can only" % state_name
+            msg += "update to DONE, FAILED, or RUNNING"
+            self.warning(msg)
+            return
+
+        with Session(tables.frames) as trans:
+            frame = trans.query.filter(
+                tables.frames.c.id == self.job.row_frame.id
+            ).first()
+
+            if frame is None:
+                raise errors.FrameNotFound(id=self.job.row_frame.id)
+
+            args = (State.get(self.job.row_frame.state), state_name)
+            self.info("updating frame state from %s to %s" % args)
+            args = (frame.attempts, frame.attempts + 1)
+            self.info("updating frame attempts from %s to %s" % args)
+            frame.state = state
+            frame.attempts += 1
+
+            if state == State.RUNNING:
+                start = datetime.datetime.now()
+                frame.time_start = start
+                frame.time_end = None
+                self.info("updating frame start to %s" % start)
+            else:
+                end = datetime.datetime.now()
+                frame.time_end = end
+                self.info("updating frame end to %s" % end)
+
+            # This value should be populated before
+            # we try to use it.  The only reason why this
+            # check is even here is because we are expecting the top
+            # level script to set this up for us
+            if HOSTID is None:
+                raise ValueError("expected network.HOSTID to be set")
+
+            frame.host = HOSTID
+
+            if state in (State.DONE, State.FAILED):
+                ramuse = max(self.memsurvey.rss)
+                self.info("updating frame ram usage to %s" % ramuse)
+                frame.ram = ramuse
+    # end updateState
 
     def start(self):
         if self.process is None:
-            self.debug("calling prerun")
-            self.prestart()
             self.debug('running: %s' % self.command)
 
             # try to spawn the process though it's
@@ -178,13 +258,55 @@ class Process(Logger):
                 self.error(e)
                 raise
 
-            self.pid = self.process.pid
-            self.info("process %s started" % self.pid)
-            self.debug("calling poststart")
-            self.poststart()
+            if self.running:
+                self.started()
+
         else:
             self.warning("process already started (pid %s)" % self.pid)
     # end start
+
+    def started(self):
+        '''called when the process has started'''
+        self.pid = self.process.pid
+        self.info("process %s started" % self.pid)
+
+        # update the database with our host's current ram usage
+        update_memory.update(force=True, reset=False)
+
+        # update the row to indicate this frame is running (and
+        # on what host)
+        self.updateState(State.RUNNING)
+
+        # start the memory survey task
+        self.memsurvey.setup(self.pid)
+        self.memsurvey_task.start(self.memsurvey.timeout)
+    # end started
+
+    def stopped(self, reason):
+        '''called when the process has stopped'''
+        # turn off the memory survey
+        self.memsurvey.process = None
+        self.memsurvey_task.stop()
+
+        exit_code = reason.value.exitCode
+        info = "process %s exited with status %s" % (self.pid, exit_code)
+        self.info(info)
+
+        if exit_code != 0:
+            if isinstance(exit_code, int):
+                args = (self.process.command, exit_code, self.pid)
+                error = "%s failed (exit %s, pid %s)" % args
+                self.error(error)
+
+            elif exit_code is None:
+                self.error("%s failed to return an exit code" % self.pid)
+
+            self.updateState(State.FAILED)
+        else:
+            self.updateState(State.DONE)
+
+        update_memory.update(force=True, reset=False)
+    # end stopped
 
     def signal(self, signal):
         try:
@@ -220,7 +342,7 @@ class ProcessFrame(job.Frame, Process):
         Process.__init__(self,
             self.command, self.args,
             self.environ, self.logfile,
-            user=self.user
+            user=self.user, job=self
         )
     # end __init__
 # end ProcessRow
