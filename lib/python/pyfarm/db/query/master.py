@@ -86,6 +86,7 @@ def online(hostname=None):
             online_hosts = trans.query.filter_by(online=True).all()
             logger.debug("randomly selecting online host")
             if not online_hosts:
+                logger.warning("no masters online, try launching with --master")
                 raise errors.HostsOffline(table=masters)
             else:
                 return random.choice([entry.hostname for entry in online_hosts])
