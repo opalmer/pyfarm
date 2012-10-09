@@ -40,7 +40,7 @@ logger = Logger(__name__)
 def host(
         hostname=None, port=None, master=None, ip=None, subnet=None, os=None,
         ram_total=None, ram_usage=None, swap_total=None, swap_usage=None,
-        cpu_count=None, online=None, groups=None, software=None, jobtypes=None,
+        cpus=None, online=None, groups=None, software=None, jobtypes=None,
         error=True, drop=False
     ):
     '''
@@ -180,13 +180,13 @@ def host(
     data['swap_usage'] = swap_usage
 
     # setup cpu count
-    if local and cpu_count is None:
-        cpu_count = system.CPU_COUNT
+    if local and cpus is None:
+        cpus = system.CPU_COUNT
 
-    elif not local and cpu_count is None:
-        raise ValueError("cpu_count must be provided when hostname is not local")
+    elif not local and cpus is None:
+        raise ValueError("cpus must be provided when hostname is not local")
 
-    data['cpu_count'] = cpu_count
+    data['cpus'] = cpus
 
     # online setup
     if online is None:

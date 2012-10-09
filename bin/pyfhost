@@ -137,7 +137,7 @@ with PROCESS_LOCK:
     # the database
     host_table_keywords = {
         "ram_total" : options.ram,
-        "cpu_count" : options.cpus,
+        "cpus" : options.cpus,
         "online" : options.online,
         "groups" : options.groups,
         "software" : options.software,
