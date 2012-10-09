@@ -4,9 +4,13 @@
 randomly assigns several jobs/frames to hosts
 '''
 
+import os
 import sys
 import random
-sys.path.append("../../lib/python")
+
+cwd = os.path.dirname(os.path.abspath(__file__))
+path = os.path.abspath(os.path.join(cwd, "..", "..", "lib", "python"))
+sys.path.append(path)
 
 from pyfarm.db import tables
 from pyfarm.db.contexts import Session
