@@ -49,7 +49,8 @@ hosts = sql.Table('pyfarm_hosts', metadata,
     sql.Column('online', sql.Boolean, nullable=False, default=True),
     sql.Column('groups', sql.PickleType, default=DEFAULT_GROUPS),
     sql.Column('software', sql.PickleType, default=DEFAULT_SOFTWARE),
-    sql.Column('jobtypes', sql.PickleType, default=DEFAULT_JOBTYPES)
+    sql.Column('jobtypes', sql.PickleType, default=DEFAULT_JOBTYPES),
+    sql.Column('jobs', sql.PickleType, default=[])
 )
 
 # MASTERS TABLE ATTRIBUTES
