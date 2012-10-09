@@ -158,11 +158,25 @@ class Assignment(ScheduledRun, Logger):
         return results or None
     # end getHosts
 
+
+    def getFramesOnHosts(self):
+        # TODO: implementation (and rename)?)
+        # for host in onlineHosts:
+        # with Session frames
+        # filter ( columns.hostid == host.id)
+        # .filter( columns.state.in_(RUNNING, ASSIGN)
+        # ^ also retrieves the job id(s)
+
+        self.warning("TODO:")
+        self.warning("-----> should get running frames directly from the frames table")
+
+
     def getWork(self):
         '''
         return a dictionary of hosts and frame ids to assign to assign to
         each host
         '''
+        self.getFramesOnHosts()
         hosts = self.getHosts()
         if hosts is None:
             self.error("cannot continue, failed to find any hosts for assignment")
@@ -200,6 +214,10 @@ class Assignment(ScheduledRun, Logger):
                 print host.hostname, frame
                 host.cpus -= job.cpus
                 host.ram_usage += job.ram
+
+        # TODO: set host on frame to hostid
+        # TODO: mark frame as ASSIGN
+        # TODO: set job as RUNNING if not already set
 
     # end getWork
 
