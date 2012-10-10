@@ -81,6 +81,7 @@ State = Enum(
 )
 
 # python datatypes for type comparison
+ACTIVE_HOSTS_FRAME_STATES = (State.RUNNING, State.ASSIGN)
 ACTIVE_JOB_STATES = (State.QUEUED, State.RUNNING)
 ACTIVE_FRAME_STATES = (State.QUEUED, State.FAILED)
 
