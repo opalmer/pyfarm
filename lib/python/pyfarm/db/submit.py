@@ -35,9 +35,9 @@ class Frames(Insert):
         State.PAUSED, State.QUEUED, State.DONE,
         State.FAILED
     )
-    def __init__(self, jobid=None):
+    def __init__(self, job=None):
         Insert.__init__(self, tables.frames)
-        self.jobid = jobid
+        self.job = job
     # end __init__
 
     def postAdd(self, entry):
@@ -46,7 +46,7 @@ class Frames(Insert):
             msg += "are %s" % self.VALID_STATES
             raise ValueError(msg)
 
-        entry.setdefault('jobid', self.jobid)
+        entry.setdefault('job', self.job)
     # end postAdd
 # end Frames
 
@@ -82,7 +82,7 @@ class Job(Insert, Logger):
         percents = []
         for job in self.results:
             for frame in xrange(job.start_frame, job.end_frame+1, job.by_frame):
-                frame_data = {'frame' : frame, 'jobid' : job.id}
+                frame_data = {'frame' : frame, 'job' : job.id}
                 frames.add(**frame_data)
                 framenum += 1
                 completion = framenum / float(total_frames)
