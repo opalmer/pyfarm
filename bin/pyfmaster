@@ -38,7 +38,7 @@ from pyfarm.master import cmdargs
 from pyfarm import lock
 from pyfarm import logger as _logger
 from pyfarm.preferences import prefs
-from pyfarm.datatypes.network import FQDN
+from pyfarm.datatypes import network
 
 # Handle command line input before importing anything else.  This
 # ensures that if -h or --help is requested or if we have trouble
@@ -59,7 +59,7 @@ PROCESS_LOCK = lock.ProcessLock(
 # determine the location we should log to
 if not options.log:
     root = prefs.get('filesystem.locations.general')
-    SERVICE_LOG = os.path.join(root, 'master-%s.log' % FQDN)
+    SERVICE_LOG = os.path.join(root, 'master-%s.log' % network.FQDN)
 else:
     SERVICE_LOG = os.path.abspath(options.log)
 
@@ -136,7 +136,7 @@ with PROCESS_LOCK:
     # determine the location we should log to
     if not options.log:
         root = prefs.get('filesystem.locations.general')
-        SERVICE_LOG = os.path.join(root, 'master-%s.log' % FQDN)
+        SERVICE_LOG = os.path.join(root, 'master-%s.log' % network.FQDN)
     else:
         SERVICE_LOG = os.path.abspath(options.log)
 
@@ -158,7 +158,7 @@ with PROCESS_LOCK:
         "subnet" : SUBNET
     }
 
-    if query.master.exists(FQDN):
+    if query.master.exists(network.FQDN):
         update_function = modify.master.master
 
     else:
@@ -168,16 +168,20 @@ with PROCESS_LOCK:
     # to a thread to prevent blocking for occurring
     # but in this case we can't really move on till this
     # completes
-    update_function(FQDN, **master_table_data)
+    result = update_function(network.FQDN, **master_table_data)
+    if not result:
+        raise ValueError("expected a result after the master update/insertion")
+
+    network.HOSTID = result[0]
 
     # start the reactor
     reactor.listenTCP(options.port, _server.Site(SERVICE))
-    SERVICE.info("running master at http://%s:%i" % (FQDN, options.port))
+    SERVICE.info("running master at http://%s:%i" % (network.FQDN, options.port))
     reactor.run()
 
     # set this master as offline
     SERVICE.debug("setting master as offline in database")
-    modify.master.master(FQDN, online=False)
+    modify.master.master(network.FQDN, online=False)
 
 # If RESTART has been set to True then restart the master
 # script.  This must be done after the reactor and has been
