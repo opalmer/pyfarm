@@ -46,10 +46,7 @@ hosts = sql.Table('pyfarm_hosts', metadata,
     sql.Column('swap_total', sql.Integer),
     sql.Column('swap_usage', sql.Integer),
     sql.Column('cpus', sql.Integer),
-    sql.Column('online', sql.Boolean, nullable=False, default=True),
-    sql.Column('groups', sql.PickleType, default=DEFAULT_GROUPS),
-    sql.Column('software', sql.PickleType, default=DEFAULT_SOFTWARE),
-    sql.Column('jobtypes', sql.PickleType, default=DEFAULT_JOBTYPES)
+    sql.Column('online', sql.Boolean, nullable=False, default=True)
 )
 
 # MASTERS TABLE ATTRIBUTES
@@ -114,8 +111,46 @@ frames = sql.Table('pyfarm_frames', metadata,
     sql.Column('ram', sql.Integer, default=None),
     sql.Column('time_start', sql.DateTime, default=None),
     sql.Column('time_end', sql.DateTime, default=None),
-    sql.Column('time_submitted', sql.DateTime, default=datetime.datetime.now),
-    sql.Column('dependencies', sql.PickleType, default=[])
+    sql.Column('time_submitted', sql.DateTime, default=datetime.datetime.now)
+)
+
+# TODO: *join* and performance testing
+job_dependencies = sql.Table('pyfarm_job_dependencies', metadata,
+    sql.Column('id', sql.Integer, autoincrement=True, primary_key=True),
+    sql.Column('job', sql.Integer, sql.ForeignKey(jobs.c.id), default=None),
+    sql.Column('dependency', sql.Integer, sql.ForeignKey(jobs.c.id), default=None)
+)
+
+frame_dependencies = sql.Table('pyfarm_frame_dependencies', metadata,
+    sql.Column('id', sql.Integer, autoincrement=True, primary_key=True),
+    sql.Column('frame', sql.Integer, sql.ForeignKey(frames.c.id), default=None),
+    sql.Column('dependency', sql.Integer, sql.ForeignKey(frames.c.id), default=None)
+)
+
+host_groups  = sql.Table('pyfarm_host_groups', metadata,
+    sql.Column('id', sql.Integer, autoincrement=True, primary_key=True),
+    sql.Column('host', sql.Integer, sql.ForeignKey(hosts.c.id), default=None),
+    sql.Column('groups', sql.String(128))
+)
+
+host_software = sql.Table('pyfarm_host_software', metadata,
+    sql.Column('id', sql.Integer, autoincrement=True, primary_key=True),
+    sql.Column('host', sql.Integer, sql.ForeignKey(hosts.c.id), default=None),
+    sql.Column('software', sql.String(128))
+)
+
+host_jobtypes = sql.Table('pyfarm_host_jobtypes', metadata,
+    sql.Column('id', sql.Integer, autoincrement=True, primary_key=True),
+    sql.Column('host', sql.Integer, sql.ForeignKey(hosts.c.id), default=None),
+    sql.Column('jobtype', sql.String(128))
+)
+
+# allows hosts to be reserved as a resource for a job and/or frame
+host_reservations = sql.Table('pyfarm_host_reservations', metadata,
+    sql.Column('id', sql.Integer, autoincrement=True, primary_key=True),
+    sql.Column('host', sql.Integer, sql.ForeignKey(hosts.c.id), default=None),
+    sql.Column('job', sql.Integer, sql.ForeignKey(jobs.c.id)),
+    sql.Column('frame', sql.Integer, sql.ForeignKey(frames.c.id))
 )
 
 def init(rebuild=False):
