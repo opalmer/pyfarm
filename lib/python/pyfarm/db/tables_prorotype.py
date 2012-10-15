@@ -1,49 +1,22 @@
-import datetime
+from pyfarm.db.tables.base import PyFarmBase
 
 try:
     from collections import OrderedDict
 except ImportError:
     from ordereddict import OrderedDict
 
-from pyfarm.datatypes.enums import State, ACTIVE_HOSTS_FRAME_STATES
+from pyfarm.datatypes.enums import State, \
+    ACTIVE_HOSTS_FRAME_STATES, ACTIVE_FRAME_STATES, ACTIVE_JOB_STATES
 
-from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, sessionmaker
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey
-from sqlalchemy import create_engine, orm, and_
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy import create_engine, and_
 
-engine = create_engine('sqlite:///:memory:', echo=True)
-
-class PyFarmBase(object):
-    '''
-    base class which defines some base functions and attributes
-    for all classes to inherit
-    '''
-    repr_attrs = ()
-
-    # base column definitions which all other classes inherit
-    id = Column(Integer, primary_key=True, autoincrement=True)
-
-    def __repr__(self):
-        values = []
-
-        for attr in self.repr_attrs:
-            original_value = getattr(self, attr)
-
-            # for unicode use a slightly nicer representation
-            if isinstance(original_value, unicode):
-                value = "'%s'"  % original_value
-            else:
-                value = repr(original_value)
-
-            values.append("%s=%s" % (attr, value))
-
-        return "%s(%s)" % (self.__class__.__name__, ", ".join(values))
-    # __repr__
-# end PyFarmBase
-
-Base = declarative_base(cls=PyFarmBase)
-Base.metadata.bind = engine
+# recreate the base for testing
+from pyfarm.db.tables import PyFarmBase
+engine = create_engine("sqlite:///:memory:", echo=False)
+Base = declarative_base(cls=PyFarmBase, bind=engine)
 
 class Host(Base):
     '''base host definition'''
@@ -56,10 +29,10 @@ class Host(Base):
     hostname = Column(String(255), nullable=False, unique=True)
 
     # relational definitions
-    software = relationship('Software', uselist=True, backref=__tablename__)
-    groups = relationship('Group', uselist=True, backref=__tablename__)
+    software = relationship('Software', uselist=True, backref="ref_software")
+    groups = relationship('Group', uselist=True, backref="ref_groups")
     running_frames = relationship(
-        'Frame', uselist=True, backref=__tablename__,
+        'Frame', uselist=True, backref="ref_running_frames",
         primaryjoin=lambda: and_(
             Frame.hostid == Host.id,
             Frame.state.in_(ACTIVE_HOSTS_FRAME_STATES)
@@ -81,7 +54,7 @@ class Software(Base):
     # column definitions
     host = Column(Integer, ForeignKey(Host.id))
     name = Column(String(128), nullable=False)
-    hosts = relationship('Host', uselist=True, backref=__tablename__)
+    hosts = relationship('Host', uselist=True, backref="ref_hosts")
 
     def __init__(self, host, name):
         self.host = host
@@ -97,7 +70,7 @@ class Group(Base):
     repr_attrs = ("host", "name")
 
     # column definitions
-    host = Column(Integer, ForeignKey(Host.id), nullable=False)
+    host = Column(Integer, ForeignKey("pyfarm_hosts.id"), nullable=False)
     name = Column(String(128), nullable=False)
 
     # relationship setup
@@ -110,15 +83,6 @@ class Group(Base):
 # end Group
 
 
-class Job(Base):
-    '''base job definition'''
-    # table setup and string representation attributes
-    __tablename__ = "pyfarm_jobs"
-    repr_attrs = ("id",)
-
-    # relationship definitions
-    frames = relationship('Frame', uselist=True, backref=__tablename__)
-# end Job
 
 
 class Frame(Base):
@@ -126,15 +90,15 @@ class Frame(Base):
     repr_attrs = ("frame", "host")
 
     # column setup
-    jobid = Column(Integer, ForeignKey(Job.id))
-    hostid = Column(Integer, ForeignKey(Host.id))
+    jobid = Column(Integer, ForeignKey("pyfarm_jobs.id"))
+    hostid = Column(Integer, ForeignKey("pyfarm_hosts.id"))
     frame = Column(Integer, nullable=False)
     state = Column(Integer, default=State.QUEUED)
 
     # relationship definitions
-    job = relationship('Job', uselist=False, backref=__tablename__)
+    job = relationship('Job', uselist=False, backref="ref_job")
     host = relationship(
-        'Host', uselist=False, backref=__tablename__,
+        'Host', uselist=False, backref="ref_host",
         primaryjoin="Frame.hostid == Host.id"
     )
 
@@ -151,6 +115,45 @@ class Frame(Base):
             self.hostid = hostid
     # end __init__
 # end Frame
+
+class Dependency(Base):
+    __tablename__ = "pyfarm_job_dependency"
+
+    jobid = Column(Integer, ForeignKey("pyfarm_jobs.id"))
+    dependency = Column(Integer, ForeignKey("pyfarm_jobs.id"))
+# end Dependency
+
+
+
+class Job(Base):
+    '''base job definition'''
+    # table setup and string representation attributes
+    __tablename__ = "pyfarm_jobs"
+    repr_attrs = ("id",)
+
+    state = Column(Integer, default=State.QUEUED)
+
+    # relationship definitions
+    frames = relationship(
+        'Frame', uselist=True, backref="ref_frames",
+        doc="list all frames which are assigned to the job"
+    )
+    running_frames = relationship(
+        'Frame', uselist=True, backref="ref_running_frames",
+        primaryjoin=lambda: and_(
+            Job.id == Frame.jobid,
+            Frame.state.in_(ACTIVE_FRAME_STATES)
+        )
+    )
+
+    # TODO: this does not work
+    # TODO: column properties: http://docs.sqlalchemy.org/en/rel_0_7/orm/mapper_config.html#using-column-property
+#    dependson = relationship(
+#        'Dependency', secondary="pyfarm_job_dependency", uselist=True, backref="ref_dependson",
+#        primaryjoin=lambda: Dependency.jobid == Job.id,
+#        secondaryjoin=lambda: Job.state.in_(ACTIVE_JOB_STATES),
+#    )
+# end Job
 
 Base.metadata.create_all()
 Session = sessionmaker(bind=engine)
@@ -179,15 +182,13 @@ j = Job()
 session.add(j)
 jobrow = session.query(Job).first()
 
-## add frames
+# add frames
 f = Frame(jobrow.id, 21, state=State.FAILED, hostid=hostrow.id)
 session.add(f)
 f = Frame(jobrow.id, 21, state=State.ASSIGN, hostid=hostrow.id)
 session.add(f)
 f = Frame(jobrow.id, 22, state=State.RUNNING, hostid=hostrow.id)
 session.add(f)
-#f = Frame(jobrow.id, 21, state=State.ASSIGN, hostid=2)
-#session.add(f)
 
 session.commit()
 
@@ -196,3 +197,5 @@ print host.running_frames[0].job
 
 group = session.query(Group).filter(Group.name == 'group1').first()
 print group.hosts[0].running_frames
+
+print "==",j.running_frames[0]

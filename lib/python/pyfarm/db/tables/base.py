@@ -25,6 +25,7 @@ from sqlalchemy.ext.declarative import declarative_base
 
 from pyfarm.logger import Logger
 from pyfarm.errors import ConfigurationError
+from pyfarm.datatypes.enums import State
 from pyfarm.preferences import prefs
 
 logger = Logger(__name__)
@@ -45,8 +46,9 @@ class PyFarmBase(object):
         for attr in self.repr_attrs:
             original_value = getattr(self, attr)
 
-            # for unicode use a slightly nicer representation
-            if isinstance(original_value, unicode):
+            if attr == 'state':
+                value = State.get(original_value)
+            elif isinstance(original_value, unicode):
                 value = "'%s'"  % original_value
             else:
                 value = repr(original_value)
