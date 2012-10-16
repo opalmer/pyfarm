@@ -21,7 +21,6 @@ from itertools import izip
 from sqlalchemy.types import Integer
 from sqlalchemy import Column, create_engine
 from sqlalchemy.exc import OperationalError
-from sqlalchemy.ext.declarative import declarative_base
 
 from pyfarm.logger import Logger
 from pyfarm.errors import ConfigurationError
@@ -43,7 +42,7 @@ class PyFarmBase(object):
     def __repr__(self):
         values = []
 
-        for attr in self.repr_attrs:
+        for attr in ( attr for attr in self.repr_attrs if hasattr(self, attr) ):
             original_value = getattr(self, attr)
 
             if attr == 'state':
@@ -82,6 +81,3 @@ for config, url in zipconfig:
 
 else:
     raise ConfigurationError(msg="failed to connect to database using any config")
-
-
-Base = declarative_base(cls=PyFarmBase, bind=engine)

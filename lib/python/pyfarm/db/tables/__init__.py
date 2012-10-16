@@ -11,20 +11,31 @@
 # PyFarm is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU Lesser General Public License for more details.
+
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
+from sqlalchemy.ext.declarative import declarative_base
+
 from pyfarm.logger import Logger
 from pyfarm.preferences import prefs
-from pyfarm.db.tables.base import PyFarmBase, Base, engine
+from pyfarm.db.tables.base import PyFarmBase, engine
+
+# TODO: remove test code
+from sqlalchemy import create_engine
+engine = create_engine("sqlite:///:memory:", echo=False)
 
 logger = Logger(__name__)
+Base = declarative_base(cls=PyFarmBase, bind=engine)
+
+from pyfarm.db.tables.frame import Frame
+from pyfarm.db.tables.host import Host, Group, Software
+from pyfarm.db.tables.job import Dependency, Job
 
 def init(rebuild=False):
     '''
-    initializes the tables according the the preferences, rebulding
+    initializes the tables according the the preferences, rebuilding
     if requested
     '''
     if rebuild or prefs.get('database.setup.rebuild'):
