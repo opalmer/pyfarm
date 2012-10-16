@@ -19,6 +19,7 @@
 from itertools import izip
 
 from sqlalchemy.types import Integer
+from sqlalchemy.orm import object_session
 from sqlalchemy import Column, create_engine
 from sqlalchemy.exc import OperationalError
 
@@ -38,6 +39,11 @@ class PyFarmBase(object):
 
     # base column definitions which all other classes inherit
     id = Column(Integer, primary_key=True, autoincrement=True)
+
+    @property
+    def session(self):
+        return object_session(self)
+    # end session
 
     def __repr__(self):
         values = []
