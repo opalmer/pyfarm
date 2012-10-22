@@ -28,19 +28,20 @@ from pyfarm.preferences import prefs
 from pyfarm.logger import Logger
 from pyfarm.errors import ConfigurationError
 
-config = prefs.get('database.setup.config')
-urls = prefs.get('database.urls')
+CONFIGS = prefs.get('database.setup.config')
+URLS = prefs.get('database.urls')
+ECHO = prefs.get('logging.sqlalchemy.echo')
+ECHO_POOL = prefs.get('logging.sqlalchemy.pool')
 
 logger = Logger(__name__)
 
 # zip up the configurations and the urls and
 # iterate over them till we find one we can use
-zipconfig = itertools.izip(config, urls)
-for config, url in zipconfig:
+for config, url in itertools.izip(CONFIGS, URLS):
     engine = create_engine(
         url,
-        echo=prefs.get('logging.sqlalchemy.echo'),
-        echo_pool=prefs.get('logging.sqlalchemy.pool')
+        echo=ECHO,
+        echo_pool=ECHO_POOL
     )
 
     try:
