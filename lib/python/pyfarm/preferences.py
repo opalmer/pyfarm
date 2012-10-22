@@ -20,6 +20,7 @@ import os
 import string
 import psutil
 import tempfile
+import warnings
 
 from pyfarm import PYFARM_ETC, PYFARM_ROOT, fileio, errors
 from pyfarm.logger import Logger
@@ -172,8 +173,11 @@ class Preferences(Logger):
 
             url += "://"
             if engine == "sqlite":
-                self.error("sqlite is unsupported, skipping")
-                continue
+                warnings.warn(
+                    "sqlite is only supported for testing purposes",
+                    RuntimeWarning
+                )
+                return [ "%s/%s" % (url, dbhost) ]
 
             # setup the username, password, host, and port
             url += "%s:%s@%s" % (dbuser, dbpass, dbhost)
