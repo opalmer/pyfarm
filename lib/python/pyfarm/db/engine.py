@@ -38,11 +38,7 @@ logger = Logger(__name__)
 # zip up the configurations and the urls and
 # iterate over them till we find one we can use
 for config, url in itertools.izip(CONFIGS, URLS):
-    engine = create_engine(
-        url,
-        echo=ECHO,
-        echo_pool=ECHO_POOL
-    )
+    engine = create_engine(url, echo=ECHO, echo_pool=ECHO_POOL)
 
     try:
         # test to see if we can use this config to connect to
