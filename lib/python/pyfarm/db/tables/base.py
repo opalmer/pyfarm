@@ -16,17 +16,12 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
-from itertools import izip
-
 from sqlalchemy.types import Integer
 from sqlalchemy.orm import object_session
-from sqlalchemy import Column, create_engine
-from sqlalchemy.exc import OperationalError
+from sqlalchemy import Column
 
 from pyfarm.logger import Logger
-from pyfarm.errors import ConfigurationError
 from pyfarm.datatypes.enums import State
-from pyfarm.preferences import prefs
 
 logger = Logger(__name__)
 
@@ -64,26 +59,4 @@ class PyFarmBase(object):
     # end __repr__
 # end PyFarmBase
 
-# zip up the configurations and the urls and
-# iterate over them till we find one we can use
-zipconfig = izip(prefs.get('database.setup.config'), prefs.get('database.urls'))
-for config, url in zipconfig:
-    engine = create_engine(
-        url,
-        echo=prefs.get('logging.sqlalchemy.echo'),
-        echo_pool=prefs.get('logging.sqlalchemy.pool')
-    )
 
-    try:
-        # test to see if we can use this config to connect to
-        # the database
-        engine.connect()
-        logger.info("connected to database using config: %s" % config)
-        break
-
-    except OperationalError:
-        logger.warning("failed to connect with config: %s" % config)
-        continue
-
-else:
-    raise ConfigurationError(msg="failed to connect to database using any config")
