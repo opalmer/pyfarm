@@ -48,7 +48,7 @@ class NetworkHost(object):
         if port not in xrange(MIN_PORT, MAX_PORT+1):
             raise ValueError("port must be in range %s-%s" % (MIN_PORT, MAX_PORT))
 
-        return True
+        return port
     # end validate_port
 
     @validates('ip', 'subnet')
@@ -56,7 +56,7 @@ class NetworkHost(object):
         # TODO: IPv6 support
         try:
             socket.inet_aton(ip)
-            return True
+            return ip
 
         except socket.error:
             raise ValueError("'%s' is not a valid %s address" % (ip, key))
