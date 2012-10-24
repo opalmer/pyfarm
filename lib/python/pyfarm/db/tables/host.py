@@ -35,7 +35,7 @@ class Host(Base, NetworkHost):
     masterid = Column(Integer, ForeignKey('%s.id' % TABLE_MASTER))
 
     # relational definitions
-#    master = relationship('Master', uselist=False, backref="ref_master")
+    master = relationship('Master', uselist=False, backref="ref_master")
     software = relationship('Software', uselist=True, backref="ref_software")
     groups = relationship('Group', uselist=True, backref="ref_groups")
     running_frames = relationship(
@@ -44,8 +44,11 @@ class Host(Base, NetworkHost):
                     '(Frame.state.in_(%s))' % (ACTIVE_HOSTS_FRAME_STATES, )
     )
 
-    def __init__(self, hostname, ip, subnet, port, enabled=None):
+    def __init__(self, hostname, ip, subnet, port, enabled=None, masterid=None):
         NetworkHost.__init__(self, hostname, ip, subnet, port, enabled)
+
+        if masterid is not None:
+            self.masterid = masterid
     # end __init__
 # end Host
 
