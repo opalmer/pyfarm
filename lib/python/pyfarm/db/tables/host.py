@@ -21,12 +21,12 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.types import String, Integer
 
 from pyfarm.datatypes.enums import ACTIVE_HOSTS_FRAME_STATES
-from pyfarm.db.tables._hostbase import HostBase
+from pyfarm.db.tables._hostbase import NetworkHost
 from pyfarm.db.tables import Base, \
     TABLE_HOST, TABLE_HOST_GROUP, TABLE_MASTER, TABLE_HOST_SOFTWARE, \
-    MAX_HOSTNAME_LENGTH, MAX_SOFTWARE_LENGTH, MAX_GROUP_LENGTH
+    MAX_SOFTWARE_LENGTH, MAX_GROUP_LENGTH
 
-class Host(Base, HostBase):
+class Host(Base, NetworkHost):
     '''base host definition'''
     __tablename__ = TABLE_HOST
     repr_attrs = ("id", "hostname")
@@ -45,7 +45,7 @@ class Host(Base, HostBase):
     )
 
     def __init__(self, hostname, ip, subnet, port, enabled=None):
-        HostBase.__init__(self, hostname, ip, subnet, port, enabled)
+        NetworkHost.__init__(self, hostname, ip, subnet, port, enabled)
     # end __init__
 # end Host
 
