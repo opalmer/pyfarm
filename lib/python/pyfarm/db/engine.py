@@ -45,6 +45,12 @@ for config, url in itertools.izip(CONFIGS, URLS):
         # the database
         engine.connect()
         logger.info("connected to database using config: %s" % config)
+
+        # even though sqlite only for testing we enable
+        # a couple of features
+        if engine.dialect.name == "sqlite":
+            engine.engine.execute('pragma foreign_keys=ON')
+
         break
 
     except OperationalError:
