@@ -24,8 +24,8 @@ from sqlalchemy.types import String, Boolean, Integer
 from pyfarm.db.tables import MAX_HOSTNAME_LENGTH, MAX_IPV4_LENGTH, \
     MIN_PORT, MAX_PORT
 
-class HostBase(object):
-    '''mixin defines common attributes which any host would have'''
+class NetworkHost(object):
+    '''mixin which defines common attributes that all network hosts have'''
 
     hostname = Column(String(MAX_HOSTNAME_LENGTH), nullable=False, unique=True)
     ip = Column(String(MAX_IPV4_LENGTH), nullable=False, unique=True)
