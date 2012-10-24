@@ -16,10 +16,13 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
-
 from pyfarm.db.tables import Base, TABLE_MASTER
-from pyfarm.db.tables._hostbase import HostBase
+from pyfarm.db.tables._hostbase import NetworkHost
 
-class Master(Base, HostBase):
+class Master(Base, NetworkHost):
     __tablename__ = TABLE_MASTER
+
+    def __init__(self, hostname, ip, subnet, port, enabled=None):
+        NetworkHost.__init__(self, hostname, ip, subnet, port, enabled)
+    # end __init__
 # end Master
