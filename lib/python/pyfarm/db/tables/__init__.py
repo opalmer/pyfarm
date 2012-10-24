@@ -21,11 +21,11 @@ from pyfarm.logger import Logger
 logger = Logger(__name__)
 
 from pyfarm.db.engine import engine
-from pyfarm.db.tables.base import PyFarmBase
+from pyfarm.db.tables._base import PyFarmBase
+from pyfarm.db.tables._constants import *
 
 Base = declarative_base(cls=PyFarmBase, bind=engine)
 
-from pyfarm.preferences import prefs
 from pyfarm.db.tables.frame import Frame
 from pyfarm.db.tables.host import Host, Group, Software
 from pyfarm.db.tables.job import Dependency, Job
@@ -35,7 +35,7 @@ def init(rebuild=False):
     initializes the tables according the the preferences, rebuilding
     if requested
     '''
-    if rebuild or prefs.get('database.setup.rebuild'):
+    if rebuild or DB_REBULD:
         logger.warning('dropping all tables before rebuilding')
         Base.metadata.reflect()
         Base.metadata.drop_all()
