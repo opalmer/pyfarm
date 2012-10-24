@@ -20,13 +20,17 @@ from sqlalchemy.ext.declarative import declarative_base
 from pyfarm.logger import Logger
 logger = Logger(__name__)
 
+# import the engine, base, and required constants
 from pyfarm.db.engine import engine
 from pyfarm.db.tables._base import PyFarmBase
 from pyfarm.db.tables._constants import *
 
+# create the base object using the proper engine and base class
 Base = declarative_base(cls=PyFarmBase, bind=engine)
 
+# import all the table objects
 from pyfarm.db.tables.frame import Frame
+from pyfarm.db.tables.master import Master
 from pyfarm.db.tables.host import Host, Group, Software
 from pyfarm.db.tables.job import Dependency, Job
 
