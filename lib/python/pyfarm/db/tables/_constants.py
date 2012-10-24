@@ -26,6 +26,12 @@ MAX_HOSTNAME_LENGTH = 255
 MAX_SOFTWARE_LENGTH = 128
 MAX_GROUP_LENGTH = 128
 
+# values defined by preferences
+REQUEUE_MAX = _prefs.get('jobtypes.defaults.requeue-max')
+REQUEUE_FAILED = _prefs.get('jobtypes.defaults.requeue-failed')
+DEFAULT_PRIORITY = _prefs.get('jobsystem.priority-default')
+DB_REBULD = _prefs.get('database.setup.rebuild')
+
 # specifies all of the default table names
 TABLE_PREFIX = _os.environ.get('PYFARM_TABLE_PREFIX') or "pyfarm_"
 TABLE_MASTER = "%smasters" % TABLE_PREFIX
@@ -35,12 +41,6 @@ TABLE_HOST_SOFTWARE = "%s_software" % TABLE_HOST
 TABLE_HOST_GROUP = "%s_group" % TABLE_HOST
 TABLE_JOB = "%sjobs" % TABLE_PREFIX
 TABLE_JOB_DEPENDENCY = "%s_dependency" % TABLE_JOB
-
-# values defined by preferences
-REQUEUE_MAX = _prefs.get('jobtypes.defaults.requeue-max')
-REQUEUE_FAILED = _prefs.get('jobtypes.defaults.requeue-failed')
-DEFAULT_PRIORITY = _prefs.get('jobsystem.priority-default')
-DB_REBULD = _prefs.get('database.setup.rebuild')
 
 # complete list of all table names
 TABLE_NAMES  = sorted([
