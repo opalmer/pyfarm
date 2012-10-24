@@ -33,6 +33,16 @@ class HostBase(object):
     port = Column(Integer, nullable=False)
     enabled = Column(Boolean, default=True)
 
+    def __init__(self, hostname, ip, subnet, port, enabled=False):
+        self.hostname = hostname
+        self.ip = ip
+        self.subnet = subnet
+        self.port = port
+
+        if enabled is not None:
+            self.enabled = enabled
+    # end __init__
+
     @validates('port')
     def validate_port(self, key, port):
         if port not in xrange(MIN_PORT, MAX_PORT+1):
