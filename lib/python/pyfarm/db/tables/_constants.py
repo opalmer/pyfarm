@@ -40,6 +40,7 @@ TABLE_JOB_DEPENDENCY = "%s_dependency" % TABLE_JOB
 REQUEUE_MAX = _prefs.get('jobtypes.defaults.requeue-max')
 REQUEUE_FAILED = _prefs.get('jobtypes.defaults.requeue-failed')
 DEFAULT_PRIORITY = _prefs.get('jobsystem.priority-default')
+DB_REBULD = _prefs.get('database.setup.rebuild')
 
 # complete list of all table names
 TABLE_NAMES  = sorted([
