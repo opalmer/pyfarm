@@ -8,7 +8,7 @@ from pyfarm.datatypes.enums import State
 from sqlalchemy.orm import sessionmaker
 
 from pyfarm.db.tables import init, engine, Frame, Host, Group, Software, \
-    Job, Dependency
+    Job, Dependency, Master
 
 init(True) # setup tables
 Session = sessionmaker(bind=engine)
@@ -16,28 +16,25 @@ session = Session()
 
 # add a host
 hostname = 'vmworkstation'
-host = Host(hostname)
+
+# create and insert a master
+master = Master(hostname, '255.255.255.0', '255.255.255.0', 9030)
+session.add(master)
+masterrow = session.query(Master).filter(Master.hostname == hostname).first()
+
+# create and insert a host
+host = Host(
+    hostname, '255.255.255.0', '255.255.255.0', 9030,
+    masterid=masterrow.id # testing foreign key
+)
 session.add(host)
-hostrow = session.query(Host).filter(Host.hostname == hostname).first()
-
-# add software
-s = Software(hostrow.id, 'test')
-session.add(s)
-s = Software(hostrow.id, 'test2')
-session.add(s)
-
-# add groups
-g = Group(hostrow.id, 'group1')
-session.add(g)
-g = Group(hostrow.id, 'group2')
-session.add(g)
 
 # add a job
-j = Job(1,2)
+j = Job('ping', ['-c', '1', 'localhost'], 1, 2)
 session.add(j)
-j = Job(1,2,state=State.RUNNING)
+j = Job('ping', ['-c', '1', 'localhost'], 1, 2, state=State.RUNNING)
 session.add(j)
-j = Job(1,2,state=State.DONE)
+j = Job('ping', ['-c', '1', 'localhost'], 1, 2, state=State.DONE)
 session.add(j)
 
 session.commit()
@@ -52,27 +49,27 @@ session.commit()
 jobs = session.query(Job).all()
 
 for job in jobs:
-    print job, job.dependencies
+    print job
+    for i in job.dependencies:
+        print "\tframes: %s" % i.frames
+
+job = jobs[0]
 
 
-#
-#
-## add frames
-#f = Frame(jobrow.id, 20, state=State.QUEUED, hostid=hostrow.id)
-#session.add(f)
-#f = Frame(jobrow.id, 21, state=State.ASSIGN, hostid=hostrow.id)
-#session.add(f)
-#f = Frame(jobrow.id, 22, state=State.RUNNING, hostid=hostrow.id)
-#session.add(f)
-#f = Frame(jobrow.id, 23, state=State.FAILED, hostid=hostrow.id)
-#session.add(f)
+# add frames
+f = Frame(job.id, 20, state=State.QUEUED, hostid=host.id)
+session.add(f)
+f = Frame(job.id, 21, state=State.ASSIGN, hostid=host.id)
+session.add(f)
+f = Frame(job.id, 22, state=State.RUNNING, hostid=host.id)
+session.add(f)
+f = Frame(job.id, 23, state=State.FAILED, hostid=host.id)
+session.add(f)
 
+session.commit()
 
-
-#host = session.query(Host).filter(Host.hostname == hostname).first()
-##print host.running_frames[0].job
-#
-#group = session.query(Group).filter(Group.name == 'group1').first()
-##print group.hosts[0].running_frames
-#
-#print '============', j
+print "="*20
+jobs = session.query(Job).all()
+for job in jobs:
+    print job
+    print "\tframes: %s" % job.frames
