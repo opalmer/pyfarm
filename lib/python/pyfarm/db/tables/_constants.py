@@ -25,6 +25,9 @@ from pyfarm.preferences import prefs as _prefs
 MAX_HOSTNAME_LENGTH = 255
 MAX_SOFTWARE_LENGTH = 128
 MAX_GROUP_LENGTH = 128
+MAX_IPV4_LENGTH = 15
+MIN_PORT = 1024
+MAX_PORT = 65535
 
 # values defined by preferences
 REQUEUE_MAX = _prefs.get('jobtypes.defaults.requeue-max')
