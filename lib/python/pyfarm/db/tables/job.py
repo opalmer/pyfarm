@@ -25,23 +25,21 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.types import Integer, Boolean, DateTime, Text, \
     PickleType, String
 
-from pyfarm.db.tables import Base, Frame
-from pyfarm.preferences import prefs
 from pyfarm.datatypes.enums import State, ACTIVE_FRAME_STATES, \
     ACTIVE_DEPENDENCY_STATES
-
-REQUEUE_MAX = prefs.get('jobtypes.defaults.requeue-max')
-REQUEUE_FAILED = prefs.get('jobtypes.defaults.requeue-failed')
+from pyfarm.db.tables import Base, Frame, \
+    REQUEUE_FAILED, REQUEUE_MAX, TABLE_JOB, TABLE_JOB_DEPENDENCY, \
+    DEFAULT_PRIORITY
 
 class Dependency(Base):
     '''
     Defines a dependency between a parent job and a child
     '''
-    __tablename__ = "pyfarm_job_dependency"
+    __tablename__ = TABLE_JOB_DEPENDENCY
     repr_attrs = ("parent", "dependency")
 
-    parent = Column(Integer, ForeignKey("pyfarm_jobs.id"), nullable=False)
-    dependency = Column(Integer, ForeignKey("pyfarm_jobs.id"), nullable=False)
+    parent = Column(Integer, ForeignKey("%s.id" % TABLE_JOB), nullable=False)
+    dependency = Column(Integer, ForeignKey("%s.id" % TABLE_JOB), nullable=False)
 
     def __init__(self, parent, dependency):
         if isinstance(parent, Job):
@@ -58,7 +56,7 @@ class Dependency(Base):
 
 class Job(Base):
     '''base job definition'''
-    __tablename__ = "pyfarm_jobs"
+    __tablename__ = TABLE_JOB
     repr_attrs = (
         "id", "state", "start_frame", "end_frame", "by_frame", "priority"
     )
@@ -71,7 +69,7 @@ class Job(Base):
 
     # state, requeue, and priority
     state = Column(Integer, default=State.QUEUED)
-    priority = Column(Integer, default=prefs.get('jobsystem.priority-default'))
+    priority = Column(Integer, default=DEFAULT_PRIORITY)
     requeue_failed = Column(Boolean, default=REQUEUE_FAILED)
     requeue_max = Column(Integer, default=REQUEUE_MAX)
     time_submitted = Column(DateTime, default=datetime.now)
