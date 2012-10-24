@@ -20,19 +20,22 @@ from sqlalchemy import Column, ForeignKey
 from sqlalchemy.orm import relationship
 from sqlalchemy.types import String, Integer
 
-from pyfarm.db.tables import Base
 from pyfarm.datatypes.enums import ACTIVE_HOSTS_FRAME_STATES
+from pyfarm.db.tables._hostbase import HostBase
+from pyfarm.db.tables import Base, \
+    TABLE_HOST, TABLE_HOST_GROUP, TABLE_MASTER, TABLE_HOST_SOFTWARE, \
+    MAX_HOSTNAME_LENGTH, MAX_SOFTWARE_LENGTH, MAX_GROUP_LENGTH
 
-
-class Host(Base):
+class Host(Base, HostBase):
     '''base host definition'''
-    __tablename__ = "pyfarm_hosts"
+    __tablename__ = TABLE_HOST
     repr_attrs = ("id", "hostname")
 
     # column definitions
-    hostname = Column(String(255), nullable=False, unique=True)
+    masterid = Column(Integer, ForeignKey('%s.id' % TABLE_MASTER))
 
     # relational definitions
+#    master = relationship('Master', uselist=False, backref="ref_master")
     software = relationship('Software', uselist=True, backref="ref_software")
     groups = relationship('Group', uselist=True, backref="ref_groups")
     running_frames = relationship(
@@ -41,20 +44,20 @@ class Host(Base):
                     '(Frame.state.in_(%s))' % (ACTIVE_HOSTS_FRAME_STATES, )
     )
 
-    def __init__(self, hostname):
-        self.hostname = hostname
+    def __init__(self, hostname, ip, subnet, port, enabled=None):
+        HostBase.__init__(self, hostname, ip, subnet, port, enabled)
     # end __init__
 # end Host
 
 
 class Software(Base):
     '''stores information about what software a host can run'''
-    __tablename__ = "pyfarm_host_software"
+    __tablename__ = TABLE_HOST_SOFTWARE
     repr_attrs = ("host", "name")
 
     # column definitions
     host = Column(Integer, ForeignKey(Host.id))
-    name = Column(String(128), nullable=False)
+    name = Column(String(MAX_SOFTWARE_LENGTH), nullable=False)
     hosts = relationship('Host', uselist=True, backref="ref_hosts")
 
     def __init__(self, host, name):
@@ -66,12 +69,12 @@ class Software(Base):
 
 class Group(Base):
     '''stores information about which group or groups a host belongs to'''
-    __tablename__ = "pyfarm_host_group"
+    __tablename__ = TABLE_HOST_GROUP
     repr_attrs = ("host", "name")
 
     # column definitions
-    host = Column(Integer, ForeignKey("pyfarm_hosts.id"), nullable=False)
-    name = Column(String(128), nullable=False)
+    host = Column(Integer, ForeignKey(Host.id), nullable=False)
+    name = Column(String(MAX_GROUP_LENGTH), nullable=False)
 
     # relationship setup
     hosts = relationship('Host', uselist=True, backref=__tablename__)

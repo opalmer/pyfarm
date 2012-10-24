@@ -20,17 +20,17 @@ from sqlalchemy import Column, ForeignKey
 from sqlalchemy.orm import relationship
 from sqlalchemy.types import Integer
 
-from pyfarm.db.tables import Base
+from pyfarm.db.tables import Base, TABLE_FRAME, TABLE_JOB, TABLE_HOST
 from pyfarm.datatypes.enums import State
 
 class Frame(Base):
     '''defines a single frame'''
-    __tablename__ = "pyfarm_frames"
+    __tablename__ = TABLE_FRAME
     repr_attrs = ("frame", "host", "state")
 
     # column setup
-    jobid = Column(Integer, ForeignKey("pyfarm_jobs.id"))
-    hostid = Column(Integer, ForeignKey("pyfarm_hosts.id"))
+    jobid = Column(Integer, ForeignKey("%s.id" % TABLE_JOB))
+    hostid = Column(Integer, ForeignKey("%s.id" % TABLE_HOST))
     frame = Column(Integer, nullable=False)
     state = Column(Integer, default=State.QUEUED)
 

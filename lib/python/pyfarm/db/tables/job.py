@@ -85,7 +85,10 @@ class Job(Base):
     cpus = Column(Integer, default=None)
 
     # relationship definitions
-    frames = relationship('Frame', uselist=True, backref="ref_frames")
+    frames = relationship(
+        'Frame', uselist=True, backref="ref_frames",
+        primaryjoin='(Frame.jobid == Job.id)'
+    )
     running_frames = relationship(
         'Frame', uselist=True, backref="ref_job_running_frames",
         primaryjoin='(Job.id == Frame.jobid) & '
