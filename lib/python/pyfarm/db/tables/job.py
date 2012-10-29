@@ -18,10 +18,11 @@
 
 import os
 import getpass
+import UserDict
 from datetime import datetime
 
 from sqlalchemy import Column, ForeignKey, and_
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, validates
 from sqlalchemy.types import Integer, Boolean, DateTime, Text, \
     PickleType, String
 
@@ -78,11 +79,14 @@ class Job(Base):
     cmd = Column(Text(convert_unicode=True), nullable=False)
     args = Column(PickleType, nullable=False)
     notes = Column(Text(convert_unicode=True), default="N/A")
-    environ = Column(PickleType, default=os.environ.copy)
     data = Column(PickleType, default=dict)
     user = Column(String(256), default=getpass.getuser)
     ram = Column(Integer, default=None)
     cpus = Column(Integer, default=None)
+
+    # underlying environment which is represented by the environ
+    # property on this class
+    _environ = Column(PickleType, default=None)
 
     # relationship definitions
     frames = relationship(
@@ -102,8 +106,9 @@ class Job(Base):
 
     # TODO: attributes for new columns above
     def __init__(self, cmd, args, start_frame, end_frame, by_frame=None,
-                 batch_frame=None, state=None, priority=None, requeue_max=None,
-                 requeue_failed=None):
+                 batch_frame=None, state=None, priority=None, environ=None,
+                 data=None,
+                 requeue_max=None, requeue_failed=None):
         self.cmd = cmd
         self.args = args
         self.start_frame = start_frame
@@ -121,6 +126,12 @@ class Job(Base):
         if state is not None:
             self.state = state
 
+        if environ is not None:
+            self._environ = environ
+
+        if self.data is not None:
+            self.data = data
+
         if requeue_failed is None:
             _requeue_failed = requeue_failed
 
@@ -135,9 +146,17 @@ class Job(Base):
 
         elif requeue_max is not None:
             self.requeue_max = requeue_max
-
-
     # end __init__
+
+    @property
+    def environ(self):
+        '''
+        creates a copy of the local environment if _environ is not populated
+        '''
+        if self._environ is None:
+            return os.environ.copy()
+        return self._environ
+    # end environ
 
     @property
     def queued_frames(self):
@@ -179,4 +198,28 @@ class Job(Base):
 
         return query.all()
     # end dependencies
+
+    @validates('_environ', 'data')
+    def validate_dict(self, key, environ):
+        if not isinstance(environ, (UserDict.UserDict, dict)):
+            raise TypeError("%s must be a dictionary" % key)
+
+        return environ
+    # end validate_dict
+
+    @validates('args')
+    def validate_list(self, key, args):
+        if not isinstance(args, (list, tuple,)):
+            raise TypeError("%s must be a list or tuple" % key)
+
+        return args
+    # end validate_list
+
+    @validates('cpus', 'ram', 'batch_frame', 'by_frame')
+    def validate_positive_int(self, key, data):
+        if data <= 0:
+            raise ValueError("%s value must be greater than zero" % key)
+
+        return data
+    # end validate_positive_int
 # end Job
