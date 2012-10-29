@@ -55,10 +55,26 @@ class Dependency(Base):
     # end __init__
 # end Dependency
 
+
 class Software(Base):
-    pass
+    '''
+    defines software which is required by a job
+    '''
+    jobid = Column(Integer, ForeignKey("%s.id" % TABLE_JOB), nullable=False)
+    job = relationship('Job', uselist=False, backref="ref_job")
+
+    def __init__(self, job):
+        if isinstance(job, Job):
+            self.jobid = job.id
+        else:
+            self.jobid = job
+    # end __init__
 # end Software
 
+# TODO: test software relationship
+# TODO: verify all required attributes are present
+# TODO: verify properties are present for correct columns (_environ example)
+# TODO: verify proper column validation
 
 class Job(Base):
     '''base job definition'''
@@ -94,6 +110,10 @@ class Job(Base):
     _environ = Column(PickleType, default=None)
 
     # relationship definitions
+    software = relationship(
+        'Software', uselist=True, backref="ref_software",
+        primaryjoin='(Software.jobid == Job.id)'
+    )
     frames = relationship(
         'Frame', uselist=True, backref="ref_frames",
         primaryjoin='(Frame.jobid == Job.id)'
@@ -109,7 +129,6 @@ class Job(Base):
                     '(Frame.state == %s)' % State.FAILED
     )
 
-    # TODO: attributes for new columns above
     def __init__(self, cmd, args, start_frame, end_frame, by_frame=None,
                  batch_frame=None, state=None, priority=None, environ=None,
                  data=None, requeue_max=None, requeue_failed=None):
