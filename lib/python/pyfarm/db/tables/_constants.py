@@ -19,7 +19,9 @@
 '''constants to be used within the table module'''
 
 import os as _os
+
 from pyfarm.preferences import prefs as _prefs
+from pyfarm.datatypes.enums import State as _state
 
 # length of certain string fields
 MAX_HOSTNAME_LENGTH = 255
@@ -34,6 +36,11 @@ REQUEUE_MAX = _prefs.get('jobtypes.defaults.requeue-max')
 REQUEUE_FAILED = _prefs.get('jobtypes.defaults.requeue-failed')
 DEFAULT_PRIORITY = _prefs.get('jobsystem.priority-default')
 DB_REBULD = _prefs.get('database.setup.rebuild')
+
+# state information used for validation
+VALID_NEW_JOB_STATES = (
+    _state.PAUSED, _state.QUEUED,
+)
 
 # specifies all of the default table names
 TABLE_PREFIX = _os.environ.get('PYFARM_TABLE_PREFIX') or "pyfarm_"
