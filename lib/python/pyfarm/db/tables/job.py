@@ -28,9 +28,10 @@ from sqlalchemy.types import Integer, Boolean, DateTime, Text, \
 
 from pyfarm.datatypes.enums import State, ACTIVE_FRAME_STATES, \
     ACTIVE_DEPENDENCY_STATES
+
 from pyfarm.db.tables import Base, Frame, \
     REQUEUE_FAILED, REQUEUE_MAX, TABLE_JOB, TABLE_JOB_DEPENDENCY, \
-    DEFAULT_PRIORITY
+    DEFAULT_PRIORITY, VALID_NEW_JOB_STATES
 
 class Dependency(Base):
     '''
@@ -53,6 +54,10 @@ class Dependency(Base):
         self.dependency = dependency
     # end __init__
 # end Dependency
+
+class Software(Base):
+    pass
+# end Software
 
 
 class Job(Base):
@@ -107,8 +112,7 @@ class Job(Base):
     # TODO: attributes for new columns above
     def __init__(self, cmd, args, start_frame, end_frame, by_frame=None,
                  batch_frame=None, state=None, priority=None, environ=None,
-                 data=None,
-                 requeue_max=None, requeue_failed=None):
+                 data=None, requeue_max=None, requeue_failed=None):
         self.cmd = cmd
         self.args = args
         self.start_frame = start_frame
@@ -206,6 +210,14 @@ class Job(Base):
 
         return environ
     # end validate_dict
+
+    @validates('state')
+    def validate_state(self, key, state):
+        if state not in VALID_NEW_JOB_STATES:
+            state_names = [ State.get(state) for state in VALID_NEW_JOB_STATES ]
+            raise ValueError("%s must be in %s" % (key, state_names))
+        return state
+    # end validate_state
 
     @validates('args')
     def validate_list(self, key, args):
