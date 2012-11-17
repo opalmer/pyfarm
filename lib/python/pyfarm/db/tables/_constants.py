@@ -51,6 +51,7 @@ TABLE_HOST_SOFTWARE = "%s_software" % TABLE_HOST
 TABLE_HOST_GROUP = "%s_group" % TABLE_HOST
 TABLE_JOB = "%sjobs" % TABLE_PREFIX
 TABLE_JOB_DEPENDENCY = "%s_dependency" % TABLE_JOB
+TABLE_JOB_SOFTWARE = "%s_software" % TABLE_JOB
 
 # complete list of all table names
 TABLE_NAMES  = sorted([

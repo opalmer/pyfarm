@@ -31,7 +31,7 @@ from pyfarm.datatypes.enums import State, ACTIVE_FRAME_STATES, \
 
 from pyfarm.db.tables import Base, Frame, \
     REQUEUE_FAILED, REQUEUE_MAX, TABLE_JOB, TABLE_JOB_DEPENDENCY, \
-    DEFAULT_PRIORITY, VALID_NEW_JOB_STATES
+    DEFAULT_PRIORITY, VALID_NEW_JOB_STATES, TABLE_JOB_SOFTWARE
 
 class Dependency(Base):
     '''
@@ -60,6 +60,7 @@ class Software(Base):
     '''
     defines software which is required by a job
     '''
+    __tablename__ = TABLE_JOB_SOFTWARE
     jobid = Column(Integer, ForeignKey("%s.id" % TABLE_JOB), nullable=False)
     job = relationship('Job', uselist=False, backref="ref_job")
 
