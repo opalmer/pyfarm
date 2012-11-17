@@ -75,15 +75,18 @@ try:
     USER = pwd.getpwuid(os.getuid())[0]
 
 except ImportError:
+
     USER = getpass.getuser()
 
 # setup total swap and current swap
 if hasattr(psutil, 'swap_memory'):
     TOTAL_SWAP = int(psutil.swap_memory().total / 1024 / 1024)
     swap = lambda: bytes_to_megabytes(psutil.swap_memory().free)
+
 elif hasattr(psutil, 'virtmem_usage'):
     TOTAL_SWAP = int(psutil.virtmem_usage().total / 1024 / 1024)
     swap = lambda : bytes_to_megabytes(psutil.virtmem_usage().free)
+
 else:
     TOTAL_SWAP = int(psutil.total_virtmem() / 1024 / 1024)
     swap = lambda: TOTAL_SWAP - bytes_to_megabytes(psutil.used_virtmem())

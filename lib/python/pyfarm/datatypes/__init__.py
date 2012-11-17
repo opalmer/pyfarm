@@ -20,3 +20,9 @@
 serves as a central location to store data that is meant
 to be static
 '''
+
+try:
+    from collections import OrderedDict
+
+except ImportError:
+    from ordereddict import OrderedDict
