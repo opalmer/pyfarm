@@ -69,15 +69,19 @@ class Enum(object):
             setattr(self, arg, index)
     # end __init__
 
-    def get(self, item): return self.__getitem__(item)
+    def get(self, item): return self.__mappings[item]
     def __repr__(self): return self.__repr
     def __getitem__(self, item): return self.__mappings[item]
+    def __contains__(self, item): return item in self.__mappings
 # end Enum
 
 Software = Enum("MAYA", "HOUDINI", "VRAY", "NUKE", "BLENDER")
 State = Enum(
     "PAUSED", "BLOCKED", "QUEUED", "ASSIGN",
     "RUNNING", "DONE", "FAILED"
+)
+SoftwareType = Enum(
+    "INCLUDE", "EXCLUDE"
 )
 
 # python datatypes for type comparison
