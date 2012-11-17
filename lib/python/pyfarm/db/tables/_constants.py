@@ -21,7 +21,7 @@
 import os as _os
 
 from pyfarm.preferences import prefs as _prefs
-from pyfarm.datatypes.enums import State as _state
+from pyfarm.datatypes.enums import State as _state, SoftwareType as _softwaretype
 
 # length of certain string fields
 MAX_HOSTNAME_LENGTH = 255

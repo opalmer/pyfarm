@@ -22,7 +22,7 @@ logger = Logger(__name__)
 
 # import the engine, base, and required constants
 from pyfarm.db.engine import engine
-from pyfarm.db.tables._base import PyFarmBase
+from pyfarm.db.tables._baseclass import PyFarmBase
 from pyfarm.db.tables._constants import *
 
 # create the base object using the proper engine and base class

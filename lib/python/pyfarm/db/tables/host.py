@@ -21,7 +21,7 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.types import String, Integer
 
 from pyfarm.datatypes.enums import ACTIVE_HOSTS_FRAME_STATES
-from pyfarm.db.tables._hostbase import NetworkHost
+from pyfarm.db.tables._mixins import NetworkHost
 from pyfarm.db.tables import Base, \
     TABLE_HOST, TABLE_HOST_GROUP, TABLE_MASTER, TABLE_HOST_SOFTWARE, \
     MAX_SOFTWARE_LENGTH, MAX_GROUP_LENGTH

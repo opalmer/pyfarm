@@ -27,7 +27,7 @@ from sqlalchemy.types import Integer, Boolean, DateTime, Text, \
     PickleType, String
 
 from pyfarm.datatypes.enums import State, ACTIVE_FRAME_STATES, \
-    ACTIVE_DEPENDENCY_STATES
+    ACTIVE_DEPENDENCY_STATES, SoftwareType
 
 from pyfarm.db.tables import Base, Frame, \
     REQUEUE_FAILED, REQUEUE_MAX, TABLE_JOB, TABLE_JOB_DEPENDENCY, \
@@ -61,15 +61,27 @@ class Software(Base):
     defines software which is required by a job
     '''
     __tablename__ = TABLE_JOB_SOFTWARE
+    repr_attrs = ("jobid", "type")
+
     jobid = Column(Integer, ForeignKey("%s.id" % TABLE_JOB), nullable=False)
     job = relationship('Job', uselist=False, backref="ref_job")
+    type = Column(Integer, nullable=False)
 
-    def __init__(self, job):
-        if isinstance(job, Job):
-            self.jobid = job.id
-        else:
-            self.jobid = job
+    def __init__(self, job, type):
+        self.type = type
+        self.jobid = job.id if isinstance(job, Job) else job
     # end __init__
+
+    @validates('type')
+    def validate_type(self, key, data):
+        if isinstance(data, (str, unicode)):
+            data = SoftwareType[data]
+
+        if data not in SoftwareType:
+            raise ValueError("invalid value for SoftwareType")
+
+        return data
+    # end validate_type
 # end Software
 
 # TODO: test software relationship

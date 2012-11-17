@@ -62,3 +62,11 @@ class NetworkHost(object):
             raise ValueError("'%s' is not a valid %s address" % (ip, key))
     # end validate_address
 # end HostBase
+
+
+class SoftwareBase(object):
+    '''
+    base class which all software tables use
+    '''
+
+# end SoftwareBase
