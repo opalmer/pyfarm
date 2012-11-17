@@ -1,9 +1,4 @@
-try:
-    from collections import OrderedDict
-
-except ImportError:
-    from ordereddict import OrderedDict
-
+from pyfarm.datatypes import OrderedDict
 from pyfarm.datatypes.enums import State
 
 from sqlalchemy.orm import sessionmaker
