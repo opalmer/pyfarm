@@ -19,6 +19,8 @@
 import os
 import site
 
+__version__ = (1, 0, 0)
+
 PYFARM_PACKAGE = os.path.dirname(os.path.abspath(__file__))
 PYFARM_ROOT = os.path.abspath(os.path.join(PYFARM_PACKAGE, "..", "..", ".."))
 PYFARM_PYTHONROOT = os.path.join(PYFARM_ROOT, "lib", "python")
