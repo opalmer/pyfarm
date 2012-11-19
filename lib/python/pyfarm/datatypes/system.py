@@ -75,7 +75,6 @@ try:
     USER = pwd.getpwuid(os.getuid())[0]
 
 except ImportError:
-
     USER = getpass.getuser()
 
 # setup total swap and current swap
