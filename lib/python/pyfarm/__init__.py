@@ -18,7 +18,6 @@
 
 import os
 import site
-import sqlalchemy.util
 
 PYFARM_PACKAGE = os.path.dirname(os.path.abspath(__file__))
 PYFARM_ROOT = os.path.abspath(os.path.join(PYFARM_PACKAGE, "..", "..", ".."))
@@ -27,8 +26,3 @@ PYFARM_ETC = os.environ.get('PYFARM_ETC') or \
              os.path.join(PYFARM_ROOT, "etc")
 
 site.addsitedir(PYFARM_PYTHONROOT)
-
-# override the default sqlalchemy named tuple
-# with a slightly easier to read version
-from pyfarm.utility import NamedTupleRow
-sqlalchemy.util.NamedTuple = NamedTupleRow
