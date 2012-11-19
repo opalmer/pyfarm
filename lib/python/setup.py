@@ -60,7 +60,7 @@ def requirements():
     if os.environ.get('PYFARM_SETUP_IGNORE_PYQT_CHECK') != 'True':
         # we have to manually validate the PyQt requirements since
         # setuptools cannot seems to reliability download/install/validate
-        # pyqt
+        # pyqt currently.
         try:
             from PyQt4 import QtCore
 
