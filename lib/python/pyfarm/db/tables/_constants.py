@@ -46,9 +46,13 @@ VALID_NEW_JOB_STATES = (
 TABLE_PREFIX = _os.environ.get('PYFARM_TABLE_PREFIX') or "pyfarm_"
 TABLE_MASTER = "%smasters" % TABLE_PREFIX
 TABLE_FRAME = "%sframes" % TABLE_PREFIX
+
+# host table names
 TABLE_HOST = "%shosts" % TABLE_PREFIX
 TABLE_HOST_SOFTWARE = "%s_software" % TABLE_HOST
 TABLE_HOST_GROUP = "%s_group" % TABLE_HOST
+
+# job tables
 TABLE_JOB = "%sjobs" % TABLE_PREFIX
 TABLE_JOB_DEPENDENCY = "%s_dependency" % TABLE_JOB
 TABLE_JOB_SOFTWARE = "%s_software" % TABLE_JOB

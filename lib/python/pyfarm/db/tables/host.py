@@ -37,7 +37,7 @@ class Host(Base, NetworkHost):
     # relational definitions
     master = relationship('Master', uselist=False, backref="ref_master")
     software = relationship('Software', uselist=True, backref="ref_software")
-    groups = relationship('Group', uselist=True, backref="ref_groups")
+    groups = relationship('HostGroup', uselist=True, backref="ref_groups")
     running_frames = relationship(
         'Frame',
         primaryjoin='(Frame.hostid == Host.id) & '
@@ -53,7 +53,7 @@ class Host(Base, NetworkHost):
 # end Host
 
 
-class Software(Base):
+class HostSoftware(Base):
     '''stores information about what software a host can run'''
     __tablename__ = TABLE_HOST_SOFTWARE
     repr_attrs = ("host", "name")
@@ -61,16 +61,19 @@ class Software(Base):
     # column definitions
     host = Column(Integer, ForeignKey(Host.id))
     name = Column(String(MAX_SOFTWARE_LENGTH), nullable=False)
-    hosts = relationship('Host', uselist=True, backref="ref_hosts")
+    hosts = relationship(
+        'Host', uselist=True, backref="ref_hosts",
+        primaryjoin='(Host.id == Software.host)'
+    )
 
     def __init__(self, host, name):
         self.host = host
         self.name = name
     # end __init__
-# end Software
+# end HostSoftware
 
 
-class Group(Base):
+class HostGroup(Base):
     '''stores information about which group or groups a host belongs to'''
     __tablename__ = TABLE_HOST_GROUP
     repr_attrs = ("host", "name")
@@ -86,4 +89,4 @@ class Group(Base):
         self.host = host
         self.name = name
     # end __init__
-# end Group
+# end HostGroup

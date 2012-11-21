@@ -31,7 +31,7 @@ Base = declarative_base(cls=PyFarmBase, bind=engine)
 # import all the table objects
 from pyfarm.db.tables.frame import Frame
 from pyfarm.db.tables.master import Master
-from pyfarm.db.tables.host import Host, Group, Software
+from pyfarm.db.tables.host import Host, HostGroup, HostSoftware
 from pyfarm.db.tables.job import Dependency, Job
 
 def init(rebuild=False):
