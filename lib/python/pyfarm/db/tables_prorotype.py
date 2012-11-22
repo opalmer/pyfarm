@@ -13,16 +13,17 @@ host = Host('localhost', '192.168.1.1', '255.255.255.0', 9030, enabled=True)
 session.add(host)
 session.commit()
 
-software = HostSoftware(host, "houdini1")
-session.add(software)
-software = HostSoftware(host, "houdini2")
-session.add(software)
-software = HostSoftware(host, "houdini2")
-session.add(software)
-session.commit()
-print host.software
+#software = HostSoftware(host, "houdini1")
+#session.add(software)
+#software = HostSoftware(host, "houdini2")
+#session.add(software)
+#software = HostSoftware(host, "houdini2")
+#session.add(software)
+#session.commit()
+#
+#
 
-
+print host
 
 # add a host
 #hostname = 'vmworkstation'

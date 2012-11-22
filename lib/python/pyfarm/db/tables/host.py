@@ -21,7 +21,7 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.types import String, Integer
 
 from pyfarm.datatypes.enums import ACTIVE_HOSTS_FRAME_STATES
-from pyfarm.db.tables._mixins import NetworkHost
+from pyfarm.db.tables._netbase import NetworkHost
 from pyfarm.db.tables import Base, \
     TABLE_HOST, TABLE_HOST_GROUP, TABLE_MASTER, TABLE_HOST_SOFTWARE, \
     MAX_SOFTWARE_LENGTH, MAX_GROUP_LENGTH
@@ -29,7 +29,7 @@ from pyfarm.db.tables import Base, \
 class Host(Base, NetworkHost):
     '''base host definition'''
     __tablename__ = TABLE_HOST
-    repr_attrs = ("id", "hostname")
+    repr_attrs = ("id", "hostname", "running", "ip")
 
     # column definitions
     masterid = Column(Integer, ForeignKey('%s.id' % TABLE_MASTER))
@@ -88,8 +88,6 @@ class HostGroup(Base):
     # column definitions
     host = Column(Integer, ForeignKey(Host.id), nullable=False)
     name = Column(String(MAX_GROUP_LENGTH), nullable=False)
-
-    # relationship setup
     hosts = relationship('Host', uselist=True, backref=__tablename__)
 
     def __init__(self, host, name):

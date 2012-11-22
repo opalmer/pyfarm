@@ -63,10 +63,3 @@ class NetworkHost(object):
     # end validate_address
 # end HostBase
 
-
-class SoftwareBase(object):
-    '''
-    base class which all software tables use
-    '''
-
-# end SoftwareBase
