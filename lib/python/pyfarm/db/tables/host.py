@@ -20,7 +20,6 @@ from sqlalchemy import Column, ForeignKey
 from sqlalchemy.orm import relationship
 from sqlalchemy.types import String, Integer
 
-from pyfarm.db.tables._extensions import HostSoftwareExtension
 from pyfarm.datatypes.enums import ACTIVE_HOSTS_FRAME_STATES
 from pyfarm.db.tables._mixins import NetworkHost
 from pyfarm.db.tables import Base, \
@@ -60,7 +59,6 @@ class Host(Base, NetworkHost):
 class HostSoftware(Base):
     '''stores information about what software a host can run'''
     __tablename__ = TABLE_HOST_SOFTWARE
-    __mapper_args__ = {"extension" : HostSoftwareExtension()}
     repr_attrs = ("host", "name")
 
     # column definitions
@@ -99,3 +97,4 @@ class HostGroup(Base):
         self.name = name
     # end __init__
 # end HostGroup
+
