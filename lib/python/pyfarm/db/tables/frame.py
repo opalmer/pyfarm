@@ -35,8 +35,8 @@ class Frame(Base):
     state = Column(Integer, default=State.QUEUED)
 
     # relationship definitions
-    job = relationship('Job', uselist=False, backref="ref_job")
-    host = relationship('Host', uselist=False, backref="ref_host")
+    job = relationship('Job', uselist=False, backref="ref_frame_job")
+    host = relationship('Host', uselist=False, backref="ref_frame_host")
 
     def __init__(self, jobid, frame, state=None, hostid=None):
         self.jobid = jobid

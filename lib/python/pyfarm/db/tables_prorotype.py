@@ -3,12 +3,26 @@ from pyfarm.datatypes.enums import State
 
 from sqlalchemy.orm import sessionmaker
 
-from pyfarm.db.tables import init, engine, Frame, Host, HostGroup, Software, \
-    Job, Dependency, Master
+from pyfarm.db.tables import init, engine, Host, HostSoftware
 
 init(True) # setup tables
 Session = sessionmaker(bind=engine)
 session = Session()
+
+host = Host('localhost', '192.168.1.1', '255.255.255.0', 9030, enabled=True)
+session.add(host)
+session.commit()
+
+software = HostSoftware(host, "houdini1")
+session.add(software)
+software = HostSoftware(host, "houdini2")
+session.add(software)
+software = HostSoftware(host, "houdini2")
+session.add(software)
+session.commit()
+print host.software
+
+
 
 # add a host
 #hostname = 'vmworkstation'

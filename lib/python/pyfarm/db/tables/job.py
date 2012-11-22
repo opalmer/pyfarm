@@ -64,7 +64,7 @@ class Software(Base):
     repr_attrs = ("jobid", "type")
 
     jobid = Column(Integer, ForeignKey("%s.id" % TABLE_JOB), nullable=False)
-    job = relationship('Job', uselist=False, backref="ref_job")
+    job = relationship('Job', uselist=False, backref="ref_software_job")
     type = Column(Integer, nullable=False)
 
     def __init__(self, job, type):
@@ -124,7 +124,7 @@ class Job(Base):
 
     # relationship definitions
     software = relationship(
-        'Software', uselist=True, backref="ref_software",
+        'Software', uselist=True, backref="ref_job_software",
         primaryjoin='(Software.jobid == Job.id)'
     )
     frames = relationship(

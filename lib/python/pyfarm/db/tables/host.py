@@ -20,6 +20,7 @@ from sqlalchemy import Column, ForeignKey
 from sqlalchemy.orm import relationship
 from sqlalchemy.types import String, Integer
 
+from pyfarm.db.tables._extensions import HostSoftwareExtension
 from pyfarm.datatypes.enums import ACTIVE_HOSTS_FRAME_STATES
 from pyfarm.db.tables._mixins import NetworkHost
 from pyfarm.db.tables import Base, \
@@ -35,9 +36,12 @@ class Host(Base, NetworkHost):
     masterid = Column(Integer, ForeignKey('%s.id' % TABLE_MASTER))
 
     # relational definitions
-    master = relationship('Master', uselist=False, backref="ref_master")
-    software = relationship('Software', uselist=True, backref="ref_software")
-    groups = relationship('HostGroup', uselist=True, backref="ref_groups")
+    master = relationship('Master', uselist=False, backref="ref_host_master")
+    software = relationship(
+        'HostSoftware', uselist=True, backref="ref_host_host",
+        primaryjoin='(HostSoftware.host == Host.id)'
+    )
+    groups = relationship('HostGroup', uselist=True, backref="ref_host_groups")
     running_frames = relationship(
         'Frame',
         primaryjoin='(Frame.hostid == Host.id) & '
@@ -56,18 +60,23 @@ class Host(Base, NetworkHost):
 class HostSoftware(Base):
     '''stores information about what software a host can run'''
     __tablename__ = TABLE_HOST_SOFTWARE
+    __mapper_args__ = {"extension" : HostSoftwareExtension()}
     repr_attrs = ("host", "name")
 
     # column definitions
     host = Column(Integer, ForeignKey(Host.id))
     name = Column(String(MAX_SOFTWARE_LENGTH), nullable=False)
     hosts = relationship(
-        'Host', uselist=True, backref="ref_hosts",
-        primaryjoin='(Host.id == Software.host)'
+        'Host', uselist=True, backref="ref_hostsoftware_hosts",
+        primaryjoin='(Host.id == HostSoftware.host)'
     )
 
     def __init__(self, host, name):
-        self.host = host
+        if isinstance(host, Host):
+            self.host = host.id
+        else:
+            self.host = host
+
         self.name = name
     # end __init__
 # end HostSoftware
