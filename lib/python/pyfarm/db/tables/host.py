@@ -20,16 +20,19 @@ from sqlalchemy import Column, ForeignKey
 from sqlalchemy.orm import relationship
 from sqlalchemy.types import String, Integer
 
+from pyfarm.logger import Logger
 from pyfarm.datatypes.enums import ACTIVE_HOSTS_FRAME_STATES
 from pyfarm.db.tables._netbase import NetworkHost
-from pyfarm.db.tables import Base, \
+from pyfarm.db.tables import Base, Master, \
     TABLE_HOST, TABLE_HOST_GROUP, TABLE_MASTER, TABLE_HOST_SOFTWARE, \
     MAX_SOFTWARE_LENGTH, MAX_GROUP_LENGTH
+
+logger = Logger(__name__)
 
 class Host(Base, NetworkHost):
     '''base host definition'''
     __tablename__ = TABLE_HOST
-    repr_attrs = ("id", "hostname", "running", "ip")
+    repr_attrs = ("id", "masterid", "hostname", "running", "ip", "masterid")
 
     # column definitions
     masterid = Column(Integer, ForeignKey('%s.id' % TABLE_MASTER))
@@ -47,11 +50,14 @@ class Host(Base, NetworkHost):
                     '(Frame.state.in_(%s))' % (ACTIVE_HOSTS_FRAME_STATES, )
     )
 
-    def __init__(self, hostname, ip, subnet, port, enabled=None, masterid=None):
+    def __init__(self, hostname, ip, subnet, port=None, enabled=None, masterid=None):
         NetworkHost.__init__(self, hostname, ip, subnet, port, enabled)
 
         if masterid is not None:
-            self.masterid = masterid
+            if isinstance(masterid, Master):
+                self.masterid = masterid.id
+            else:
+                self.masterid = masterid
     # end __init__
 # end Host
 
