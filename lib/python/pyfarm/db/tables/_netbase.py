@@ -21,12 +21,15 @@ from sqlalchemy import Column
 from sqlalchemy.orm import validates
 from sqlalchemy.types import String, Boolean, Integer
 
+from pyfarm.net import openport
+from pyfarm.logger import Logger
 from pyfarm.db.tables import MAX_HOSTNAME_LENGTH, MAX_IPV4_LENGTH, \
     MIN_PORT, MAX_PORT
 
+logger = Logger(__name__)
+
 class NetworkHost(object):
     '''mixin which defines common attributes that all network hosts have'''
-
     hostname = Column(String(MAX_HOSTNAME_LENGTH), nullable=False, unique=True)
     ip = Column(String(MAX_IPV4_LENGTH), nullable=False, unique=True)
     subnet = Column(String(MAX_IPV4_LENGTH), nullable=False)
@@ -37,6 +40,12 @@ class NetworkHost(object):
         self.hostname = hostname
         self.ip = ip
         self.subnet = subnet
+
+        # autoselect if an integer was not provided for the port
+        if not isinstance(port, int):
+            port = openport()
+            logger.debug("port not provided, using %s" % port)
+
         self.port = port
 
         if enabled is not None:
