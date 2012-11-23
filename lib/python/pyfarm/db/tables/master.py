@@ -21,9 +21,9 @@ from pyfarm.db.tables._netbase import NetworkHost
 
 class Master(Base, NetworkHost):
     __tablename__ = TABLE_MASTER
-    repr_attrs = ("id", "hostname")
+    repr_attrs = ("id", "hostname", "running", "ip")
 
-    def __init__(self, hostname, ip, subnet, port, enabled=None):
+    def __init__(self, hostname, ip, subnet, port=None, enabled=None):
         NetworkHost.__init__(self, hostname, ip, subnet, port, enabled)
     # end __init__
 # end Master
