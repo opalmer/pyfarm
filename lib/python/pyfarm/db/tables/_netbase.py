@@ -65,10 +65,19 @@ class NetworkHost(object):
         # TODO: IPv6 support
         try:
             socket.inet_aton(ip)
-            return ip
 
         except socket.error:
             raise ValueError("'%s' is not a valid %s address" % (ip, key))
+
+        # inet_aton does not catch problems with addresses that have invalid
+        # length to begin with
+        length = len([ i for i in ip.split(".") if i.strip() ])
+        if length != 4:
+            msg = "invalid length for IPv4 address, "
+            msg += "expected 4 groups but found %s" % length
+            raise ValueError(msg)
+
+        return ip
     # end validate_address
 # end HostBase
 
