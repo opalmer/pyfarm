@@ -16,12 +16,29 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
+from sqlalchemy.orm import relationship
+
 from pyfarm.db.tables import Base, TABLE_MASTER
 from pyfarm.db.tables._netbase import NetworkHost
 
 class Master(Base, NetworkHost):
     __tablename__ = TABLE_MASTER
     repr_attrs = ("id", "hostname", "running", "ip")
+
+    hosts = relationship(
+        'Host', uselist=True, backref="ref_master_hosts",
+        primaryjoin='Host._master == Master.id'
+    )
+    enabled_hosts = relationship(
+        'Host', uselist=True, backref="ref_master_online_hosts",
+        primaryjoin='(Host._master == Master.id) &'
+                    '(Host.enabled == True)'
+    )
+    disabled_hosts = relationship(
+        'Host', uselist=True, backref="ref_master_disabled_hosts",
+        primaryjoin='(Host._master == Master.id) &'
+                    '(Host.enabled == False)'
+    )
 
     def __init__(self, hostname, ip, subnet, port=None, enabled=None):
         NetworkHost.__init__(self, hostname, ip, subnet, port, enabled)
