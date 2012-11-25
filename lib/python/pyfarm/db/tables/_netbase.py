@@ -29,7 +29,7 @@ from pyfarm.db.tables import MAX_HOSTNAME_LENGTH, MAX_IPV4_LENGTH, \
 logger = Logger(__name__)
 
 class NetworkHost(object):
-    '''mixin which defines common attributes that all network hosts have'''
+    '''mixin which defines common attributes that all network nodes have'''
     hostname = Column(String(MAX_HOSTNAME_LENGTH), nullable=False, unique=True)
     ip = Column(String(MAX_IPV4_LENGTH), nullable=False, unique=True)
     subnet = Column(String(MAX_IPV4_LENGTH), nullable=False)
