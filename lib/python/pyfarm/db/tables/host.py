@@ -41,7 +41,7 @@ class Host(Base, NetworkHost):
     master = relationship('Master', uselist=False, backref="ref_host_master")
     software = relationship(
         'HostSoftware', uselist=True, backref="ref_host_host",
-        primaryjoin='(HostSoftware.host == Host.id)'
+        primaryjoin='(HostSoftware._host == Host.id)'
     )
     groups = relationship('HostGroup', uselist=True, backref="ref_host_groups")
     running_frames = relationship(
@@ -65,24 +65,39 @@ class Host(Base, NetworkHost):
 class HostSoftware(Base):
     '''stores information about what software a host can run'''
     __tablename__ = TABLE_HOST_SOFTWARE
-    repr_attrs = ("host", "name")
+    repr_attrs = ("_host", "name")
 
     # column definitions
-    host = Column(Integer, ForeignKey(Host.id))
+    _host = Column(Integer, ForeignKey(Host.id))
     name = Column(String(MAX_SOFTWARE_LENGTH), nullable=False)
-    hosts = relationship(
-        'Host', uselist=True, backref="ref_hostsoftware_hosts",
-        primaryjoin='(Host.id == HostSoftware.host)'
+    host = relationship(
+        'Host', uselist=False, backref="ref_hostsoftware_host",
+        primaryjoin='(Host.id == HostSoftware._host)'
     )
 
     def __init__(self, host, name):
         if isinstance(host, Host):
-            self.host = host.id
+            self._host = host.id
         else:
-            self.host = host
+            self._host = host
 
         self.name = name
     # end __init__
+
+    @property
+    def hosts(self):
+        '''
+        Finds all hosts which are using this software.  We do this using
+        two queries so we retrieve only a unique lists of hosts
+        '''
+        session = self.session
+        all_software = session.query(HostSoftware).filter(
+            HostSoftware.name == self.name
+        )
+        return session.query(Host).filter(
+            Host.id.in_(set( entry._host for entry in all_software ))
+        ).all()
+    # end hosts
 # end HostSoftware
 
 
