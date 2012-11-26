@@ -46,7 +46,7 @@ class Host(Base, NetworkHost):
     groups = relationship('HostGroup', uselist=True, backref="ref_host_groups")
     running_frames = relationship(
         'Frame',
-        primaryjoin='(Frame.hostid == Host.id) & '
+        primaryjoin='(Frame._host == Host.id) & '
                     '(Frame.state.in_(%s))' % (ACTIVE_HOSTS_FRAME_STATES, )
     )
 

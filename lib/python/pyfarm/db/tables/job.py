@@ -56,14 +56,14 @@ class Dependency(Base):
 # end Dependency
 
 
-class Software(Base):
+class JobSoftware(Base):
     '''
     defines software which is required by a job
     '''
     __tablename__ = TABLE_JOB_SOFTWARE
-    repr_attrs = ("jobid", "type")
+    repr_attrs = ("_job", "type")
 
-    jobid = Column(Integer, ForeignKey("%s.id" % TABLE_JOB), nullable=False)
+    _job = Column(Integer, ForeignKey("%s.id" % TABLE_JOB), nullable=False)
     job = relationship('Job', uselist=False, backref="ref_software_job")
     type = Column(Integer, nullable=False)
 
@@ -82,7 +82,7 @@ class Software(Base):
 
         return data
     # end validate_type
-# end Software
+# end JobSoftware
 
 # TODO: test software relationship
 # TODO: verify all required attributes are present
@@ -124,21 +124,21 @@ class Job(Base):
 
     # relationship definitions
     software = relationship(
-        'Software', uselist=True, backref="ref_job_software",
-        primaryjoin='(Software.jobid == Job.id)'
+        'JobSoftware', uselist=True, backref="ref_job_software",
+        primaryjoin='(JobSoftware._job == Job.id)'
     )
     frames = relationship(
         'Frame', uselist=True, backref="ref_frames",
-        primaryjoin='(Frame.jobid == Job.id)'
+        primaryjoin='(Frame._job == Job.id)'
     )
     running_frames = relationship(
         'Frame', uselist=True, backref="ref_job_running_frames",
-        primaryjoin='(Job.id == Frame.jobid) & '
+        primaryjoin='(Job.id == Frame._job) & '
                     '(Frame.state == %s)' % State.RUNNING
     )
     failed_frames = relationship(
         'Frame', uselist=True, backref="ref_job_failed_frames",
-        primaryjoin='(Job.id == Frame.jobid) & '
+        primaryjoin='(Job.id == Frame._job) & '
                     '(Frame.state == %s)' % State.FAILED
     )
 

@@ -29,8 +29,8 @@ class Frame(Base):
     repr_attrs = ("frame", "host", "state")
 
     # column setup
-    jobid = Column(Integer, ForeignKey("%s.id" % TABLE_JOB))
-    hostid = Column(Integer, ForeignKey("%s.id" % TABLE_HOST))
+    _job = Column(Integer, ForeignKey("%s.id" % TABLE_JOB))
+    _host = Column(Integer, ForeignKey("%s.id" % TABLE_HOST))
     frame = Column(Integer, nullable=False)
     state = Column(Integer, default=State.QUEUED)
 
@@ -38,16 +38,29 @@ class Frame(Base):
     job = relationship('Job', uselist=False, backref="ref_frame_job")
     host = relationship('Host', uselist=False, backref="ref_frame_host")
 
-    def __init__(self, jobid, frame, state=None, hostid=None):
-        self.jobid = jobid
+    def __init__(self, job, frame, state=State.QUEUED, host=None):
         self.frame = frame
 
-        if state is None:
-            state = State.QUEUED
+        # state setup
+        if not isinstance(state, int):
+            self.state = State.get(state)
 
-        self.state = state
+        # job setup
+        if isinstance(job, int):
+            self._job = job
 
-        if hostid is not None:
-            self.hostid = hostid
+        elif job is not None:
+            value = getattr(job, 'id')
+            if isinstance(value, int):
+                self._job = value
+
+        # host setup
+        if isinstance(host, int):
+            self._host = host
+
+        elif host is not None:
+            value = getattr(host, 'id')
+            if isinstance(value, int):
+                self._host = value
     # end __init__
 # end Frame
