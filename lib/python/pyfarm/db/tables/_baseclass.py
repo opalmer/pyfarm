@@ -43,9 +43,19 @@ class PyFarmBase(object):
     def __repr__(self):
         values = []
 
-        for attr in ( attr for attr in self.repr_attrs if hasattr(self, attr) ):
-            original_value = getattr(self, attr)
+        # see if our current repr_attrs contains data
+        # if not then see if one of our parent classes does
+        repr_attrs = self.repr_attrs
+        if not self.repr_attrs:
+            for base in reversed(self.__class__.__bases__):
+                if hasattr(base, 'repr_attrs'):
+                    _repr_attrs = getattr(base, 'repr_attrs')
+                    if _repr_attrs:
+                        repr_attrs = _repr_attrs
+                        break
 
+        for attr in ( attr for attr in repr_attrs if hasattr(self, attr) ):
+            original_value = getattr(self, attr)
             if attr == 'state':
                 value = State.get(original_value)
             elif isinstance(original_value, unicode):
