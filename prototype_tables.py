@@ -39,4 +39,10 @@ objs = (host1group, host2group, host1group1, host1group2, host2group1, host2grou
 map(session.add, objs)
 session.commit()
 
-#print host1group1.hosts
+# TODO: not all repr_attrs are actually coming throught to stdout
+
+print host1.groups
+print host1.software
+
+for group in host1.groups:
+    print "hosts in group '%s': %s" % (group.name, group.hosts)
