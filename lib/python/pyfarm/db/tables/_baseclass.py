@@ -74,6 +74,9 @@ class PyFarmBase(object):
 
             values.append("%s=%s" % (attr, value))
 
+        if not values:
+            print "WARNING: no attributes to print!"
+
         return "%s(%s)" % (self.__class__.__name__, ", ".join(values))
     # end __repr__
 # end PyFarmBase
