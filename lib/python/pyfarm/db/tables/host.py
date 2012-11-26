@@ -62,7 +62,37 @@ class Host(Base, NetworkHost):
 # end Host
 
 
-class HostsPropertyMixin(object):
+
+class HostGroupingMixin(object):
+    repr_attrs = ("name", "version")
+    repr_attrs_skip_none = True
+
+    # TODO: this must be declared differently for mixins
+#    host = relationship(
+#        'Host', uselist=False, backref="ref_hostsoftware_host",
+#        primaryjoin='(Host.id == HostSoftware._host)'
+#    )
+
+    def __init__(self, name, host, version):
+        self.name = name
+
+        if version is not None:
+            self.version = version
+
+        if isinstance(host, Host):
+            self._host = host.id
+        else:
+            self._host = host
+    # end __init__
+
+    # TODO: update to use relationship (see TODO above)
+    @property
+    def host(self):
+        return self.session.query(Host).filter(
+            Host.id == self._host
+        ).one()
+    # end host
+
     @property
     def hosts(self):
         '''
@@ -77,47 +107,32 @@ class HostsPropertyMixin(object):
             Host.id.in_(set( entry._host for entry in all_entries ))
         ).all()
     # end hosts
-# end HostGroupMixin
+# end HostGroupingMixin
 
 
-class HostSoftware(Base, HostsPropertyMixin):
+class HostSoftware(Base, HostGroupingMixin):
     '''stores information about what software a host can run'''
     __tablename__ = TABLE_HOST_SOFTWARE
-    repr_attrs = ("_host", "name")
 
-    # column definitions
     _host = Column(Integer, ForeignKey(Host.id))
     name = Column(String(MAX_SOFTWARE_LENGTH), nullable=False)
-    host = relationship(
-        'Host', uselist=False, backref="ref_hostsoftware_host",
-        primaryjoin='(Host.id == HostSoftware._host)'
-    )
+    version = Column(String(MAX_SOFTWARE_LENGTH))
 
-    def __init__(self, host, name):
-        if isinstance(host, Host):
-            self._host = host.id
-        else:
-            self._host = host
-
-        self.name = name
+    def __init__(self, name, host, version=None):
+        HostGroupingMixin.__init__(self, name, host, version)
     # end __init__
-    # end hosts
 # end HostSoftware
 
 
-class HostGroup(Base):
+class HostGroup(Base, HostGroupingMixin):
     '''stores information about which group or groups a host belongs to'''
     __tablename__ = TABLE_HOST_GROUP
-    repr_attrs = ("host", "name")
 
     # column definitions
-    host = Column(Integer, ForeignKey(Host.id), nullable=False)
+    _host = Column(Integer, ForeignKey(Host.id))
     name = Column(String(MAX_GROUP_LENGTH), nullable=False)
-    hosts = relationship('Host', uselist=True, backref=__tablename__)
 
-    def __init__(self, host, name):
-        self.host = host
-        self.name = name
+    def __init__(self, name, host):
+        HostGroupingMixin.__init__(self, name, host, None)
     # end __init__
 # end HostGroup
-
