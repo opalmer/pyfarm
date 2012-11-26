@@ -62,7 +62,25 @@ class Host(Base, NetworkHost):
 # end Host
 
 
-class HostSoftware(Base):
+class HostsPropertyMixin(object):
+    @property
+    def hosts(self):
+        '''
+        Finds all hosts which are using this software.  We do this using
+        two queries so we retrieve only a unique lists of hosts
+        '''
+        session = self.session
+        all_entries = session.query(self.__class__).filter(
+            self.__class__.name == self.name
+        )
+        return session.query(Host).filter(
+            Host.id.in_(set( entry._host for entry in all_entries ))
+        ).all()
+    # end hosts
+# end HostGroupMixin
+
+
+class HostSoftware(Base, HostsPropertyMixin):
     '''stores information about what software a host can run'''
     __tablename__ = TABLE_HOST_SOFTWARE
     repr_attrs = ("_host", "name")
@@ -83,20 +101,6 @@ class HostSoftware(Base):
 
         self.name = name
     # end __init__
-
-    @property
-    def hosts(self):
-        '''
-        Finds all hosts which are using this software.  We do this using
-        two queries so we retrieve only a unique lists of hosts
-        '''
-        session = self.session
-        all_software = session.query(HostSoftware).filter(
-            HostSoftware.name == self.name
-        )
-        return session.query(Host).filter(
-            Host.id.in_(set( entry._host for entry in all_software ))
-        ).all()
     # end hosts
 # end HostSoftware
 
