@@ -43,17 +43,20 @@ class PyFarmBase(object):
 
     def __getparentattr(self, name):
         '''retrieve a value from the right most class (including mixins)'''
-        classes = []
+        classes = [self.__class__]
         classes.extend(self.__class__.__bases__)
-        classes.append(self.__class__)
+        classes.append(self.__class__) # just in case we don't find anything else
 
         for base in reversed(classes):
             if hasattr(base, name):
-                return getattr(base, name)
+                value = getattr(base, name)
+                if value is not None:
+                    return value
     # end __getparentattr
 
     def __repr__(self):
         values = []
+        none = (None, repr(None), 'none')
         repr_attrs = self.__getparentattr('repr_attrs')
         repr_attrs_skip_none = self.__getparentattr('repr_attrs_skip_none')
 
@@ -66,7 +69,7 @@ class PyFarmBase(object):
             else:
                 value = repr(original_value)
 
-            if repr_attrs_skip_none and value in (None, 'None'):
+            if repr_attrs_skip_none and value in none:
                 continue
 
             values.append("%s=%s" % (attr, value))
