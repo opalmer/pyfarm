@@ -31,6 +31,7 @@ class PyFarmBase(object):
     for all classes to inherit
     '''
     repr_attrs = ()
+    repr_attrs_skip_none = False
 
     # base column definitions which all other classes inherit
     id = Column(Integer, primary_key=True, autoincrement=True)
@@ -40,19 +41,21 @@ class PyFarmBase(object):
         return object_session(self)
     # end session
 
+    def __getparentattr(self, name):
+        '''retrieve a value from the right most class (including mixins)'''
+        classes = []
+        classes.extend(self.__class__.__bases__)
+        classes.append(self.__class__)
+
+        for base in reversed(classes):
+            if hasattr(base, name):
+                return getattr(base, name)
+    # end __getparentattr
+
     def __repr__(self):
         values = []
-
-        # see if our current repr_attrs contains data
-        # if not then see if one of our parent classes does
-        repr_attrs = self.repr_attrs
-        if not self.repr_attrs:
-            for base in reversed(self.__class__.__bases__):
-                if hasattr(base, 'repr_attrs'):
-                    _repr_attrs = getattr(base, 'repr_attrs')
-                    if _repr_attrs:
-                        repr_attrs = _repr_attrs
-                        break
+        repr_attrs = self.__getparentattr('repr_attrs')
+        repr_attrs_skip_none = self.__getparentattr('repr_attrs_skip_none')
 
         for attr in ( attr for attr in repr_attrs if hasattr(self, attr) ):
             original_value = getattr(self, attr)
@@ -62,6 +65,9 @@ class PyFarmBase(object):
                 value = "'%s'"  % original_value
             else:
                 value = repr(original_value)
+
+            if repr_attrs_skip_none and value in (None, 'None'):
+                continue
 
             values.append("%s=%s" % (attr, value))
 
