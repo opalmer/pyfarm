@@ -21,6 +21,7 @@ General utility functions that are not specific to individual components
 of PyFarm.
 '''
 
+import os
 import datetime
 import sqlalchemy.util
 
@@ -66,3 +67,31 @@ class ScheduledRun:
         return force or self.lastupdate >= self.timeout-1
     # end shouldRun
 # end ScheduledRun
+
+def which(program):
+    '''
+    returns the path to the requested program
+
+    :raise OSError:
+        raised if the path to the program could not be found
+    '''
+    fullpath = os.path.abspath(program)
+
+    # nothing more to do here if the program being
+    # requested already exists
+    if os.path.isfile(fullpath):
+        return fullpath
+
+    # though rare account for problems with $PATH not
+    # being in the environment
+    if 'PATH' not in os.environ:
+        raise EnvironmentError("$PATH is not defined in the environment")
+
+    envpath = os.environ.get('PATH')
+    for path in ( path for path in envpath.split(os.pathsep) if path ):
+        fullpath = os.path.join(path, program)
+        if os.path.isfile(fullpath):
+            return fullpath
+
+    raise OSError("failed to find program '%s' in %s" % (program, envpath))
+# end which
