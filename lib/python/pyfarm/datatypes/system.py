@@ -19,6 +19,7 @@
 import os
 import sys
 import psutil
+import tempfile
 import getpass
 
 from pyfarm.datatypes.functions import bytes_to_megabytes
@@ -103,3 +104,7 @@ else:
 # docstrings for swap and ram
 swap.__doc__ = "returns the current swap available"
 ram.__doc__ = "returns the current ram available"
+
+# determine if the filesystem is case sensitive
+_id, _tempname = tempfile.mkstemp()
+FILE_CASE_SENSITIVE = not os.path.isfile(_tempname.upper())
