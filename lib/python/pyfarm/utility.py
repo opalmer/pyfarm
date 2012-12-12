@@ -62,7 +62,7 @@ def expandPath(path):
     return expanduser(expandvars(path))
 # end expandPath
 
-def expandPaths(envvar, error=True, validate=False):
+def expandPaths(envvar, error=True, validate=False, expand=True):
     '''
     Takes the given environment variable, expands it, and returns
     a list of paths which have a length.
@@ -73,6 +73,9 @@ def expandPaths(envvar, error=True, validate=False):
 
     :param boolean validate:
         if True require the path to be real before allowing it to be returned
+
+    :param boolean expand:
+        if True expand environment variables in each path
 
     :except KeyError:
         raised if error is True and envvar is not in os.environ
@@ -90,10 +93,8 @@ def expandPaths(envvar, error=True, validate=False):
         return True
     # end filter_path
 
-    return imap(
-        expandPath,
-        ifilter(filter_path, os.environ.get(envvar, '').split(os.pathsep))
-    )
+    filter = ifilter(filter_path, os.environ.get(envvar, '').split(os.pathsep))
+    return imap(expandPath, filter) if expand else filter
 # end expandPaths
 
 def which(program):
