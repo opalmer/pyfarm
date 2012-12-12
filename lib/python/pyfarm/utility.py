@@ -23,22 +23,9 @@ of PyFarm.
 
 import os
 import datetime
-import sqlalchemy.util
 
-class NamedTupleRow(sqlalchemy.util.NamedTuple):
-    def __repr__(self):
-        values = []
-        for key, value in self.__dict__.iteritems():
-            if key != "_labels":
-                values.append("%s=%s" % (key, repr(value)))
-
-        return "Row(%s)" % ", ".join(values)
-    # end __repr__
-# end NamedTupleRow
-
-
-# old style class since twisted classes are also old style
 class ScheduledRun:
+    # old style class since twisted classes are also old style
     '''
     Basic class which informs child classes if they should
     perform their indicated function
