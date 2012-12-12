@@ -23,6 +23,8 @@ of PyFarm.
 
 import os
 import datetime
+from itertools import ifilter, imap
+from os.path import exists, expanduser, expandvars
 
 class ScheduledRun:
     # old style class since twisted classes are also old style
@@ -55,10 +57,51 @@ class ScheduledRun:
     # end shouldRun
 # end ScheduledRun
 
+def expandPath(path):
+    '''expands all paths of a path'''
+    return expanduser(expandvars(path))
+# end expandPath
+
+def expandPaths(envvar, error=True, validate=False):
+    '''
+    Takes the given environment variable, expands it, and returns
+    a list of paths which have a length.
+
+    :param boolean error:
+        if True and envvar does not exist in os.environ then raise a
+        KeyError
+
+    :param boolean validate:
+        if True require the path to be real before allowing it to be returned
+
+    :except KeyError:
+        raised if error is True and envvar is not in os.environ
+    '''
+    if error and envvar not in os.environ:
+        raise KeyError("$%s is not in the environment")
+
+    def filter_path(path):
+        # do nothing if the path is blank or validation
+        # is turned on and the path is not real
+        if not path or validate and not exists(path):
+            return False
+
+        # in all other cases, let the path through
+        return True
+    # end filter_path
+
+    return imap(
+        expandPath,
+        ifilter(filter_path, os.environ.get(envvar, '').split(os.pathsep))
+    )
+# end expandPaths
 
 def which(program):
     '''
     returns the path to the requested program
+
+    .. note::
+        This function will not resolve aliases
 
     :raise OSError:
         raised if the path to the program could not be found
@@ -69,17 +112,12 @@ def which(program):
     if os.path.isfile(fullpath):
         return fullpath
 
-    # though rare account for problems with $PATH not
-    # being in the environment
-    if 'PATH' not in os.environ:
-        raise EnvironmentError("$PATH is not defined in the environment")
-
-    envpath = os.environ.get('PATH')
-    for path in ( path for path in envpath.split(os.pathsep) if path ):
+    for path in expandPaths('PATH', validate=True):
         fullpath = os.path.join(path, program)
         if os.path.isfile(fullpath):
             return fullpath
 
     # if all else fails, fail
-    raise OSError("failed to find program '%s' in %s" % (program, envpath))
+    args = (program, os.environ.get('PATH'))
+    raise OSError("failed to find program '%s' in %s" % args)
 # end which
