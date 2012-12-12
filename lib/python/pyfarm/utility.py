@@ -75,10 +75,9 @@ def which(program):
     :raise OSError:
         raised if the path to the program could not be found
     '''
+    # Returns the full path to the requested program.  If the path
+    # is in fact valid then we have nothing left to do.
     fullpath = os.path.abspath(program)
-
-    # nothing more to do here if the program being
-    # requested already exists
     if os.path.isfile(fullpath):
         return fullpath
 
@@ -93,5 +92,6 @@ def which(program):
         if os.path.isfile(fullpath):
             return fullpath
 
+    # if all else fails, fail
     raise OSError("failed to find program '%s' in %s" % (program, envpath))
 # end which
