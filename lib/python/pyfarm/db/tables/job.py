@@ -27,7 +27,7 @@ from sqlalchemy.types import Integer, Boolean, DateTime, Text, \
     PickleType, String
 
 from pyfarm.datatypes.enums import State, ACTIVE_FRAME_STATES, \
-    ACTIVE_DEPENDENCY_STATES, SoftwareType
+    ACTIVE_DEPENDENCY_STATES, SoftwareType, EnvMergeMode
 
 from pyfarm.db.tables import Base, Frame, \
     REQUEUE_FAILED, REQUEUE_MAX, TABLE_JOB, TABLE_JOB_DEPENDENCY, \
@@ -107,7 +107,11 @@ class Job(Base):
     priority = Column(Integer, default=DEFAULT_PRIORITY)
     requeue_failed = Column(Boolean, default=REQUEUE_FAILED)
     requeue_max = Column(Integer, default=REQUEUE_MAX)
+
+    # time tracking
     time_submitted = Column(DateTime, default=datetime.now)
+    time_started = Column(DateTime)
+    time_finished = Column(DateTime)
 
     # job related information
     cmd = Column(Text(convert_unicode=True), nullable=False)
@@ -120,7 +124,8 @@ class Job(Base):
 
     # underlying environment which is represented by the environ
     # property on this class
-    _environ = Column(PickleType, default=None)
+    _environ = Column(PickleType, default=dict)
+    environ_mode = Column(Integer, default=EnvMergeMode.UPDATE)
 
     # relationship definitions
     software = relationship(
@@ -144,7 +149,9 @@ class Job(Base):
 
     def __init__(self, cmd, args, start_frame, end_frame, by_frame=None,
                  batch_frame=None, state=None, priority=None, environ=None,
-                 data=None, requeue_max=None, requeue_failed=None):
+                 environ_mode=None, data=None, requeue_max=None,
+                 requeue_failed=None
+        ):
         self.cmd = cmd
         self.args = args
         self.start_frame = start_frame
@@ -153,45 +160,61 @@ class Job(Base):
         if by_frame is not None:
             self.by_frame = by_frame
 
-        if self.batch_frame is not None:
+        if batch_frame is not None:
             self.batch_frame = batch_frame
-
-        if priority is not None:
-            self.priority = priority
 
         if state is not None:
             self.state = state
 
+        if priority is not None:
+            self.priority = priority
+
         if environ is not None:
             self._environ = environ
 
-        if self.data is not None:
+        if environ_mode is not None:
+            self.environ_mode = environ_mode
+
+        if data is not None:
             self.data = data
 
-        if requeue_failed is None:
-            _requeue_failed = requeue_failed
-
-        else:
-            self.requeue_failed = requeue_failed
-            _requeue_failed = self.requeue_failed
-
-        if requeue_max and not _requeue_failed:
-            raise ValueError(
-                "requeue_max set but requeue_failed evals as None"
-            )
-
-        elif requeue_max is not None:
+        if requeue_max is not None:
             self.requeue_max = requeue_max
+
+        if requeue_failed is not None:
+            self.requeue_failed = requeue_failed
+
     # end __init__
 
     @property
     def environ(self):
         '''
-        creates a copy of the local environment if _environ is not populated
+        returns the environment for the job while taking into
+        account the different env. merge strategies
         '''
-        if self._environ is None:
-            return os.environ.copy()
-        return self._environ
+        mode = self.environ_mode
+
+        # simply update the current environment with the
+        # incoming environment
+        if mode == EnvMergeMode.UPDATE:
+            environ = os.environ.copy()
+            environ.update(self._environ)
+            return environ
+
+        # take a copy of the current environment and then
+        # create keys that do not exist using the provided
+        # environment
+        elif mode == EnvMergeMode.FILL:
+            environ = os.environ.copy()
+            for key, value in self._environ.iteritems():
+                environ.setdefault(key, value)
+
+            return environ
+
+        # do nothing, replace the current environment with
+        # the provided environment
+        elif mode == EnvMergeMode.REPLACE:
+            return self._environ
     # end environ
 
     @property
@@ -235,6 +258,29 @@ class Job(Base):
         return query.all()
     # end dependencies
 
+    @property
+    def elapsed(self):
+        '''returns the time elapsed since the job has started'''
+        started = self.time_started
+        finished = self.time_finished
+
+        if started is None:
+            raise ValueError("Job %s has not been started yet" % self.id)
+
+        if finished is None:
+            end = datetime.now()
+
+        delta = end - started
+        return delta.days * 86400 + delta.seconds
+    # end elapsed
+
+    @validates('environ_mode')
+    def validate_environ_mode(self, key, value):
+        if value not in EnvMergeMode.values():
+            raise ValueError("%s is not a valid value for %s" % (key, value))
+        return value
+    # end validate_environ_mode
+
     @validates('_environ', 'data')
     def validate_dict(self, key, environ):
         if not isinstance(environ, (UserDict.UserDict, dict)):
@@ -243,17 +289,25 @@ class Job(Base):
         return environ
     # end validate_dict
 
+    @validates('end_frame')
+    def validate_frange(self, key, value):
+        if value < self.start_frame:
+            raise ValueError("%s cannot be less than start_frame" % key)
+        return value
+    # end validate_frange
+
     @validates('state')
     def validate_state(self, key, state):
         if state not in VALID_NEW_JOB_STATES:
             state_names = [ State.get(state) for state in VALID_NEW_JOB_STATES ]
             raise ValueError("%s must be in %s" % (key, state_names))
+
         return state
     # end validate_state
 
     @validates('args')
     def validate_list(self, key, args):
-        if not isinstance(args, (list, tuple,)):
+        if not isinstance(args, (list, tuple)):
             raise TypeError("%s must be a list or tuple" % key)
 
         return args
@@ -261,9 +315,21 @@ class Job(Base):
 
     @validates('cpus', 'ram', 'batch_frame', 'by_frame')
     def validate_positive_int(self, key, data):
-        if data <= 0:
+        if data < 1:
             raise ValueError("%s value must be greater than zero" % key)
 
         return data
     # end validate_positive_int
+
+    def createFrames(self, state=None, commit=True):
+        '''creates the frames for the job'''
+        frames = []
+        for i in xrange(self.start_frame, self.end_frame+1, self.by_frame or 1):
+            frame = Frame(self, i, state=state)
+            frames.append(frame)
+
+        self.session.add_all(frames)
+        if commit:
+            self.session.commit()
+    # end createFrames
 # end Job
