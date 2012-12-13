@@ -16,51 +16,87 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
+from datetime import datetime
 from sqlalchemy import Column, ForeignKey
-from sqlalchemy.orm import relationship
-from sqlalchemy.types import Integer
+from sqlalchemy.orm import relationship, validates
+from sqlalchemy.types import Integer, DateTime
 
-from pyfarm.db.tables import Base, TABLE_FRAME, TABLE_JOB, TABLE_HOST
+from pyfarm.db.tables import Base, TABLE_FRAME, TABLE_JOB, TABLE_HOST, \
+    VALID_NEW_FRAME_STATES
 from pyfarm.datatypes.enums import State
 
 class Frame(Base):
     '''defines a single frame'''
     __tablename__ = TABLE_FRAME
-    repr_attrs = ("frame", "host", "state")
+    repr_attrs = ("_job", "frame", "state", "retries", "host")
+    repr_attrs_skip_none = ("host", )
 
     # column setup
     _job = Column(Integer, ForeignKey("%s.id" % TABLE_JOB))
     _host = Column(Integer, ForeignKey("%s.id" % TABLE_HOST))
     frame = Column(Integer, nullable=False)
     state = Column(Integer, default=State.QUEUED)
+    retries = Column(Integer, default=0)
+
+    # time tracking
+    time_submitted = Column(DateTime, default=datetime.now)
+    time_started = Column(DateTime)
+    time_finished = Column(DateTime)
 
     # relationship definitions
     job = relationship('Job', uselist=False, backref="ref_frame_job")
     host = relationship('Host', uselist=False, backref="ref_frame_host")
 
-    def __init__(self, job, frame, state=State.QUEUED, host=None):
+    def __init__(self, job, frame, state=None):
+        self._job = job
         self.frame = frame
 
-        # state setup
-        if not isinstance(state, int):
-            self.state = State.get(state)
-
-        # job setup
-        if isinstance(job, int):
-            self._job = job
-
-        elif job is not None:
-            value = getattr(job, 'id')
-            if isinstance(value, int):
-                self._job = value
-
-        # host setup
-        if isinstance(host, int):
-            self._host = host
-
-        elif host is not None:
-            value = getattr(host, 'id')
-            if isinstance(value, int):
-                self._host = value
+        if state is not None:
+            self.state = state
     # end __init__
+
+    @property
+    def elapsed(self):
+        '''returns the time elapsed since the job has started'''
+        started = self.time_started
+        finished = self.time_finished
+
+        if started is None:
+            raise ValueError("Frame %s has not been started yet" % self.id)
+
+        if finished is None:
+            end = datetime.now()
+
+        delta = end - started
+        return delta.days * 86400 + delta.seconds
+    # end elapsed
+
+    @validates('state')
+    def validate_state(self, key, value):
+        if value not in VALID_NEW_FRAME_STATES:
+            raise ValueError("value provided for %s is not valid" % key)
+        return value
+    # end validate_state
+
+    @validates('frame')
+    def validate_frame(self, key, value):
+        if not isinstance(value, int):
+            raise TypeError("expected %s to be an integer" % key)
+
+        return value
+    # end validate_frame
+
+    @validates('_job')
+    def validate_job(self, key, value):
+        if isinstance(value, int):
+            return value
+
+        elif hasattr(value, '__class__') and value.__class__.__name__ == "Job":
+            if value.id is None:
+                raise TypeError("id on Job object is None, has commit been run?")
+            return value.id
+
+        raise ValueError("failed to extract the value for %s" % key)
+    # end validate_job
 # end Frame
+
