@@ -39,7 +39,10 @@ DB_REBULD = _prefs.get('database.setup.rebuild')
 
 # state information used for validation
 VALID_NEW_JOB_STATES = (
-    _state.PAUSED, _state.QUEUED,
+    _state.PAUSED, _state.QUEUED
+)
+VALID_NEW_FRAME_STATES = (
+    _state.PAUSED, _state.QUEUED
 )
 
 # specifies all of the default table names
