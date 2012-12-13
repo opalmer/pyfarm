@@ -1,5 +1,6 @@
 from sqlalchemy.orm import sessionmaker
-from pyfarm.db.tables import init, engine, Host, HostSoftware, HostGroup, Master
+from pyfarm.db.tables import init, engine, Host, HostSoftware, HostGroup, \
+    Master, Job, Frame
 
 init(True) # setup tables
 Session = sessionmaker(bind=engine)
@@ -17,32 +18,12 @@ objs = (host1, host2)
 map(session.add, objs)
 session.commit()
 
-maya1 = HostSoftware('maya', host1)
-maya2 = HostSoftware('maya', host2)
-hou1 = HostSoftware('houdini', host1, '12+')
-hou2 = HostSoftware('houdini', host2, version='12+')
-
-# add and commit
-objs = [maya1, maya2, hou1, hou2]
-map(session.add, objs)
+main_job = Job('ping', ['-c', '1', 'localhost'], 1, 5)
+session.add(main_job)
 session.commit()
 
-host1group = HostGroup('host1group', host1)
-host2group = HostGroup('host2group', host2)
-host1group1 = HostGroup('group1', host1)
-host1group2 = HostGroup('group2', host1)
-host2group1 = HostGroup('group1', host2)
-host2group2 = HostGroup('group2', host2)
+main_job.createFrames()
 
-# add and commit
-objs = (host1group, host2group, host1group1, host1group2, host2group1, host2group2)
-map(session.add, objs)
-session.commit()
-
-# TODO: not all repr_attrs are actually coming throught to stdout
-
-print host1.groups
-print host1.software
-
-for group in host1.groups:
-    print "hosts in group '%s': %s" % (group.name, group.hosts)
+print main_job
+for f in main_job.frames:
+    print f, f.job
