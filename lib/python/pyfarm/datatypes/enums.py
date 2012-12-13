@@ -55,10 +55,17 @@ class Enum(object):
         self.__mappings = OrderedDict()
         self.__args = list(args)
         self.__repr = "%s(%s)" % (self.__class__.__name__, ", ".join(self.__args))
+        self.__keys = []
+        self.__values = []
 
         for index, arg in enumerate(self.__args):
             if not isinstance(arg, (str, unicode)):
                 raise TypeError("%s is not a string" % str(arg))
+
+            # internal mapping of the input values to be
+            # used for keys() and values()
+            self.__keys.append(arg)
+            self.__values.append(index)
 
             # provide both a string mapping and an integer
             # mapping for use with __getitem__ and get()
@@ -67,12 +74,19 @@ class Enum(object):
 
             # set the attribute on the class
             setattr(self, arg, index)
+
+        # recast as tuples so iteration is faster and
+        # the data is read only
+        self.__keys = tuple(self.__keys)
+        self.__values = tuple(self.__values)
     # end __init__
 
-    def get(self, item): return self.__mappings[item]
     def __repr__(self): return self.__repr
     def __getitem__(self, item): return self.__mappings[item]
-    def __contains__(self, item): return item in self.__mappings
+    def __contains__(self, item): self.__getitem__(item)
+    def get(self, item): return self.__mappings[item]
+    def keys(self): return self.__keys
+    def values(self): return self.__values
 # end Enum
 
 Software = Enum("MAYA", "HOUDINI", "VRAY", "NUKE", "BLENDER")
@@ -82,6 +96,12 @@ State = Enum(
 )
 SoftwareType = Enum(
     "INCLUDE", "EXCLUDE"
+)
+EnvMergeMode = Enum(
+    # UPDATE - env1.update(env2)
+    # REPLACE - env1 = env2
+    # FILL - for key, value in env2.iteritems(): env1.setdefault(key, value)
+    "UPDATE", "REPLACE", "FILL"
 )
 
 # python datatypes for type comparison
