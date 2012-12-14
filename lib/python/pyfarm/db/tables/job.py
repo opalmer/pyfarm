@@ -31,7 +31,8 @@ from pyfarm.datatypes.enums import State, ACTIVE_FRAME_STATES, \
 
 from pyfarm.db.tables import Base, Frame, \
     REQUEUE_FAILED, REQUEUE_MAX, TABLE_JOB, TABLE_JOB_DEPENDENCY, \
-    DEFAULT_PRIORITY, VALID_NEW_JOB_STATES, TABLE_JOB_SOFTWARE
+    DEFAULT_PRIORITY, VALID_NEW_JOB_STATES, TABLE_JOB_SOFTWARE,\
+    MAX_USERNAME_LENGTH
 
 class Dependency(Base):
     '''
@@ -118,7 +119,7 @@ class Job(Base):
     args = Column(PickleType, nullable=False)
     notes = Column(Text(convert_unicode=True), default="N/A")
     data = Column(PickleType, default=dict)
-    user = Column(String(256), default=getpass.getuser)
+    user = Column(String(MAX_USERNAME_LENGTH), default=getpass.getuser)
     ram = Column(Integer, default=None)
     cpus = Column(Integer, default=None)
 
