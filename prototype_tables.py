@@ -24,6 +24,8 @@ session.commit()
 
 main_job.createFrames()
 
+# TODO: add after update to things like the 'started' column can be udpated for us
+
 print main_job
 for f in main_job.frames:
     print f, f.job
