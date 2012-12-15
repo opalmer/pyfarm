@@ -68,7 +68,9 @@ from pyfarm.db import insert, modify, query
 from pyfarm.db.modify.host import update_memory
 from pyfarm.datatypes.system import OS, OperatingSystem
 from pyfarm.datatypes import network
-from pyfarm.net import rpc as _rpc
+from pyfarm.net.rpc.client import utility
+from pyfarm.net.rpc.server.xmlservice import XMLRPCService
+
 from twisted.internet import reactor, task
 from twisted.web import server as _server
 
@@ -80,7 +82,7 @@ SERVICE = None
 if 'PYFARM_RESTART' in os.environ:
     del os.environ['PYFARM_RESTART']
 
-class Host(_rpc.Service, _logger.Logger):
+class Host(XMLRPCService, _logger.Logger):
     '''
     Main xmlrpc service which controls the host.  Most methods
     are handled entirely outside of this class for the purposes of
@@ -89,12 +91,12 @@ class Host(_rpc.Service, _logger.Logger):
     # provides a location to store our call to reactor.callLater
     def __init__(self):
         _logger.Logger.__init__(self, self)
-        _rpc.Service.__init__(self, SERVICE_LOG)
+        XMLRPCService.__init__(self, SERVICE_LOG)
 
         cmdargs.printOptions(options, self.debug)
 
         if options.verify_master:
-            if not _rpc.ping(MASTER[0], MASTER[1]):
+            if not utility.ping(MASTER[0], MASTER[1]):
                 raise errors.NetworkSetupError(
                     "failed to connect to master at %s:%s" % MASTER
                 )

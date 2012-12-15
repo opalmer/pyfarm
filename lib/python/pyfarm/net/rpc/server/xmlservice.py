@@ -17,19 +17,18 @@
 # along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
-import socket
-import xmlrpclib
-
-from pyfarm.logger import Logger
-from pyfarm.preferences import prefs
 
 from twisted.internet import reactor
 from twisted.web import resource, xmlrpc
 
+from pyfarm.logger import Logger
+from pyfarm.preferences import prefs
+from pyfarm.net.rpc.client import utility
+
 TEST_MODE = False
 logger = Logger(__name__)
 
-class Service(xmlrpc.XMLRPC, Logger):
+class XMLRPCService(xmlrpc.XMLRPC, Logger):
     '''
     Base twisted xmlrpc service, contains the stand methods
     and attributes to be inherited by all xmlrpc instances
@@ -97,7 +96,7 @@ class Service(xmlrpc.XMLRPC, Logger):
         '''
         self.debug("incoming ping request")
         if hostname and port:
-            return ping(hostname, port, success, failure)
+            return utility.ping(hostname, port, success, failure)
 
         return True
     # end xmlrpc_ping
@@ -162,126 +161,5 @@ class Service(xmlrpc.XMLRPC, Logger):
 
         return data
     # end xmlrpc_service_log
-# end Service
+# end XMLRPCService
 
-
-class Connection(Logger):
-    '''
-    Generic rpc object which implements the Twisted xmlrpc
-    proxy object.  The constructor for this class will
-    either except a hostname and port or a hostname with
-    the port included.
-
-    >>> a = Connection('hostname', 9030)
-    >>> b = Connection('hostname:9030')
-
-    :param string hostname:
-        the hostname or hostname and port to connect to
-
-    :param integer port:
-        the port to connect to
-
-    :param callable success:
-        method or function to call on a successful result
-
-    :param callable failure
-        method or function to call failed call
-
-    :exception RuntimeError:
-        raised if we somehow end up without a hostname
-        and/port port
-    '''
-    def __init__(self, hostname,
-                    port=None, success=None, failure=None):
-        Logger.__init__(self.__class__.__name__)
-        # split the hostname into port and hostname if
-        # port is None and ":" in hostname
-        if port is None and ':' in hostname:
-            hostname, port = hostname.split(":")
-
-        # be sure everything was setup properly
-        if not hostname or not port:
-            raise RuntimeError("hostname or port not passed to rpc.Connection")
-
-        self.hostname = hostname
-        self.port = int(port)
-        self.__success = success
-        self.__failure = failure
-
-        # construct the proxy object
-        self.url = "http://%s:%i" % (self.hostname, self.port)
-        self.proxy = xmlrpc.Proxy(self.url, allowNone=True)
-    # end __init__
-
-    def __fail(self, *args):
-        '''
-        If no other deferred error handlers are defined, this will
-        be the default
-        '''
-        self.debug("rpc call to %s failed, iterating over failure below" % self.url)
-
-        for error in args:
-            if hasattr(error, 'printTraceback') and callable(error.printTraceback):
-                error.printTraceback()
-            else:
-                self.error(str(error))
-    # end __fail
-
-    def call(self, *args):
-        success = self.__success
-        failure = self.__failure or self.__fail
-        remote = self.proxy.callRemote(args[0], *args[1:])
-
-        if success:
-            remote.addCallback(success)
-
-        if failure:
-            remote.addErrback(failure)
-    # end call
-# end Connection
-
-def ping(hostname, port, success=None, failure=None):
-    '''
-    Attempts to run the xmlrpc ping method on the host and port.
-    When not running in a reactor this will attempt to call the
-    respective callback (although they are not required.
-
-    .. note::
-        When running under the reactor this method will require
-        at least a success method.  If a failure method is not provided
-        then one will be constructed to log the failure
-
-    '''
-    ident = "%s:%i" % (hostname, port)
-    url = "http://%s" % ident
-
-    if not reactor.running:
-        try:
-            rpc = xmlrpclib.ServerProxy(url, allow_none=True)
-            rpc.ping()
-            logger.debug("successfully received ping from %s" % ident)
-
-            if callable(success):
-                success(hostname, port)
-
-            return True
-
-        except socket.error:
-            logger.warning("failed to ping %s" % ident)
-
-            if callable(failure):
-                failure(hostname, port)
-
-            return False
-
-    else:
-        if not callable(success):
-            raise TypeError("reactor is running, success must be callable")
-
-        if not callable(failure):
-            def failure(value):
-                logger.error("failed to ping %s" % ident)
-
-        rpc = xmlrpc.Proxy(url)
-        return rpc.callRemote('ping').addCallbacks(success, failure)
-# end ping

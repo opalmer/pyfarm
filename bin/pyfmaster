@@ -68,9 +68,9 @@ logger = _logger.logger
 assignment_loop = None
 
 from pyfarm.db import tables, query, modify, insert
-from pyfarm.net import rpc as _rpc
 from pyfarm.datatypes.network import IP, SUBNET
 from pyfarm.datatypes.system import OS, OperatingSystem
+from pyfarm.net.rpc.server.xmlservice import XMLRPCService
 from pyfarm.master import assign
 
 SERVICE = None
@@ -82,7 +82,7 @@ if 'PYFARM_RESTART' in os.environ:
 # setup preferences
 prefs.set('database.setup.close-connections', False)
 
-class Master(_rpc.Service, _logger.Logger):
+class Master(XMLRPCService, _logger.Logger):
     '''
     Main master class to act as an external interface to the
     data base and job master.
@@ -90,7 +90,7 @@ class Master(_rpc.Service, _logger.Logger):
     THREAD_LOCK = threading.Lock()
     def __init__(self):
         _logger.Logger.__init__(self, self)
-        _rpc.Service.__init__(self, SERVICE_LOG)
+        XMLRPCService.__init__(self, SERVICE_LOG)
 
         cmdargs.printOptions(options, self.debug)
         self.count = 0

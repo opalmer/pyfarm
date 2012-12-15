@@ -136,4 +136,4 @@ class Connection(Logger):
         session.ENGINE.dispose()
         self.debug("closed connections, %s elapsed" % (time.time()-self.start))
     # end __exit__
-# end Connection
+# end XMLRPCConnection

@@ -16,16 +16,4 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
-import os
-import site
-
-__version__ = (1, 0, 0)
-
-PYFARM_PACKAGE = os.path.dirname(os.path.abspath(__file__))
-PYFARM_ROOT = os.path.abspath(os.path.join(PYFARM_PACKAGE, "..", "..", ".."))
-PYFARM_PYTHONROOT = os.path.join(PYFARM_ROOT, "lib", "python")
-PYFARM_ETC = os.environ.get('PYFARM_ETC') or \
-             os.path.join(PYFARM_ROOT, "etc")
-
-site.addsitedir(PYFARM_PYTHONROOT)
-
+from _json import JSONRPCClient
