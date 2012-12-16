@@ -16,65 +16,71 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
-import pprint
 from uuid import uuid4
 from urllib import urlopen
 from json import dumps, loads
 
-
-class JSONRPCException(Exception):
-    def __init__(self, rpcError):
-        Exception.__init__(self)
-        self.error = rpcError
-    # end __init__
-# end JSONRPCException
+from pyfarm.errors import RPCFault
 
 
 class JSONRPCClient(object):
-    def __init__(self, serviceURL, serviceName=None):
-        self.__serviceURL = serviceURL
-        self.__serviceName = serviceName
+    '''
+    Remote procedure call client class which operates on JSON.
+
+    :param string url:
+        The url to connect to.  This string may also contain login
+        information and a port
+
+    :param boolean uid:
+        If True then send along a unique identifier with each
+        message
+    '''
+    def __init__(self, url, uid=True, method=None):
+        self.__url = url
+        self.__method = method
+        self.__uid = uid
     # end __init__
 
     def __getattr__(self, name):
-        if self.__serviceName is not None:
-            name = "%s.%s" % (self.__serviceName, name)
-        return JSONRPCClient(self.__serviceURL, name)
-    # __getattr__
+        return JSONRPCClient(
+            self.__url,
+            method=".".join((self.__method, name)) if self.__method is not None
+            else name
+        )
+    # end __getattr__
 
-    def _data(self, args, kwargs):
-        return {
-            'method': self.__serviceName,
-            'args': args,
-            'kwargs': kwargs,
-            'uid': str(uuid4()),
-#            'id': 'jsonrpc'
+    @property
+    def basepostdata(self):
+        '''generates the base data to post'''
+        data = {
+            'id' : 'jsonrpc',
+            'method' : self.__method
         }
-    # end _data
+
+        if self.__uid:
+            data['uid'] = str(uuid4())
+
+        return data
+    # end basepostdata
 
     def __call__(self, *args, **kwargs):
-        post = dumps(self._data(args, kwargs))
+        # create the data
+        data = self.basepostdata
+        data['params'] = args
+        data['kwargs'] = kwargs
 
-        try:
-            response = urlopen(self.__serviceURL, post).read()
+        # produce json string and post it to the remote
+        # server
+        response_data = urlopen(self.__url, dumps(data)).read()
+        response = loads(response_data)
 
-        except IOError:
-            print "POST data: %s" % pprint.pformat(post)
-            print "URL: %s" % self.__serviceURL
-            raise
+        # check for and reraise the error if something
+        # went wrong
+        if response['error'] is not None:
+            code = response['error']['faultCode']
+            message = response['error']['faultString']
+            raise RPCFault(code, message)
 
-        try:
-            resp = loads(response)
-
-        except ValueError:
-            print response
-            raise
-
-        # TODO: do something here if the remote has problems with the keywords
-        if resp['error'] is not None:
-            raise JSONRPCException(resp['error'])
-
-        else:
-            return resp['result']
+        return response['result']
     # end __call__
-# end JSONRPCCliente
+# end JSONRPCClient
