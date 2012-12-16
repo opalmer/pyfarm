@@ -16,5 +16,5 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
-from pyfarm.net.rpc.client._json import JSONRPCClient, JSONRPCException
+from pyfarm.net.rpc.client._json import JSONRPCClient
 from pyfarm.net.rpc.client._xmlrpc import XMLRPCConnection
