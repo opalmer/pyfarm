@@ -83,7 +83,7 @@ class Enum(object):
 
     def __repr__(self): return self.__repr
     def __getitem__(self, item): return self.__mappings[item]
-    def __contains__(self, item): self.__getitem__(item)
+    def __contains__(self, item): return item in self.__mappings
     def get(self, item): return self.__mappings[item]
     def keys(self): return self.__keys
     def values(self): return self.__values
