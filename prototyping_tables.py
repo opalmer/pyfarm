@@ -1,6 +1,9 @@
 from sqlalchemy.orm import sessionmaker
+
 from pyfarm.db.tables import init, engine, Host, HostSoftware, HostGroup, \
     Master, Job, Frame
+
+from pyfarm.datatypes.enums import State
 
 init(True) # setup tables
 Session = sessionmaker(bind=engine)
@@ -24,8 +27,10 @@ session.commit()
 
 main_job.createFrames()
 
-# TODO: add after update to things like the 'started' column can be udpated for us
+# TODO: add after update to things like the 'started' column can be updated for us
 
-print main_job
-for f in main_job.frames:
-    print f, f.job
+frame_query = session.query(Frame)
+for frame in frame_query.filter(Frame._job == main_job.id, Frame.id == 1):
+    print frame, frame.time_started
+    frame.state = State.ASSIGN
+    print frame, frame.time_started
