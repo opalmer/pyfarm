@@ -38,14 +38,6 @@ REQUEUE_FAILED = _prefs.get('jobtypes.defaults.requeue-failed')
 DEFAULT_PRIORITY = _prefs.get('jobsystem.priority-default')
 DB_REBULD = _prefs.get('database.setup.rebuild')
 
-# state information used for validation
-VALID_NEW_JOB_STATES = (
-    _state.PAUSED, _state.QUEUED
-)
-VALID_NEW_FRAME_STATES = (
-    _state.PAUSED, _state.QUEUED
-)
-
 # specifies all of the default table names
 TABLE_PREFIX = _os.environ.get('PYFARM_TABLE_PREFIX') or "pyfarm_"
 TABLE_MASTER = "%smasters" % TABLE_PREFIX

@@ -31,8 +31,7 @@ from pyfarm.datatypes.enums import State, ACTIVE_FRAME_STATES, \
 
 from pyfarm.db.tables import Base, Frame, \
     REQUEUE_FAILED, REQUEUE_MAX, TABLE_JOB, TABLE_JOB_DEPENDENCY, \
-    DEFAULT_PRIORITY, VALID_NEW_JOB_STATES, TABLE_JOB_SOFTWARE,\
-    MAX_USERNAME_LENGTH
+    DEFAULT_PRIORITY, TABLE_JOB_SOFTWARE, MAX_USERNAME_LENGTH
 
 class Dependency(Base):
     '''
@@ -299,8 +298,8 @@ class Job(Base):
 
     @validates('state')
     def validate_state(self, key, state):
-        if state not in VALID_NEW_JOB_STATES:
-            state_names = [ State.get(state) for state in VALID_NEW_JOB_STATES ]
+        if state not in State:
+            state_names = [ State.get(state) for state in State ]
             raise ValueError("%s must be in %s" % (key, state_names))
 
         return state
@@ -325,7 +324,10 @@ class Job(Base):
     def createFrames(self, state=None, commit=True):
         '''creates the frames for the job'''
         frames = []
-        for i in xrange(self.start_frame, self.end_frame+1, self.by_frame or 1):
+        end = self.end_frame + 1
+        by = 1 if not self.by_frame else self.by_frame
+
+        for i in xrange(self.start_frame, end, by):
             frame = Frame(self, i, state=state)
             frames.append(frame)
 

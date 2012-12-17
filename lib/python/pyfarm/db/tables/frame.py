@@ -21,8 +21,7 @@ from sqlalchemy import Column, ForeignKey
 from sqlalchemy.orm import relationship, validates
 from sqlalchemy.types import Integer, DateTime
 
-from pyfarm.db.tables import Base, TABLE_FRAME, TABLE_JOB, TABLE_HOST, \
-    VALID_NEW_FRAME_STATES
+from pyfarm.db.tables import Base, TABLE_FRAME, TABLE_JOB, TABLE_HOST
 from pyfarm.datatypes.enums import State
 
 class Frame(Base):
@@ -59,13 +58,11 @@ class Frame(Base):
     def elapsed(self):
         '''returns the time elapsed since the job has started'''
         started = self.time_started
-        finished = self.time_finished
+        end = datetime.now() if self.time_finished is None else \
+            self.time_finished
 
         if started is None:
             raise ValueError("Frame %s has not been started yet" % self.id)
-
-        if finished is None:
-            end = datetime.now()
 
         delta = end - started
         return delta.days * 86400 + delta.seconds
@@ -73,7 +70,7 @@ class Frame(Base):
 
     @validates('state')
     def validate_state(self, key, value):
-        if value not in VALID_NEW_FRAME_STATES:
+        if value not in State:
             raise ValueError("value provided for %s is not valid" % key)
         return value
     # end validate_state
