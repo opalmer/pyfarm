@@ -20,6 +20,14 @@
 functions for use within the datatypes module
 '''
 
+import os
+
+from pyfarm.fileio import yml
+from pyfarm import PYFARM_ETC
+from pyfarm.datatypes._types import namedtuple
+
+ENUM_DATA = yml.load(os.path.join(PYFARM_ETC, "enums.yml"))
+
 def notimplemented(name, module='psutil'):
     msg = "this version of %s does not implement %s(), " % (module, name)
     msg += "please consider upgrading"
@@ -29,3 +37,34 @@ def notimplemented(name, module='psutil'):
 def bytes_to_megabytes(value):
     return int(value / 1024 / 1024)
 # end bytes_to_megabytes
+
+def LoadEnum(name):
+    '''return an enum class with the given name'''
+    try:
+        data = ENUM_DATA[name]
+
+    except KeyError:
+        raise KeyError("enum %s does not have any configuration data" % name)
+
+    named_tuple = namedtuple(name, data.keys())
+
+    # create a mapping: {"FOO" : 1} -> {"FOO" : 1, 1 : "FOO"}
+    mapped = dict(
+        zip(data.iterkeys(), data.itervalues()) +
+        zip(data.itervalues(), data.iterkeys())
+    )
+
+    # construct methods which will build the class
+    methods = {
+        "__contains__" : lambda self, item: item in mapped,
+        "__dir__" : lambda self: data.keys(),
+        "get" : lambda self, name: mapped[name],
+        "keys" : lambda self: data.keys(),
+        "values" : lambda self: data.values()
+    }
+
+    # construct the new class type, bind the methods, and return
+    # an instance of the new class
+    newclass = type(name, (named_tuple,), methods)
+    return newclass(*data.itervalues())
+# end LoadEnum
