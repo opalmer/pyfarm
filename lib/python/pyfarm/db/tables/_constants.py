@@ -21,7 +21,7 @@
 import os as _os
 
 from pyfarm.preferences import prefs as _prefs
-from pyfarm.datatypes.enums import State as _state, SoftwareType as _softwaretype
+from pyfarm.datatypes.enums import State as _state
 
 # length of certain string fields
 MAX_HOSTNAME_LENGTH = 255
@@ -32,9 +32,11 @@ MIN_PORT = 1024
 MAX_PORT = 65535
 MAX_USERNAME_LENGTH = 255
 
-# frame starting/stopping states
+# frame/job starting/stopping states
 FRAME_STATE_START = (_state.RUNNING, )
 FRAME_STATE_STOP = (_state.DONE, _state.FAILED)
+JOB_STATE_START = (_state.RUNNING, )
+JOB_STATE_STOP = (_state.DONE, _state.FAILED)
 
 ACTIVE_DEPENDENCY_STATES = (_state.RUNNING, _state.QUEUED, _state.FAILED)
 ACTIVE_HOSTS_FRAME_STATES = (_state.RUNNING, _state.ASSIGN)
