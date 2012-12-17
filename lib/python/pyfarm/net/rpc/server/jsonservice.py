@@ -94,6 +94,7 @@ class JSONServer(jsonrpc.JSONRPC):
             return "%s(%s)" % (
                 self.callback, jsonrpclib.dumps(data, id=id, version=version)
             )
+    # end _getJsonString
 
     def _cbRender(self, result, request, id, version):
         if isinstance(result, Handler):
