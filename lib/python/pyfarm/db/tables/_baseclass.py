@@ -62,13 +62,10 @@ class PyFarmBase(object):
 
         for attr in ( attr for attr in repr_attrs if hasattr(self, attr) ):
             original_value = getattr(self, attr)
+            value = original_value
+
             if attr == 'state' and original_value is not None:
                 value = State.get(original_value)
-
-            elif attr == 'state' and original_value is None:
-                raise TypeError(
-                    "state is populated with None, commit not performed?"
-                )
 
             elif isinstance(original_value, unicode):
                 value = "'%s'" % original_value
