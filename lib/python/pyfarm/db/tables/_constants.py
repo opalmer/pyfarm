@@ -32,6 +32,16 @@ MIN_PORT = 1024
 MAX_PORT = 65535
 MAX_USERNAME_LENGTH = 255
 
+# frame starting/stopping states
+FRAME_STATE_START = (_state.RUNNING, )
+FRAME_STATE_STOP = (_state.DONE, _state.FAILED)
+
+ACTIVE_DEPENDENCY_STATES = (_state.RUNNING, _state.QUEUED, _state.FAILED)
+ACTIVE_HOSTS_FRAME_STATES = (_state.RUNNING, _state.ASSIGN)
+ACTIVE_JOB_STATES = (_state.QUEUED, _state.RUNNING)
+ACTIVE_FRAME_STATES = (_state.QUEUED, _state.FAILED)
+
+
 # values defined by preferences
 REQUEUE_MAX = _prefs.get('jobtypes.defaults.requeue-max')
 REQUEUE_FAILED = _prefs.get('jobtypes.defaults.requeue-failed')
