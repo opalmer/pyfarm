@@ -18,6 +18,8 @@
 
 '''attempts to import the "correct" datatype, falling back when necessary'''
 
+import warnings
+
 # ordered dictionary
 try:
     from collections import OrderedDict
@@ -37,6 +39,8 @@ except ImportError: # python < 2.6
             from _abcoll import KeysView, ValuesView, ItemsView
         except ImportError:
             pass
+
+        warnings.warn("using internal OrderedDict()")
 
         class OrderedDict(dict):
             '''
@@ -283,6 +287,8 @@ except ImportError: # python < 2.6
     from keyword import iskeyword as _iskeyword
     import sys as _sys
 
+    warnings.warn("using internal namedtuple()")
+
     def namedtuple(typename, field_names, verbose=False, rename=False):
         """Returns a new subclass of tuple with named fields.
 
@@ -397,6 +403,8 @@ try:
     from itertools import permutations
 
 except ImportError: # python < 2.6
+    warnings.warn("using internal permutations()")
+
     # code from http://docs.python.org/2/library/itertools.html#itertools.permutations
     def permutations(iterable, r=None):
         # permutations('ABCD', 2) --> AB AC AD BA BC BD CA CB CD DA DB DC
