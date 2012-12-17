@@ -21,17 +21,18 @@ import getpass
 import UserDict
 from datetime import datetime
 
-from sqlalchemy import Column, ForeignKey, and_
+from sqlalchemy import event, Column, ForeignKey, and_
 from sqlalchemy.orm import relationship, validates
 from sqlalchemy.types import Integer, Boolean, DateTime, Text, \
     PickleType, String
 
-from pyfarm.datatypes.enums import State, ACTIVE_FRAME_STATES, \
-    ACTIVE_DEPENDENCY_STATES, SoftwareType, EnvMergeMode
+from pyfarm.datatypes.enums import State, SoftwareType, EnvMergeMode
 
 from pyfarm.db.tables import Base, Frame, \
     REQUEUE_FAILED, REQUEUE_MAX, TABLE_JOB, TABLE_JOB_DEPENDENCY, \
-    DEFAULT_PRIORITY, TABLE_JOB_SOFTWARE, MAX_USERNAME_LENGTH
+    DEFAULT_PRIORITY, TABLE_JOB_SOFTWARE, MAX_USERNAME_LENGTH, \
+    ACTIVE_DEPENDENCY_STATES, ACTIVE_FRAME_STATES, JOB_STATE_START, \
+    JOB_STATE_STOP
 
 class Dependency(Base):
     '''
@@ -326,6 +327,7 @@ class Job(Base):
         frames = []
         end = self.end_frame + 1
         by = 1 if not self.by_frame else self.by_frame
+        state = State.QUEUED if state is None else state
 
         for i in xrange(self.start_frame, end, by):
             frame = Frame(self, i, state=state)
@@ -336,3 +338,16 @@ class Job(Base):
             self.session.commit()
     # end createFrames
 # end Job
+
+
+def job_state_changed(target, new_value, old_value, initiator):
+    '''when job state changes update the start/end times'''
+    # nothing to do here if we're not working with
+    # some kind of state
+    if new_value not in State:
+        return
+
+    # TODO: check state against JOB_STATE_START/END
+# end frame_state_changed
+
+event.listen(Job.state, 'set', job_state_changed)

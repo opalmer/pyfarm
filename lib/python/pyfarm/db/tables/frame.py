@@ -17,11 +17,12 @@
 # along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
 from datetime import datetime
-from sqlalchemy import Column, ForeignKey
+from sqlalchemy import event, Column, ForeignKey
 from sqlalchemy.orm import relationship, validates
 from sqlalchemy.types import Integer, DateTime
 
-from pyfarm.db.tables import Base, TABLE_FRAME, TABLE_JOB, TABLE_HOST
+from pyfarm.db.tables import Base, TABLE_FRAME, TABLE_JOB, TABLE_HOST, \
+    FRAME_STATE_START, FRAME_STATE_STOP
 from pyfarm.datatypes.enums import State
 
 class Frame(Base):
@@ -89,11 +90,24 @@ class Frame(Base):
             return value
 
         elif hasattr(value, '__class__') and value.__class__.__name__ == "Job":
-            if value.id is None:
-                raise TypeError("id on Job object is None, has commit been run?")
-            return value.id
+            if value.id is not None:
+                return value.id
+
+            raise TypeError("id on Job object is None, has commit been run?")
 
         raise ValueError("failed to extract the value for %s" % key)
     # end validate_job
 # end Frame
 
+
+def frame_state_changed(target, new_value, old_value, initiator):
+    '''when frame state changes update the start/end times'''
+    # nothing to do here if we're not working with
+    # some kind of state
+    if new_value not in State:
+        return
+
+    # TODO: check state against FRAME_STATE_START/END
+# end frame_state_changed
+
+event.listen(Frame.state, 'set', frame_state_changed)
