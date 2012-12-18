@@ -108,6 +108,7 @@ def frame_state_changed(target, new_value, old_value, initiator):
         return
 
     # TODO: check state against FRAME_STATE_START/END
+    # TODO: also set attempts
 # end frame_state_changed
 
 event.listen(Frame.state, 'set', frame_state_changed)
