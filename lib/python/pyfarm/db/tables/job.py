@@ -333,6 +333,31 @@ class Job(Base):
         return data
     # end validate_positive_int
 
+    @validates('_cmd')
+    def validate_command(self, key, data):
+        isabs = os.path.isabs(data)
+        isfile = os.path.isfile(data)
+
+        if isabs and not isfile:
+            msg = "absolute path provided but %s is not actually a file" % data
+            raise OSError(msg)
+
+        elif isabs:
+            # TODO: print warning
+            # TODO: add os dependency on current os type/group (linux/osx [case{insensitive}])
+            pass
+
+        # TODO: add preference for this behavior
+        try:
+            path = utility.which(data)
+
+        except OSError:
+            # TODO: remove self as an excluded os (perhaps type as well?)
+            pass
+
+        return data
+    # end validate_command
+
     def createFrames(self, state=None, commit=True):
         '''creates the frames for the job'''
         frames = []
