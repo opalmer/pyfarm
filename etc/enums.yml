@@ -28,3 +28,9 @@ EnvMergeMode:
   UPDATE: 14
   REPLACE: 15
   FILL: 16
+
+OperatingSystem:
+  LINUX: 17
+  WINDOWS: 18
+  MAC: 19
+  OTHER: 20
