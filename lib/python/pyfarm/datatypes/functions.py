@@ -38,7 +38,7 @@ def bytes_to_megabytes(value):
     return int(value / 1024 / 1024)
 # end bytes_to_megabytes
 
-def LoadEnum(name):
+def LoadEnum(name, additional_methods=None):
     '''return an enum class with the given name'''
     try:
         data = ENUM_DATA[name]
@@ -62,6 +62,13 @@ def LoadEnum(name):
         "keys" : lambda self: data.keys(),
         "values" : lambda self: data.values()
     }
+
+    if additional_methods is not None and isinstance(additional_methods, dict):
+        methods.update(additional_methods)
+
+    elif additional_methods is not None and not isinstance(additional_methods, dict):
+        raise TypeError("additional_methods should be a dictionary")
+
 
     # construct the new class type, bind the methods, and return
     # an instance of the new class
