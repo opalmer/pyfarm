@@ -38,8 +38,16 @@ def bytes_to_megabytes(value):
     return int(value / 1024 / 1024)
 # end bytes_to_megabytes
 
-def LoadEnum(name, additional_methods=None):
-    '''return an enum class with the given name'''
+def LoadEnum(name, additional_methods=None, classonly=False):
+    '''
+    return an enum class with the given name
+
+    :param dict additional_methods:
+        dictionary of additonal methods to add to the class
+
+    :param boolean classonly:
+        if True then return the class itself and not an instance
+    '''
     try:
         data = ENUM_DATA[name]
 
@@ -73,5 +81,5 @@ def LoadEnum(name, additional_methods=None):
     # construct the new class type, bind the methods, and return
     # an instance of the new class
     newclass = type(name, (named_tuple,), methods)
-    return newclass(*data.itervalues())
+    return newclass if classonly else newclass(*data.itervalues())
 # end LoadEnum
