@@ -17,7 +17,6 @@
 # along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
-import getpass
 import UserDict
 from datetime import datetime
 
@@ -26,8 +25,9 @@ from sqlalchemy.orm import relationship, validates
 from sqlalchemy.types import Integer, Boolean, DateTime, Text, \
     PickleType, String
 
+from pyfarm import utility
 from pyfarm.datatypes.enums import State, SoftwareType, EnvMergeMode
-
+from pyfarm.datatypes import system
 from pyfarm.db.tables import Base, Frame, \
     REQUEUE_FAILED, REQUEUE_MAX, TABLE_JOB, TABLE_JOB_DEPENDENCY, \
     DEFAULT_PRIORITY, TABLE_JOB_SOFTWARE, MAX_USERNAME_LENGTH, \
@@ -115,13 +115,14 @@ class Job(Base):
     time_finished = Column(DateTime)
 
     # job related information
-    cmd = Column(Text(convert_unicode=True), nullable=False)
+    _cmd = Column(Text(convert_unicode=True), nullable=False)
     args = Column(PickleType, nullable=False)
-    notes = Column(Text(convert_unicode=True), default="N/A")
+    notes = Column(Text(convert_unicode=True), default="")
     data = Column(PickleType, default=dict)
-    user = Column(String(MAX_USERNAME_LENGTH), default=getpass.getuser)
+    user = Column(String(MAX_USERNAME_LENGTH), default=utility.user)
     ram = Column(Integer, default=None)
     cpus = Column(Integer, default=None)
+    submission_os = Column(Integer, default=system.OS)
 
     # underlying environment which is represented by the environ
     # property on this class
@@ -153,7 +154,7 @@ class Job(Base):
                  environ_mode=None, data=None, requeue_max=None,
                  requeue_failed=None
         ):
-        self.cmd = cmd
+        self._cmd = cmd
         self.args = args
         self.start_frame = start_frame
         self.end_frame = end_frame
@@ -184,8 +185,18 @@ class Job(Base):
 
         if requeue_failed is not None:
             self.requeue_failed = requeue_failed
-
     # end __init__
+
+    @property
+    def cmd(self):
+        '''
+        returns the full path to the command
+
+        :exception OSError:
+            raised if we fail to find requested command in $PATH
+        '''
+        return utility.which(self._cmd)
+    # end cmd
 
     @property
     def environ(self):
