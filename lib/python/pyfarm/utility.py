@@ -22,6 +22,7 @@ of PyFarm.
 '''
 
 import os
+import getpass
 import datetime
 from itertools import ifilter, imap
 from os.path import exists, expanduser, expandvars
@@ -122,3 +123,13 @@ def which(program):
     args = (program, os.environ.get('PATH'))
     raise OSError("failed to find program '%s' in %s" % args)
 # end which
+
+def user():
+    '''returns the current user name'''
+    try:
+        import pwd
+        return pwd.getpwuid(os.getuid())[0]
+
+    except ImportError:
+        return getpass.getuser()
+# end user

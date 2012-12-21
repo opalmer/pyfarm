@@ -22,6 +22,7 @@ import psutil
 import tempfile
 import getpass
 
+from pyfarm.utility import user
 from pyfarm.datatypes.functions import bytes_to_megabytes
 
 class OperatingSystem:
@@ -67,16 +68,7 @@ OS = OperatingSystem.get()
 OSNAME = OperatingSystem.MAPPINGS.get(OS)
 CPU_COUNT = psutil.NUM_CPUS
 TOTAL_RAM = int(psutil.TOTAL_PHYMEM / 1024 / 1024)
-
-# try using pwd to get the current effective user id
-# which may be different than what the environment is
-# telling us to use
-try:
-    import pwd
-    USER = pwd.getpwuid(os.getuid())[0]
-
-except ImportError:
-    USER = getpass.getuser()
+USER = user()
 
 # setup total swap and current swap
 if hasattr(psutil, 'swap_memory'):
