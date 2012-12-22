@@ -38,11 +38,11 @@ def bytes_to_megabytes(value):
     return int(value / 1024 / 1024)
 # end bytes_to_megabytes
 
-def LoadEnum(name, additional_methods=None, classonly=False):
+def LoadEnum(name, methods=None, classonly=False):
     '''
     return an enum class with the given name
 
-    :param dict additional_methods:
+    :param dict methods:
         dictionary of additonal methods to add to the class
 
     :param boolean classonly:
@@ -62,8 +62,12 @@ def LoadEnum(name, additional_methods=None, classonly=False):
         zip(data.itervalues(), data.iterkeys())
     )
 
+    methods = {} if methods is None else methods
+    if not isinstance(methods, dict):
+        raise TypeError("methods must be a dictionary")
+
     # construct methods which will build the class
-    methods = {
+    standard_methods = {
         "__contains__" : lambda self, item: item in mapped,
         "__dir__" : lambda self: data.keys(),
         "get" : lambda self, name: mapped[name],
@@ -71,12 +75,10 @@ def LoadEnum(name, additional_methods=None, classonly=False):
         "values" : lambda self: data.values()
     }
 
-    if additional_methods is not None and isinstance(additional_methods, dict):
-        methods.update(additional_methods)
-
-    elif additional_methods is not None and not isinstance(additional_methods, dict):
-        raise TypeError("additional_methods should be a dictionary")
-
+    # add the standard methods but only if the
+    # method does not already exist in the provided methods
+    for key, value in standard_methods.iteritems():
+        methods.setdefault(key, value)
 
     # construct the new class type, bind the methods, and return
     # an instance of the new class
