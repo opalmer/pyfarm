@@ -28,3 +28,11 @@ SoftwareType = LoadEnum("SoftwareType")
 State = LoadEnum("State")
 EnvMergeMode = LoadEnum("EnvMergeMode")
 
+def __os_get(self, item=None):
+    pass
+# end os_get
+
+OperatingSystem = LoadEnum(
+    "OperatingSystem",
+    methods={"get" : __os_get}
+)
