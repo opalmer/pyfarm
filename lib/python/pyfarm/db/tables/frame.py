@@ -21,11 +21,12 @@ from sqlalchemy import event, Column, ForeignKey
 from sqlalchemy.orm import relationship, validates
 from sqlalchemy.types import Integer, DateTime
 
+from pyfarm.db.tables._bases import TaskBase
 from pyfarm.db.tables import Base, TABLE_FRAME, TABLE_JOB, TABLE_HOST, \
     FRAME_STATE_START, FRAME_STATE_STOP
 from pyfarm.datatypes.enums import State
 
-class Frame(Base):
+class Frame(Base, TaskBase):
     '''defines a single frame'''
     __tablename__ = TABLE_FRAME
     repr_attrs = ("_job", "frame", "state", "attempts", "host")
@@ -35,46 +36,16 @@ class Frame(Base):
     _job = Column(Integer, ForeignKey("%s.id" % TABLE_JOB))
     _host = Column(Integer, ForeignKey("%s.id" % TABLE_HOST))
     frame = Column(Integer, nullable=False)
-    state = Column(Integer, default=State.QUEUED)
-    attempts = Column(Integer, default=0)
-
-    # time tracking
-    time_submitted = Column(DateTime, default=datetime.now)
-    time_started = Column(DateTime)
-    time_finished = Column(DateTime)
 
     # relationship definitions
     job = relationship('Job', uselist=False, backref="ref_frame_job")
     host = relationship('Host', uselist=False, backref="ref_frame_host")
 
-    def __init__(self, job, frame, state=None):
+    def __init__(self, job, frame, state=None, priority=None):
+        TaskBase.__init__(self, state, priority)
         self._job = job
         self.frame = frame
-
-        if state is not None:
-            self.state = state
     # end __init__
-
-    @property
-    def elapsed(self):
-        '''returns the time elapsed since the job has started'''
-        started = self.time_started
-        end = datetime.now() if self.time_finished is None else \
-            self.time_finished
-
-        if started is None:
-            raise ValueError("Frame %s has not been started yet" % self.id)
-
-        delta = end - started
-        return delta.days * 86400 + delta.seconds
-    # end elapsed
-
-    @validates('state')
-    def validate_state(self, key, value):
-        if value not in State:
-            raise ValueError("value provided for %s is not valid" % key)
-        return value
-    # end validate_state
 
     @validates('frame')
     def validate_frame(self, key, value):
@@ -113,4 +84,4 @@ def frame_host_changed(target, new_value, old_value, initiator):
 # end frame_host_changed
 
 event.listen(Frame.state, 'set', state_changed)
-event.listen(Frame._host, 'set', frame_host_changed)
+event.listen(Frame.host, 'set', frame_host_changed)

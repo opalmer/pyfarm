@@ -22,7 +22,7 @@ from sqlalchemy.types import String, Integer
 
 from pyfarm.logger import Logger
 
-from pyfarm.db.tables._netbase import NetworkHost
+from pyfarm.db.tables._bases import NetworkHost
 from pyfarm.db.tables import Base, Master, \
     TABLE_HOST, TABLE_HOST_GROUP, TABLE_MASTER, TABLE_HOST_SOFTWARE, \
     MAX_SOFTWARE_LENGTH, MAX_GROUP_LENGTH, ACTIVE_HOSTS_FRAME_STATES

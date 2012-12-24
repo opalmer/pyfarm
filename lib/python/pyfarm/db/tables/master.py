@@ -19,7 +19,7 @@
 from sqlalchemy.orm import relationship
 
 from pyfarm.db.tables import Base, TABLE_MASTER
-from pyfarm.db.tables._netbase import NetworkHost
+from pyfarm.db.tables._bases import NetworkHost
 
 class Master(Base, NetworkHost):
     __tablename__ = TABLE_MASTER
