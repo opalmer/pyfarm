@@ -21,6 +21,7 @@
 named value mappings which do not change during execution
 '''
 
+import sys
 from pyfarm.datatypes.functions import LoadEnum
 
 Software = LoadEnum("Software")
@@ -29,8 +30,21 @@ State = LoadEnum("State")
 EnvMergeMode = LoadEnum("EnvMergeMode")
 
 def __os_get(self, item=None):
-    pass
-# end os_get
+    if isinstance(item, (int, str, unicode)):
+        return self.__mapped[item]
+
+    platform = sys.platform
+    if platform.startswith("linux"):
+        platform = "linux"
+
+    elif platform.startswith("win"):
+        platform = "windows"
+
+    elif platform not in OperatingSystem.MAPPINGS:
+        return OperatingSystem.OTHER
+
+    return self.__mapped[platform]
+# end __os_get
 
 OperatingSystem = LoadEnum(
     "OperatingSystem",

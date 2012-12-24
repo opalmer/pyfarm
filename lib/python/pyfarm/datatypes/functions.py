@@ -25,6 +25,7 @@ import os
 from pyfarm.fileio import yml
 from pyfarm import PYFARM_ETC
 from pyfarm.datatypes._types import namedtuple
+from pyfarm.datatypes.objects import ReadOnlyDict
 
 ENUM_DATA = yml.load(os.path.join(PYFARM_ETC, "enums.yml"))
 
@@ -57,7 +58,7 @@ def LoadEnum(name, methods=None, classonly=False):
     named_tuple = namedtuple(name, data.keys())
 
     # create a mapping: {"FOO" : 1} -> {"FOO" : 1, 1 : "FOO"}
-    mapped = dict(
+    mapped = ReadOnlyDict(
         zip(data.iterkeys(), data.itervalues()) +
         zip(data.itervalues(), data.iterkeys())
     )
@@ -68,11 +69,10 @@ def LoadEnum(name, methods=None, classonly=False):
 
     # construct methods which will build the class
     standard_methods = {
-        "__contains__" : lambda self, item: item in mapped,
-        "__dir__" : lambda self: data.keys(),
-        "get" : lambda self, name: mapped[name],
-        "keys" : lambda self: data.keys(),
-        "values" : lambda self: data.values()
+        "__contains__" : lambda self, item: item in self.__mapped,
+        "get" : lambda self, name: self.__mapped[name],
+        "keys" : lambda self: self.__data.keys(),
+        "values" : lambda self: self.__data.values()
     }
 
     # add the standard methods but only if the
@@ -83,5 +83,7 @@ def LoadEnum(name, methods=None, classonly=False):
     # construct the new class type, bind the methods, and return
     # an instance of the new class
     newclass = type(name, (named_tuple,), methods)
+    newclass.__mapped = mapped
+
     return newclass if classonly else newclass(*data.itervalues())
 # end LoadEnum
