@@ -22,10 +22,15 @@ multiple tables
 '''
 
 from datetime import datetime
+
+from pyfarm.logger import Logger
 from pyfarm.datatypes.enums import State
+
+logger = Logger(__name__)
 
 def state_changed(target, new_value, old_value, initiator):
     '''when job state changes update the start/end times'''
+    # TODO: log state change
     if new_value == State.RUNNING:
         target.time_started = datetime.now()
         target.attempts += 1

@@ -26,30 +26,30 @@ session.add(main_job)
 session.commit()
 
 main_job.createFrames()
-
-# TODO: add after update to things like the 'started' column can be updated for us
-
+#
+## TODO: add after update to things like the 'started' column can be updated for us
+#
 frame_query = session.query(Frame)
 for frame in frame_query.filter(Frame._job == main_job.id, Frame.id == 1):
     frame.host = host1
     session.add(frame)
     session.commit()
     print "===",frame.host
-#    print frame, frame.time_started
-
-frame_query = session.query(Frame)
-for frame in frame_query.filter(Frame._job == main_job.id, Frame.id == 1):
-    print frame._host
-
-#print main_job.elapsed
-#main_job.state = State.RUNNING
-#print main_job.time_started
-#print main_job.elapsed
-#import time
-#time.sleep(3)
-#print main_job.elapsed
-#time.sleep(2)
-#main_job.state = State.DONE
-#print main_job.elapsed
-#time.sleep(2)
-#print main_job.elapsed, main_job.attempts
+    print frame, frame.time_started
+##
+##frame_query = session.query(Frame)
+##for frame in frame_query.filter(Frame._job == main_job.id, Frame.id == 1):
+##    print frame._host
+#
+##print main_job.elapsed
+##main_job.state = State.RUNNING
+##print main_job.time_started
+##print main_job.elapsed
+##import time
+##time.sleep(3)
+##print main_job.elapsed
+##time.sleep(2)
+##main_job.state = State.DONE
+##print main_job.elapsed
+##time.sleep(2)
+##print main_job.elapsed, main_job.attempts

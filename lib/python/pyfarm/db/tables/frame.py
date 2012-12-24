@@ -21,10 +21,13 @@ from sqlalchemy import event, Column, ForeignKey
 from sqlalchemy.orm import relationship, validates
 from sqlalchemy.types import Integer, DateTime
 
+from pyfarm.logger import Logger
 from pyfarm.db.tables._bases import TaskBase
 from pyfarm.db.tables import Base, TABLE_FRAME, TABLE_JOB, TABLE_HOST, \
     FRAME_STATE_START, FRAME_STATE_STOP
 from pyfarm.datatypes.enums import State
+
+logger = Logger(__name__)
 
 class Frame(Base, TaskBase):
     '''defines a single frame'''
@@ -76,6 +79,8 @@ from pyfarm.db.tables._events import state_changed
 
 def frame_host_changed(target, new_value, old_value, initiator):
     '''set set the frame state to ASSIGN whenever the host is changed'''
+    args = (target.id, new_value)
+    logger.debug("changing host on frame id %s to %s" % args)
     target.state = State.ASSIGN
 
     # TODO: xmlrpc callback to ensure the farme is stopped if running

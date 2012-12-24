@@ -50,7 +50,6 @@ class NetworkHost(object):
         # autoselect if an integer was not provided for the port
         if not isinstance(port, int):
             port = openport()
-            logger.debug("port not provided, using %s" % port)
 
         self.port = port
 
