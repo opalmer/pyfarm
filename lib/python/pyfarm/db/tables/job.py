@@ -18,20 +18,18 @@
 
 import os
 import UserDict
-from datetime import datetime
 
 from sqlalchemy import event, Column, ForeignKey, and_
 from sqlalchemy.orm import relationship, validates
-from sqlalchemy.types import Integer, Boolean, DateTime, Text, \
-    PickleType, String
+from sqlalchemy.types import Integer, Boolean, Text, PickleType, String
 
 from pyfarm import utility
 from pyfarm.datatypes.enums import State, SoftwareType, EnvMergeMode
 from pyfarm.datatypes import system
 from pyfarm.db.tables._bases import TaskBase
 from pyfarm.db.tables import Base, Frame, \
-    REQUEUE_FAILED, REQUEUE_MAX, TABLE_JOB, TABLE_JOB_DEPENDENCY, \
-    DEFAULT_PRIORITY, TABLE_JOB_SOFTWARE, MAX_USERNAME_LENGTH, \
+    REQUEUE_FAILED, REQUEUE_MAX, TABLE_JOB, TABLE_JOB_DEPENDENCY,\
+    JOB_QUERY_FRAME_LIMIT, TABLE_JOB_SOFTWARE, MAX_USERNAME_LENGTH, \
     ACTIVE_DEPENDENCY_STATES, ACTIVE_FRAME_STATES
 
 
@@ -216,16 +214,14 @@ class Job(Base, TaskBase):
             return self._environ
     # end environ
 
-    @property
     def queued_frames(self):
-        '''
-        returns a list of frames which are currently queued to run
+        '''returns a list of frames which are currently queued to run'''
+        # initial query which will retrieves frames which
+        # are children of this job
+        query = self.session.query(Frame).filter(Frame._job == self.id)
 
-        .. note::
-            depending on the preferences this
-        '''
-        query = self.session.query(Frame).filter(Frame.jobid == self.id)
-
+        # depending on the preferences we may or may
+        # not want failed frames to be returned
         if REQUEUE_FAILED and REQUEUE_MAX:
             query = query.filter(and_(
                 Frame.state.in_(ACTIVE_FRAME_STATES),
@@ -233,6 +229,18 @@ class Job(Base, TaskBase):
             ))
         else:
             query = query.filter(Frame.state == State.QUEUED)
+
+        # reorder by priority
+        query = query.order_by(Frame.priority)
+
+        # limit the number of results of necessary
+        if isinstance(JOB_QUERY_FRAME_LIMIT, int):
+            query = query.limit(JOB_QUERY_FRAME_LIMIT)
+
+        elif JOB_QUERY_FRAME_LIMIT is not False:
+            raise TypeError(
+                "expected an integer or False for jobsystem.job-query-frame-limit"
+            )
 
         return query.all()
     # end queued_frames

@@ -49,6 +49,7 @@ REQUEUE_MAX = _prefs.get('jobtypes.defaults.requeue-max')
 REQUEUE_FAILED = _prefs.get('jobtypes.defaults.requeue-failed')
 DEFAULT_PRIORITY = _prefs.get('jobsystem.priority-default')
 DB_REBULD = _prefs.get('database.setup.rebuild')
+JOB_QUERY_FRAME_LIMIT = _prefs.get('jobsystem.job-query-frame-limit')
 
 # specifies all of the default table names
 TABLE_PREFIX = _os.environ.get('PYFARM_TABLE_PREFIX') or "pyfarm_"

@@ -16,3 +16,8 @@
 # along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
 priority-default: 500
+
+# Limits the number of frames we return in a query from
+# a job object.  Setting this value to false will allow
+# an unlimited number of frames to be returned at once.
+job-query-frame-limit: 15
