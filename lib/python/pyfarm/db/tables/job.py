@@ -376,19 +376,6 @@ class Job(Base):
     # end createFrames
 # end Job
 
-
-def job_state_changed(target, new_value, old_value, initiator):
-    '''when job state changes update the start/end times'''
-    if new_value == State.RUNNING:
-        target.time_started = datetime.now()
-        target.attempts += 1
-
-    elif new_value in (State.DONE, State.FAILED):
-        # job should have been started at some point
-        if target.time_started is None:
-            raise TypeError("this job has not been started yet")
-
-        target.time_finished = datetime.now()
-# end job_state_changed
-
-event.listen(Job.state, 'set', job_state_changed)
+# events
+from pyfarm.db.tables._events import state_changed
+event.listen(Job.state, 'set', state_changed)

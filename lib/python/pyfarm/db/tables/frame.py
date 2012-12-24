@@ -100,16 +100,8 @@ class Frame(Base):
 # end Frame
 
 
-def frame_state_changed(target, new_value, old_value, initiator):
-    '''when frame state changes update the start/end times'''
-    # nothing to do here if we're not working with
-    # some kind of state
-    if new_value not in State:
-        return
-
-    # TODO: check state against FRAME_STATE_START/END
-    # TODO: also set attempts
-# end frame_state_changed
+# events
+from pyfarm.db.tables._events import state_changed
 
 def frame_host_changed(target, new_value, old_value, initiator):
     '''set set the frame state to ASSIGN whenever the host is changed'''
@@ -120,5 +112,5 @@ def frame_host_changed(target, new_value, old_value, initiator):
         pass
 # end frame_host_changed
 
-event.listen(Frame.state, 'set', frame_state_changed)
+event.listen(Frame.state, 'set', state_changed)
 event.listen(Frame._host, 'set', frame_host_changed)
