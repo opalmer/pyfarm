@@ -111,4 +111,9 @@ def frame_state_changed(target, new_value, old_value, initiator):
     # TODO: also set attempts
 # end frame_state_changed
 
+def frame_host_changed(target, new_value, old_value, initiator):
+    target.state = State.ASSIGN
+# end frame_host_changed
+
 event.listen(Frame.state, 'set', frame_state_changed)
+event.listen(Frame._host, 'set', frame_host_changed)
