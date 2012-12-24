@@ -21,10 +21,9 @@ import nose
 import uuid
 import string
 
-import setuptests
-
 from pyfarm import fileio, PYFARM_ETC
-from pyfarm.datatypes.system import OS, OSNAME, OperatingSystem
+from pyfarm.datatypes.enums import OperatingSystem
+from pyfarm.datatypes.system import OSNAME
 from pyfarm import preferences as p
 
 SPECIAL_PREFS_KEYS = (

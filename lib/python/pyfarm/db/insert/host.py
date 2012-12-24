@@ -31,7 +31,7 @@ from pyfarm.db.insert import base
 from pyfarm.preferences import prefs
 from pyfarm.datatypes import system
 from pyfarm.datatypes.network import HOSTNAME, FQDN, IP, SUBNET
-from pyfarm.datatypes.enums import DEFAULT_GROUPS, DEFAULT_SOFTWARE, DEFAULT_JOBTYPES
+from pyfarm.datatypes.enums import DEFAULT_GROUPS, DEFAULT_SOFTWARE, DEFAULT_JOBTYPES, OperatingSystem
 
 __all__ = ['host']
 
@@ -138,7 +138,7 @@ def host(
     elif local and os is None:
         os = system.OS
 
-    elif os not in system.OperatingSystem.MAPPINGS:
+    elif os not in OperatingSystem.MAPPINGS:
         raise KeyError("no such operation system '%s'" % os)
 
     data['os'] = os
@@ -223,7 +223,7 @@ def host(
     for key, value in data.iteritems():
         # remap the os key to its 'pretty' name
         if key == "os":
-            value = system.OperatingSystem.get(value)
+            value = OperatingSystem.get(value)
         logger.debug("...%s: %s" % (key, value))
 
     # find existing hosts

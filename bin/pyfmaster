@@ -39,6 +39,7 @@ from pyfarm import lock
 from pyfarm import logger as _logger
 from pyfarm.preferences import prefs
 from pyfarm.datatypes import network
+from pyfarm.datatypes.enums import OperatingSystem
 
 # Handle command line input before importing anything else.  This
 # ensures that if -h or --help is requested or if we have trouble
@@ -69,7 +70,7 @@ assignment_loop = None
 
 from pyfarm.db import tables, query, modify, insert
 from pyfarm.datatypes.network import IP, SUBNET
-from pyfarm.datatypes.system import OS, OperatingSystem
+from pyfarm.datatypes.system import OS
 from pyfarm.net.rpc.server.xmlservice import XMLRPCService
 from pyfarm.master import assign
 

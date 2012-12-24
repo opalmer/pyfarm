@@ -35,6 +35,7 @@ from pyfarm import lock
 from pyfarm import logger as _logger
 from pyfarm.preferences import prefs
 from pyfarm.datatypes.network import FQDN
+from pyfarm.datatypes.enums import OperatingSystem
 
 # Handle command line input before importing anything else.  This
 # ensures that if -h or --help is requested or if we have trouble
@@ -66,7 +67,7 @@ from pyfarm import errors
 from pyfarm.host import master
 from pyfarm.db import insert, modify, query
 from pyfarm.db.modify.host import update_memory
-from pyfarm.datatypes.system import OS, OperatingSystem
+from pyfarm.datatypes.system import OS
 from pyfarm.datatypes import network
 from pyfarm.net.rpc.client import utility
 from pyfarm.net.rpc.server.xmlservice import XMLRPCService

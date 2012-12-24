@@ -31,8 +31,8 @@ except ImportError:
 
 from pyfarm.logger import Logger, Observer
 from pyfarm.jobtypes.base import job
-from pyfarm.datatypes.enums import State
-from pyfarm.datatypes.system import OS, OperatingSystem, USER
+from pyfarm.datatypes.enums import State, OperatingSystem
+from pyfarm.datatypes.system import OS, USER
 from pyfarm.db.modify.host import update_memory
 from pyfarm.db.contexts import Session
 from pyfarm.db import tables

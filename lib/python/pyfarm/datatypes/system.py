@@ -17,55 +17,15 @@
 # along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
-import sys
-import psutil
 import tempfile
-import getpass
+import psutil
 
+from pyfarm.datatypes.enums import OperatingSystem
 from pyfarm.utility import user
 from pyfarm.datatypes.functions import bytes_to_megabytes
 
-class OperatingSystem:
-    LINUX, WINDOWS, MAC, OTHER = range(4)
-    MAPPINGS = {
-        "windows" : WINDOWS,
-        "cygwin" : WINDOWS,
-        "darwin" : MAC,
-        "linux" : LINUX,
-        "mac" : MAC,
-        WINDOWS : "windows",
-        LINUX : "linux",
-        MAC : "mac"
-    }
-
-    @staticmethod
-    def get(value=None):
-        '''
-        returns the current operating system as an integer or the assoicated
-        entry for the given value
-
-        :exceptoion KeyError:
-            raised if value is not None and is not in OperatingSystem.MAPPINGS
-        '''
-        if isinstance(value, (int, str, unicode)):
-            return OperatingSystem.MAPPINGS[value]
-
-        platform = sys.platform
-        if platform.startswith("linux"):
-            platform = "linux"
-
-        elif platform.startswith("win"):
-            platform = "windows"
-
-        elif platform not in OperatingSystem.MAPPINGS:
-            return OperatingSystem.OTHER
-
-        return OperatingSystem.MAPPINGS[platform]
-        # end get
-# end OperatingSystem
-
 OS = OperatingSystem.get()
-OSNAME = OperatingSystem.MAPPINGS.get(OS)
+OSNAME = OperatingSystem.get(OS).lower()
 CPU_COUNT = psutil.NUM_CPUS
 TOTAL_RAM = int(psutil.TOTAL_PHYMEM / 1024 / 1024)
 USER = user()

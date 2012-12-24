@@ -30,18 +30,22 @@ State = LoadEnum("State")
 EnvMergeMode = LoadEnum("EnvMergeMode")
 
 def __os_get(self, item=None):
-    if isinstance(item, (int, str, unicode)):
+    item = item.upper() if isinstance(item, (str, unicode)) else item
+    if isinstance(item, (int, str, unicode)) and item in self.__mapped:
         return self.__mapped[item]
+
+    elif isinstance(item, (int, str, unicode)) and item not in self.__mapped:
+        raise ValueError("%s does not seem to be a valid mapping" % item)
 
     platform = sys.platform
     if platform.startswith("linux"):
-        platform = "linux"
+        platform = "LINUX"
 
     elif platform.startswith("win"):
-        platform = "windows"
+        platform = "WINDOWS"
 
-    elif platform not in OperatingSystem.MAPPINGS:
-        return OperatingSystem.OTHER
+    elif platform not in self.__mapped:
+        return self.OTHER
 
     return self.__mapped[platform]
 # end __os_get
