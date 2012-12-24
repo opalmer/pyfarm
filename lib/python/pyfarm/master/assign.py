@@ -23,8 +23,8 @@ from itertools import ifilter
 from pyfarm.db import contexts
 from pyfarm.logger import Logger
 from pyfarm.preferences import prefs
-from pyfarm.utility import ScheduledRun
 from pyfarm.db.tables import hosts as _hosts, frames as _frames, jobs as _jobs
+from pyfarm.datatypes.objects import ScheduledRun
 from pyfarm.datatypes.enums import ACTIVE_HOSTS_FRAME_STATES,\
     ACTIVE_JOB_STATES, ACTIVE_FRAME_STATES
 

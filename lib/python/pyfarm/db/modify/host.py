@@ -26,9 +26,9 @@ from pyfarm.logger import Logger
 from pyfarm.db.tables import hosts
 from pyfarm.db.modify import base
 from pyfarm.datatypes.network import HOSTNAME
+from pyfarm.datatypes.objects import ScheduledRun
 from pyfarm.datatypes import system
 from pyfarm.preferences import prefs
-from pyfarm.utility import ScheduledRun
 
 __all__ = ['host']
 

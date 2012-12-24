@@ -23,40 +23,9 @@ of PyFarm.
 
 import os
 import getpass
-import datetime
 from itertools import ifilter, imap
 from os.path import exists, expanduser, expandvars
 
-class ScheduledRun:
-    # old style class since twisted classes are also old style
-    '''
-    Basic class which informs child classes if they should
-    perform their indicated function
-    '''
-    def __init__(self, timeout):
-        self.timeout = timeout
-        self.lastrun = None
-    # end __init__
-
-    @property
-    def lastupdate(self):
-        '''
-        returns the time since last update or the timeout itself
-        if lastrun has not been set
-        '''
-        if self.lastrun is None:
-            return self.timeout
-
-        else:
-            delta = datetime.datetime.now() - self.lastrun
-            return delta.seconds + 1 # accounts for most inaccuracies in time calc
-    # end lastupdate
-
-    def shouldRun(self, force=False):
-        '''return True if the update process should run'''
-        return force or self.lastupdate >= self.timeout-1
-    # end shouldRun
-# end ScheduledRun
 
 def expandPath(path):
     '''expands all paths of a path'''

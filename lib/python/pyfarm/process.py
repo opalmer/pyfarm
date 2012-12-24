@@ -19,7 +19,6 @@
 import os
 import psutil
 import datetime
-from itertools import imap
 from UserDict import UserDict
 from twisted.internet import task
 
@@ -31,13 +30,13 @@ except ImportError:
 
 from pyfarm.logger import Logger, Observer
 from pyfarm.jobtypes.base import job
+from pyfarm.datatypes.objects import ScheduledRun
 from pyfarm.datatypes.enums import State, OperatingSystem
 from pyfarm.datatypes.system import OS, USER
 from pyfarm.db.modify.host import update_memory
 from pyfarm.db.contexts import Session
 from pyfarm.db import tables
 from pyfarm import errors
-from pyfarm.utility import ScheduledRun
 from pyfarm.preferences import prefs
 
 from twisted.internet import protocol, reactor, error

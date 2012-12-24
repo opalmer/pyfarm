@@ -16,9 +16,17 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
-'''attempts to import the "correct" datatype, falling back when necessary'''
+'''
+Attempts to import the "correct" datatype, falling back when necessary.  This
+module is strictly for builtin/3rd party code.
+'''
 
 import warnings
+
+try:
+    basestring
+except NameError: # python 3
+    basestring = str
 
 # ordered dictionary
 try:
@@ -29,6 +37,8 @@ except ImportError: # python < 2.6
         from ordereddict import OrderedDict
 
     except ImportError: # alternate not installed?
+        warnings.warn("using internal OrderedDict()")
+
         # code from http://code.activestate.com/recipes/576693
         try:
             from thread import get_ident as _get_ident
@@ -39,8 +49,6 @@ except ImportError: # python < 2.6
             from _abcoll import KeysView, ValuesView, ItemsView
         except ImportError:
             pass
-
-        warnings.warn("using internal OrderedDict()")
 
         class OrderedDict(dict):
             '''
@@ -282,12 +290,12 @@ try:
     from collections import namedtuple
 
 except ImportError: # python < 2.6
+    warnings.warn("using internal namedtuple()")
+
     # code from: http://code.activestate.com/recipes/500261/
     from operator import itemgetter as _itemgetter
     from keyword import iskeyword as _iskeyword
     import sys as _sys
-
-    warnings.warn("using internal namedtuple()")
 
     def namedtuple(typename, field_names, verbose=False, rename=False):
         """Returns a new subclass of tuple with named fields.
