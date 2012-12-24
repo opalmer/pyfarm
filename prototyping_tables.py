@@ -29,8 +29,11 @@ main_job.createFrames()
 
 # TODO: add after update to things like the 'started' column can be updated for us
 
-frame_query = session.query(Frame)
-for frame in frame_query.filter(Frame._job == main_job.id, Frame.id == 1):
-    print frame, frame.time_started
-    frame.state = State.ASSIGN
-    print frame, frame.time_started
+#frame_query = session.query(Frame)
+#for frame in frame_query.filter(Frame._job == main_job.id, Frame.id == 1):
+#    print frame, frame.time_started
+#    frame.state = State.ASSIGN
+#    print frame, frame.time_started
+
+main_job.state = State.RUNNING
+print main_job.time_started

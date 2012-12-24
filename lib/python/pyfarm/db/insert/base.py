@@ -1,7 +1,7 @@
 # No shebang line, this module is meant to be imported
 #
 # This file is part of PyFarm.
-# Copyright (C) 2008-2012 Oliver Palmer
+# Copyright (C) 2008-2013 Oliver Palmer
 #
 # PyFarm is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Lesser General Public License as published by
