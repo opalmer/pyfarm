@@ -112,7 +112,12 @@ def frame_state_changed(target, new_value, old_value, initiator):
 # end frame_state_changed
 
 def frame_host_changed(target, new_value, old_value, initiator):
+    '''set set the frame state to ASSIGN whenever the host is changed'''
     target.state = State.ASSIGN
+
+    # TODO: xmlrpc callback to ensure the farme is stopped if running
+    if target.state == State.RUNNING:
+        pass
 # end frame_host_changed
 
 event.listen(Frame.state, 'set', frame_state_changed)
