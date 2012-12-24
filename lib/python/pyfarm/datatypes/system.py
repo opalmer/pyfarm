@@ -25,7 +25,7 @@ from pyfarm.utility import user
 from pyfarm.datatypes.functions import bytes_to_megabytes
 
 OS = OperatingSystem.get()
-OSNAME = OperatingSystem.get(OS).lower()
+OSNAME = OperatingSystem.get(OS)
 CPU_COUNT = psutil.NUM_CPUS
 TOTAL_RAM = int(psutil.TOTAL_PHYMEM / 1024 / 1024)
 USER = user()
