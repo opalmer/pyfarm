@@ -54,3 +54,5 @@ OperatingSystem = LoadEnum(
     "OperatingSystem",
     methods={"get" : __os_get}
 )
+
+DependencyType = LoadEnum("DependencyType")

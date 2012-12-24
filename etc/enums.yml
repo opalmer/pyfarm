@@ -34,3 +34,7 @@ OperatingSystem:
   WINDOWS: 18
   MAC: 19
   OTHER: 20
+
+DependencyType:
+  FRAME: 21
+  JOB: 22
