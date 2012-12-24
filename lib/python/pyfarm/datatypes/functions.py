@@ -71,8 +71,8 @@ def LoadEnum(name, methods=None, classonly=False):
     standard_methods = {
         "__contains__" : lambda self, item: item in self.__mapped,
         "get" : lambda self, name: self.__mapped[name],
-        "keys" : lambda self: self.__data.keys(),
-        "values" : lambda self: self.__data.values()
+        "keys" : lambda self: self.__mapped.keys(),
+        "values" : lambda self: self.__mapped.values()
     }
 
     # add the standard methods but only if the
