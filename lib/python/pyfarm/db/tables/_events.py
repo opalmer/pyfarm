@@ -30,11 +30,9 @@ logger = Logger(__name__)
 
 def state_changed(target, new_value, old_value, initiator):
     '''when job state changes update the start/end times'''
-    state_change = False
     if new_value == State.RUNNING:
         target.time_started = datetime.now()
         target.attempts += 1
-        state_change = True
 
     elif new_value in (State.DONE, State.FAILED):
         # job should have been started at some point
@@ -42,9 +40,8 @@ def state_changed(target, new_value, old_value, initiator):
             raise TypeError("this job has not been started yet")
 
         target.time_finished = datetime.now()
-        state_change = True
 
-    if state_change:
+    if new_value != State.QUEUED:
         args = (target.__class__.__name__, target.id, State.get(new_value))
         logger.debug("%s(id=%s) state changed to %s" % args)
 # end state_changed
