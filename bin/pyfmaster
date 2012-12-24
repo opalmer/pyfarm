@@ -23,16 +23,29 @@ receive, process, and handle job requests from the master
 import os
 import sys
 import time
-import site
 import threading
 
 from twisted.internet import reactor, task
 from twisted.web import server as _server
 
 CWD = os.path.realpath(os.path.dirname(__file__))
-ROOT = os.path.realpath(os.path.join(CWD, '..'))
-PYTHONLIB = os.environ.get('PYFARM_PYTHONLIB') or os.path.join(ROOT, 'lib', 'python')
-site.addsitedir(PYTHONLIB)
+
+try:
+    import pyfarm
+
+except ImportError: # mainly for testing
+    import site
+    import warnings
+    warnings.warn("adding PyFarm to the site packages", RuntimeWarning)
+    root = os.path.realpath(os.path.join(CWD, '..'))
+    sitedir = os.environ.get('PYFARM_PYTHONLIB') or \
+              os.path.join(root, 'lib', 'python')
+
+    if not os.path.isdir(sitedir):
+        raise OSError(
+            "no such directory %s, cannot add to site directory" % sitedir
+        )
+    site.addsitedir(sitedir)
 
 from pyfarm.master import cmdargs
 from pyfarm import lock
