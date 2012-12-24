@@ -28,7 +28,7 @@ from pyfarm.datatypes.enums import State
 class Frame(Base):
     '''defines a single frame'''
     __tablename__ = TABLE_FRAME
-    repr_attrs = ("_job", "frame", "state", "retries", "host")
+    repr_attrs = ("_job", "frame", "state", "attempts", "host")
     repr_attrs_skip_none = ("host", )
 
     # column setup
@@ -36,7 +36,7 @@ class Frame(Base):
     _host = Column(Integer, ForeignKey("%s.id" % TABLE_HOST))
     frame = Column(Integer, nullable=False)
     state = Column(Integer, default=State.QUEUED)
-    retries = Column(Integer, default=0)
+    attempts = Column(Integer, default=0)
 
     # time tracking
     time_submitted = Column(DateTime, default=datetime.now)

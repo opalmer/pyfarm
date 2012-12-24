@@ -108,6 +108,7 @@ class Job(Base):
     priority = Column(Integer, default=DEFAULT_PRIORITY)
     requeue_failed = Column(Boolean, default=REQUEUE_FAILED)
     requeue_max = Column(Integer, default=REQUEUE_MAX)
+    attempts = Column(Integer, default=0)
 
     # time tracking
     time_submitted = Column(DateTime, default=datetime.now)
