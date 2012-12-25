@@ -31,6 +31,7 @@ from pyfarm.db.tables._constants import TABLE_DEPENDENCIES_F2F, \
 
 
 class DependencyF2F(Base):
+    '''defines frame to frame dependencies'''
     __tablename__ = TABLE_DEPENDENCIES_F2F
     repr_attrs = ("_parent", "_child")
 
@@ -58,6 +59,7 @@ class DependencyF2F(Base):
 
 
 class DependencyJ2J(Base):
+    '''defines job to job dependencies'''
     __tablename__ = TABLE_DEPENDENCIES_J2J
     repr_attrs = ("_parent", "_child")
 
