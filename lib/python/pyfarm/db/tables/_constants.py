@@ -53,9 +53,8 @@ JOB_QUERY_FRAME_LIMIT = _prefs.get('jobsystem.job-query-frame-limit')
 
 # specifies all of the default table names
 TABLE_PREFIX = _os.environ.get('PYFARM_TABLE_PREFIX') or "pyfarm_"
-TABLE_DEPENDENCIES = "%sdependency_" % TABLE_PREFIX
-TABLE_DEPENDENCIES_F2F = "%sf2f" % TABLE_DEPENDENCIES
-TABLE_DEPENDENCIES_J2J = "%sj2j" % TABLE_DEPENDENCIES
+TABLE_DEPENDENCIES_F2F = "%sdependency_f2f" % TABLE_PREFIX
+TABLE_DEPENDENCIES_J2J = "%sdependency_j2j" % TABLE_PREFIX
 TABLE_MASTER = "%smasters" % TABLE_PREFIX
 TABLE_FRAME = "%sframes" % TABLE_PREFIX
 
