@@ -21,8 +21,23 @@ storage class for frame-to-frame, frame-job and job-job
 dependencies
 '''
 
-class Dependency(object):
-    # TODO: column - type
-    # TODO: column - id
-    # TODO: column - table??
-    pass    
+from sqlalchemy import Column, ForeignKey
+from sqlalchemy.types import Integer
+from sqlalchemy.orm import validates
+
+from pyfarm.db.tables import Base
+from pyfarm.db.tables._constants import TABLE_DEPENDENCIES_F2F, \
+    TABLE_DEPENDENCIES_J2J, TABLE_FRAME, TABLE_JOB
+
+
+class DependencyF2F(Base):
+    __tablename__ = TABLE_DEPENDENCIES_F2F
+# end DependencyF2F
+
+
+class DependencyJ2J(Base):
+    __tablename__ = TABLE_DEPENDENCIES_J2J
+# end DependencyJ2J
+
+if __name__ == '__main__':
+    pass

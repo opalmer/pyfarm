@@ -32,7 +32,7 @@ Base = declarative_base(cls=PyFarmBase, bind=engine)
 from pyfarm.db.tables.frame import Frame
 from pyfarm.db.tables.master import Master
 from pyfarm.db.tables.host import Host, HostGroup, HostSoftware
-from pyfarm.db.tables.job import Dependency, Job
+from pyfarm.db.tables.job import Job
 
 def init(rebuild=False):
     '''
