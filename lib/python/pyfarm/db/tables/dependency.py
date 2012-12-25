@@ -71,13 +71,13 @@ class DependencyJ2J(Base):
 
     # relationship definitions
     parent = relationship(
-        'Frame',
-        primaryjoin='(Frame.id == DependencyJ2J._parent)',
+        'Job',
+        primaryjoin='(Job.id == DependencyJ2J._parent)',
         backref='ref_dependencyj2j_parent'
     )
     child = relationship(
-        'Frame',
-        primaryjoin='(Frame.id == DependencyJ2J._child)',
+        'Job',
+        primaryjoin='(Job.id == DependencyJ2J._child)',
         backref='ref_dependencyj2j_child'
     )
 
