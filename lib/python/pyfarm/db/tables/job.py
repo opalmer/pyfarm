@@ -32,29 +32,6 @@ from pyfarm.db.tables import Base, Frame, \
     TABLE_JOB_SOFTWARE, MAX_USERNAME_LENGTH, ACTIVE_DEPENDENCY_STATES,\
     ACTIVE_FRAME_STATES
 
-#
-#class Dependency(Base):
-#    '''
-#    Defines a dependency between a parent job and a child
-#    '''
-#    __tablename__ = TABLE_JOB_DEPENDENCY
-#    repr_attrs = ("parent", "dependency")
-#
-#    parent = Column(Integer, ForeignKey("%s.id" % TABLE_JOB), nullable=False)
-#    dependency = Column(Integer, ForeignKey("%s.id" % TABLE_JOB), nullable=False)
-#
-#    def __init__(self, parent, dependency):
-#        if isinstance(parent, Job):
-#            parent = parent.id
-#
-#        if isinstance(dependency, Job):
-#            dependency = dependency.id
-#
-#        self.parent = parent
-#        self.dependency = dependency
-#    # end __init__
-## end Dependency
-
 
 class JobSoftware(Base):
     '''
