@@ -36,8 +36,10 @@ def state_changed(target, new_value, old_value, initiator):
 
     elif new_value in (State.DONE, State.FAILED):
         # job should have been started at some point
-        if target.time_started is None:
-            raise TypeError("this job has not been started yet")
+        if target.time_started is None and target.id is not None:
+            msg = "job %s has not been started yet, state is being " % target.id
+            msg += "set to %s" % State.get(new_value)
+            logger.warning(msg)
 
         target.time_finished = datetime.now()
 
