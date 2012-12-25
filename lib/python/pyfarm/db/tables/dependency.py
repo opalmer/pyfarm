@@ -29,6 +29,8 @@ from pyfarm.db.tables import Base
 from pyfarm.db.tables._constants import TABLE_DEPENDENCIES_F2F, \
     TABLE_DEPENDENCIES_J2J, TABLE_FRAME, TABLE_JOB
 
+__all__ = ['DependencyF2F', 'DependencyJ2J']
+
 
 class DependencyF2F(Base):
     '''defines frame to frame dependencies'''
