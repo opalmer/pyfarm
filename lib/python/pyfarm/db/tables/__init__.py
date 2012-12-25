@@ -33,7 +33,7 @@ from pyfarm.db.tables.frame import Frame
 from pyfarm.db.tables.master import Master
 from pyfarm.db.tables.host import Host, HostGroup, HostSoftware
 from pyfarm.db.tables.job import Job
-from pyfarm.db.tables.dependency import DependencyF2F, DependencyJ2J
+from pyfarm.db.tables.dependency import F2FDependency, J2JDependency
 
 def init(rebuild=False):
     '''

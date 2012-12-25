@@ -29,10 +29,10 @@ from pyfarm.db.tables import Base
 from pyfarm.db.tables._constants import TABLE_DEPENDENCIES_F2F, \
     TABLE_DEPENDENCIES_J2J, TABLE_FRAME, TABLE_JOB
 
-__all__ = ['DependencyF2F', 'DependencyJ2J']
+__all__ = ['F2FDependency', 'J2JDependency']
 
 
-class DependencyF2F(Base):
+class F2FDependency(Base):
     '''defines frame to frame dependencies'''
     __tablename__ = TABLE_DEPENDENCIES_F2F
     repr_attrs = ("_parent", "_child")
@@ -44,23 +44,26 @@ class DependencyF2F(Base):
     # relationship definitions
     parent = relationship(
         'Frame',
-        primaryjoin='(Frame.id == DependencyF2F._parent)',
+        primaryjoin='(Frame.id == F2FDependency._parent)',
         backref='ref_dependencyf2f_parent'
     )
     child = relationship(
         'Frame',
-        primaryjoin='(Frame.id == DependencyF2F._child)',
+        primaryjoin='(Frame.id == F2FDependency._child)',
         backref='ref_dependencyf2f_child'
     )
 
     def __init__(self, parent, child):
         self._parent = parent.id if hasattr(parent, 'id') else parent
         self._child = child.id if hasattr(child, 'id') else child
+
+        if self._parent == self._child:
+            raise ValueError("a frame cannot be dependent on itself")
     # end __init__
-# end DependencyF2F
+# end F2FDependency
 
 
-class DependencyJ2J(Base):
+class J2JDependency(Base):
     '''defines job to job dependencies'''
     __tablename__ = TABLE_DEPENDENCIES_J2J
     repr_attrs = ("_parent", "_child")
@@ -72,20 +75,23 @@ class DependencyJ2J(Base):
     # relationship definitions
     parent = relationship(
         'Job',
-        primaryjoin='(Job.id == DependencyJ2J._parent)',
+        primaryjoin='(Job.id == J2JDependency._parent)',
         backref='ref_dependencyj2j_parent'
     )
     child = relationship(
         'Job',
-        primaryjoin='(Job.id == DependencyJ2J._child)',
+        primaryjoin='(Job.id == J2JDependency._child)',
         backref='ref_dependencyj2j_child'
     )
 
     def __init__(self, parent, child):
         self._parent = parent.id if hasattr(parent, 'id') else parent
         self._child = child.id if hasattr(child, 'id') else child
+
+        if self._parent == self._child:
+            raise ValueError("a job cannot be dependent on itself")
     # end __init__
-# end DependencyJ2J
+# end J2JDependency
 
 if __name__ == '__main__':
     pass

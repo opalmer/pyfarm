@@ -26,6 +26,7 @@ from sqlalchemy.types import Integer, Boolean, Text, PickleType, String
 from pyfarm import utility
 from pyfarm.datatypes.enums import State, SoftwareType, EnvMergeMode
 from pyfarm.datatypes import system
+from pyfarm.db.tables.dependency import J2JDependency
 from pyfarm.db.tables._bases import TaskBase
 from pyfarm.db.tables import Base, Frame, \
     REQUEUE_FAILED, REQUEUE_MAX, TABLE_JOB, JOB_QUERY_FRAME_LIMIT, \
@@ -320,6 +321,43 @@ class Job(Base, TaskBase):
         if commit:
             self.session.commit()
     # end createFrames
+
+    def addDependencies(self, dependencies, commit=True):
+        '''
+        Adds job to job dependencies to the current job.
+
+        :type dependencies: list or tuple or set or Job
+        :param dependencies:
+            job or jobs to add as dependencies on this job object
+
+        :param boolean commit:
+            if True then commit the new dependencies to the databaseq
+
+        :returns:
+            a list of instances of :py:mod:`J2JDependency` objects.
+        '''
+        # if the incoming object is not something we can iterate
+        # over then convert it to a tuple so we can
+        if not isinstance(dependencies, (set, list, tuple)):
+            dependencies = (dependencies, )
+
+        new_dependencies = []
+
+        # validate each entry
+        for entry in dependencies:
+            if not isinstance(entry, Job):
+                raise TypeError("can only add dependencies on jobs")
+
+            # create a new dependency object
+            dependency = J2JDependency(self, entry)
+            new_dependencies.append(dependency)
+
+        if commit:
+            self.session.add_all(new_dependencies)
+            self.session.commit()
+
+        return new_dependencies
+    # end addDependencies
 # end Job
 
 # events
