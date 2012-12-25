@@ -30,7 +30,7 @@ from pyfarm.db.tables.dependency import J2JDependency
 from pyfarm.db.tables._bases import TaskBase
 from pyfarm.db.tables import Base, Frame, \
     REQUEUE_FAILED, REQUEUE_MAX, TABLE_JOB, JOB_QUERY_FRAME_LIMIT, \
-    TABLE_JOB_SOFTWARE, MAX_USERNAME_LENGTH, ACTIVE_DEPENDENCY_STATES,\
+    TABLE_JOB_SOFTWARE, MAX_USERNAME_LENGTH, TABLE_J2J_DEPENDENCIES,\
     ACTIVE_FRAME_STATES
 
 
@@ -99,7 +99,7 @@ class Job(Base, TaskBase):
 
     # relationship definitions
     software = relationship(
-        'JobSoftware', uselist=True, backref="ref_job_software",
+        'JobSoftware', uselist=True, backref='ref_job_software',
         primaryjoin='(JobSoftware._job == Job.id)'
     )
     frames = relationship(
@@ -107,14 +107,20 @@ class Job(Base, TaskBase):
         primaryjoin='(Frame._job == Job.id)'
     )
     running_frames = relationship(
-        'Frame', uselist=True, backref="ref_job_running_frames",
+        'Frame', uselist=True, backref='ref_job_running_frames',
         primaryjoin='(Job.id == Frame._job) & '
                     '(Frame.state == %s)' % State.RUNNING
     )
     failed_frames = relationship(
-        'Frame', uselist=True, backref="ref_job_failed_frames",
+        'Frame', uselist=True, backref='ref_job_failed_frames',
         primaryjoin='(Job.id == Frame._job) & '
                     '(Frame.state == %s)' % State.FAILED
+    )
+
+    # TODO: secondary join? possibly on state of dependent child? ... or use a propery
+    dependencies = relationship(
+        'J2JDependency', uselist=True, backref='ref_job_dependencies',
+        primaryjoin='(Job.id == J2JDependency._parent)'
     )
 
     def __init__(self, cmd, args, start_frame, end_frame, by_frame=None,
@@ -223,25 +229,25 @@ class Job(Base, TaskBase):
         return query.all()
     # end queued_frames
 
-    @property
-    def dependencies(self):
-        '''returns a list of jobs which we are waiting on to complete'''
-        all_dependencies = self.session.query(Dependency).filter(
-            Dependency.parent == self.id
-        )
-        if not all_dependencies.count():
-            return []
-
-        # TODO: we should probably have the option of checking parent dependencies too
-        # iterate over all the dependencies we found and create a list
-        # of running dependencies
-        query = self.session.query(Job).filter(and_(
-            Job.id.in_(set((dep.dependency for dep in all_dependencies))),
-            Job.state.in_(ACTIVE_DEPENDENCY_STATES)
-        ))
-
-        return query.all()
-    # end dependencies
+#    @property
+#    def dependencies(self):
+#        '''returns a list of jobs which we are waiting on to complete'''
+#        all_dependencies = self.session.query(Dependency).filter(
+#            Dependency.parent == self.id
+#        )
+#        if not all_dependencies.count():
+#            return []
+#
+#        # TODO: we should probably have the option of checking parent dependencies too
+#        # iterate over all the dependencies we found and create a list
+#        # of running dependencies
+#        query = self.session.query(Job).filter(and_(
+#            Job.id.in_(set((dep.dependency for dep in all_dependencies))),
+#            Job.state.in_(ACTIVE_DEPENDENCY_STATES)
+#        ))
+#
+#        return query.all()
+#    # end dependencies
 
     @validates('environ_mode')
     def validate_environ_mode(self, key, value):
