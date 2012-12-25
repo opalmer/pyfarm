@@ -26,15 +26,15 @@ from sqlalchemy.types import Integer
 from sqlalchemy.orm import validates, relationship
 
 from pyfarm.db.tables import Base
-from pyfarm.db.tables._constants import TABLE_DEPENDENCIES_F2F, \
-    TABLE_DEPENDENCIES_J2J, TABLE_FRAME, TABLE_JOB
+from pyfarm.db.tables._constants import TABLE_F2_DEPENDENCIES, \
+    TABLE_J2J_DEPENDENCIES, TABLE_FRAME, TABLE_JOB
 
 __all__ = ['F2FDependency', 'J2JDependency']
 
 
 class F2FDependency(Base):
     '''defines frame to frame dependencies'''
-    __tablename__ = TABLE_DEPENDENCIES_F2F
+    __tablename__ = TABLE_F2_DEPENDENCIES
     repr_attrs = ("_parent", "_child")
 
     # column definitions
@@ -65,7 +65,7 @@ class F2FDependency(Base):
 
 class J2JDependency(Base):
     '''defines job to job dependencies'''
-    __tablename__ = TABLE_DEPENDENCIES_J2J
+    __tablename__ = TABLE_J2J_DEPENDENCIES
     repr_attrs = ("_parent", "_child")
 
     # column definitions
