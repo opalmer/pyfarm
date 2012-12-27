@@ -1,6 +1,7 @@
 from sqlalchemy.orm import sessionmaker
 
-from pyfarm.db.tables import init, engine, Host, HostSoftware, HostGroup, \
+from pyfarm.db.engines import engine
+from pyfarm.db.tables import init, Host, HostSoftware, HostGroup, \
     Master, Job, Frame
 
 from pyfarm.datatypes.enums import State

@@ -20,7 +20,7 @@
 prepares and configures the base engine
 '''
 
-import itertools
+from itertools import izip
 from sqlalchemy import create_engine
 from sqlalchemy.exc import OperationalError
 
@@ -37,13 +37,13 @@ logger = Logger(__name__)
 
 # zip up the configurations and the urls and
 # iterate over them till we find one we can use
-for config, url in itertools.izip(CONFIGS, URLS):
+for config, url in izip(CONFIGS, URLS):
     engine = create_engine(url, echo=ECHO, echo_pool=ECHO_POOL)
 
     try:
         # test to see if we can use this config to connect to
         # the database
-        engine.connect()
+        connection = engine.connect()
         logger.info("connected to database using config: %s" % config)
 
         # even though sqlite only for testing we enable
@@ -51,6 +51,7 @@ for config, url in itertools.izip(CONFIGS, URLS):
         if engine.dialect.name == "sqlite":
             engine.engine.execute('pragma foreign_keys=ON')
 
+        connection.close()
         break
 
     except OperationalError:
