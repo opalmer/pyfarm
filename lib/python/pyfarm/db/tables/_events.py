@@ -30,6 +30,10 @@ logger = Logger(__name__)
 
 def state_changed(target, new_value, old_value, initiator):
     '''when job state changes update the start/end times'''
+    # object has not been committed yet
+    if target.id is None:
+        return
+
     if new_value == State.RUNNING:
         target.time_started = datetime.now()
         target.attempts += 1
