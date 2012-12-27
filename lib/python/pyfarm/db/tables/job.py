@@ -67,6 +67,7 @@ class JobSoftware(Base):
 # TODO: verify properties are present for correct columns (_environ example)
 # TODO: verify proper column validation
 
+
 class Job(Base, TaskBase):
     '''base job definition'''
     __tablename__ = TABLE_JOB
@@ -80,7 +81,7 @@ class Job(Base, TaskBase):
     by_frame = Column(Integer, default=1)
     batch_frame = Column(Integer, default=1)
     requeue_failed = Column(Boolean, default=REQUEUE_FAILED)
-    requeue_max = Column(Integer, default=REQUEUE_MAX)\
+    requeue_max = Column(Integer, default=REQUEUE_MAX)
 
     # job related information
     _cmd = Column(Text(convert_unicode=True), nullable=False)
@@ -117,12 +118,6 @@ class Job(Base, TaskBase):
                     '(Frame.state == %s)' % State.FAILED
     )
 
-    # TODO: secondary join? possibly on state of dependent child? ... or use a propery
-    dependencies = relationship(
-        'J2JDependency', uselist=True, backref='ref_job_dependencies',
-        primaryjoin='(Job.id == J2JDependency._parent)'
-    )
-
     def __init__(self, cmd, args, start_frame, end_frame, by_frame=None,
                  batch_frame=None, state=None, priority=None, environ=None,
                  environ_mode=None, data=None, requeue_max=None,
@@ -154,7 +149,40 @@ class Job(Base, TaskBase):
 
         if requeue_failed is not None:
             self.requeue_failed = requeue_failed
+
+        self.__dependencies = None
     # end __init__
+
+    def hasDependencies(self):
+        '''returns True if the job has dependencies'''
+        return bool(self.getDependencyIDs())
+    # end hasDependencies
+
+    def getDependencyIDs(self):
+        '''returns the dependent job ids'''
+        if self.id is None:
+            raise ValueError("id has not been set")
+
+        if self.__dependencies is None:
+            self.__dependencies = J2JDependency.children(self.id, self.session)
+
+        return self.__dependencies
+    # end getDependencyIDs
+
+    @property
+    def dependencies(self):
+        child_jobs = self.getDependencyIDs()
+
+        if not child_jobs:
+            return child_jobs
+
+        query = self.session.query(Job).filter(
+            Job.id.in_(child_jobs)
+        ).filter(
+            Job.state != State.DONE
+        )
+        return query.all()
+    # end dependencies
 
     @property
     def cmd(self):
@@ -228,26 +256,6 @@ class Job(Base, TaskBase):
 
         return query.all()
     # end queued_frames
-
-#    @property
-#    def dependencies(self):
-#        '''returns a list of jobs which we are waiting on to complete'''
-#        all_dependencies = self.session.query(Dependency).filter(
-#            Dependency.parent == self.id
-#        )
-#        if not all_dependencies.count():
-#            return []
-#
-#        # TODO: we should probably have the option of checking parent dependencies too
-#        # iterate over all the dependencies we found and create a list
-#        # of running dependencies
-#        query = self.session.query(Job).filter(and_(
-#            Job.id.in_(set((dep.dependency for dep in all_dependencies))),
-#            Job.state.in_(ACTIVE_DEPENDENCY_STATES)
-#        ))
-#
-#        return query.all()
-#    # end dependencies
 
     @validates('environ_mode')
     def validate_environ_mode(self, key, value):
@@ -351,6 +359,9 @@ class Job(Base, TaskBase):
 
         # validate each entry
         for entry in dependencies:
+            if entry.id is None:
+                raise TypeError("id has not been set, has commit been called?")
+
             if not isinstance(entry, Job):
                 raise TypeError("can only add dependencies on jobs")
 

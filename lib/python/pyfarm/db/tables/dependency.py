@@ -21,15 +21,56 @@ storage class for frame-to-frame, frame-job and job-job
 dependencies
 '''
 
-from sqlalchemy import Column, ForeignKey
+from sqlalchemy import Column, ForeignKey, select
 from sqlalchemy.types import Integer
-from sqlalchemy.orm import validates, relationship
+from sqlalchemy.orm import relationship
 
 from pyfarm.db.tables import Base
 from pyfarm.db.tables._constants import TABLE_F2_DEPENDENCIES, \
     TABLE_J2J_DEPENDENCIES, TABLE_FRAME, TABLE_JOB
 
 __all__ = ['F2FDependency', 'J2JDependency']
+
+class Dependency(object):
+    @classmethod
+    def children(cls, parentid, session):
+        '''returns a list of child id objects for the given dependency'''
+        ids = []
+
+        # get the immediate children of the provided parent and
+        # use this to populate the initial parent ids
+        select_statement = select(
+            columns=[cls._child],
+            whereclause=cls._parent == parentid,
+            distinct=True
+        )
+        query_ids = list(
+            entry[0]
+            for entry in session.query(select_statement)
+        )
+
+        # while we have ids to query pop an item
+        # off of the list and
+        while query_ids:
+            query_id = query_ids.pop()
+            if query_id != parentid and query_id not in ids:
+                ids.append(query_id)
+
+                # select all rows that
+                select_statement = select(
+                    columns=[cls._child],
+                    whereclause=cls._parent == query_id,
+                    distinct=True
+                )
+                child_ids = list(
+                    entry[0]
+                    for entry in session.query(select_statement)
+                )
+                query_ids.extend(child_ids)
+
+        return ids
+    # end select_children
+# end Dependency
 
 
 class F2FDependency(Base):
@@ -63,7 +104,7 @@ class F2FDependency(Base):
 # end F2FDependency
 
 
-class J2JDependency(Base):
+class J2JDependency(Base, Dependency):
     '''defines job to job dependencies'''
     __tablename__ = TABLE_J2J_DEPENDENCIES
     repr_attrs = ("_parent", "_child")
