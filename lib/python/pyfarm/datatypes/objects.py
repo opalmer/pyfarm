@@ -87,3 +87,5 @@ class ScheduledRun:
         return force or self.lastupdate >= self.timeout-1
     # end shouldRun
 # end ScheduledRun
+
+python_extensions = ('.pyo', '.pyc', '.py', '.pyw')
