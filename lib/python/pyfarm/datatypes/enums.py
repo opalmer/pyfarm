@@ -44,6 +44,9 @@ def __os_get(self, item=None):
     elif platform.startswith("win"):
         platform = "WINDOWS"
 
+    elif platform.startswith("darwin"):
+        platform = "MAC"
+
     elif platform not in self.__mapped:
         return self.OTHER
 
