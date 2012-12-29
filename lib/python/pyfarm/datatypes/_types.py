@@ -18,7 +18,7 @@
 
 '''
 Attempts to import the "correct" datatype, falling back when necessary.  This
-module is strictly for builtin/3rd party code.
+module is strictly for builtins, 3rd party code, and compatibility.
 '''
 
 import warnings
