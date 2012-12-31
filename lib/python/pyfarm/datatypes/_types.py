@@ -411,8 +411,6 @@ try:
     from itertools import permutations
 
 except ImportError: # python < 2.6
-    warnings.warn("using internal permutations()")
-
     # code from http://docs.python.org/2/library/itertools.html#itertools.permutations
     def permutations(iterable, r=None):
         # permutations('ABCD', 2) --> AB AC AD BA BC BD CA CB CD DA DB DC
