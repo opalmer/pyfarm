@@ -21,6 +21,7 @@
 named value mappings which do not change during execution
 '''
 
+import imp
 import sys
 from pyfarm.datatypes.functions import LoadEnum
 
@@ -59,3 +60,4 @@ OperatingSystem = LoadEnum(
 )
 
 DependencyType = LoadEnum("DependencyType")
+PythonExtensions = [ ext[0] for ext in imp.get_suffixes() ]
