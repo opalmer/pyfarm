@@ -44,7 +44,7 @@ clean:
 	-rm -rf $(BUILDDIR)/*
 
 api:
-	-rm -rf python/pyfarm
+	-rm -rf source/python/pyfarm
 	-sphinx-apidoc ../lib/python/pyfarm/ -o source/python/pyfarm
 
 html:
