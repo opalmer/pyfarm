@@ -10,7 +10,6 @@
 *~
 build
 .*
-docs*
 tools*
 dev*
 *.yml
