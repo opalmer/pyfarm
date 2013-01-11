@@ -11,7 +11,13 @@
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 
-import sys, os
+import os
+import sys
+
+filename = os.path.abspath(__file__)
+cwd = os.path.dirname(filename)
+python_root = os.path.abspath(os.path.join(cwd, "..", "..", "lib", "python"))
+sys.path.insert(0, python_root)
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
