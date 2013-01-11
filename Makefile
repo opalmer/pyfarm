@@ -7,9 +7,9 @@ shell:
 	@env PYTHONPATH=$(PYTHONPATH) ipython
 
 clean:
-	@find . -name "*.pyc" -exec rm {} \;
-	@find . -name "*.pyo" -exec rm {} \;
-	@find . -name "*~" -exec rm {} \;
+	@find . -name "*.pyc" -exec rm -f {} \;
+	@find . -name "*.pyo" -exec rm -f {} \;
+	@find . -name "*~" -exec rm -f {} \;
 
 jobs: dev.make_jobs
 
@@ -34,5 +34,11 @@ test.%: SCRIPT=tests/test_$(subst test.,,$@).py
 test.%:
 	@echo "running $(SCRIPT)"
 	@env PYTHONPATH=$(PYTHONPATH) $(PYTHON) $(SCRIPT)
+
+docs.%: PYTHONPATH=lib/python
+docs.%: TARGET=$(subst docs.,,$@)
+docs.%: clean
+docs.%:
+	$(MAKE) -s -C docs $(TARGET)
 
 tests: test.preferences
