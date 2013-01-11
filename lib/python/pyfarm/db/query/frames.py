@@ -23,9 +23,9 @@ Provides common mechanisms for querying frame related information
 import copy
 
 from pyfarm import datatypes
-from pyfarm.db.contexts import Session
-from pyfarm.db.tables import frames
-from pyfarm.db.query import hosts, _tables, jobs
+#from pyfarm.db.contexts import Session
+#from pyfarm.db.tables import frames
+from pyfarm.db.query import hosts, _tables#, jobs
 
 def priority(jobid, frameid=None, frame=None):
     '''

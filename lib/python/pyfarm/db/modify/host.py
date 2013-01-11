@@ -23,7 +23,7 @@ import datetime
 
 from pyfarm import errors
 from pyfarm.logger import Logger
-from pyfarm.db.tables import hosts
+#from pyfarm.db.tables import hosts
 from pyfarm.db.modify import base
 from pyfarm.datatypes.network import HOSTNAME
 from pyfarm.datatypes.objects import ScheduledRun

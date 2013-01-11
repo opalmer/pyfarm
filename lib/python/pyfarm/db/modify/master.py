@@ -20,7 +20,7 @@
 '''module for modifying network information in the database'''
 
 from pyfarm import errors
-from pyfarm.db.tables import masters
+#from pyfarm.db.tables import masters
 from pyfarm.db.modify import base
 
 __all__ = ['master']
