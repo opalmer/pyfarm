@@ -30,19 +30,51 @@ def requirements():
     and operating system
     '''
     requires = []
-    if os.environ.get('PYFARM_SETUP_IGNORE_REQUIREMENTS') == 'True':
-        return requires
 
     # split out versioned/unversioned requirements for easier
     # maintenance
     unversioned_requires = [
-        'zope.interface', 'nose', 'appdirs', 'PyYaml',
-        'colorama'
+        'zope.interface',
+        'nose',
+        'appdirs',
+        'PyYaml',
+        'colorama',
     ]
     versioned_requires = [
-        'python>=2.6.0', 'twisted>=11.0.0', 'psutil>=0.6.0',
-        'netifaces>=0.8', 'sqlalchemy>=0.7.0'
+        'python>=2.5,python<=2.7',
+        'twisted>=11,twisted<=12',
+        'txJSON-RPC==0.3.0',
+        'psutil>=0.6.0',
+        'netifaces>=0.8',
+        'sqlalchemy>=0.7.0'
     ]
+
+    # determine if we need to install PyQt or PySide
+    try:
+        import PyQt4
+    except ImportError:
+        try:
+            import PySide
+        except ImportError:
+            unversioned_requires.append('PySide')
+
+    try:
+        import json
+
+    except ImportError:
+        unversioned_requires.append('simplejson')
+
+    # determine if we need to install ordereddict
+    try:
+        from collections import OrderedDict
+    except ImportError:
+        unversioned_requires.append('ordereddict')
+
+    # determine if we need to install argparse
+    try:
+        import argparse
+    except ImportError:
+        unversioned_requires.append('argparse')
 
     # windows specific requirements
     if sys.platform.startswith("win"):
@@ -50,35 +82,11 @@ def requirements():
 
     # add a couple of additional requirements for Python2.6
     if PY_MINOR == 6:
-        extra = ['ordereddict', 'argparse']
-        unversioned_requires.extend(extra)
+
+        unversioned_requires.extend(['ordereddict', 'argparse'])
 
     requires.extend(versioned_requires)
     requires.extend(unversioned_requires)
-
-    # allow this check to be skipped in some cases in case
-    if os.environ.get('PYFARM_SETUP_IGNORE_PYQT_CHECK') != 'True':
-        # we have to manually validate the PyQt requirements since
-        # setuptools cannot seems to reliability download/install/validate
-        # pyqt currently.
-        try:
-            from PyQt4 import QtCore
-
-            try:
-                major, minor, micro = map(int, QtCore.PYQT_VERSION_STR.split("."))
-
-                if major < 4:
-                    raise DistutilsError("PyQt4 version < 4.0.0")
-
-                elif minor < 5:
-                    raise DistutilsError("PyQt4 version < 4.5.0")
-
-            except ValueError:
-                raise DistutilsError("failed to parse version for PyQt")
-
-
-        except ImportError:
-            raise DistutilsError("failed to import PyQt4")
 
     return requires
 # end requirements
