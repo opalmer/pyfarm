@@ -20,5 +20,3 @@
 serves as a central location to store data that is meant
 to be static
 '''
-
-from pyfarm.datatypes._types import permutations, namedtuple, OrderedDict
