@@ -27,8 +27,8 @@ from pyfarm.datatypes.enums import OperatingSystem
 from pyfarm.logger import Logger, Observer
 from pyfarm.datatypes.system import USER, OS
 from pyfarm.preferences import prefs
-from pyfarm.db import session, contexts
-from pyfarm.db.tables import jobs, frames
+from pyfarm.db import session# contexts
+#from pyfarm.db.tables import jobs, frames
 
 class BaseJob(Logger):
     '''
