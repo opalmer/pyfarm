@@ -96,6 +96,7 @@ Subpackages
 
     pyfarm.datatypes
     pyfarm.db
+    pyfarm.docutil
     pyfarm.frontend
     pyfarm.host
     pyfarm.jobtypes

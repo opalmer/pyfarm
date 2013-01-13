@@ -38,8 +38,5 @@ Subpackages
 
 .. toctree::
 
-    pyfarm.db.insert
-    pyfarm.db.modify
-    pyfarm.db.query
     pyfarm.db.tables
 
