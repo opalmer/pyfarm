@@ -16,6 +16,12 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
+'''
+The __init__.py file for PyFarm which handles module backports, adding the
+project root as a site package, as well as setup of several top level
+variables.
+'''
+
 import os
 import sys
 import site
