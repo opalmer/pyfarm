@@ -76,9 +76,18 @@ class Job(Base, TaskBase):
     )
 
     # frame information
-    start_frame = Column(Integer, nullable=False)
-    end_frame = Column(Integer, nullable=False)
-    by_frame = Column(Integer, default=1)
+    start_frame = Column(
+        Integer, nullable=False,
+        doc="The frame this job starts on"
+    )
+    end_frame = Column(
+        Integer, nullable=False,
+        doc="The frame this job ends on"
+    )
+    by_frame = Column(
+        Integer, default=1,
+        doc="The offset between each frame"
+    )
     batch_frame = Column(Integer, default=1)
     requeue_failed = Column(Boolean, default=REQUEUE_FAILED)
     requeue_max = Column(Integer, default=REQUEUE_MAX)
