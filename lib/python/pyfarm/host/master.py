@@ -20,7 +20,7 @@
 
 import socket
 
-from pyfarm.db import query
+#from pyfarm.db import query # TODO: replace with new objects
 from pyfarm.logger import Logger
 from pyfarm.datatypes.network import FQDN
 from pyfarm import errors

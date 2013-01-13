@@ -17,7 +17,9 @@
 # along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
 from pyfarm.preferences import prefs
-from pyfarm.datatypes.enums import DEFAULT_JOBTYPES, DEFAULT_SOFTWARE
+#from pyfarm.datatypes.enums import DEFAULT_JOBTYPES, DEFAULT_SOFTWARE
+DEFAULT_JOBTYPES = [] # TODO: replace with new objects
+DEFAULT_SOFTWARE = [] # TODO: replace with new objects
 from pyfarm.datatypes.system import TOTAL_RAM, CPU_COUNT
 from pyfarm.cmdargs import *
 from pyfarm.net.functions import openport

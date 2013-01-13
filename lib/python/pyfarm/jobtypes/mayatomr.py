@@ -16,14 +16,15 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
-from pyfarm.jobtypes import base
+from pyfarm.jobtypes.base import BaseJob
 
-class Job(base.Job):
+class Job(BaseJob):
     DATA_REQUIREMENTS = {
         "scene" : str,
         "verbose" : int
     }
     def __init__(self, data):
         self.data = data
+        BaseJob.__init__(self)
     # end __init__
 # end Job

@@ -20,13 +20,13 @@ import time
 import threading
 from itertools import ifilter
 
-from pyfarm.db import contexts
+#from pyfarm.db import contexts # TODO: replace with new objects
 from pyfarm.logger import Logger
 from pyfarm.preferences import prefs
-from pyfarm.db.tables import hosts as _hosts, frames as _frames, jobs as _jobs
+#from pyfarm.db.tables import hosts as _hosts, frames as _frames, jobs as _jobs # TODO: replace with new objects
 from pyfarm.datatypes.objects import ScheduledRun
-from pyfarm.datatypes.enums import ACTIVE_HOSTS_FRAME_STATES,\
-    ACTIVE_JOB_STATES, ACTIVE_FRAME_STATES
+#from pyfarm.datatypes.enums import ACTIVE_HOSTS_FRAME_STATES,\
+#    ACTIVE_JOB_STATES, ACTIVE_FRAME_STATES # TODO: replace with new objects
 
 class Assignment(ScheduledRun, Logger):
     LOCK = threading.Lock()

@@ -33,8 +33,8 @@ from pyfarm.jobtypes.base import job
 from pyfarm.datatypes.objects import ScheduledRun
 from pyfarm.datatypes.enums import State, OperatingSystem
 from pyfarm.datatypes.system import OS, USER
-from pyfarm.db.modify.host import update_memory
-from pyfarm.db.contexts import Session
+#from pyfarm.db.modify.host import update_memory # TODO: replace with new objects
+#from pyfarm.db.contexts import Session  # TODO: replace with new objects
 from pyfarm.db import tables
 from pyfarm import errors
 from pyfarm.preferences import prefs
