@@ -22,6 +22,5 @@ Subpackages
 
 .. toctree::
 
-    pyfarm.net.client
     pyfarm.net.rpc
 

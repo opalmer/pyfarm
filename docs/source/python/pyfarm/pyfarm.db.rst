@@ -25,14 +25,6 @@ db Package
     :undoc-members:
     :show-inheritance:
 
-:mod:`submit` Module
---------------------
-
-.. automodule:: pyfarm.db.submit
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 Subpackages
 -----------
 
