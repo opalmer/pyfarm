@@ -19,10 +19,7 @@ cwd = os.path.dirname(filename)
 python_root = os.path.abspath(os.path.join(cwd, "..", "..", "lib", "python"))
 sys.path.insert(0, python_root)
 
-# If extensions (or modules to document with autodoc) are in another directory,
-# add these directories to sys.path here. If the directory is relative to the
-# documentation root, use os.path.abspath to make it absolute, like shown here.
-#sys.path.insert(0, os.path.abspath('.'))
+import sqlalchemy
 
 # -- General configuration -----------------------------------------------------
 
@@ -36,8 +33,7 @@ extensions = [
     'sphinx.ext.doctest',
     'sphinx.ext.coverage',
     'sphinx.ext.ifconfig',
-    'sphinx.ext.viewcode',
-    'pyfarm.docutil.doctables'
+    'sphinx.ext.viewcode'
 ]
 
 # Add any paths that contain templates here, relative to this directory.
