@@ -1,7 +1,9 @@
-DB_ECHO = True
-DB_REBUILD = True
-PYTHON = python
-PYTHONPATH = lib/python
+DB_ECHO ?= True
+DB_REBUILD ?= True
+PYTHON ?= python
+PYTHONPATH ?= lib/python
+CONFIG_DIR ?= etc
+CONFIG_FILES ?= $(wildcard $(CONFIG_DIR)/*.yml.template)
 
 shell:
 	@env PYTHONPATH=$(PYTHONPATH) ipython
@@ -19,6 +21,20 @@ tables:
 
 db: tables dev.make_jobs
 	@echo "rebuilding database"
+
+configs:
+	@$(foreach filename, $(CONFIG_FILES), \
+		$(MAKE) -s config.$(subst .template,,$(subst $(CONFIG_DIR)/,,$(filename))); \
+	)
+
+config.%: TARGET=$(subst .yml,,$(subst config.,,$@))
+config.%: SOURCE=$(CONFIG_DIR)/$(TARGET).yml.template
+config.%: DEST=$(CONFIG_DIR)/$(TARGET).yml 
+config.%:
+	@if test ! -e $(DEST); \
+        then echo "creating configuration $(DEST)"; \
+            cp $(SOURCE) $(DEST); \
+	fi
 
 bin.%: SCRIPT=bin/pyf$(subst bin.,,$@)
 bin.%:
