@@ -17,228 +17,264 @@
 # along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
-import string
-import psutil
-import tempfile
-import warnings
-from itertools import imap, chain, ifilter
-from os.path import expandvars, expanduser, isdir
+import pprint
+import appdirs
+from os.path import isfile, isdir
+from itertools import product
 
-from pyfarm import PYFARM_ETC, PYFARM_ROOT, fileio, errors
-from pyfarm.datatypes.enums import OperatingSystem
+import yaml
+try:
+    from yaml import CLoader as YAMLLoader
+except ImportError:
+    from yaml import Loader as YAMLLoader
+
+from pyfarm import __version__, PYFARM_ETC
 from pyfarm.logger import Logger
-from pyfarm.datatypes.system import OS, OSNAME
 
 logger = Logger(__name__)
-osname = OSNAME.lower()
 
-if not os.path.isdir(PYFARM_ETC):
-    raise OSError("configuration directory does not exist: %s" % PYFARM_ETC)
-
-class PreferenceKeyError(KeyError):
-    '''raised if we failed to find a key in the preference file'''
-    def __init__(self, key):
-        filename = Preferences._filepath(key)
-        message = "failed to find '%s' after loading %s" % (key, filename)
-        super(PreferenceKeyError, self).__init__(message)
-        self.filename = filename
-        self.key = key
-    # end __init__
-# end PreferenceKeyError
+from UserDict import IterableUserDict
 
 
-class PreferencesFunctions(object):
+class Loader(IterableUserDict):
     '''
-    container class which has functions to mix in with the
-    preferences class
+    The base loader class for all individual preference files.  By default
+    this class will search several directories including the user directory,
+    site directory, and PyFarm's own internal configuration directory.  For
+    more information on how each of these paths are resolved see these
+    individual functions:
+
+        * :py:func:`appdirs.user_data_dir`
+        * :py:func:`appdirs.site_data_dir`
+        * :py:func:`appdirs.site_data_dir`
+
+    For PyFarm's configuration we look to py:attr:`pyfarm.PYFARM_ETC` which
+    is constructed either off of $PYFARM_ETC from the environment or
+    off of PyFarm's root path.
+
+    :param string filename:
+        The name of the file to load without the extension.
+
+    :param list data:
+        If provided then this value will be use to populate self.data
+        and self._data.  Please note that :py:class:`Loader` expects
+        the data to be a list of tuples:
+            >>> [('fileA.yml', {'A' : True}), ('fileB.yml', {'B' : True})]
+
+    :exception OSError:
+        raised if we failed to find any preference files by the given name
+
+    :exception ValueError:
+        raised if preference files were found but did not contain any
+        data
     '''
-    dbconfigs = {}
+    DATA = {}
 
-    @classmethod
-    def dburl(cls, name):
-        if name in cls.dbconfigs:
-            return cls.dbconfigs[name]
+    # Configuration data which contains the
+    # directories where we will load user defined
+    # preferences from
+    config = appdirs.AppDirs(
+        "pyfarm",
+        "Oliver Palmer"
+    )
 
-        config = cls.get('database.%s' % name)
+    # List of directories where we will search for preferences.  As an
+    # example the default configuration will list three entries:
+    #   0.4.0
+    #   0.4
+    #   default
+    versions = (
+        ".".join(map(str, __version__)),
+        ".".join(map(str, __version__[0:2])),
+        "default"
+    )
 
-        data = {
-            'driver' : config.get('driver'),
-            'engine' : config.get('engine'),
-            'dbname' : config.get('name'),
-            'dbuser' : config.get('user'),
-            'dbpass' : config.get('pass'),
-            'dbhost' : config.get('host'),
-            'dbport' : config.get('port'),
-        }
+    # all possible root directors
+    dirnames = (
+        config.user_data_dir,
+        config.site_data_dir,
+        PYFARM_ETC
+    )
 
-        if data['driver'] == "psycopg2ct":
-            # One last check before we do anything else.  If we happen to be
-            # using the ctypes version of the psycopg2 driver then we need
-            # it in sys.modules (this is here mainly for some pypy support)
-            try:
-                from psycopg2ct import compat
-                compat.register()
+    extension = "%syml" % os.path.extsep
+    joinargs = lambda self, items: os.path.join(*items)
 
-            except ImportError:
-                pass
-
-            data['driver'] = 'psycopg2'
-
-        # for sqlite disregard any additional database information
-        # and warn
-        if data['engine'] == 'sqlite':
-            # TODO: conditionally emit this warning, we may use sqlite for some
-            # things in the future
-            warnings.warn(
-                "sqlite is only supported for testing purposes",
-                RuntimeWarning
-            )
-            url = "%(engine)s://%(dbhost)s"
-        elif data['driver'] is None:
-            url = "%(engine)s://%(dbuser)s:%(dbpass)s@%(dbhost)s"
+    def __init__(self, filename=None, data=None):
+        # filename setup
+        if isinstance(filename, (str, unicode)):
+            self.filename = "%s%s" % (filename, self.extension)
         else:
-            url = "%(engine)s+%(driver)s://%(dbuser)s:%(dbpass)s@%(dbhost)s"
+            self.filename = None
 
-        if isinstance(data['dbport'], int) and data['engine'] != 'sqlite':
-            url += ":%(dbport)s"
+        if self.filename is not None and data is None:
+            # if the requested file name has not been loaded
+            # yet the consturct the data
+            if self.filename not in self.DATA:
+                tofilepath = lambda root: os.path.join(root, self.filename)
 
-        return url % data
-    # end dburl
+                # Construct a complete list of tuple containing all combinations
+                # of directory names and versions.  After doing to filter
+                # that list to directories which actually exist.
+                products = product(self.dirnames, self.versions)
+                preference_dirs = filter(isdir, map(self.joinargs, products))
+
+                # Now construct a list of possible preference files and
+                # filter them into a tuple of files which actually exists.
+                all_preference_files = map(tofilepath, preference_dirs)
+                filenames = tuple(filter(isfile, all_preference_files))
+
+                # raise an exception if we did not find any files by that name
+                if not filenames:
+                    args = (self.filename, pprint.pformat(preference_dirs))
+                    raise OSError("did not find %s in %s" % args)
+
+                # iterate over each file found and update our
+                # current data with data from the files
+                data = []
+                for filename in filenames:
+                    with open(filename, 'r') as stream:
+                        logger.debug("loading %s" % filename)
+                        data.append((
+                            filename, yaml.load(stream, Loader=YAMLLoader)
+                        ))
+
+                if not data:
+                    raise ValueError(
+                        "preferences files not populated for %s" % self.filename
+                    )
+
+                self._data = self.DATA[self.filename] = tuple(reversed(data))
+
+            # if we've already pull the preferences for the provided
+            # filename then just set the data
+            else:
+                self._data = self.DATA[self.filename]
+
+        # full data was provided
+        elif data is not None:
+            self._data = tuple(data) if isinstance(data, (list, set)) else data
+
+        # construct the resulting data
+        self.reloadata()
+
+        IterableUserDict.__init__(self, self.data)
+    # end __init__
+
+    def reloadata(self):
+        '''
+        Reloads the internal data attribute with data from _data.
+        '''
+        self.data = {}
+        for filepath, data in self._data:
+            self.data.update(data)
+    # end initdata
+
+    def where(self, key):
+        '''
+        Returns the filename where the preference is defined.  Depending
+        on the implementation of the final preference object this
+        method may be overridden in a subclass to provide more accurate
+        results.
+
+        >>> l1 = Loader(data=[("fileA.yml", {"A" : True, "B" : True},)])
+        >>> assert l1.where("A") == "fileA.yml"
+        >>> assert l1.where("B") == "fileA.yml"
+
+        :param string key:
+            the string we're trying to find the location for
+
+        :exception KeyError:
+            raised if the key we are requesting does not exist in self.data
+
+        :returns:
+            returns the filename where the preference is defined
+        '''
+        if key not in self:
+            raise KeyError("key %s does not exist" % key)
+        else:
+            current_value = self[key]
+            for filename, data in self._data:
+                if key in data and data[key] == current_value:
+                    return filename
+    # end where
+
+    def __add__(self, other):
+        '''
+        Adds two :py:class:`Loader` objects together, so long as they have not
+        loaded the same filename, and returns a new object.
+
+        >>> l1 = Loader(data=[("fileA.yml", {"A" : True, "C" : True},)])
+        >>> l2 = Loader(data=[("fileB.yml", {"A" : False, "B" : None},)])
+        >>> l3 = l1 + l2
+        >>> assert l3.get('A') == False
+        >>> assert l3.filename is None
+        >>> assert l3.where("A") == "fileB.yml"
+        >>> assert l3.where("B") == "fileB.yml"
+        >>> assert l3.where("C") == "fileA.yml"
+
+        :exception ValueError:
+            raised if the two objects have the same filename
+
+        :exception TypeError:
+            raised of the other object is not a :py:class:`Loader` object
+        '''
+        if not isinstance(other, Loader):
+            raise TypeError("other object must be a loader")
+
+        if self.filename is not None and self.filename != other.filename:
+            raise ValueError("will not add two objects with the same filename")
+
+        new_data = list(self._data)
+        new_data.extend(list(other._data))
+        return Loader(data=new_data)
+    # end __add__
+
+    def __iadd__(self, other):
+        '''
+        Adds another :py:class:`Loader` to this object so long as they have
+        not loaded the same filename.
+
+        :exception ValueError:
+            raised if the two objects have the same filename
+
+        :exception TypeError:
+            raised of the other object is not a :py:class:`Loader` object
+        '''
+        if not isinstance(other, Loader):
+            raise TypeError("other object must be a loader")
+
+        if self.filename is not None and self.filename != other.filename:
+            raise ValueError("will not add two objects with the same filename")
+
+        new_data = list(self._data)
+        new_data.extend(other._data)
+        self._data = tuple(new_data)
+        self.reloadata()
+    # end __iadd__
+# end Loader
+
+
+class Preferences(object):
+    DATA = {}
+
+    def __init__(self):
+        pass
 
     @classmethod
-    def post_database_setup_config(cls, data):
-        '''
-        constructs the final database configuration data for
-        the "database.setup.configs" key
-
-        Input Data:
-            >>> {"default" : ["db-sqlite"]}
-
-        Output Data:
-            >>> {"default" : [("db-sqlite", "sqlite:///:memory:")]}
-        '''
-        # iterate all configuration data and resolve
-        # the database url
-        for name, configs in data.iteritems():
-
-            for index, config in enumerate(configs):
-                dburl = cls.dburl(config)
-                data[name][index] = (config, dburl)
-
-        return data
-    # end post_database_setup_configs
-
-    @classmethod
-    def post_jobtypes_path(cls, data):
-        '''
-        converts and expands any paths provided by the preferences
-        into a list containing fully qualified entries
-        '''
-        root = cls.get('filesystem.roots.%s' % osname)
-        replaceroot = lambda path: string.Template(path).safe_substitute({'root' : root})
-        results = list(
-            ifilter(isdir, imap(replaceroot, chain(*imap(expandpath, data))))
-        )
-
-        # one last iteration to make sure we don't
-        # return duplicate paths
-        output = []
-        for path in results:
-            if path not in output:
-                output.append(path)
-
-        return output
-    # end post_jobtypes_path
-# end PreferencesFunctions
-
-
-class Preferences(PreferencesFunctions):
-    '''
-    Preferences object which handles loading of configuration
-    files and handling of specific special case (such as logging
-    directory strings)
-    '''
-    data = {}
-    extension = "%syml" % os.extsep
-    notset = "value_not_set"
-
-    @classmethod
-    def _filedata(cls, filename):
-        '''
-        loads data from the requested file or returns
-        cached data
-
-        :exception OSError:
-            raised if the requested file does not exist on disk
-        '''
-        if filename in cls.data:
-            return cls.data[filename]
-
-        filepath = cls._filepath(filename)
-
-        try:
-            cls.data[filename] = fileio.yml.load(filepath)
-            return cls.data[filename]
-
-        except OSError:
-            raise OSError("configuration does not exist: %s" % filepath)
-    # end _filedata
-
-    @classmethod
-    def _filepath(cls, filename):
-        '''
-        constructs the full file path when given either the
-        name of a file or a preference key
-        '''
-        filename = filename.split(".")[0] if "." in filename else filename
-        return os.path.join(PYFARM_ETC, filename + cls.extension)
-    # end _filepath
-
-    @classmethod
-    def _function(cls, key, mode):
-        if mode not in ('pre', 'post'):
-            raise ValueError("method must be either a pre or post")
-
-        function_name = "%s_" % mode + key.replace(".", "_").replace("-", "_")
-        function = getattr(cls, function_name, None)
-        return function if callable(function) else None
-    # end _getmethod
-
-    @classmethod
-    def get(cls, key):
-        if key in cls.data:
-            return cls.data[key]
-
-        # convert the incoming key to a function name
-        # in case there's some additional logic to run
-        function = cls._function(key, 'pre')
-        if function is not None:
-            result = function()
-            cls.data[key] = result
-            return cls.data[key]
-
-        # split the incoming key into the filename
-        # then using the remaining portion of the
-        # key to retrieve the data
-        split = key.split(".")
+    def get(cls, name, alt=None):
+        split = name.split(".")
         filename = split[0]
-        result = cls._filedata(filename)
-        keys = [filename]
 
-        # iterate over the last bit
-        # of the key and retrieve the data
-        for subkey in split[1:]:
-            keys.append(subkey)
-            try:
-                result = result[subkey]
-            except KeyError:
-                raise PreferenceKeyError(".".join(keys))
+        # load the underlying data if necessary, retrieve it from
+        # cace otherwise
+        if filename not in cls.DATA:
+            data = cls.DATA[filename] = Loader(filename)
+        else:
+            data = cls.DATA[filename]
 
-        function = cls._function(key, 'post')
-        cls.data[key] = function(result) if function is not None else result
-        return cls.data[key]
+        # simply return the data if the filename
+        # we found was the same as the key name
+        if filename == name:
+            return data
     # end get
 # end Preferences
-
-prefs = Preferences()
-expandpath = lambda path: expandvars(expanduser(path)).split(os.pathsep)
