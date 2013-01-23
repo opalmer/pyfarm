@@ -56,6 +56,7 @@ def requirements():
     ]
 
     versioned_requires = [
+        'sphinx>=1.1',
         'twisted>=11',
         'txJSON-RPC >0.3, <0.4',
         'psutil>=0.6.0',
