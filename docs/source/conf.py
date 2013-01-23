@@ -14,12 +14,14 @@
 import os
 import sys
 
-filename = os.path.abspath(__file__)
-cwd = os.path.dirname(filename)
-python_root = os.path.abspath(os.path.join(cwd, "..", "..", "lib", "python"))
-sys.path.insert(0, python_root)
+try:
+    import pyfarm
 
-import sqlalchemy
+except ImportError:
+    filename = os.path.abspath(__file__)
+    cwd = os.path.dirname(filename)
+    python_root = os.path.abspath(os.path.join(cwd, "..", "..", "lib", "python"))
+    sys.path.insert(0, python_root)
 
 # -- General configuration -----------------------------------------------------
 
