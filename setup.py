@@ -19,7 +19,21 @@
 import os
 import sys
 import setuptools
-from distutils.core import setup, DistutilsError
+from distutils.core import setup
+
+# ensure pyfarm itself can be imported and if
+# not add it to the path
+try:
+    import pyfarm
+
+except ImportError:
+    cwd = os.path.dirname(os.path.abspath(__file__))
+    root = os.path.join(cwd, 'lib', 'python')
+
+    if root not in sys.path:
+        sys.path.insert(0, root)
+
+from pyfarm import __version__
 
 PY_VERSION_INFO = sys.version_info
 PY_MAJOR, PY_MINOR, PY_MICRO = PY_VERSION_INFO[0:3]
@@ -40,23 +54,25 @@ def requirements():
         'PyYaml',
         'colorama',
     ]
+
     versioned_requires = [
-        'python>=2.5,python<=2.7',
-        'twisted>=11,twisted<=12',
-        'txJSON-RPC==0.3.0',
+        'twisted>=11',
+        'txJSON-RPC >0.3, <0.4',
         'psutil>=0.6.0',
         'netifaces>=0.8',
         'sqlalchemy>=0.7.0'
     ]
 
-    # determine if we need to install PyQt or PySide
-    try:
-        import PyQt4
-    except ImportError:
-        try:
-            import PySide
-        except ImportError:
-            unversioned_requires.append('PySide')
+    # NOTE: commenting this out for now since it's not as easy
+    #       as adding the code below
+#    # determine if we need to install PyQt or PySide
+#    try:
+#        import PyQt4
+#    except ImportError:
+#        try:
+#            import PySide
+#        except ImportError:
+#            unversioned_requires.append('PySide')
 
     try:
         import json
@@ -91,19 +107,17 @@ def requirements():
     return requires
 # end requirements
 
-def version():
-    from pyfarm import __version__
-    return ".".join(map(str, __version__))
-# end version
-
+libdir = os.path.join('lib', 'python')
 setup(
     name='pyfarm',
-    version=version(),
-    packages=setuptools.find_packages(),
+    version=".".join(map(str, __version__)),
+    package_dir={'' : libdir},
+    packages=setuptools.find_packages(libdir),
     setup_requires=requirements(),
     url='http://pyfarm.net',
     license='LGPL',
     author='Oliver Palmer',
     author_email='',
-    description=''
+    description='',
+    scripts=setuptools.findall('bin')
 )
