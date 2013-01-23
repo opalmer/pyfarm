@@ -36,6 +36,33 @@ PYFARM_ETC = os.environ.get('PYFARM_ETC') or \
 
 site.addsitedir(PYFARM_PYTHONROOT)
 
+# If we're building documentation we have to do a few things slightly
+# differently,  Since readthedocs.org can't always compile our
+# extensions for us we sometimes have to create a mocke module instead.
+if os.environ.get('READTHEDOCS', None) != 'True':
+    class Mock(object):
+        # do nothing methods
+        def __init__(self, *args, **kwargs): pass
+        def __call__(self, *args, **kwargs): return Mock()
+
+        @classmethod
+        def __getattr__(cls, name):
+            if name in ('__file__', '__path__'):
+                return '/dev/null'
+
+            elif name[0] == name[0].upper():
+                mockType = type(name, (), {})
+                mockType.__module__ = __name__
+                return mockType
+
+            else:
+                return Mock()
+        # end __getattr__
+    # end Mock
+
+    for module in ('yaml', ):
+        sys.modules.setdefault(module, Mock())
+
 # Attempt to import a few functions that may or
 # may not exist depending on the python version.
 # For those that do not create the missing objects.

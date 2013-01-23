@@ -51,9 +51,11 @@ def requirements():
         'zope.interface',
         'nose',
         'appdirs',
-        'PyYaml',
         'colorama',
     ]
+
+    if os.environ.get('READTHEDOCS', None) != 'True':
+        unversioned_requires.append('PyYaml')
 
     versioned_requires = [
         'sphinx>=1.1',
