@@ -39,7 +39,7 @@ site.addsitedir(PYFARM_PYTHONROOT)
 # If we're building documentation we have to do a few things slightly
 # differently,  Since readthedocs.org can't always compile our
 # extensions for us we sometimes have to create a mocke module instead.
-if os.environ.get('READTHEDOCS', None) != 'True':
+if os.environ.get('READTHEDOCS', None) == 'True':
     class Mock(object):
         # do nothing methods
         def __init__(self, *args, **kwargs): pass
