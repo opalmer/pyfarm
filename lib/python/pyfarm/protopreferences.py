@@ -46,7 +46,6 @@ class Loader(IterableUserDict):
 
         * :py:func:`appdirs.user_data_dir`
         * :py:func:`appdirs.site_data_dir`
-        * :py:func:`appdirs.site_data_dir`
 
     For PyFarm's configuration we look to py:attr:`pyfarm.PYFARM_ETC` which
     is constructed either off of $PYFARM_ETC from the environment or
