@@ -51,7 +51,7 @@ def requirements():
         'zope.interface',
         'nose',
         'appdirs',
-        'colorama',
+        'colorama'
     ]
 
     if os.environ.get('READTHEDOCS', None) != 'True':
@@ -61,7 +61,7 @@ def requirements():
         'sphinx>=1.1',
         'Jinja2>=2.3',
         'twisted>=11',
-        'txJSON-RPC >0.3, <0.4',
+        'txJSON-RPC<.4',
         'psutil>=0.6.0',
         'netifaces>=0.8',
         'sqlalchemy>=0.7.0'
