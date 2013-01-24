@@ -252,6 +252,3 @@ texinfo_documents = [
 # How to display URL addresses: 'footnote', 'no', or 'inline'.
 #texinfo_show_urls = 'footnote'
 
-# import the various modules required for building
-# the docs
-import txjsonrpc

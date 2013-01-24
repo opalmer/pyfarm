@@ -112,12 +112,15 @@ def requirements():
 # end requirements
 
 libdir = os.path.join('lib', 'python')
+requires = requirements()
+
 setup(
     name='pyfarm',
     version=".".join(map(str, __version__)),
     package_dir={'' : libdir},
     packages=setuptools.find_packages(libdir),
-    setup_requires=requirements(),
+    setup_requires=requires,
+    install_requires=requires,
     url='http://pyfarm.net',
     license='LGPL',
     author='Oliver Palmer',
