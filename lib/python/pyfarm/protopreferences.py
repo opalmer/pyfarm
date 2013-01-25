@@ -16,11 +16,16 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
+
+'''
+Preferences module responsible for loading and processing preference files.
+'''
+
 import os
 import pprint
 import appdirs
 from os.path import isfile, isdir
-from itertools import product
+from itertools import ifilter, product, imap
 
 import yaml
 try:
@@ -34,6 +39,23 @@ from pyfarm.logger import Logger
 logger = Logger(__name__)
 
 from UserDict import IterableUserDict
+
+NOTFOUND = object()
+
+class PreferenceLoadError(OSError):
+    '''
+    raised whenever we have trouble loading a preference file
+    '''
+    pass
+# end PreferenceLoadError
+
+
+class EmptyPreferenceError(ValueError):
+    '''
+    raised when a preference file we attempted to load does not contain data.
+    '''
+    pass
+# end EmptyPreferenceError
 
 
 class Loader(IterableUserDict):
@@ -54,28 +76,20 @@ class Loader(IterableUserDict):
     :param string filename:
         The name of the file to load without the extension.
 
-    :param list data:
-        If provided then this value will be use to populate self.data
-        and self._data.  Please note that :py:class:`Loader` expects
-        the data to be a list of tuples:
-            >>> [('fileA.yml', {'A' : True}), ('fileB.yml', {'B' : True})]
+    :param boolean force:
+        if True then force reload the preference file(s)
 
-    :exception OSError:
-        raised if we failed to find any preference files by the given name
-
-    :exception ValueError:
-        raised if preference files were found but did not contain any
-        data
+    :exception PreferenceLoadError:
+        Raised if we failed to find any preference files by the given name or
+        if we failed to find any preference directories
     '''
-    DATA = {}
+    DATA = {}     # contains previous data loaded in a formatted form
+    FILEDATA = {} # contains specific data per file
 
     # Configuration data which contains the
     # directories where we will load user defined
     # preferences from
-    config = appdirs.AppDirs(
-        "pyfarm",
-        "Oliver Palmer"
-    )
+    config = appdirs.AppDirs("pyfarm", "pyfarmdev")
 
     # List of directories where we will search for preferences.  As an
     # example the default configuration will list three entries:
@@ -88,8 +102,11 @@ class Loader(IterableUserDict):
         "default"
     )
 
-    # all possible root directors
-    dirnames = (
+    # All possible root directors where we should expect to find
+    # preferences.  Please note that we do not filter this list
+    # here since a long running process may later have access to a
+    # missing directory.
+    configdirs = (
         config.user_data_dir,
         config.site_data_dir,
         PYFARM_ETC
@@ -98,176 +115,182 @@ class Loader(IterableUserDict):
     extension = "%syml" % os.path.extsep
     joinargs = lambda self, items: os.path.join(*items)
 
-    def __init__(self, filename=None, data=None):
-        # filename setup
-        if isinstance(filename, (str, unicode)):
-            self.filename = "%s%s" % (filename, self.extension)
+    def __init__(self, filename, force=False):
+        data = {}
+
+        # ensure we're being provided a string
+        if not isinstance(filename, (str, unicode)):
+            raise TypeError("filename must be a string")
         else:
-            self.filename = None
+            filename = "%s%s" % (filename, self.extension)
 
-        if self.filename is not None and data is None:
-            # if the requested file name has not been loaded
-            # yet the consturct the data
-            if self.filename not in self.DATA:
-                tofilepath = lambda root: os.path.join(root, self.filename)
+        # create a list of possible configuration directories
+        dirnames = []
+        for version in self.versions:
+            for dirname in self.configdirs:
+                path = os.path.join(dirname, version)
+                dirnames.append(path)
 
-                # Construct a complete list of tuple containing all combinations
-                # of directory names and versions.  After doing to filter
-                # that list to directories which actually exist.
-                products = product(self.dirnames, self.versions)
-                preference_dirs = filter(isdir, map(self.joinargs, products))
+        # Filter the directory list down to only places
+        # which actually exist.  Raise an ex
+        self.dirnames = filter(isdir, dirnames)
+        if not self.dirnames:
+            msg = "no preference directories were found after "
+            msg += "trying %s" % pprint.pformat(dirnames)
+            raise PreferenceLoadError(msg)
 
-                # Now construct a list of possible preference files and
-                # filter them into a tuple of files which actually exists.
-                all_preference_files = map(tofilepath, preference_dirs)
-                filenames = tuple(filter(isfile, all_preference_files))
+        # now create a list of possible files
+        joinfile = lambda root : os.path.join(root, filename)
+        all_filenames = map(joinfile, self.dirnames)
+        filenames = filter(isfile, all_filenames)
 
-                # raise an exception if we did not find any files by that name
-                if not filenames:
-                    args = (self.filename, pprint.pformat(preference_dirs))
-                    raise OSError("did not find %s in %s" % args)
+        if not filenames:
+            msg = "failed to find any preference files after "
+            msg += "trying %s" % pprint.pformat(all_filenames)
+            raise PreferenceLoadError(msg)
 
-                # iterate over each file found and update our
-                # current data with data from the files
-                data = []
-                for filename in filenames:
-                    with open(filename, 'r') as stream:
-                        logger.debug("loading %s" % filename)
-                        data.append((
-                            filename, yaml.load(stream, Loader=YAMLLoader)
-                        ))
+        self.filenames = []
+        for filepath in reversed(filenames):
+            try:
+                yamldata = self.load(filepath, force=force)
+                self.validate(filepath=filepath, filedata=yamldata)
 
-                if not data:
-                    raise ValueError(
-                        "preferences files not populated for %s" % self.filename
-                    )
+            except EmptyPreferenceError: # skip empty files
+                logger.warning("%s does not contain data" % filepath)
+                continue
 
-                self._data = self.DATA[self.filename] = tuple(reversed(data))
+            except Exception, error: # relog any unhandled exceptions
+                logger.error("error while loading %s: %s" % (filepath, error))
+                continue
 
-            # if we've already pull the preferences for the provided
-            # filename then just set the data
-            else:
-                self._data = self.DATA[self.filename]
+            # if the preference loaded then append
+            # it to our filename list and update our internal data
+            self.filenames.append(filepath)
+            data.update(yamldata)
 
-        # full data was provided
-        elif data is not None:
-            self._data = tuple(data) if isinstance(data, (list, set)) else data
+        # if we still don't have any files in self.filenames
+        # then we have a problem and should raise and error
+        if not data:
+            raise PreferenceLoadError(
+                "failed to find or load data for %s" % filename
+            )
 
-        # construct the resulting data
-        self.reloadata()
-
-        IterableUserDict.__init__(self, self.data)
+        IterableUserDict.__init__(self, data)
+        self.validate()
     # end __init__
 
-    def reloadata(self):
+    @classmethod
+    def load(cls, filepath, force=False):
         '''
-        Reloads the internal data attribute with data from _data.
-        '''
-        self.data = {}
-        for filepath, data in self._data:
-            self.data.update(data)
-    # end initdata
+        Loads data for the requested file path or returns existing data if the
+        file has already been loaded once.
 
-    def where(self, key):
+        :exception EmptyPreferenceError:
+            raised if the the preference file that was loaded is empty
+        '''
+        if force or filepath not in cls.FILEDATA:
+            # open a stream and load the data but raise and exception
+            # if we did not find any data
+            with open(filepath, 'r') as stream:
+                logger.info("loading %s" % filepath)
+                cls.FILEDATA[filepath] = yaml.load(stream, Loader=YAMLLoader)
+
+                if not cls.FILEDATA[filepath]:
+                    raise EmptyPreferenceError(
+                        "%s does not contain data" % filepath
+                    )
+
+        return cls.FILEDATA[filepath]
+    # end load
+
+    def where(self, key, all=False):
         '''
         Returns the filename where the preference is defined.  Depending
         on the implementation of the final preference object this
         method may be overridden in a subclass to provide more accurate
         results.
 
-        >>> l1 = Loader(data=[("fileA.yml", {"A" : True, "B" : True},)])
-        >>> assert l1.where("A") == "fileA.yml"
-        >>> assert l1.where("B") == "fileA.yml"
-
         :param string key:
             the string we're trying to find the location for
+
+        :param boolean all:
+            if True find all locations the key is defined in
 
         :exception KeyError:
             raised if the key we are requesting does not exist in self.data
 
+        :exception ValueError:
+            raised if we could not find the original file which
+            defined the requested key
+
         :returns:
-            returns the filename where the preference is defined
+            returns the filename where the key is defined or a list
+            of files where the key is defined if all was True
         '''
         if key not in self:
-            raise KeyError("key %s does not exist" % key)
+            raise KeyError("key %s does not exist" % repr(key))
+
+        # iterate over all files used to create this
+        # loader object and find the first one which has
+        # data matching the current data
+        results = []
+
+        for filename in self.filenames:
+            if not all and self[key] == self.FILEDATA[filename].get(key, NOTFOUND):
+                return filename
+
+            elif all and key in self.FILEDATA[filename]:
+                results.append(filename)
+
+        if not results:
+            raise ValueError(
+                "failed to determine where '%s' came from" % repr(key)
+            )
         else:
-            current_value = self[key]
-            for filename, data in self._data:
-                if key in data and data[key] == current_value:
-                    return filename
+            results.reverse()
+            return results
     # end where
 
-    def __add__(self, other):
+    def validate(self, filepath=None, filedata=None):
         '''
-        Adds two :py:class:`Loader` objects together, so long as they have not
-        loaded the same filename, and returns a new object.
+        Validation method which is run for each file loaded and after all
+        files have loaded.  By default this method does nothing.
 
-        >>> l1 = Loader(data=[("fileA.yml", {"A" : True, "C" : True},)])
-        >>> l2 = Loader(data=[("fileB.yml", {"A" : False, "B" : None},)])
-        >>> l3 = l1 + l2
-        >>> assert l3.get('A') == False
-        >>> assert l3.filename is None
-        >>> assert l3.where("A") == "fileB.yml"
-        >>> assert l3.where("B") == "fileB.yml"
-        >>> assert l3.where("C") == "fileA.yml"
+        :param string filepath:
+            the filepath of the current file being loaded
 
-        :exception ValueError:
-            raised if the two objects have the same filename
-
-        :exception TypeError:
-            raised of the other object is not a :py:class:`Loader` object
+        :param dictionary filedata:
+            the data of the file currently being loaded
         '''
-        if not isinstance(other, Loader):
-            raise TypeError("other object must be a loader")
-
-        if self.filename is not None and self.filename != other.filename:
-            raise ValueError("will not add two objects with the same filename")
-
-        new_data = list(self._data)
-        new_data.extend(list(other._data))
-        return Loader(data=new_data)
-    # end __add__
-
-    def __iadd__(self, other):
-        '''
-        Adds another :py:class:`Loader` to this object so long as they have
-        not loaded the same filename.
-
-        :exception ValueError:
-            raised if the two objects have the same filename
-
-        :exception TypeError:
-            raised of the other object is not a :py:class:`Loader` object
-        '''
-        if not isinstance(other, Loader):
-            raise TypeError("other object must be a loader")
-
-        if self.filename is not None and self.filename != other.filename:
-            raise ValueError("will not add two objects with the same filename")
-
-        new_data = list(self._data)
-        new_data.extend(other._data)
-        self._data = tuple(new_data)
-        self.reloadata()
-    # end __iadd__
+        pass
+    # end validation
 # end Loader
 
 
 class Preferences(object):
+    '''
+    The main preferences object.
+    '''
     DATA = {}
 
-    def __init__(self):
-        pass
+    def __init__(self, prefix=None):
+        self.prefix = '' if prefix is None else prefix
+    # end __init__
 
+    # TODO: get preference value from pre/post functions
+    # TODO: add support for extended keys ex. somesubdir/filename.a.b.c
     @classmethod
-    def get(cls, name, alt=None):
+    def get(cls, name, force=False):
+        '''
+        Retrieves a requested preference and loads
+        '''
         split = name.split(".")
         filename = split[0]
 
         # load the underlying data if necessary, retrieve it from
         # cace otherwise
         if filename not in cls.DATA:
-            data = cls.DATA[filename] = Loader(filename)
+            data = cls.DATA[filename] = Loader(filename, force=force)
         else:
             data = cls.DATA[filename]
 
@@ -277,3 +300,9 @@ class Preferences(object):
             return data
     # end get
 # end Preferences
+
+
+if __name__ == '__main__':
+    l = Loader('enums')
+    print l.get('SoftwareType')
+    print "where, ", l.where('SoftwareType', all=True), l.where('SoftwareType')
