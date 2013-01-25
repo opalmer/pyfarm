@@ -27,7 +27,8 @@ from pyfarm import PYFARM_ETC
 from pyfarm.datatypes.backports import namedtuple
 from pyfarm.datatypes.objects import ReadOnlyDict
 
-ENUM_DATA = yml.load(os.path.join(PYFARM_ETC, "enums.yml"))
+# TODO: replace with new preference loader
+#ENUM_DATA = yml.load(os.path.join(PYFARM_ETC, "enums.yml"))
 
 def notimplemented(name, module='psutil'):
     msg = "this version of %s does not implement %s(), " % (module, name)
