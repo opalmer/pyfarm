@@ -33,7 +33,7 @@ except ImportError:
     if root not in sys.path:
         sys.path.insert(0, root)
 
-from pyfarm import __version__
+from pyfarm import __versionstr__
 
 PY_VERSION_INFO = sys.version_info
 PY_MAJOR, PY_MINOR, PY_MICRO = PY_VERSION_INFO[0:3]
@@ -116,7 +116,7 @@ requires = requirements()
 
 setup(
     name='pyfarm',
-    version=".".join(map(str, __version__)),
+    version=__versionstr__,
     package_dir={'' : libdir},
     packages=setuptools.find_packages(libdir),
     setup_requires=requires,
