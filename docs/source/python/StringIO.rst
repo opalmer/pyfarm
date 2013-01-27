@@ -1,3 +1,4 @@
+:orphan:
 .. This file is part of PyFarm.
 .. Copyright (C) 2008-2013 Oliver Palmer
 ..
