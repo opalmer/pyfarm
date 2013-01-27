@@ -16,6 +16,6 @@
 .. along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
 Module `StringIO`
--------------
+-----------------
 .. automodule:: StringIO
     :members:
