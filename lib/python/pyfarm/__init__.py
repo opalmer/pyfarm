@@ -27,6 +27,7 @@ import sys
 import site
 
 __version__ = (0, 4, 0)
+__versionstr__ = ".".join(__version__)
 
 PYFARM_PACKAGE = os.path.dirname(os.path.abspath(__file__))
 PYFARM_ROOT = os.path.abspath(os.path.join(PYFARM_PACKAGE, "..", "..", ".."))
