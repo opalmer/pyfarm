@@ -32,56 +32,6 @@ from pyfarm.logger import Logger
 
 logger = Logger(__name__)
 
-class yml:
-    CACHE = {}
-
-    @classmethod
-    def load(cls, path, force=False):
-        '''
-        loads data from the provided path.
-
-        :param boolean force:
-            if True the reload the data from disk
-        '''
-        abspath = os.path.abspath(path)
-
-        if force or abspath not in cls.CACHE:
-            with open(path, 'r') as stream:
-                cls.CACHE[abspath] = yaml.load(stream, Loader=Loader)
-                logger.debug("loaded %s" % abspath)
-
-        return cls.CACHE[abspath]
-    # end load
-
-    @classmethod
-    def dump(cls, data, path=None):
-        '''
-        Dumps data to the requested path or a temp
-        file if none is provided
-
-        :param data:
-            the data to dump
-
-        :param string path:
-            the path to write to or None for a temp path
-
-        :rtype string:
-            returns the location the data was dumped to
-        '''
-        if path is None:
-            tempstream = tempfile.NamedTemporaryFile()
-            path = tempstream.name
-            tempstream.close()
-
-        with open(path, 'w') as stream:
-            yaml.dump(data, stream, Dumper=Dumper)
-            logger.debug("dumped %s" % path)
-
-            return path
-    # end dump
-# end yml
-
-
 class module:
     CACHE = {}
 
