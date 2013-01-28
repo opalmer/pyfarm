@@ -4,7 +4,7 @@
     This documentation is not a part of PyFarm, it is built here for linking
     and reference purposes.
 
-Module `yaml`
--------------
-.. automodule:: yaml
+Module `tempfile`
+-----------------
+.. automodule:: tempfile
     :members:
