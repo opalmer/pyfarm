@@ -18,18 +18,17 @@
 #
 
 '''
-Internal yaml module meant to wrap around :py:func:`yaml.load`
-and :py:func:`yaml.dump`
+Internal yaml module which wraps around :py:func:`yaml.load` and
+:py:func:`yaml.dump`.
 '''
 
 from __future__ import with_statement
 
 import os
-import tempfile
 from StringIO import StringIO
 
+from pyfarm.utility import tempfile
 from pyfarm.logger import Logger
-logger = Logger(__name__)
 
 # get the fastest loader
 try:
@@ -37,15 +36,11 @@ try:
 except ImportError:
     from yaml import Loader
 
-# get the fastest dumper
-try:
-    from yaml import CDumper as Dumper
-except ImportError:
-    from yaml import Dumper
-
 # get the underlying functions we'll use for loading
 # and dumping
 from yaml import load as _load, dump as _dump
+
+logger = Logger(__name__)
 
 def load(stream):
     '''
@@ -55,6 +50,9 @@ def load(stream):
     :type stream: str or :py:class:`StringIO.StringIO` or file
     :param stream:
         The object or path to load data from
+
+    :exception TypeError:
+        raised if we get an unexpected type for `stream`
     '''
     if isinstance(stream, basestring) and os.path.isfile(stream):
         logger.info("loading yaml from %s" % stream)
@@ -74,14 +72,56 @@ def load(stream):
         return _load(stream, Loader=Loader)
 
     finally:
-        if hasattr(stream, 'close') and not stream.closed:
+        if callable(getattr(stream, 'close', None)):
             stream.close()
 # end load
 
-def dump():
-    pass
+def dump(data, stream=None, pretty=False):
+    '''
+    Dumps data to the requested stream if provided or a temporary file.
+
+    :param data:
+        the data we are attempting to dump
+
+    :type stream: str or :py:class:`StringIO.StringIO` or file
+    :param stream:
+        the
+
+    :param boolean pretty:
+        if True then dump the data in a more human readable form
+
+    :returns:
+        returns the path or object the data was dumped to
+    '''
+    if stream is None:
+        stream = tempfile(suffix='.yml')
+        return_object = stream.name
+
+    elif isinstance(stream, basestring):
+        stream = open(stream, 'w')
+        return_object = stream.name
+
+    else:
+        return_object = stream
+
+    # construct arguments to pass along
+    # to the yaml dumper
+    args = [data, stream]
+    if pretty:
+        kwargs = {
+            'default_flow_style' : False,
+            'indent' : 4
+        }
+    else:
+        kwargs = {}
+
+    try:
+        logger.debug("dumping yaml data to %s" % return_object)
+        _dump(*args, **kwargs)
+        return return_object
+
+    finally:
+        closeable = callable(getattr(stream, 'close', None))
+        if return_object is not stream and closeable:
+            stream.close()
 # end dump
-
-
-if __name__ == '__main__':
-    pass
