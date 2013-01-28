@@ -22,10 +22,13 @@ of PyFarm.
 '''
 
 import os
+import sys
 import getpass
 from itertools import ifilter, imap
+from tempfile import NamedTemporaryFile
 from os.path import exists, expanduser, expandvars
 
+PyMajor, PyMinor, PyMicro = sys.version_info[0:3]
 
 def expandPath(path):
     '''expands all paths of a path'''
@@ -102,3 +105,34 @@ def user():
     except ImportError:
         return getpass.getuser()
 # end user
+
+def tempfile(prefix=None, suffix=None, delete=False):
+    '''
+    A wrapper around :py:class:`tempfile.NamedTemporaryFile` which ensures that
+    Python versions before 2.6 will respect the delete keyword.
+
+    :param boolean delete:
+        if True then delete the file after closing
+
+    :returns:
+        returns a temp file object
+    '''
+    # construct arguments to pass to the constructor of
+    # NamedTemporaryFile
+    kwargs = {
+        'prefix' : 'pyfarm-' if prefix is None else prefix,
+        'suffix' : suffix if suffix is not None else ''
+    }
+
+    if (PyMajor, PyMicro) >= (2, 6):
+        kwargs['delete'] = delete
+        return NamedTemporaryFile(**kwargs)
+
+    elif delete:
+        return NamedTemporaryFile(**kwargs)
+
+    else:
+        _stream = NamedTemporaryFile(**kwargs)
+        _stream.close()
+        return open(_stream.name, 'w')
+# end tempfile
