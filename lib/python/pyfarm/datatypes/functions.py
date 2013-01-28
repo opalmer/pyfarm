@@ -22,8 +22,7 @@ functions for use within the datatypes module
 
 import os
 
-from pyfarm.fileio import yml
-from pyfarm import PYFARM_ETC
+from pyfarm.yml import load
 from pyfarm.datatypes.backports import namedtuple
 from pyfarm.datatypes.objects import ReadOnlyDict
 
