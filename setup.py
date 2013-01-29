@@ -21,17 +21,12 @@ import sys
 import setuptools
 from distutils.core import setup
 
-# ensure pyfarm itself can be imported and if
-# not add it to the path
-try:
-    import pyfarm
+os.environ['PYFARM_SETUP_RUNNING'] = 'True'
 
-except ImportError:
-    cwd = os.path.dirname(os.path.abspath(__file__))
-    root = os.path.join(cwd, 'lib', 'python')
-
-    if root not in sys.path:
-        sys.path.insert(0, root)
+cwd = os.path.dirname(os.path.abspath(__file__))
+root = os.path.join(cwd, 'lib', 'python')
+if root not in sys.path:
+    sys.path.insert(0, root)
 
 from pyfarm import __version__
 
