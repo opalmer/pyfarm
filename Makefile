@@ -51,10 +51,12 @@ test.%:
 	@echo "running $(SCRIPT)"
 	@env PYTHONPATH=$(PYTHONPATH) $(PYTHON) $(SCRIPT)
 
-docs.%: PYTHONPATH=lib/python
+setup.%: TARGET=$(subst setup.,,$@)
+setup.%:
+	python setup.py $(TARGET)
+
 docs.%: TARGET=$(subst docs.,,$@)
-docs.%: clean
-docs.%:
+docs.%: clean setup.install
 	$(MAKE) -s -C docs $(TARGET)
 
 tests: test.preferences
