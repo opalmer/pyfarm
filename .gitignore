@@ -16,3 +16,5 @@ dev*
 *.bat
 *.cmd
 *prototyping*
+*dist*
+*egg*
