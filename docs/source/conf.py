@@ -11,18 +11,6 @@
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 
-import os
-import sys
-
-try:
-    import pyfarm
-
-except ImportError:
-    filename = os.path.abspath(__file__)
-    cwd = os.path.dirname(filename)
-    python_root = os.path.abspath(os.path.join(cwd, "..", "..", "lib", "python"))
-    sys.path.insert(0, python_root)
-
 # -- General configuration -----------------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.
