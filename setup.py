@@ -35,6 +35,7 @@ except ImportError:
 
 from pyfarm import __version__
 
+ETC_DIRS = ('etc', os.path.join('etc', 'default'))
 PY_VERSION_INFO = sys.version_info
 PY_MAJOR, PY_MINOR, PY_MICRO = PY_VERSION_INFO[0:3]
 
@@ -101,16 +102,20 @@ def requirements():
     if sys.platform.startswith("win"):
         unversioned_requires.append("pywin32")
 
-    # add a couple of additional requirements for Python2.6
-    if PY_MINOR == 6:
-
-        unversioned_requires.extend(['ordereddict', 'argparse'])
-
     requires.extend(versioned_requires)
     requires.extend(unversioned_requires)
 
     return requires
 # end requirements
+
+def getetc():
+    '''returns the files to copy over from etc/'''
+    results = []
+    for dirname in ETC_DIRS:
+        results.append((dirname, setuptools.findall(dirname)))
+
+    return results
+# end getetc
 
 libdir = os.path.join('lib', 'python')
 requires = requirements()
@@ -119,6 +124,7 @@ setup(
     name='pyfarm',
     version=".".join(map(str, __version__)),
     package_dir={'' : libdir},
+    data_files=getetc(),
     packages=setuptools.find_packages(libdir),
     setup_requires=requires,
     install_requires=requires,
