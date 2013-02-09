@@ -16,47 +16,24 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
-
-'''
-Preferences module responsible for loading and processing preference files.
-'''
-
 import os
 import pprint
-import appdirs
-from os.path import isfile, isdir
+from os.path import isdir, isfile
+from UserDict import IterableUserDict
 
+import appdirs
 import yaml
+
 try:
     from yaml import CLoader as YAMLLoader
 except ImportError:
     from yaml import Loader as YAMLLoader
 
 from pyfarm import __version__, PYFARM_ETC
+from pyfarm.preferences.errors import EmptyPreferenceError, PreferenceLoadError
+
 from pyfarm.logger import Logger
-
 logger = Logger(__name__)
-
-from UserDict import IterableUserDict
-
-NOTFOUND = object()
-NOTSET = object()
-
-class PreferenceLoadError(OSError):
-    '''
-    raised whenever we have trouble loading a preference file
-    '''
-    pass
-# end PreferenceLoadError
-
-
-class EmptyPreferenceError(ValueError):
-    '''
-    raised when a preference file we attempted to load does not contain data.
-    '''
-    pass
-# end EmptyPreferenceError
-
 
 class Loader(IterableUserDict):
     '''
@@ -316,84 +293,3 @@ class Loader(IterableUserDict):
             return failobj
     # end get
 # end Loader
-
-
-class Preferences(object):
-    '''
-    The main preferences object.
-    '''
-    _data = {}
-
-    def __init__(self, prefix=None):
-        self.prefix = '' if prefix is None else prefix
-    # end __init__
-
-    @classmethod
-    def _get(cls, key, failobj=NOTSET, force=False, return_loader=False):
-        '''see :meth:`get` for this classmethod's documentation'''
-        # before we do anything check to see if the requested key
-        # is something that maps to a callable function
-        split = key.split(".")
-        filename = split[0]
-        key_uri = ".".join(split[1:])
-
-        # load the underlying data if necessary, retrieve it from
-        # cace otherwise
-        if filename not in cls._data:
-            data = cls._data[filename] = Loader(filename, force=force)
-        else:
-            data = cls._data[filename]
-
-        # simply return the data if the filename
-        # we found was the same as the key key
-        if filename != key:
-            try:
-                data = data[key_uri]
-
-            except KeyError:
-                if failobj is not NOTSET:
-                    return failobj
-                raise
-        else:
-            return data if return_loader else data.data.copy()
-
-        return data
-    # end _get
-
-    # TODO: get preference value from pre/post functions
-    # TODO: add support for extended keys ex. somesubdir/filename.a.b.c
-    @classmethod
-    def get(cls, key, failobj=NOTSET, force=False, return_loader=False):
-        '''
-        Base classmetod which is used for the sole purpose of data
-        retrieval from the yaml file(s).
-
-        :param failobj:
-           the object to return in the even of failure, if this value is
-           not provided the original exception will be raised
-
-        :param boolean force:
-           if True then force reload the underlying file(s)
-
-        :param boolean return_loader:
-           if True and the key requested happened to be a preference file
-           name then return the loader instead of a copy of the loader data
-
-        :exception KeyError:
-           This behaves slightly differently from :meth:`dict.get` in that
-           unless failobj is set it will reraise the original exception
-        '''
-        data = cls._get(
-            key, failobj=failobj, force=force, return_loader=return_loader
-        )
-
-        return data
-    # end get
-# end Preferences
-
-
-if __name__ == '__main__':
-    p = Preferences()
-    print p.get('foo/enums.SoftwareType')
-    # print l.get('SoftwareType.EXCLUDE')
-    # print "where, ", l.where('SoftwareType', all=True), l.where('SoftwareType')
