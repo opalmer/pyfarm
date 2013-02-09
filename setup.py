@@ -32,7 +32,7 @@ if root not in sys.path:
 
 from pyfarm import __version__
 
-ETC_DIRS = ('etc', os.path.join('etc', 'default'))
+ETC_DIRS = (os.path.join('etc', 'default'), )
 PY_VERSION_INFO = sys.version_info
 PY_MAJOR, PY_MINOR, PY_MICRO = PY_VERSION_INFO[0:3]
 
