@@ -30,9 +30,10 @@ except ImportError:
     from yaml import Loader as YAMLLoader
 
 from pyfarm import __version__, PYFARM_ETC
-from pyfarm.preferences.errors import EmptyPreferenceError, PreferenceLoadError
-
 from pyfarm.logger import Logger
+from pyfarm.preferences.errors import EmptyPreferenceError, PreferenceLoadError
+from pyfarm.preferences.enums import NOTFOUND
+
 logger = Logger(__name__)
 
 class Loader(IterableUserDict):

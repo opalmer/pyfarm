@@ -16,18 +16,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
-'''errors that preferences can raise'''
+'''simple objects used for comparison'''
 
-
-class PreferenceLoadError(OSError):
-    '''raised whenever we have trouble loading a preference file'''
-    pass
-# end PreferenceLoadError
-
-
-class EmptyPreferenceError(ValueError):
-    '''
-    raised when a preference file we attempted to load does not contain data.
-    '''
-    pass
-# end EmptyPreferenceError
+NOTFOUND = object()
+NOTSET = object()
