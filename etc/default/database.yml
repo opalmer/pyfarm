@@ -1,4 +1,3 @@
-#
 # This file is part of PyFarm.
 # Copyright (C) 2008-2013 Oliver Palmer
 #
@@ -15,11 +14,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
-# Full definition of a hosted database.  Hosted databases are currently
-# the only type of database that is fully supported by PyFarm.  For more
-# information on the value(s) to use in the engine key please see this page:
-# http://docs.sqlalchemy.org/en/latest/core/engines.html#supported-databases
-#
+
 # NOTE: not all values are required to be populated, port and driver for example
 #       will be defined my sqlalchemy if they are not provided.
 database:
@@ -31,15 +26,26 @@ database:
   engine: # type of engine (mysql, postgresql, etc)
   driver: # specifies the python module to connect with
 
+db-vmdb:
+  host: localhost
+  port: 9999
+  user: someuser
+  pass: somepass
+  name: pyfarm
+  driver: psycopg2ct
+  engine: psycopg2
+
 # example sqlite db to be used for local testing *only*
 db-sqlite:
-  host: ":memory:"
+  host: /tmp/pyfarm.sql
+  host: ':memory:'
   engine: sqlite
 
 setup:
   # list of possible configs to use, first db which we can connect without
   # raising an error will be be used in all future connections
-  config:
-    - database             # name of the configuration to use
+  configs:
+    default:
+     - db-sqlite             # name of the configuration to use
   rebuild: false           # if true then we drop any existing tables
   close-connections: true  # if true we attempt to close every connection made

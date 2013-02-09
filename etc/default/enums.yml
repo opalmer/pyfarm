@@ -1,40 +1,56 @@
-## Defines enum objects which are loaded and used internally within
-## PyFarm.  Note, integer values used within this files correspond with
-## values used directly in a database and inside of PyFarm's code.  Values
-## represented here are mainly for reference but could be used to build
-## other enums as well.
+# This file is part of PyFarm.
+# Copyright (C) 2008-2013 Oliver Palmer
 #
-#Software:
-#  MAYA: 0
-#  HOUDINI: 1
-#  NUKE: 2
-#  BLENDER: 3
-#  VRAY: 4
+# PyFarm is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 #
+# PyFarm is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
+
+# Defines enum objects which are loaded and used internally within
+# PyFarm.  Note, integer values used within this files correspond with
+# values used directly in a database and inside of PyFarm's code.  Values
+# represented here are mainly for reference but could be used to build
+# other enums as well.
+
+Software:
+  MAYA: 0
+  HOUDINI: 1
+  NUKE: 2
+  BLENDER: 3
+  VRAY: 4
+
 SoftwareType:
- INCLUDE: 5
- EXCLUDE: 6
-#
-#State:
-#  PAUSED: 7
-#  BLOCKED: 8
-#  QUEUED: 9
-#  ASSIGN: 10
-#  RUNNING: 11
-#  DONE: 12
-#  FAILED: 13
-#
-#EnvMergeMode:
-#  UPDATE: 14
-#  REPLACE: 15
-#  FILL: NONE
-#
-#OperatingSystem:
-#  LINUX: 17
-#  WINDOWS: 18
-#  MAC: 19
-#  OTHER: 20
-#
-#DependencyType:
-#  F2F: 21
-#  J2J: 22
+  INCLUDE: 5
+  EXCLUDE: 6
+
+State:
+  PAUSED: 7
+  BLOCKED: 8
+  QUEUED: 9
+  ASSIGN: 10
+  RUNNING: 11
+  DONE: 12
+  FAILED: 13
+
+EnvMergeMode:
+  UPDATE: 14
+  REPLACE: 15
+  FILL: 16
+
+OperatingSystem:
+  LINUX: 17
+  WINDOWS: 18
+  MAC: 19
+  OTHER: 20
+
+DependencyType:
+  F2F: 21
+  J2J: 22
