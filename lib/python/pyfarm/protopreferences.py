@@ -25,7 +25,6 @@ import os
 import pprint
 import appdirs
 from os.path import isfile, isdir
-from itertools import ifilter, product, imap
 
 import yaml
 try:
@@ -41,6 +40,7 @@ logger = Logger(__name__)
 from UserDict import IterableUserDict
 
 NOTFOUND = object()
+NOTSET = object()
 
 class PreferenceLoadError(OSError):
     '''
@@ -117,12 +117,15 @@ class Loader(IterableUserDict):
 
     def __init__(self, filename, force=False):
         data = {}
+        self.name = filename
 
         # ensure we're being provided a string
         if not isinstance(filename, (str, unicode)):
             raise TypeError("filename must be a string")
         else:
             filename = "%s%s" % (filename, self.extension)
+
+        self.filename = filename
 
         # create a list of possible configuration directories
         dirnames = []
@@ -178,6 +181,43 @@ class Loader(IterableUserDict):
         IterableUserDict.__init__(self, data)
         self.validate()
     # end __init__
+
+    def __repr__(self):
+        values = [
+            "%s=%s" % (key, repr(value)) for key, value in self.iteritems()
+        ]
+        return "%s(%s)" % (self.__class__.__name__, ", ".join(values))
+    # end __repr__
+
+    def __getitem__(self, item):
+        '''
+        override of :meth:`IterableUserDict.__getitem__` that allows for
+        uri access
+        '''
+        try:
+            return IterableUserDict.__getitem__(self, item)
+        except KeyError:
+            # if a sep was not provided then we should reraise
+            # the exception
+            if "." not in item:
+                raise
+            else:
+                # otherwise iterate over the incoming data and
+                # use each key to retrieve the data we need but
+                # don't catch exceptions
+                data = self.data
+                visisted = []
+                for entry in item.split("."):
+                    visisted.append(entry)
+                    try:
+                        data = data[entry]
+                    except KeyError:
+                        args = (".".join(visisted), self.filenames)
+                        msg = "failed to find %s in %s" % args
+                        raise KeyError(msg)
+
+                return data
+    # end __getitem__
 
     @classmethod
     def load(cls, filepath, force=False):
@@ -264,6 +304,17 @@ class Loader(IterableUserDict):
         '''
         pass
     # end validation
+
+    def get(self, key, failobj=None):
+        '''
+        override of :meth:`IterableUserDict.get` that allows for
+        uri access
+        '''
+        try:
+            return self.__getitem__(key)
+        except KeyError:
+            return failobj
+    # end get
 # end Loader
 
 
@@ -271,38 +322,78 @@ class Preferences(object):
     '''
     The main preferences object.
     '''
-    DATA = {}
+    _data = {}
 
     def __init__(self, prefix=None):
         self.prefix = '' if prefix is None else prefix
     # end __init__
 
-    # TODO: get preference value from pre/post functions
-    # TODO: add support for extended keys ex. somesubdir/filename.a.b.c
     @classmethod
-    def get(cls, name, force=False):
-        '''
-        Retrieves a requested preference and loads
-        '''
-        split = name.split(".")
+    def _get(cls, key, failobj=NOTSET, force=False, return_loader=False):
+        '''see :meth:`get` for this classmethod's documentation'''
+        # before we do anything check to see if the requested key
+        # is something that maps to a callable function
+        split = key.split(".")
         filename = split[0]
+        key_uri = ".".join(split[1:])
 
         # load the underlying data if necessary, retrieve it from
         # cace otherwise
-        if filename not in cls.DATA:
-            data = cls.DATA[filename] = Loader(filename, force=force)
+        if filename not in cls._data:
+            data = cls._data[filename] = Loader(filename, force=force)
         else:
-            data = cls.DATA[filename]
+            data = cls._data[filename]
 
         # simply return the data if the filename
-        # we found was the same as the key name
-        if filename == name:
-            return data
+        # we found was the same as the key key
+        if filename != key:
+            try:
+                data = data[key_uri]
+
+            except KeyError:
+                if failobj is not NOTSET:
+                    return failobj
+                raise
+        else:
+            return data if return_loader else data.data.copy()
+
+        return data
+    # end _get
+
+    # TODO: get preference value from pre/post functions
+    # TODO: add support for extended keys ex. somesubdir/filename.a.b.c
+    @classmethod
+    def get(cls, key, failobj=NOTSET, force=False, return_loader=False):
+        '''
+        Base classmetod which is used for the sole purpose of data
+        retrieval from the yaml file(s).
+
+        :param failobj:
+           the object to return in the even of failure, if this value is
+           not provided the original exception will be raised
+
+        :param boolean force:
+           if True then force reload the underlying file(s)
+
+        :param boolean return_loader:
+           if True and the key requested happened to be a preference file
+           name then return the loader instead of a copy of the loader data
+
+        :exception KeyError:
+           This behaves slightly differently from :meth:`dict.get` in that
+           unless failobj is set it will reraise the original exception
+        '''
+        data = cls._get(
+            key, failobj=failobj, force=force, return_loader=return_loader
+        )
+
+        return data
     # end get
 # end Preferences
 
 
 if __name__ == '__main__':
-    l = Loader('enums')
-    print l.get('SoftwareType')
-    print "where, ", l.where('SoftwareType', all=True), l.where('SoftwareType')
+    p = Preferences()
+    print p.get('foo/enums.SoftwareType')
+    # print l.get('SoftwareType.EXCLUDE')
+    # print "where, ", l.where('SoftwareType', all=True), l.where('SoftwareType')
