@@ -18,8 +18,10 @@
 
 import os
 import sys
+import shutil
 import setuptools
 from distutils.core import setup
+from distutils.command.clean import clean as _clean
 
 os.environ['PYFARM_SETUP_RUNNING'] = 'True'
 
@@ -103,6 +105,39 @@ def requirements():
     return requires
 # end requirements
 
+class clean(_clean):
+    '''
+    custom clean class which runs the standard clean then cleans up
+    egg files and egg directories
+    '''
+    def run(self):
+        _clean.run(self)
+
+        def rm(path):
+            if os.path.isdir(path):
+                shutil.rmtree(path)
+            elif os.path.isfile(path):
+                os.remove(path)
+        # end rm
+
+        # remove egg directories
+        eggdir = lambda name: ".egg" in name or ".egg-info" in name
+        for root, dirs, files in os.walk('.'):
+            join = lambda path: os.path.join(root, path)
+            for dirname in map(join, filter(eggdir, dirs)):
+                rm(dirname)
+
+        # remove egg files
+        eggfiles = lambda name: name.endswith(".egg")
+        for root, dirs, files in os.walk('.'):
+            join = lambda path: os.path.join(root, path)
+            files[:] = filter(eggfiles, files)
+
+            for filename in map(join, files):
+                rm(filename)
+    # end run
+# end clean
+
 def getetc():
     '''returns the files to copy over from etc/'''
     results = []
@@ -128,5 +163,6 @@ setup(
     author='Oliver Palmer',
     author_email='',
     description='',
-    scripts=setuptools.findall('bin')
+    scripts=setuptools.findall('bin'),
+    cmdclass={'clean' : clean}
 )

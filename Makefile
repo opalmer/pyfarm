@@ -9,9 +9,7 @@ shell:
 	@env PYTHONPATH=$(PYTHONPATH) ipython
 
 clean:
-	@find . -name "*.pyc" -exec rm -f {} \;
-	@find . -name "*.pyo" -exec rm -f {} \;
-	@find . -name "*~" -exec rm -f {} \;
+	@python setup.py clean
 
 jobs: dev.make_jobs
 
@@ -29,7 +27,7 @@ configs:
 
 config.%: TARGET=$(subst .yml,,$(subst config.,,$@))
 config.%: SOURCE=$(CONFIG_DIR)/$(TARGET).yml.template
-config.%: DEST=$(CONFIG_DIR)/$(TARGET).yml 
+config.%: DEST=$(CONFIG_DIR)/$(TARGET).yml
 config.%:
 	@if test ! -e $(DEST); \
         then echo "creating configuration $(DEST)"; \
