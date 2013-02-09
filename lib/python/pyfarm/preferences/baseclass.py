@@ -16,8 +16,14 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
+'''
+main preferences module which contains a base class for use outside of
+:mod:`pyfarm.preferences`
+'''
+
 from pyfarm.preferences.loader import Loader
 from pyfarm.preferences.enums import NOTSET
+
 
 class Preferences(object):
     '''
@@ -84,10 +90,8 @@ class Preferences(object):
            This behaves slightly differently from :meth:`dict.get` in that
            unless failobj is set it will reraise the original exception
         '''
-        data = cls._get(
+        return cls._get(
             key, failobj=failobj, force=force, return_loader=return_loader
         )
-
-        return data
     # end get
 # end Preferences
