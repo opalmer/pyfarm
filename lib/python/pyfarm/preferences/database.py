@@ -15,3 +15,19 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
+
+"""
+module for database specific preference handling
+"""
+
+from pyfarm.preferences.base.baseclass import Preferences
+
+class DatabasePreferences(Preferences):
+    """
+    specialized class for handling preferences related to
+    the database
+    """
+    def __init__(self):
+        super(DatabasePreferences, self).__init__(filename='database')
+    # end __init__
+# end DatabasePreferences

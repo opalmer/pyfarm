@@ -29,21 +29,44 @@ class Preferences(object):
     """
     The main preferences object which may be subclassed by other
     preference objects for extension purposes.
+
+    :param string prefix:
+        the directory prefix to use when searching for
+        preferences
+
+    :param string filename:
+        the filename to use for queries.  As an example these
+        will have the same results:
+
+            >>> p1 = Preferences()
+            >>> p2 = Preferences(filename='database')
+            >>> assert p1.get('database.setup') == p2.get('setup')
     """
     _data = {}
 
-    def __init__(self, prefix=None):
+    def __init__(self, prefix=None, filename=None):
         self.prefix = '' if prefix is None else prefix
+        self.filename = filename
     # end __init__
 
     @classmethod
-    def _get(cls, key, failobj=NOTSET, force=False, return_loader=False):
-        """see :meth:`get` for this classmethod's documentation"""
+    def _get(
+            cls, key, failobj=NOTSET, force=False, return_loader=False,
+            filename=None
+    ):
+        """
+        See :meth:`get` for this classmethod's documentation.  This
+        classmethod is called internally by :meth:`get` and returns class
+        level data
+        """
         # before we do anything check to see if the requested key
         # is something that maps to a callable function
         split = key.split(".")
-        filename = split[0]
-        key_uri = ".".join(split[1:])
+        if filename is None:
+            filename = split[0]
+            key_uri = ".".join(split[1:])
+        else:
+            key_uri = ".".join(split)
 
         # load the underlying data if necessary, retrieve it from
         # cace otherwise
@@ -68,10 +91,7 @@ class Preferences(object):
         return data
     # end _get
 
-    # TODO: get preference value from pre/post functions
-    # TODO: add support for extended keys ex. somesubdir/filename.a.b.c
-    @classmethod
-    def get(cls, key, failobj=NOTSET, force=False, return_loader=False):
+    def get(self, key, failobj=NOTSET, force=False, return_loader=False):
         """
         Base classmetod which is used for the sole purpose of data
         retrieval from the yaml file(s).
@@ -91,8 +111,9 @@ class Preferences(object):
            This behaves slightly differently from :meth:`dict.get` in that
            unless failobj is set it will reraise the original exception
         """
-        return cls._get(
-            key, failobj=failobj, force=force, return_loader=return_loader
+        return self._get(
+            key, failobj=failobj, force=force, return_loader=return_loader,
+            filename=self.filename
         )
     # end get
 # end Preferences
