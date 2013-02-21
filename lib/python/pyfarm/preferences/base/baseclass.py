@@ -61,7 +61,7 @@ class Preferences(object):
         # if a string key is present, a string filename is present
         # and the key happens to start with the database name then
         # replace the beginning of the key with "" to ensure both
-        # a.b.c and b.c will work if filename is a
+        # a.b.c and b.c will work if filename is 'a'
         startswith_filename = all([
             isinstance(key, basestring),
             isinstance(filename, basestring),
