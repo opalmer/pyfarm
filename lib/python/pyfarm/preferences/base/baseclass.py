@@ -21,9 +21,8 @@ main preferences module which contains a base class for use outside of
 :mod:`pyfarm.preferences`
 """
 
-from lib.python.pyfarm.preferences.base.loader import Loader
-from lib.python.pyfarm.preferences.base.enums import NOTSET
-
+from pyfarm.preferences.base.loader import Loader
+from pyfarm.preferences.base.enums import NOTSET
 
 class Preferences(object):
     """
@@ -59,6 +58,19 @@ class Preferences(object):
         classmethod is called internally by :meth:`get` and returns class
         level data
         """
+        # if a string key is present, a string filename is present
+        # and the key happens to start with the database name then
+        # replace the beginning of the key with "" to ensure both
+        # a.b.c and b.c will work if filename is a
+        startswith_filename = all([
+            isinstance(key, basestring),
+            isinstance(filename, basestring),
+            key.startswith(filename + ".")
+        ])
+
+        if startswith_filename:
+            key = key.replace(filename + ".", "")
+
         # before we do anything check to see if the requested key
         # is something that maps to a callable function
         split = key.split(".")
@@ -111,9 +123,14 @@ class Preferences(object):
            This behaves slightly differently from :meth:`dict.get` in that
            unless failobj is set it will reraise the original exception
         """
-        return self._get(
+        result = self._get(
             key, failobj=failobj, force=force, return_loader=return_loader,
             filename=self.filename
         )
+
+        if result is NOTSET:
+            raise KeyError("key %s does not exist in data" % key)
+        else:
+            return result
     # end get
 # end Preferences
