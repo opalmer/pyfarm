@@ -27,7 +27,8 @@ from pyfarm.preferences.enums import NOTSET
 
 class Preferences(object):
     """
-    The main preferences object.
+    The main preferences object which may be subclassed by other
+    preference objects for extension purposes.
     """
     _data = {}
 
