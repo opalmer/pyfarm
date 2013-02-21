@@ -20,6 +20,7 @@
 module for database specific preference handling
 """
 
+from pyfarm.preferences.base.enums import NOTSET
 from pyfarm.preferences.base.baseclass import Preferences
 
 class DatabasePreferences(Preferences):
@@ -30,4 +31,24 @@ class DatabasePreferences(Preferences):
     def __init__(self):
         super(DatabasePreferences, self).__init__(filename='database')
     # end __init__
+
+    def _url(self, config_name):
+        """returns the url for the given configuration name"""
+        data = self.get(config_name)
+        print data
+    # end _url
+
+    def get(self, key, **kwargs):
+        if isinstance(key, basestring) and key.endswith("urls"):
+            configs = {}
+            for config_name in self.get('setup.configs'):
+                config_urls = configs.setdefault(config_name, [])
+                for dbname in self.get('setup.configs.%s' % config_name):
+                    if dbname not in config_urls:
+                        url = self._url(dbname)
+                        config_urls.append(url)
+            return configs
+        else:
+            return super(DatabasePreferences, self).get(key, **kwargs)
+    # end get
 # end DatabasePreferences
