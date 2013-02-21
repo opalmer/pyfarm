@@ -21,8 +21,8 @@ main preferences module which contains a base class for use outside of
 :mod:`pyfarm.preferences`
 """
 
-from pyfarm.preferences.loader import Loader
-from pyfarm.preferences.enums import NOTSET
+from lib.python.pyfarm.preferences.base.loader import Loader
+from lib.python.pyfarm.preferences.base.enums import NOTSET
 
 
 class Preferences(object):
