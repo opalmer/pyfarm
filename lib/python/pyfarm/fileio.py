@@ -16,10 +16,10 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
-'''
+"""
 module which contains functions for loading information
 from disk
-'''
+"""
 
 import os
 import imp
@@ -37,7 +37,7 @@ class module:
 
     @classmethod
     def load(cls, name, paths, namespace=None, force=False):
-        '''
+        """
         loads the given module from the provided path(s)
 
         :param string name:
@@ -48,7 +48,7 @@ class module:
 
         :param boolean force:
             if True then bypass the cache
-        '''
+        """
         # use the module name itself if one is not provided
         if namespace is None:
             namespace = name

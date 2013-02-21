@@ -17,9 +17,9 @@
 # along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-'''
+"""
 named value mappings which do not change during execution
-'''
+"""
 
 import imp
 import sys

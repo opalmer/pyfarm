@@ -26,7 +26,7 @@ from pyfarm.logger import Logger
 logger = Logger(__file__)
 
 def xmlping(hostname, port, success=None, failure=None):
-    '''
+    """
     Attempts to run the xmlrpc ping method on the host and port.
     When not running in a reactor this will attempt to call the
     respective callback (although they are not required.
@@ -36,7 +36,7 @@ def xmlping(hostname, port, success=None, failure=None):
         at least a success method.  If a failure method is not provided
         then one will be constructed to log the failure
 
-    '''
+    """
     ident = "%s:%i" % (hostname, port)
     url = "http://%s" % ident
 

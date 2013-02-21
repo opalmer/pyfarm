@@ -16,7 +16,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
-'''basic module which handles and controls logging for pyfarm'''
+"""basic module which handles and controls logging for pyfarm"""
 
 import os
 import sys
@@ -48,7 +48,7 @@ TERMCOLOR = {
 }
 
 class Logger(log.LogPublisher):
-    '''
+    """
     Logger class which should be used in place of the logger provided
     by twisted.python.log.
 
@@ -63,7 +63,7 @@ class Logger(log.LogPublisher):
     :param boolean inherit_observers:
         if true then inherit observers from the base pyfarm.logger.logger
         instance
-    '''
+    """
     def __init__(self, system=None, stdout_observer=True, inherit_observers=True):
         log.LogPublisher.__init__(self)
         self.stdout_observer = stdout_observer
@@ -94,10 +94,10 @@ class Logger(log.LogPublisher):
     # end __init__
 
     def startLogger(self):
-        '''
+        """
         starts the logger by either adding a default observer or
         restoring any previous observers
-        '''
+        """
         if self.__observers:
             self.observers = self.__observers[:]
             del self.__observers[:]
@@ -107,20 +107,20 @@ class Logger(log.LogPublisher):
     # end start
 
     def stop(self):
-        '''stops the logger and removes all observers'''
+        """stops the logger and removes all observers"""
         self.__observers = self.observers[:]
         del self.observers[:]
     # end stop
 
     def addObserver(self, other=None):
-        '''adds the observer if provided or an observer for sys.stdout'''
+        """adds the observer if provided or an observer for sys.stdout"""
         if other is None:
             other = Observer()
         log.LogPublisher.addObserver(self, other)
     # end addObserver
 
     def setLevel(self, level):
-        '''sets the max level this logger will emit'''
+        """sets the max level this logger will emit"""
         if isinstance(level, int):
             level = logging.getLevelName(level)
 
@@ -169,7 +169,7 @@ class Logger(log.LogPublisher):
 
 
 class Observer(log.FileLogObserver):
-    '''
+    """
     Observer which can be used to send log messages to different
     streams.  This class also handles terminal color conversion, log
     rollover, and parent directory creation in the case of log files.
@@ -177,7 +177,7 @@ class Observer(log.FileLogObserver):
     :type stream: string or file
     :param stream:
         The filepath or file stream to log to.
-    '''
+    """
     STREAMS = {}
 
     def __init__(self, stream=sys.stdout):
@@ -217,7 +217,7 @@ class Observer(log.FileLogObserver):
     # end __init__
 
     def emit(self, eventDict):
-        '''formats the incoming and passes it onto the attached stream'''
+        """formats the incoming and passes it onto the attached stream"""
         text = log.textFromEventDict(eventDict)
         if text is None:
             return

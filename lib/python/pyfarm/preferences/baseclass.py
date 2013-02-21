@@ -16,19 +16,19 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
-'''
+"""
 main preferences module which contains a base class for use outside of
 :mod:`pyfarm.preferences`
-'''
+"""
 
 from pyfarm.preferences.loader import Loader
 from pyfarm.preferences.enums import NOTSET
 
 
 class Preferences(object):
-    '''
+    """
     The main preferences object.
-    '''
+    """
     _data = {}
 
     def __init__(self, prefix=None):
@@ -37,7 +37,7 @@ class Preferences(object):
 
     @classmethod
     def _get(cls, key, failobj=NOTSET, force=False, return_loader=False):
-        '''see :meth:`get` for this classmethod's documentation'''
+        """see :meth:`get` for this classmethod's documentation"""
         # before we do anything check to see if the requested key
         # is something that maps to a callable function
         split = key.split(".")
@@ -71,7 +71,7 @@ class Preferences(object):
     # TODO: add support for extended keys ex. somesubdir/filename.a.b.c
     @classmethod
     def get(cls, key, failobj=NOTSET, force=False, return_loader=False):
-        '''
+        """
         Base classmetod which is used for the sole purpose of data
         retrieval from the yaml file(s).
 
@@ -89,7 +89,7 @@ class Preferences(object):
         :exception KeyError:
            This behaves slightly differently from :meth:`dict.get` in that
            unless failobj is set it will reraise the original exception
-        '''
+        """
         return cls._get(
             key, failobj=failobj, force=force, return_loader=return_loader
         )

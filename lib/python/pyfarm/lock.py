@@ -34,7 +34,7 @@ if not os.path.isdir(LOCK_ROOT):
     logger.debug("created directory: %s" % LOCK_ROOT)
 
 class ProcessLockError(Exception):
-    '''raised when we had trouble acquiring a lock'''
+    """raised when we had trouble acquiring a lock"""
     def __init__(self, msg=None):
         super(ProcessLockError, self).__init__(msg)
     # end __init__
@@ -42,7 +42,7 @@ class ProcessLockError(Exception):
 
 
 class LockFile(Logger):
-    '''stores, controls, and maintains a lockfile'''
+    """stores, controls, and maintains a lockfile"""
     def __init__(self, name, pid):
         Logger.__init__(self, self)
         self.name = name
@@ -56,14 +56,14 @@ class LockFile(Logger):
     # end __init__
 
     def remove(self):
-        '''removes the lock file on disk'''
+        """removes the lock file on disk"""
         if os.path.isfile(self.path):
             os.remove(self.path)
             self.debug("removed lock file %s" % self.path)
     # end remove
 
     def filepid(self):
-        '''returns the pid in the file or None'''
+        """returns the pid in the file or None"""
         if not os.path.isfile(self.path):
             return None
 
@@ -72,9 +72,9 @@ class LockFile(Logger):
     # end filepid
 
     def locked(self):
-        '''
+        """
         return True if the lock file exists on disk and has a valid process
-        '''
+        """
         if not os.path.isfile(self.path):
             return False
 
@@ -96,7 +96,7 @@ class LockFile(Logger):
     # end locked
 
     def lock(self, force=False):
-        '''
+        """
         attempts to lock the file
 
         :param boolean force:
@@ -104,7 +104,7 @@ class LockFile(Logger):
 
         :exception ProcessLockError:
             raised on failure to create the new lock file
-        '''
+        """
         # check to see if the lock file on disk is stale and
         # if it is, remove it
         filepid = self.filepid()
@@ -133,7 +133,7 @@ class LockFile(Logger):
 
 
 class ProcessLock(object, Logger):
-    '''
+    """
     provides a locking mechanism when provided a name and process id
 
     :param boolean wait:
@@ -155,7 +155,7 @@ class ProcessLock(object, Logger):
 
     :exception ProcessLockError:
         raised if we failed to acquire a lock
-    '''
+    """
     def __init__(self, name, pid=None, force=False, wait=False, kill=False,
                  register=True, remove=False):
         Logger.__init__(self, self)
@@ -211,7 +211,7 @@ class ProcessLock(object, Logger):
     # end __exit__
 
     def addExitAction(self, method, args=(), kwargs={}):
-        '''adds a method to be called on exit'''
+        """adds a method to be called on exit"""
         self.actions.append((method, args, kwargs))
         self.debug("added exit action - %s" % method.func_name)
     # end addExitAction

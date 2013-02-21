@@ -16,10 +16,10 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
-'''
+"""
 contains functions for events which are can be used by
 multiple tables
-'''
+"""
 
 from datetime import datetime
 
@@ -29,7 +29,7 @@ from pyfarm.datatypes.enums import State
 logger = Logger(__name__)
 
 def state_changed(target, new_value, old_value, initiator):
-    '''when job state changes update the start/end times'''
+    """when job state changes update the start/end times"""
     # object has not been committed yet
     if target.id is None:
         return

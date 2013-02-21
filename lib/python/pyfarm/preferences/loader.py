@@ -37,7 +37,7 @@ from pyfarm.preferences.enums import NOTFOUND
 logger = Logger(__name__)
 
 class Loader(IterableUserDict):
-    '''
+    """
     The base loader class for all individual preference files.  By default
     this class will search several directories including the user directory,
     site directory, and PyFarm's own internal configuration directory.  For
@@ -60,7 +60,7 @@ class Loader(IterableUserDict):
     :exception PreferenceLoadError:
         Raised if we failed to find any preference files by the given name or
         if we failed to find any preference directories
-    '''
+    """
     DATA = {}     # contains previous data loaded in a formatted form
     FILEDATA = {} # contains specific data per file
 
@@ -168,10 +168,10 @@ class Loader(IterableUserDict):
     # end __repr__
 
     def __getitem__(self, item):
-        '''
+        """
         override of :meth:`IterableUserDict.__getitem__` that allows for
         uri access
-        '''
+        """
         try:
             return IterableUserDict.__getitem__(self, item)
         except KeyError:
@@ -199,13 +199,13 @@ class Loader(IterableUserDict):
 
     @classmethod
     def load(cls, filepath, force=False):
-        '''
+        """
         Loads data for the requested file path or returns existing data if the
         file has already been loaded once.
 
         :exception EmptyPreferenceError:
             raised if the the preference file that was loaded is empty
-        '''
+        """
         if force or filepath not in cls.FILEDATA:
             # open a stream and load the data but raise and exception
             # if we did not find any data
@@ -222,7 +222,7 @@ class Loader(IterableUserDict):
     # end load
 
     def where(self, key, all=False):
-        '''
+        """
         Returns the filename where the preference is defined.  Depending
         on the implementation of the final preference object this
         method may be overridden in a subclass to provide more accurate
@@ -244,7 +244,7 @@ class Loader(IterableUserDict):
         :returns:
             returns the filename where the key is defined or a list
             of files where the key is defined if all was True
-        '''
+        """
         if key not in self:
             raise KeyError("key %s does not exist" % repr(key))
 
@@ -270,7 +270,7 @@ class Loader(IterableUserDict):
     # end where
 
     def validate(self, filepath=None, filedata=None):
-        '''
+        """
         Validation method which is run for each file loaded and after all
         files have loaded.  By default this method does nothing.
 
@@ -279,15 +279,15 @@ class Loader(IterableUserDict):
 
         :param dictionary filedata:
             the data of the file currently being loaded
-        '''
+        """
         pass
     # end validation
 
     def get(self, key, failobj=None):
-        '''
+        """
         override of :meth:`IterableUserDict.get` that allows for
         uri access
-        '''
+        """
         try:
             return self.__getitem__(key)
         except KeyError:

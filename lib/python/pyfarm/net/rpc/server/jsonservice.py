@@ -27,11 +27,11 @@ from txjsonrpc.web.jsonrpc import Handler
 from pyfarm.net.rpc import error
 
 class JSONServer(jsonrpc.JSONRPC):
-    '''
+    """
     Overrides a few methods provided by
     :py:class:`txjsonrpc.web.jsonrpc.JSONRPC` so we can properly handle
     errors and support keyword arguments.
-    '''
+    """
     def render(self, request):
         request.content.seek(0, 0)
         args = request.args

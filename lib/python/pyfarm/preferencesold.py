@@ -32,11 +32,11 @@ if not os.path.isdir(PYFARM_ETC):
     raise OSError("configuration directory does not exist: %s" % PYFARM_ETC)
 
 class Preferences(Logger):
-    '''
+    """
     Preferences object which handles loading of configuration
     files and handling of specific special case (such as logging
     directory strings)
-    '''
+    """
     # creates a 'frozen' form of the preferences to override
     # the yaml files on disk.
     PREFERENCES = {}
@@ -48,10 +48,10 @@ class Preferences(Logger):
     # end __init__
 
     def __load(self, name, filename):
-        '''
+        """
         Loads the requested filename into self.data[name] if the given
         filename has not already been loaded
-        '''
+        """
         # ensure the config exists
         path = os.path.join(PYFARM_ETC, filename)
         if not os.path.isfile(path):
@@ -65,10 +65,10 @@ class Preferences(Logger):
     # end __load
 
     def __pathjoin(self, value):
-        '''
+        """
         splits the given value by / then combines the results
         using os.path.join
-        '''
+        """
         paths = value.split("/")
         return os.sep.join(paths)
     # end __pathjoin
@@ -97,7 +97,7 @@ class Preferences(Logger):
 
     # TODO: verify behavior (esp. on windows)
     def __expandSearchPaths(self, data, kwargs):
-        '''expands the path(s) provided by data and returns the results'''
+        """expands the path(s) provided by data and returns the results"""
         paths = []
 
         # expand all environment variables and then split on ':' to retrieve
@@ -138,7 +138,7 @@ class Preferences(Logger):
     # end __expandSearchPaths
 
     def __dburl(self):
-        '''returns the url use for connecting to the database'''
+        """returns the url use for connecting to the database"""
         urls = []
         for db in self.get('database.setup.config'):
             config = self.get('database.%s' % db)
@@ -197,7 +197,7 @@ class Preferences(Logger):
     # end __dburl
 
     def __calculateMaxJobs(self, data, kwargs):
-        '''calculates and returns the number of max jobs'''
+        """calculates and returns the number of max jobs"""
         if data is None:
             return psutil.NUM_CPUS
 
@@ -209,7 +209,7 @@ class Preferences(Logger):
     # end  __calculateMaxJobs
 
     def __extensions(self, kwargs):
-        '''returns extensions for the current os'''
+        """returns extensions for the current os"""
         results = set()
 
         # retrieve
@@ -249,7 +249,7 @@ class Preferences(Logger):
     # end __jobtypeSearchPaths
 
     def set(self, key, value, overwrite=True):
-        '''
+        """
         Sets a preference to the provided value that will override the
         yaml file.  Normally this method should not need to be used but
         can be used by external libraries, unittests, and other processes
@@ -264,7 +264,7 @@ class Preferences(Logger):
 
         :param boolean overwrite:
             if false then we will not overwrite preferences that already exist
-        '''
+        """
         if value is None and key in Preferences.PREFERENCES:
             del Preferences.PREFERENCES[key]
             self.debug("deleted frozen preference %s" % key)
@@ -280,7 +280,7 @@ class Preferences(Logger):
     # end set
 
     def get(self, key, **kwargs):
-        '''
+        """
         Retrieve the preferences when provided a key.  For example
         to retrieve the port setting for the host:
 
@@ -306,7 +306,7 @@ class Preferences(Logger):
 
         :exception KeyError:
             raised if we failed to fully resolve the preference
-        '''
+        """
         # if the key exists in the local preference
         # then use it instead of loading from the file
         if key in Preferences.PREFERENCES:

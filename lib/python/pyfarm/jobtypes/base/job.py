@@ -31,12 +31,12 @@ from pyfarm.db import session# contexts
 #from pyfarm.db.tables import jobs, frames
 
 class BaseJob(Logger):
-    '''
+    """
     Base jobtype inherited by all other jobtypes
 
     :param dict substitute_data:
         data which can be used to into each argument
-    '''
+    """
     def __init__(self, row_job, row_frame, substitute_data=None):
         Logger.__init__(self, self)
         self.__row_job = row_job
@@ -78,7 +78,7 @@ class BaseJob(Logger):
     # end __init__
 
     def validateRequirements(self):
-        '''
+        """
         Validates information in the job's data column if DATA_REQUIREMENTS
         exists on the class.
 
@@ -92,7 +92,7 @@ class BaseJob(Logger):
             raised if self.frame.job.data does not contain one
             or more of the keys we are expecting to find when validating
             data
-        '''
+        """
         # do nothing but print a warning if we are missing
         # DATA_REQUIREMENTS
         if not hasattr(self.__class__, 'DATA_REQUIREMENTS'):
@@ -129,7 +129,7 @@ class BaseJob(Logger):
         # end validateRequirements
 
     def setupLog(self):
-        '''Sets up the log file and begins logging the progress of the job'''
+        """Sets up the log file and begins logging the progress of the job"""
         if self.logfile is None:
             self.debug("...setting up log")
             root = prefs.get('filesystem.locations.jobs')
@@ -142,10 +142,10 @@ class BaseJob(Logger):
     # end setupLog
 
     def setupEnvironment(self):
-        '''
+        """
         Base setup environment setup method.  Normally this will just use
         values provided by self._environ along with the os environment.
-        '''
+        """
         self.environ = {}
         if isinstance(self.__environ, dict) and self.__environ:
             self.debug("...setting up custom base environment")
@@ -160,14 +160,14 @@ class BaseJob(Logger):
     # end setupEnvironment
 
     def setupCommand(self):
-        '''
+        """
         Ensures the command we are attempting to run exists and is accessible
 
         :exception OSError:
             Raised if the command does not exist or of we do not have permission
             to run the requested command.  Because this is being handled in the
             event loop this error will need to be handled externally.
-        '''
+        """
         self.command = None
         self.debug("...setting up command")
 
@@ -225,7 +225,7 @@ class BaseJob(Logger):
     # end setupCommand
 
     def setupArguments(self):
-        '''Sets of arguments to use for the command'''
+        """Sets of arguments to use for the command"""
         args = []
 
         for arg in self.__args:
@@ -246,7 +246,7 @@ class BaseJob(Logger):
     # end setupArguments
 
     def setupUser(self):
-        '''
+        """
         If no user is provided then we a assume we should run as the current
         user.  Should a user be proved that is not the current user however
         this method will check to be we can change the process owner.
@@ -256,7 +256,7 @@ class BaseJob(Logger):
             although the jobtype will raise this error code that is
             initializing this class will need to handle the error for the
             reactor itself.
-        '''
+        """
         # setup base attributes (overridden below)
         self.uid = None
         self.gid = None
@@ -303,27 +303,27 @@ class BaseJob(Logger):
     # end setup_user
 
     def preJob(self):
-        '''Runs before the start of the job'''
+        """Runs before the start of the job"""
         self.debug("nothing to be done for preJob")
     # end preJob
 
     def preFrame(self):
-        '''Runs before the start of a frame'''
+        """Runs before the start of a frame"""
         self.debug("nothing to be done for preFrame")
     # end preFrame
 
     def postJob(self):
-        '''Runs after a job completes, regardless of success'''
+        """Runs after a job completes, regardless of success"""
         self.debug("nothing to be done for postJob")
     # end postJob
 
     def postFrame(self):
-        '''Runs after a frame completes, regardless of success'''
+        """Runs after a frame completes, regardless of success"""
         self.debug("nothing to be done for postFrame")
     # end postFrame
 
     def run(self):
-        '''runs the job itself'''
+        """runs the job itself"""
         cmd = "%s %s" % (self.command, " ".join(self.args))
         self.process = None
     # end run
@@ -342,7 +342,7 @@ class Frame(Logger, BaseJob):
     # end __init__
 
     def retrieveRows(self):
-        '''retrieves the frame and job rows from the database'''
+        """retrieves the frame and job rows from the database"""
         # don't do anything if we have already fetched
         # the required rows
         if self.row_frame is not None and self.row_frame is not None:

@@ -20,7 +20,7 @@ import UserDict
 import datetime
 
 class ReadOnlyDict(UserDict.IterableUserDict):
-    '''custom dictionary that is read only'''
+    """custom dictionary that is read only"""
     err_type = NotImplementedError
 
     def __init__(self, dict=None, **kwargs):
@@ -58,10 +58,10 @@ class ReadOnlyDict(UserDict.IterableUserDict):
 
 class ScheduledRun:
     # old style class since twisted classes are also old style
-    '''
+    """
     Basic class which informs child classes if they should
     perform their indicated function
-    '''
+    """
     def __init__(self, timeout):
         self.timeout = timeout
         self.lastrun = None
@@ -69,10 +69,10 @@ class ScheduledRun:
 
     @property
     def lastupdate(self):
-        '''
+        """
         returns the time since last update or the timeout itself
         if lastrun has not been set
-        '''
+        """
         if self.lastrun is None:
             return self.timeout
 
@@ -82,7 +82,7 @@ class ScheduledRun:
     # end lastupdate
 
     def shouldRun(self, force=False):
-        '''return True if the update process should run'''
+        """return True if the update process should run"""
         return force or self.lastupdate >= self.timeout-1
     # end shouldRun
 # end ScheduledRun

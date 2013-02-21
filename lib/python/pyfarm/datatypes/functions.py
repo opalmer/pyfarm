@@ -16,9 +16,9 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
-'''
+"""
 functions for use within the datatypes module
-'''
+"""
 
 import os
 
@@ -40,7 +40,7 @@ def bytes_to_megabytes(value):
 # end bytes_to_megabytes
 
 def LoadEnum(name, methods=None, classonly=False):
-    '''
+    """
     return an enum class with the given name
 
     :param dict methods:
@@ -48,7 +48,7 @@ def LoadEnum(name, methods=None, classonly=False):
 
     :param boolean classonly:
         if True then return the class itself and not an instance
-    '''
+    """
     try:
         data = ENUM_DATA[name]
 

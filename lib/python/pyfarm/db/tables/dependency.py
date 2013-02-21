@@ -16,10 +16,10 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
-'''
+"""
 storage class for frame-to-frame, frame-job and job-job
 dependencies
-'''
+"""
 
 from sqlalchemy import Column, ForeignKey, select
 from sqlalchemy.types import Integer
@@ -34,7 +34,7 @@ __all__ = ['F2FDependency', 'J2JDependency']
 class Dependency(object):
     @classmethod
     def children(cls, parentid, session):
-        '''returns a list of child id objects for the given dependency'''
+        """returns a list of child id objects for the given dependency"""
         ids = []
 
         # get the immediate children of the provided parent and
@@ -84,7 +84,7 @@ class Dependency(object):
 
 
 class F2FDependency(Base):
-    '''defines frame to frame dependencies'''
+    """defines frame to frame dependencies"""
     __tablename__ = TABLE_F2_DEPENDENCIES
     repr_attrs = ("_parent", "_child")
 
@@ -115,7 +115,7 @@ class F2FDependency(Base):
 
 
 class J2JDependency(Base, Dependency):
-    '''defines job to job dependencies'''
+    """defines job to job dependencies"""
     __tablename__ = TABLE_J2J_DEPENDENCIES
     repr_attrs = ("_parent", "_child")
 

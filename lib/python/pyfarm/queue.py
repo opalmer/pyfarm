@@ -16,10 +16,10 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
-'''
+"""
 This is just a very simple module to handle retrieval and initial process
 of a new job from the database.  This module may later be expanded on or
 replaced.
-'''
+"""
 
 

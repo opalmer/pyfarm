@@ -16,13 +16,13 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
-'''
+"""
 Host Tables
 ===========
 
 Contains tables related to host management and relationship
 declarations
-'''
+"""
 
 from sqlalchemy import Column, ForeignKey
 from sqlalchemy.orm import relationship
@@ -38,7 +38,7 @@ from pyfarm.db.tables import Base, Master, \
 logger = Logger(__name__)
 
 class Host(Base, NetworkHost):
-    '''base host definition'''
+    """base host definition"""
     __tablename__ = TABLE_HOST
     repr_attrs = ("id", "masterid", "hostname", "running", "ip", "masterid")
 
@@ -103,10 +103,10 @@ class HostGroupingMixin(object):
 
     @property
     def hosts(self):
-        '''
+        """
         Finds all hosts which are using this software.  We do this using
         two queries so we retrieve only a unique lists of hosts
-        '''
+        """
         session = self.session
         all_entries = session.query(self.__class__).filter(
             self.__class__.name == self.name
@@ -119,7 +119,7 @@ class HostGroupingMixin(object):
 
 
 class HostSoftware(Base, HostGroupingMixin):
-    '''stores information about what software a host can run'''
+    """stores information about what software a host can run"""
     __tablename__ = TABLE_HOST_SOFTWARE
 
     _host = Column(Integer, ForeignKey(Host.id))
@@ -133,7 +133,7 @@ class HostSoftware(Base, HostGroupingMixin):
 
 
 class HostGroup(Base, HostGroupingMixin):
-    '''stores information about which group or groups a host belongs to'''
+    """stores information about which group or groups a host belongs to"""
     __tablename__ = TABLE_HOST_GROUP
 
     # column definitions

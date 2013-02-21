@@ -16,16 +16,16 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
-'''
+"""
 classes for building html pages
-'''
+"""
 
 import socket
 
 HOSTNAME = socket.getfqdn()
 
 class Tag(object):
-    '''simple class for opening and closing tags'''
+    """simple class for opening and closing tags"""
     def __init__(self, page, tag):
         self.page = page
         self.tag = tag
@@ -35,7 +35,7 @@ class Tag(object):
 # end Tag
 
 class Page(object):
-    '''basic class to assist in building a webpage'''
+    """basic class to assist in building a webpage"""
     def __init__(self, title, port, hostname=None):
         self.content = "<html><head><title>%s</title></head><body>" % title
         self.port = port
@@ -47,7 +47,7 @@ class Page(object):
     # end add
 
     def link(self, url, name=None, br=True):
-        '''inserts a url'''
+        """inserts a url"""
         content = ""
         if br:
             content += "<br />"

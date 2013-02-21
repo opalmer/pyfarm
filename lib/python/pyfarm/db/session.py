@@ -16,23 +16,23 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
-'''manager of sqlalchemy session objects'''
+"""manager of sqlalchemy session objects"""
 
 from sqlalchemy.orm import sessionmaker
 from pyfarm.db.engines import engine
 
 
 class SessionManager(object):
-    '''
+    """
     Manages the connection objects and produces
     sessions.
-    '''
+    """
     SESSION_MAKER = sessionmaker()
     ENGINES = {'default' : engine}
 
     @classmethod
     def engine(cls, name='default'):
-        '''returns the requested engine for the provided name'''
+        """returns the requested engine for the provided name"""
         name = 'default' if name is None else name
         try:
             return cls.ENGINES[name]
@@ -42,10 +42,10 @@ class SessionManager(object):
 
     @classmethod
     def session(cls, name='default', **sessionkwargs):
-        '''
+        """
         Returns a new session object and creates a connection if
         necessary
-        '''
+        """
         sessionkwargs.setdefault('bind', cls.engine(name))
         return cls.SESSION_MAKER(**sessionkwargs)
     # end session

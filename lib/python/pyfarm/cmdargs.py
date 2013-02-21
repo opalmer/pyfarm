@@ -15,14 +15,14 @@
 #
 # You should have received a copy of the GNU Lesser General Public Lic
 
-'''
+"""
 base functions and initial setup of argument parsing for the project.
-'''
+"""
 
 import argparse
 
 def tobool(value):
-    '''converts the incoming value to a boolean'''
+    """converts the incoming value to a boolean"""
     if isinstance(value, bool): return value
     elif isinstance(value, (int, long, float)): return bool(value)
     elif value.lower() in ("false", "no", "0"): return False
@@ -32,7 +32,7 @@ def tobool(value):
 # end tobool
 
 def tolist(value):
-    '''converts the incoming value to a list'''
+    """converts the incoming value to a list"""
     if isinstance(value, (str, unicode)):
         if "," in value:
             return [ v.strip() for v in value.split(",") ]
@@ -43,17 +43,17 @@ def tolist(value):
 # end tolist
 
 def evalnone(value):
-    '''
+    """
     If the value provided can be converted to None then return None instead
     of returning a string of None
-    '''
+    """
     if isinstance(value, (str, unicode)) and value in ('none', 'None', 'NONE', 'null'):
         return None
     return value
 # end evalnone
 
 def printOptions(options, log):
-    '''prints out the keys and values being applied to the options'''
+    """prints out the keys and values being applied to the options"""
     for key, value in vars(options).iteritems():
         log("%s: %s" % (key, value))
 # end printOptions

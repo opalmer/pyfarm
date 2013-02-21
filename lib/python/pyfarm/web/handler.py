@@ -16,20 +16,20 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
-'''
+"""
 handler module used to handle incoming requests
-'''
+"""
 
 from twisted.web import http
 from twisted.internet import reactor
 
 class Request(http.Request):
-    '''
+    """
     Request handler which process the request directly before
     returning results.  Typically this class will be inherited
     and have paths to incoming requests and their targets placed
     in self.pages.
-    '''
+    """
     pages = {}
 
     def setPages(self, pages):
@@ -62,7 +62,7 @@ class Request(http.Request):
 
 
 def CreateFactory(request_handler):
-    '''creates a HTTPFactory based on a provided handler'''
+    """creates a HTTPFactory based on a provided handler"""
     class Channel(http.HTTPChannel):
         requestFactory = request_handler
     # end Channel

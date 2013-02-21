@@ -16,7 +16,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
-'''
+"""
 Retrieves the proper object or constructs a new one to match later
 versions of Python.  For any missing object the init file in the PyFarm
 package will handle retrieval and setup of an object from this module.  As an
@@ -28,7 +28,7 @@ example:
 ...     import itertools
 ...     from pyfarm.datatypes.backports import permutations
 ...     itertools.permutations = permutations
-'''
+"""
 
 import sys
 
@@ -45,7 +45,7 @@ except ImportError:
     import sys as _sys
 
     def namedtuple(typename, field_names, verbose=False, rename=False):
-        '''
+        """
         Returns a new subclass of tuple with named fields.
 
         >>> Point = namedtuple('Point', 'x y')
@@ -66,7 +66,7 @@ except ImportError:
         Point(x=11, y=22)
         >>> p._replace(x=100) # _replace() is like str.replace() but targets named fields
         Point(x=100, y=22)
-        '''
+        """
         # Parse and validate the field names.  Validation serves two purposes,
         # generating informative error messages and preventing template injection attacks.
         if isinstance(field_names, basestring):
@@ -101,7 +101,7 @@ except ImportError:
         numfields = len(field_names)
         argtxt = repr(field_names).replace("'", "")[1:-1]   # tuple repr without parens or quotes
         reprtxt = ', '.join('%s=%%r' % name for name in field_names)
-        template = '''class %(typename)s(tuple):
+        template = """class %(typename)s(tuple):
             '%(typename)s(%(argtxt)s)' \n
             __slots__ = () \n
             _fields = %(field_names)r \n
@@ -126,7 +126,7 @@ except ImportError:
                     raise ValueError('Got unexpected field names: %%r' %% kwds.keys())
                 return result \n
             def __getnewargs__(self):
-                return tuple(self) \n\n''' % locals()
+                return tuple(self) \n\n""" % locals()
         for i, name in enumerate(field_names):
             template += '        %s = _property(_itemgetter(%d))\n' % (name, i)
         if verbose:
@@ -157,7 +157,7 @@ try:
     from itertools import product
 except ImportError:
     def product(*args, **kwds):
-        '''
+        """
         product(*iterables) --> product object
 
         Cartesian product of input iterables.  Equivalent to nested for-loops.
@@ -169,7 +169,7 @@ except ImportError:
 
         product('ab', range(3)) --> ('a',0) ('a',1) ('a',2) ('b',0) ('b',1) ('b',2)
         product((0,1), (0,1), (0,1)) --> (0,0,0) (0,0,1) (0,1,0) (0,1,1) (1,0,0) ...
-        '''
+        """
         # product('ABCD', 'xy') --> Ax Ay Bx By Cx Cy Dx Dy
         # product(range(2), repeat=3) --> 000 001 010 011 100 101 110 111
         pools = map(tuple, args) * kwds.get('repeat', 1)
@@ -184,13 +184,13 @@ try:
     from itertools import permutations
 except ImportError:
     def permutations(iterable, r=None):
-        '''
+        """
         permutations(iterable[, r]) --> permutations object
 
         Return successive r-length permutations of elements in the iterable.
 
         permutations(range(3), 2) --> (0,1), (0,2), (1,0), (1,2), (2,0), (2,1)
-        '''
+        """
         pool = tuple(iterable)
         n = len(pool)
         r = n if r is None else r

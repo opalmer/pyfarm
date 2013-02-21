@@ -26,10 +26,10 @@ from pyfarm.datatypes.enums import State
 logger = Logger(__name__)
 
 class PyFarmBase(object):
-    '''
+    """
     base class which defines some base functions and attributes
     for all classes to inherit
-    '''
+    """
     repr_attrs = ()
     repr_attrs_skip_none = False
 
@@ -42,7 +42,7 @@ class PyFarmBase(object):
     # end session
 
     def __getparentattr(self, name):
-        '''retrieve a value from the right most class (including mixins)'''
+        """retrieve a value from the right most class (including mixins)"""
         classes = []
         classes.extend(self.__class__.__bases__)
         classes.append(self.__class__)

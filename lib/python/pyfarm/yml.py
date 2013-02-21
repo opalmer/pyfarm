@@ -17,10 +17,10 @@
 # along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-'''
+"""
 Internal yaml module which wraps around :py:func:`yaml.load` and
 :py:func:`yaml.dump`.
-'''
+"""
 
 from __future__ import with_statement
 
@@ -43,7 +43,7 @@ from yaml import load as _load, dump as _dump
 logger = Logger(__name__)
 
 def load(stream):
-    '''
+    """
     Loads data from the provided file stream, stream like object, or file
     path.
 
@@ -53,7 +53,7 @@ def load(stream):
 
     :exception TypeError:
         raised if we get an unexpected type for `stream`
-    '''
+    """
     if isinstance(stream, basestring) and os.path.isfile(stream):
         logger.info("loading yaml from %s" % stream)
         stream = open(stream, 'r')
@@ -77,7 +77,7 @@ def load(stream):
 # end load
 
 def dump(data, stream=None, pretty=False):
-    '''
+    """
     Dumps data to the requested stream if provided or a temporary file.
 
     :param data:
@@ -92,7 +92,7 @@ def dump(data, stream=None, pretty=False):
 
     :returns:
         returns the path or object the data was dumped to
-    '''
+    """
     if stream is None:
         stream = tempfile(suffix='.yml')
         return_object = stream.name

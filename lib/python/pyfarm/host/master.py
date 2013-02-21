@@ -16,7 +16,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
-'''module for dealing with storage and retrieval of the master'''
+"""module for dealing with storage and retrieval of the master"""
 
 import socket
 
@@ -28,11 +28,11 @@ from pyfarm import errors
 logger = Logger(__name__)
 
 def get(master=None):
-    '''
+    """
     :param string master:
         if provided then use this value as the master regardless of what
         the master is in the database or what the hostname is
-    '''
+    """
     if master is None:
         try:
             logger.debug("retrieving master from database")

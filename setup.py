@@ -37,10 +37,10 @@ PY_VERSION_INFO = sys.version_info
 PY_MAJOR, PY_MINOR, PY_MICRO = PY_VERSION_INFO[0:3]
 
 def requirements():
-    '''
+    """
     generates a list of requirements depending on python version
     and operating system
-    '''
+    """
     requires = []
 
     # split out versioned/unversioned requirements for easier
@@ -106,10 +106,10 @@ def requirements():
 # end requirements
 
 class clean(_clean):
-    '''
+    """
     custom clean class which runs the standard clean then cleans up
     egg files and egg directories
-    '''
+    """
     def run(self):
         _clean.run(self)
 
@@ -139,7 +139,7 @@ class clean(_clean):
 # end clean
 
 def getetc():
-    '''returns the files to copy over from etc/'''
+    """returns the files to copy over from etc/"""
     results = []
     for dirname in ETC_DIRS:
         results.append((dirname, setuptools.findall(dirname)))

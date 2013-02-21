@@ -106,7 +106,7 @@ class ProcessProtocol(protocol.ProcessProtocol, Logger):
     # end __init__
 
     def connectionMade(self):
-        '''send a log message the the process log file'''
+        """send a log message the the process log file"""
         self.transport.write(" ".join(self.arguments))
         self.transport.closeStdin()
         self.process.running = True
@@ -128,10 +128,10 @@ class ProcessProtocol(protocol.ProcessProtocol, Logger):
 
 
 class Process(Logger):
-    '''
+    """
     wraps the process protocol and separates the start, stop, and signaling
     from the  process protocol itself
-    '''
+    """
     def __init__(self, command, args, environ, log, user=None, job=None):
         Logger.__init__(self, self)
         self._command = command
@@ -258,7 +258,7 @@ class Process(Logger):
     # end start
 
     def started(self):
-        '''called when the process has started'''
+        """called when the process has started"""
         self.pid = self.process.pid
         self.info("process %s started" % self.pid)
 
@@ -275,7 +275,7 @@ class Process(Logger):
     # end started
 
     def stopped(self, reason):
-        '''called when the process has stopped'''
+        """called when the process has stopped"""
         # turn off the memory survey
         self.memsurvey.process = None
         self.memsurvey_task.stop()
@@ -314,24 +314,24 @@ class Process(Logger):
     # end signal
 
     def stop(self, wait=False):
-        '''sends SIGHUP to the process asking it to terminate'''
+        """sends SIGHUP to the process asking it to terminate"""
         self.signal('HUP')
     # end stop
 
     def kill(self):
-        '''sends a SIGKILL to the process informing it to terminate immediately'''
+        """sends a SIGKILL to the process informing it to terminate immediately"""
         self.signal('KILL')
     # end kill
 # end Process
 
 
 class ProcessFrame(job.Frame, Process):
-    '''
+    """
     Wraps Process when provided input based on the frame id.  This class
     should be inherited by any job class looking to setup and
     run a command.  See the methods on the Process class to determine
     prerun, postrun, and exit behaviors.
-    '''
+    """
     def __init__(self, id):
         job.Frame.__init__(self, id)
 

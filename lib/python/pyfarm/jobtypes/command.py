@@ -19,6 +19,6 @@
 from pyfarm.jobtypes.base import BaseJob
 
 class Job(BaseJob):
-    '''basic jobtype to run a single command'''
+    """basic jobtype to run a single command"""
     pass
 # end Job

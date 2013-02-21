@@ -24,7 +24,7 @@ from pyfarm.errors import RPCFault
 
 
 class JSONRPCClient(object):
-    '''
+    """
     Remote procedure call client class which operates on JSON.
 
     :param string url:
@@ -34,7 +34,7 @@ class JSONRPCClient(object):
     :param boolean uid:
         If True then send along a unique identifier with each
         message
-    '''
+    """
     def __init__(self, url, uid=True, method=None):
         self.__url = url
         self.__method = method
@@ -51,7 +51,7 @@ class JSONRPCClient(object):
 
     @property
     def basepostdata(self):
-        '''generates the base data to post'''
+        """generates the base data to post"""
         data = {
             'id' : 'jsonrpc',
             'method' : self.__method

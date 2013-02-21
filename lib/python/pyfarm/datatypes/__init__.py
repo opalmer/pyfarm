@@ -16,7 +16,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
-'''
+"""
 serves as a central location to store data that is meant
 to be static
-'''
+"""

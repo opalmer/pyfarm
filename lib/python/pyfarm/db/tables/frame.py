@@ -30,7 +30,7 @@ from pyfarm.datatypes.enums import State
 logger = Logger(__name__)
 
 class Frame(Base, TaskBase):
-    '''defines a single frame'''
+    """defines a single frame"""
     __tablename__ = TABLE_FRAME
     repr_attrs = ("_job", "frame", "state", "attempts", "host")
     repr_attrs_skip_none = ("host", )
@@ -78,7 +78,7 @@ class Frame(Base, TaskBase):
 from pyfarm.db.tables._events import state_changed
 
 def frame_host_changed(target, new_value, old_value, initiator):
-    '''set set the frame state to ASSIGN whenever the host is changed'''
+    """set set the frame state to ASSIGN whenever the host is changed"""
     args = (target.id, new_value)
     logger.debug("changing host on frame id %s to %s" % args)
     target.state = State.ASSIGN

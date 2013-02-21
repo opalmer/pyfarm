@@ -35,9 +35,9 @@ from pyfarm.db.tables import Base, Frame, \
 
 
 class JobSoftware(Base):
-    '''
+    """
     defines software which is required by a job
-    '''
+    """
     __tablename__ = TABLE_JOB_SOFTWARE
     repr_attrs = ("_job", "type")
 
@@ -69,7 +69,7 @@ class JobSoftware(Base):
 
 
 class Job(Base, TaskBase):
-    '''base job definition'''
+    """base job definition"""
     __tablename__ = TABLE_JOB
     repr_attrs = (
         "id", "state", "start_frame", "end_frame", "by_frame", "priority"
@@ -163,12 +163,12 @@ class Job(Base, TaskBase):
     # end __init__
 
     def hasDependencies(self):
-        '''returns True if the job has dependencies'''
+        """returns True if the job has dependencies"""
         return bool(self.getDependencyIDs())
     # end hasDependencies
 
     def getDependencyIDs(self):
-        '''returns the dependent job ids'''
+        """returns the dependent job ids"""
         if self.id is None:
             raise ValueError("id has not been set")
 
@@ -195,21 +195,21 @@ class Job(Base, TaskBase):
 
     @property
     def cmd(self):
-        '''
+        """
         returns the full path to the command
 
         :exception OSError:
             raised if we fail to find requested command in $PATH
-        '''
+        """
         return utility.which(self._cmd)
     # end cmd
 
     @property
     def environ(self):
-        '''
+        """
         returns the environment for the job while taking into
         account the different env. merge strategies
-        '''
+        """
         mode = self.environ_mode
 
         # simply update the current environment with the
@@ -236,7 +236,7 @@ class Job(Base, TaskBase):
     # end environ
 
     def queued_frames(self):
-        '''returns a list of frames which are currently queued to run'''
+        """returns a list of frames which are currently queued to run"""
         # initial query which will retrieves frames which
         # are children of this job
         query = self.session.query(Frame).filter(Frame._job == self.id)
@@ -330,7 +330,7 @@ class Job(Base, TaskBase):
     # end validate_command
 
     def createFrames(self, state=None, commit=True):
-        '''creates the frames for the job'''
+        """creates the frames for the job"""
         frames = []
         end = self.end_frame + 1
         by = 1 if not self.by_frame else self.by_frame
@@ -346,7 +346,7 @@ class Job(Base, TaskBase):
     # end createFrames
 
     def addDependencies(self, dependencies, commit=True):
-        '''
+        """
         Adds job to job dependencies to the current job.
 
         :type dependencies: list or tuple or set or Job
@@ -358,7 +358,7 @@ class Job(Base, TaskBase):
 
         :returns:
             a list of instances of :py:mod:`J2JDependency` objects.
-        '''
+        """
         # if the incoming object is not something we can iterate
         # over then convert it to a tuple so we can
         if not isinstance(dependencies, (set, list, tuple)):

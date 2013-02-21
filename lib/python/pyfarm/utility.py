@@ -16,10 +16,10 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
-'''
+"""
 General utility functions that are not specific to individual components
 of PyFarm.
-'''
+"""
 
 import os
 import sys
@@ -31,12 +31,12 @@ from os.path import exists, expanduser, expandvars
 PyMajor, PyMinor, PyMicro = sys.version_info[0:3]
 
 def expandPath(path):
-    '''expands all paths of a path'''
+    """expands all paths of a path"""
     return expanduser(expandvars(path))
 # end expandPath
 
 def expandPaths(envvar, error=True, validate=False, expand=True):
-    '''
+    """
     Takes the given environment variable, expands it, and returns
     a list of paths which have a length.
 
@@ -52,7 +52,7 @@ def expandPaths(envvar, error=True, validate=False, expand=True):
 
     :except KeyError:
         raised if error is True and envvar is not in os.environ
-    '''
+    """
     if error and envvar not in os.environ:
         raise KeyError("$%s is not in the environment")
 
@@ -71,7 +71,7 @@ def expandPaths(envvar, error=True, validate=False, expand=True):
 # end expandPaths
 
 def which(program):
-    '''
+    """
     returns the path to the requested program
 
     .. note::
@@ -79,7 +79,7 @@ def which(program):
 
     :raise OSError:
         raised if the path to the program could not be found
-    '''
+    """
     # Returns the full path to the requested program.  If the path
     # is in fact valid then we have nothing left to do.
     fullpath = os.path.abspath(program)
@@ -97,7 +97,7 @@ def which(program):
 # end which
 
 def user():
-    '''returns the current user name'''
+    """returns the current user name"""
     try:
         import pwd
         return pwd.getpwuid(os.getuid())[0]
@@ -107,7 +107,7 @@ def user():
 # end user
 
 def tempfile(prefix=None, suffix=None, delete=False):
-    '''
+    """
     A wrapper around :py:class:`tempfile.NamedTemporaryFile` which ensures that
     Python versions before 2.6 will respect the delete keyword.
 
@@ -116,7 +116,7 @@ def tempfile(prefix=None, suffix=None, delete=False):
 
     :returns:
         returns a temp file object
-    '''
+    """
     # construct arguments to pass to the constructor of
     # NamedTemporaryFile
     kwargs = {

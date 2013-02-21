@@ -16,9 +16,9 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
-'''
+"""
 contains the main base classes used by other tables
-'''
+"""
 
 import socket
 from datetime import datetime
@@ -35,7 +35,7 @@ from pyfarm.db.tables import MAX_HOSTNAME_LENGTH, MAX_IPV4_LENGTH, \
 logger = Logger(__name__)
 
 class NetworkHost(object):
-    '''mixin which defines common attributes that all network nodes have'''
+    """mixin which defines common attributes that all network nodes have"""
     hostname = Column(String(MAX_HOSTNAME_LENGTH), nullable=False, unique=True)
     ip = Column(String(MAX_IPV4_LENGTH), nullable=False, unique=True)
     subnet = Column(String(MAX_IPV4_LENGTH), nullable=False)
@@ -88,7 +88,7 @@ class NetworkHost(object):
 
 
 class TaskBase(object):
-    '''base of task based tables such as jobs and frames'''
+    """base of task based tables such as jobs and frames"""
     # state, requeue, and priority
     state = Column(Integer, default=State.QUEUED)
     priority = Column(Integer, default=DEFAULT_PRIORITY)
@@ -118,7 +118,7 @@ class TaskBase(object):
 
     @property
     def elapsed(self):
-        '''returns the time elapsed since the task has started'''
+        """returns the time elapsed since the task has started"""
         started = self.time_started
         finished = self.time_finished
 

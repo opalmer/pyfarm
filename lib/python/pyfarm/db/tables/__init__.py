@@ -36,10 +36,10 @@ from pyfarm.db.tables.job import Job
 from pyfarm.db.tables.dependency import F2FDependency, J2JDependency
 
 def init(rebuild=False):
-    '''
+    """
     initializes the tables according the the preferences, rebuilding
     if requested
-    '''
+    """
     if rebuild or DB_REBULD:
         logger.warning('dropping all tables before rebuilding')
         Base.metadata.reflect()

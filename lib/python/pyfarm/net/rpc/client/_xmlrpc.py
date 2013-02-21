@@ -21,7 +21,7 @@ from pyfarm.logger import Logger
 
 
 class XMLRPCConnection(Logger):
-    '''
+    """
     Generic rpc object which implements the Twisted xmlrpc
     proxy object.  The constructor for this class will
     either except a hostname and port or a hostname with
@@ -45,7 +45,7 @@ class XMLRPCConnection(Logger):
     :exception RuntimeError:
         raised if we somehow end up without a hostname
         and/port port
-    '''
+    """
     def __init__(self, hostname,
                     port=None, success=None, failure=None):
         Logger.__init__(self.__class__.__name__)
@@ -69,10 +69,10 @@ class XMLRPCConnection(Logger):
     # end __init__
 
     def __fail(self, *args):
-        '''
+        """
         If no other deferred error handlers are defined, this will
         be the default
-        '''
+        """
         self.debug("rpc call to %s failed, iterating over failure below" % self.url)
 
         for error in args:

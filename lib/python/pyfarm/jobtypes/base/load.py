@@ -32,10 +32,10 @@ __all__ = ['find', 'jobtype', 'jobtypes', 'paths']
 logger = Logger(__name__)
 
 def paths():
-    '''
+    """
     returns the paths we should be searching in when looking for
     jobtype modules
-    '''
+    """
     # should only run the search once
     if PATHS:
         return PATHS
@@ -64,10 +64,10 @@ def paths():
 # end paths
 
 def find(name=None):
-    '''
+    """
     Depending on the value of name either find the requested name or all
     results.
-    '''
+    """
     if name is not None and name in JOBTYPES:
         logger.debug("jobtype %s is already loaded" % name)
         return JOBTYPES[name]
@@ -140,6 +140,6 @@ def jobtype(name):
 # end jobtype
 
 def jobtypes():
-    '''returns a list of jobtype names from all locations'''
+    """returns a list of jobtype names from all locations"""
     return find().keys()
 # end jobtypes
