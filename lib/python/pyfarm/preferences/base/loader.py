@@ -77,7 +77,7 @@ class Loader(IterableUserDict):
     versions = (
         ".".join(map(str, __version__)),
         ".".join(map(str, __version__[0:2])),
-        "default"
+        ""
     )
 
     # All possible root directors where we should expect to find
