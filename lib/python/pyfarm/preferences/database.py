@@ -58,11 +58,7 @@ class DatabasePreferences(Preferences):
         if isinstance(config, basestring):
             # load the connection information, skip
             # any keys that do not contain data
-            try:
-                config = self.get(config)
-
-            except KeyError:
-                return None
+            config = self.get(config)
 
         # if we're not working with a dict then we can't
         # work with this data structure
@@ -93,9 +89,10 @@ class DatabasePreferences(Preferences):
 
             except ImportError:
                 logger.warning("failed to import psycopg2ct, skipping")
-                return
+                raise
 
-            driver = "psycopg2"
+            else:
+                driver = "psycopg2"
 
         # so long as we have a driver, add it to
         # the engine
@@ -111,7 +108,7 @@ class DatabasePreferences(Preferences):
                 "sqlite is only supported for testing purposes",
                 RuntimeWarning
             )
-            return ["%s/%s" % (url, dbhost)]
+            return "%s/%s" % (url, dbhost)
 
         # password can't be provided without login
         if dbuser is None and dbpass is not None:
@@ -141,12 +138,18 @@ class DatabasePreferences(Preferences):
         if dbname is None:
             raise ValueError("value not provided for dbname")
         else:
-            url += "%/s"
+            url += "/%s" % dbname
 
         return url
     # end _url
 
     def get(self, key, **kwargs):
+        """
+        overrides :meth:`Preferences.get` to handle special cases for
+        the database urls
+        """
+        # special handling to ensure that calls to both the old urls
+        # lookup and the new 'urls' works equally
         if isinstance(key, basestring) and key.endswith("urls"):
             configs = OrderedDict()
 
@@ -154,13 +157,29 @@ class DatabasePreferences(Preferences):
             # urls to connect to using sqlalchemy
             for config_name, dbnames in self.get('setup.configs').iteritems():
                 for dbname in dbnames:
-                    url = self._url(dbname)
-                    if url is None:
+                    try:
+                        url = self._url(dbname)
+
+                        config_data = configs.setdefault(
+                            config_name, OrderedDict()
+                        )
+                        config_data[dbname] = url
+
+                    # on key errors (missing configurations) log
+                    # warning but continue on
+                    except KeyError:
                         msg = "%s.%s does not have any " % (config_name, dbname)
                         msg += "configuration data"
                         logger.warning(msg)
 
+                    # skip any import errors (let the underlying logic
+                    # handle the warnings)
+                    except ImportError:
+                        continue
+
             return configs
+
+        # in all other cases, call the underlying get() method
         else:
             return super(DatabasePreferences, self).get(key, **kwargs)
     # end get
