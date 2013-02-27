@@ -40,12 +40,19 @@ class NamedPreferences(Preferences):
 # end NamedPreferences
 
 
-class NetworkPreferences(NamedPreferences):
-    """network preferences"""
-    load_file = "network"
-# end NetworkPreferences
-
 class LoggingPreferences(NamedPreferences):
     """logging preferences"""
     load_file = "logging"
 # end LoggingPreferences
+
+
+class JobTypePreferences(NamedPreferences):
+    """jobtype preferences"""
+    load_file = "jobtypes"
+# end JobTypePreferences
+
+
+class JobSystemPreferences(NamedPreferences):
+    """jobsystem preferences"""
+    load_file = "jobsystem"
+# end JobSystemPreferences
