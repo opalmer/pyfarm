@@ -15,20 +15,21 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
+from pyfarm.preferences.network import NetworkPreferences
 
-from pyfarm.preferences import prefs
-#from pyfarm.datatypes.enums import DEFAULT_JOBTYPES, DEFAULT_SOFTWARE
-DEFAULT_JOBTYPES = [] # TODO: replace with new objects
-DEFAULT_SOFTWARE = [] # TODO: replace with new objects
 from pyfarm.datatypes.system import TOTAL_RAM, CPU_COUNT
 from pyfarm.cmdargs import *
 from pyfarm.net.functions import openport
 
 parser.description = "Entry point for PyFarm's host."
 
+netprefs = NetworkPreferences()
+
+DEFAULT_JOBTYPES = [] # TODO: replace with object
+DEFAULT_SOFTWARE = [] # TODO: replace with object
 
 try:
-    port = prefs.get('network.ports.host')
+    port = netprefs.get('ports.host')
 
 except KeyError:
     port = openport()

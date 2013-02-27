@@ -18,12 +18,13 @@
 
 import socket
 import netifaces
+from pyfarm.preferences.network import NetworkPreferences
 
-from pyfarm.preferences import prefs
 from pyfarm import errors
 from pyfarm.logger import Logger
 
 logger = Logger(__name__)
+prefs = NetworkPreferences()
 
 # setup network information
 INTERFACES = {}
@@ -38,7 +39,7 @@ FQDN = socket.getfqdn(HOSTNAME)
 # Connect to a remote host and bet the bound address.  This is mainly
 # used as a fallback in case the code below cannot resolve the hostname
 # from the ip address
-for address, port in prefs.get('network.remote_addr_check.addresses'):
+for address, port in prefs.get('remote_addr_check.addresses'):
     logger.debug("using %s:%s to check for bound address" % (address, port))
     try:
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)

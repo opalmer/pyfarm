@@ -24,14 +24,18 @@ from itertools import izip
 from sqlalchemy import create_engine
 from sqlalchemy.exc import OperationalError
 
-from pyfarm.preferences import prefs
+from pyfarm.preferences.simple import LoggingPreferences
+from pyfarm.preferences.database import DatabasePreferences
 from pyfarm.logger import Logger
 from pyfarm.errors import ConfigurationError
 
-CONFIGS = prefs.get('database.setup.config')
-URLS = prefs.get('database.urls')
-ECHO = prefs.get('logging.sqlalchemy.echo')
-ECHO_POOL = prefs.get('logging.sqlalchemy.pool')
+dbprefs = DatabasePreferences()
+logprefs = LoggingPreferences()
+
+CONFIGS = dbprefs.get('setup.config')
+URLS = dbprefs.get('urls')
+ECHO = logprefs.get('sqlalchemy.echo')
+ECHO_POOL = logprefs.get('sqlalchemy.pool')
 
 logger = Logger(__name__)
 

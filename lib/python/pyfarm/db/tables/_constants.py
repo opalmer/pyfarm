@@ -20,8 +20,14 @@
 
 import os as _os
 
-from pyfarm.preferences import prefs as _prefs
 from pyfarm.datatypes.enums import State as _state
+from pyfarm.preferences.simple import JobSystemPreferences, JobTypePreferences
+from pyfarm.preferences.database import DatabasePreferences
+
+# preference setup
+jtprefs = JobTypePreferences()
+jsprefs = JobSystemPreferences()
+dbprefs = DatabasePreferences()
 
 # length of certain string fields
 MAX_HOSTNAME_LENGTH = 255
@@ -38,17 +44,17 @@ FRAME_STATE_STOP = (_state.DONE, _state.FAILED)
 JOB_STATE_START = (_state.RUNNING, )
 JOB_STATE_STOP = (_state.DONE, _state.FAILED)
 
+# active state information
 ACTIVE_HOSTS_FRAME_STATES = (_state.RUNNING, _state.ASSIGN)
 ACTIVE_JOB_STATES = (_state.QUEUED, _state.RUNNING)
 ACTIVE_FRAME_STATES = (_state.QUEUED, _state.FAILED)
 
-
 # values defined by preferences
-REQUEUE_MAX = _prefs.get('jobtypes.defaults.requeue-max')
-REQUEUE_FAILED = _prefs.get('jobtypes.defaults.requeue-failed')
-DEFAULT_PRIORITY = _prefs.get('jobsystem.priority-default')
-DB_REBULD = _prefs.get('database.setup.rebuild')
-JOB_QUERY_FRAME_LIMIT = _prefs.get('jobsystem.job-query-frame-limit')
+REQUEUE_MAX = jtprefs.get('defaults.requeue-max')
+REQUEUE_FAILED = jtprefs.get('defaults.requeue-failed')
+DEFAULT_PRIORITY = jsprefs.get('priority-default')
+DB_REBULD = dbprefs.get('setup.rebuild')
+JOB_QUERY_FRAME_LIMIT = jsprefs.get('job-query-frame-limit')
 
 # specifies all of the default table names
 TABLE_PREFIX = _os.environ.get('PYFARM_TABLE_PREFIX') or "pyfarm_"
