@@ -46,6 +46,14 @@ class Preferences(object):
     def __init__(self, prefix=None, filename=None):
         self.prefix = '' if prefix is None else prefix
         self.filename = filename
+
+        # base the filename on a subclass name (if the class name
+        # is not Preferences)
+        classname = self.__class__.__name__
+        if filename is None and classname != "Preferences":
+            filename = classname.lower()
+
+        self.filename = filename
     # end __init__
 
     @classmethod
