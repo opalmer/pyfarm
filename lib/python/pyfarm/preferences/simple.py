@@ -44,3 +44,8 @@ class NetworkPreferences(NamedPreferences):
     """network preferences"""
     load_file = "network"
 # end NetworkPreferences
+
+class LoggingPreferences(NamedPreferences):
+    """logging preferences"""
+    load_file = "logging"
+# end LoggingPreferences
