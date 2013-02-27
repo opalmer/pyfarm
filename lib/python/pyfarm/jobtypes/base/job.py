@@ -23,12 +23,15 @@ import itertools
 from sqlalchemy import orm
 
 from pyfarm import errors
+from pyfarm.preferences.simple import FilesystemPreferences
+from pyfarm.preferences.jobtypes import JobTypePreferences
 from pyfarm.datatypes.enums import OperatingSystem
 from pyfarm.logger import Logger, Observer
 from pyfarm.datatypes.system import USER, OS
-from pyfarm.preferences import prefs
-from pyfarm.db import session# contexts
-#from pyfarm.db.tables import jobs, frames
+from pyfarm.db import session
+
+fsprefs = FilesystemPreferences()
+jtprefs = JobTypePreferences()
 
 class BaseJob(Logger):
     """
@@ -132,7 +135,7 @@ class BaseJob(Logger):
         """Sets up the log file and begins logging the progress of the job"""
         if self.logfile is None:
             self.debug("...setting up log")
-            root = prefs.get('filesystem.locations.jobs')
+            root = fsprefs.get('locations.jobs')
             template = string.Template(root)
             self.logfile = template.substitute(self.substitute_data)
             self.observer = Observer(self.logfile)
@@ -180,7 +183,7 @@ class BaseJob(Logger):
         else:
             # combine any additional paths from the environment
             # we passed in with the paths from preferences
-            paths = prefs.get('jobtypes.path')
+            paths = jtprefs.get('path')
             for entry in self.environ.get('PATH').split(os.pathsep):
                 if entry not in paths:
                     self.debug(".....inserting %s from the environment" % entry)
@@ -197,7 +200,7 @@ class BaseJob(Logger):
             # iterate over all possible command names and extensions
             # and construct a list of commands
             commands = set()
-            extensions = prefs.get('jobtypes.extensions')
+            extensions = jtprefs.get('extensions')
             extensions.append("")
 
             for command, extension in itertools.product(command_names, extensions):
