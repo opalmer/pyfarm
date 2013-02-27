@@ -46,13 +46,13 @@ class LoggingPreferences(NamedPreferences):
 # end LoggingPreferences
 
 
-class JobTypePreferences(NamedPreferences):
-    """jobtype preferences"""
-    load_file = "jobtypes"
-# end JobTypePreferences
-
-
 class JobSystemPreferences(NamedPreferences):
     """jobsystem preferences"""
     load_file = "jobsystem"
 # end JobSystemPreferences
+
+
+class FilesystemPreferences(NamedPreferences):
+    """filesystem preferences"""
+    load_file = "filesystem"
+# end FilesystemPreferences
