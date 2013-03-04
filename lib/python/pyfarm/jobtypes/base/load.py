@@ -22,7 +22,9 @@ import inspect
 
 from pyfarm import errors
 from pyfarm.logger import Logger
-from pyfarm.preferences import prefs
+from pyfarm.preferences.jobtypes import JobTypePreferences
+
+jobtype_prefs = JobTypePreferences()
 
 PATHS = []
 JOBTYPES = {}
@@ -57,7 +59,7 @@ def paths():
 
     # iterate over paths both preferences and the PYFARM_JOBTYPES
     # environment variable and run each result through addpath
-    map(addpath, prefs.get('jobtypes.search-paths'))
+    map(addpath, jobtype_prefs.get('search-paths'))
     map(addpath, os.environ.get('PYFARM_JOBTYPES', '').split(os.pathsep))
 
     return PATHS
