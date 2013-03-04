@@ -16,21 +16,52 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
+import string
+from os.path import sep
+
+from pyfarm import dist
+from pyfarm.datatypes.system import OSNAME
 from pyfarm.preferences.base.baseclass import Preferences
+from pyfarm.utility import expandPath
 
 
 class JobTypePreferences(Preferences):
     """jobtype preferences"""
     def __init__(self):
         super(JobTypePreferences, self).__init__(filename="jobtypes")
+    # end __init__
+
     # TODO: add function for file extension generation
-    # TODO: add function for $PATH generation
+
+    def _search_paths(self, data):
+        paths = []
+
+        for entry in data:
+            template = string.Template(entry.replace("/", sep))
+            expanded = expandPath(template.safe_substitute({
+                "pyfarm" : dist.location,
+                "root" : self.get(
+                    "filesystem.roots.%s" % OSNAME.lower(), filename=None
+                )
+            }))
+
+            if expanded not in paths:
+                paths.append(expanded)
+
+        return paths
+    # ene _search_paths
 
     def get(self, key, **kwargs):
         """
         overrides :meth:`Preferences.get` to handle special cases for
         the database urls
         """
-        return super(JobTypePreferences, self).get(key, **kwargs)
+        data = super(JobTypePreferences, self).get(key, **kwargs)
+        if key.endswith("search-paths"):
+            return self._search_paths(data)
     # end get
 # end JobTypePreferences
+
+
+j = JobTypePreferences()
+print j.get('search-paths')
