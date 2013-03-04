@@ -62,14 +62,15 @@ class Preferences(object):
         # and the key happens to start with the database name then
         # replace the beginning of the key with "" to ensure both
         # a.b.c and b.c will work if filename is 'a'
-        startswith_filename = all([
-            isinstance(key, basestring),
-            isinstance(filename, basestring),
-            key.startswith(filename + ".")
-        ])
+        if filename is not None:
+            startswith_filename = all([
+                isinstance(key, basestring),
+                isinstance(filename, basestring),
+                key.startswith(filename + ".")
+            ])
 
-        if startswith_filename:
-            key = key.replace(filename + ".", "")
+            if startswith_filename:
+                key = key.replace(filename + ".", "")
 
         # before we do anything check to see if the requested key
         # is something that maps to a callable function
@@ -103,7 +104,10 @@ class Preferences(object):
         return data
     # end _get
 
-    def get(self, key, failobj=NOTSET, force=False, return_loader=False):
+    def get(self,
+            key, failobj=NOTSET, force=False, return_loader=False,
+            **kwargs
+        ):
         """
         Base classmetod which is used for the sole purpose of data
         retrieval from the yaml file(s).
@@ -119,13 +123,16 @@ class Preferences(object):
            if True and the key requested happened to be a preference file
            name then return the loader instead of a copy of the loader data
 
+        :param kwargs:
+            any additional keywords to pass along
+
         :exception KeyError:
            This behaves slightly differently from :meth:`dict.get` in that
            unless failobj is set it will reraise the original exception
         """
         result = self._get(
             key, failobj=failobj, force=force, return_loader=return_loader,
-            filename=self.filename
+            filename=kwargs.get('filename', self.filename)
         )
 
         if result is NOTSET:
