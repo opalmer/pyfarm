@@ -56,3 +56,9 @@ class FilesystemPreferences(NamedPreferences):
     """filesystem preferences"""
     load_file = "filesystem"
 # end FilesystemPreferences
+
+
+class EnumPreferences(NamedPreferences):
+    """enum preferences"""
+    load_file = "enums"
+# end EnumPreferences

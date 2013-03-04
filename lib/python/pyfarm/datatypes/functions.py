@@ -20,14 +20,12 @@
 functions for use within the datatypes module
 """
 
-import os
-
-from pyfarm.yml import load
+from pyfarm.preferences.simple import EnumPreferences
 from pyfarm.datatypes.backports import namedtuple
 from pyfarm.datatypes.objects import ReadOnlyDict
 
 # TODO: replace with new preference loader
-#ENUM_DATA = yml.load(os.path.join(PYFARM_ETC, "enums.yml"))
+enumprefs = EnumPreferences()
 
 def notimplemented(name, module='psutil'):
     msg = "this version of %s does not implement %s(), " % (module, name)
@@ -50,7 +48,7 @@ def LoadEnum(name, methods=None, classonly=False):
         if True then return the class itself and not an instance
     """
     try:
-        data = ENUM_DATA[name]
+        data = enumprefs.get(name)
 
     except KeyError:
         raise KeyError("enum %s does not have any configuration data" % name)
