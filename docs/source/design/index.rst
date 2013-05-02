@@ -1,4 +1,3 @@
-:orphan:
 .. This file is part of PyFarm.
 .. Copyright (C) 2008-2013 Oliver Palmer
 ..
@@ -15,7 +14,17 @@
 .. You should have received a copy of the GNU Lesser General Public License
 .. along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
-Module `yml`
-------------
-.. automodule:: pyfarm.protopreferences
-    :members:
+Design Documents
+================
+
+Pages contained under this section cover the general design of certain
+aspects of PyFarm.  Documents contained here are not necessarily a
+representation of the final product however they do serve as a guide towards
+the final specification while under development.
+
+.. toctree::
+    :maxdepth: 5
+
+    client-server_assignment_fallback_behaviors
+
+.. TODO: SEGMENT DOCS UNDER FOLDERS???l
