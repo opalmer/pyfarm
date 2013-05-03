@@ -52,9 +52,14 @@ copyright = u'2013, Oliver Palmer'
 # # The full version, including alpha/beta/rc tags.
 # release = '0.4.0'
 
-from pyfarm import __version__
-release = ".".join(map(str, __version__))
-version = ".".join(map(str, __version__[0:2]))
+try:
+    from pyfarm import __version__
+    release = ".".join(map(str, __version__))
+    version = ".".join(map(str, __version__[0:2]))
+except Exception, error:
+    print "ERROR: %s" % error
+    release = "0.0"
+    version = "0.0.0"
 
 # version =
 
