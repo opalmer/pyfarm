@@ -14,19 +14,23 @@
 .. You should have received a copy of the GNU Lesser General Public License
 .. along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
+.. warning::
+    changes to this document are ongoing and may not reflect the final design
+
+
 Client<->Server Assignment Fallback Behaviors
 =============================================
 
-This document describes the process that the client attempt after failing to
+This document describes the process the client should attempt after failing to
 contact one more masters for a new task assignment.  It is intended to describe
-the expected behaviors when certain failure conditions are met, when a host
+the expected behavior(s) when certain failure conditions are met, when a host
 is allowed to make decisions for itself, what limits these decisions, and when
 control is given back to the master.
 
 
 Fallback Conditions
 -------------------
-Depending on the avaliable hosts, the assigned master, and the configuration
+Depending on the available hosts, the assigned master, and the configuration
 how the host will fall back can vary.  Generally speaking each host will:
     * attempt to use the assigned master
     * attempt each other master ordered by the number of hosts assigned to
@@ -34,6 +38,10 @@ how the host will fall back can vary.  Generally speaking each host will:
     * if configured fall back onto using the logic each master runs or if not
       configured fail any assignment (schedule above for reattempt)
 .. image:: img/client-server_assignment_behaviors_01.png
+
+**NOTE**: Selection of each master will likely be a via a dns round robin
+setup.  Written in twisted for the purpose of resolving internal or aliased
+names.
 
 
 Failure Logging
@@ -57,3 +65,30 @@ other cases we either either:
       interval (configuration controlled [type of contact, interval])
     * never revert to standard behavior once in autonomous assignment mode
       unless contacted by the server or directed via the api (enabled via config)
+
+Advantages Over Other Options
+-----------------------------
+Single Master
++++++++++++++
+* lower overall failure rate for job assignments from a master
+* masters can be rotated in and out of the pool
+
+Pure Self Assignment
+++++++++++++++++++++
+* more centralized management of the client pool
+* more advanced logic can be performed server side based on direct information
+  from a host
+* client/server share most of the same logic necessary to select jobs
+
+Disadvantages Over Other Options
+--------------------------------
+Single Master
++++++++++++++
+* possible currency issues between host information, information residing
+  in ram, and remote databases when operating at scale
+* more management overhead
+
+Pure Self Assignment
+++++++++++++++++++++
+* more complex logic
+* implementation will be more difficult to understand
