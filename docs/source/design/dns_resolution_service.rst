@@ -14,6 +14,8 @@
 .. You should have received a copy of the GNU Lesser General Public License
 .. along with PyFarm.  If not, see <http://www.gnu.org/licenses/>.
 
+.. _design-dns_resource_resolution:
+
 Domain Name Services for Resource Resolution
 ============================================
 In the past pyfarm has always made the assumption that a single dns name
@@ -52,7 +54,7 @@ it can handle specific DNS information related to pyfarm.
 As an example of this special information, an agent needs to request a new
 job from a master but without knowing anything about the master pool:
   * ask DNS service for address of `pyfarm-master` (name would be configurable)
-  * follow the :ref:`assignment behaviors design <client-server_fallback_behaviors>`
+  * follow the :ref:`assignment behaviors design <design-client-server_fallback_behaviors>`
     and either retrieve a job to process or ask DNS for another address to try
 
 In addition to providing agents with a master to connect to this could also
