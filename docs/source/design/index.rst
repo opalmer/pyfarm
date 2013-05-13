@@ -17,14 +17,13 @@
 Design Documents
 ================
 
-Pages contained under this section cover the general design of certain
-aspects of PyFarm.  Documents contained here are not necessarily a
-representation of the final product however they do serve as a guide towards
-the final specification while under development.
+Pages under this section cover the general design of certain aspects of pyfarm.
+Documents contained here are not necessarily a representation of the
+final product however they do serve as a guide towards some of the expected
+behaviors and intents.
 
 .. toctree::
-    :maxdepth: 5
+    :maxdepth: 2
 
+    dns_resolution_service
     client-server_assignment_fallback_behaviors
-
-.. TODO: SEGMENT DOCS UNDER FOLDERS???l

@@ -23,7 +23,7 @@ Welcome to PyFarm's documentation!
 Contents:
 
 .. toctree::
-   :maxdepth: 4
+   :maxdepth: 2
 
    design/index.rst
 
