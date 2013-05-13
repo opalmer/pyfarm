@@ -27,7 +27,7 @@ import pkg_resources
 from os.path import join, abspath, dirname, isdir
 
 # setup version information
-__version__ = (0, 4, 0)
+__version__ = (1, 0, 0)
 __versionstr__ = ".".join(map(str, __version__))
 
 PYTHON_ROOT = dirname(abspath(__file__))
