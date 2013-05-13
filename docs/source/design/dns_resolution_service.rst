@@ -19,9 +19,10 @@
 Domain Name Services for Resource Resolution
 ============================================
 In the past pyfarm has always made the assumption that a single dns name
-was equal to a single resource or address.  In the case of large websites which
-have to scale however a single name can usually be resolved to multiple
-address to distribute load and reduce the possibility of complete failure:
+was equal to a single resource or address.  Primarily this was done for
+simplicity however for services which need to scale a single name can usually
+be resolved to multiple address to distribute load and reduce the possibility
+of complete failure:
 
 ::
 
@@ -40,7 +41,7 @@ address to distribute load and reduce the possibility of complete failure:
 
 
 Rather than reinvent the wheel pyfarm should take advantage of a similar
-approach so agents don't have to talk to an SQL server for either random
+approach so agents don't have to talk to an SQL server for either a random
 master or host from a group.
 
 Server Implementation
