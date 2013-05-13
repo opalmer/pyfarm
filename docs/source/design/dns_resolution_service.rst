@@ -18,7 +18,7 @@
 
 Domain Name Services for Resource Resolution
 ============================================
-In the past pyfarm has always made the assumption that a single dns name
+In the past pyfarm has always made the assumption that a single DNS name
 was equal to a single resource or address.  Primarily this was done for
 simplicity however for services which need to scale a single name can usually
 be resolved to multiple address to distribute load and reduce the possibility
@@ -46,7 +46,7 @@ master or host from a group.
 
 Server Implementation
 ---------------------
-In short, pyfarm will implement a dns server with custom responses for certain
+In short, pyfarm will implement a DNS server with custom responses for certain
 queries.  Any request that we don't have specific handling for will
 automatically use the default nameserver(s) to return a response.  On the
 surface it will behave just as a normal DNS server would with the exception that
@@ -72,13 +72,13 @@ agents and five masters you only want to inform agents about master that:
   * have not had a large number of failures recently (server busy response is
     not a failure but should bear some weight on the decision process)
 
-From a dns client perspective this should help to ensure that the address
-returned for a given dns query has a higher chance of a successful connection
+From a DNS client perspective this should help to ensure that the address
+returned for a given DNS query has a higher chance of a successful connection
 which will limited the number of overall exceptions handled.
 
 REST APIs
 +++++++++
-Since the DNS server will act as a middleman of sorts between dns queries, the
+Since the DNS server will act as a middleman of sorts between DNS queries, the
 SQL database, and the job system we should be able to directly modify its
 behavior.  Modifications we should be able to perform on a host or hosts include
 TTL updates, force cache refreshing, update(s) to failure counter(s), and
@@ -90,8 +90,8 @@ for the next refresh.
 Refreshing Data
 +++++++++++++++
 Unlike DNS which usually respects `TTL <https://en.wikipedia.org/wiki/Time_to_live>`_
-pyfarm's dns server will be configurable to respect either TTL or operate on
-a fixed timer.  Although this does not following the usual design of DNS it will
+pyfarm's DNS server will be configurable to respect either TTL or operate on
+a fixed timer.  Although this does not follow the usual design of DNS it will
 ensure the agent systems won't have much of a delay getting the latest results.
 This could pose issues for anything respecting TTL however so TTL responses
 should be modified for hosts that we are handling to match the timer value if
@@ -110,6 +110,6 @@ Improvements Over Previous Design
 ---------------------------------
 Compared to the older method where each agent must be assigned a specific master
 this implementation will allow for a more scalable infrastructure, fewer
-database queries, and more control over agent <-> communication.  In addition
-companies or individuals with the desire and expertise could use their own
-DNS infrastructure for master or group IP address resolution.
+database queries, and more control over agent <-> master/group communication.
+In addition companies or individuals with the desire and expertise could use
+their own DNS infrastructure for master or group IP address resolution.

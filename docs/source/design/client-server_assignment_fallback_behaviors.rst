@@ -34,8 +34,8 @@ Depending on the available master(s) and the configuration how the agent will
 fallback can vary.
 
 Generally speaking each agent should:
-    * ask dns to resolve the master hostname alias (ex. pyfarm-master)
-    * on failure contact dns again till we exhaust all master addresses
+    * ask DNS to resolve the master hostname alias (ex. pyfarm-master)
+    * on failure contact DNS again till we exhaust all master addresses
       before falling back to self assignment (if enabled in the configuration)
 .. image:: img/client-server_assignment_behaviors_01.png
 
