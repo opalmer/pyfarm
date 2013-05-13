@@ -66,9 +66,10 @@ Host Filtering
 ++++++++++++++
 We don't always want to return all hosts, in fact we should generally only
 return what we consider to be valid hosts.  As an example if you have 500
-agents and five masters you only want to inform agents about master that are:
-  * currently 'enabled' in the database, configured, etc.
-  * have not had a large number of failures recently
+agents and five masters you only want to inform agents about master that:
+  * are currently 'enabled' in the database, configured, etc.
+  * have not had a large number of failures recently (server busy response is
+    not a failure but should bear some weight on the decision process)
 
 From a dns client perspective this should help to ensure that the address
 returned for a given dns query has a higher chance of a successful connection
