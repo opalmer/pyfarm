@@ -20,9 +20,8 @@ Domain Name Services for Resource Resolution
 ============================================
 In the past pyfarm has always made the assumption that a single DNS name
 was equal to a single resource or address.  Primarily this was done for
-simplicity however for services which need to scale a single name can usually
-be resolved to multiple address to distribute load and reduce the possibility
-of complete failure:
+simplicity however for services which need to scale, a single name can usually
+be resolved to multiple address for load distribution and redundancy:
 
 ::
 
@@ -41,8 +40,7 @@ of complete failure:
 
 
 Rather than reinvent the wheel pyfarm should take advantage of a similar
-approach so agents don't have to talk to an SQL server for either a random
-master or host from a group.
+approach so agents don't have to talk to an SQL server for each request.
 
 Server Implementation
 ---------------------
@@ -67,7 +65,7 @@ Host Filtering
 ++++++++++++++
 We don't always want to return all hosts, in fact we should generally only
 return what we consider to be valid hosts.  As an example if you have 500
-agents and five masters you only want to inform agents about master that:
+agents and five masters you only want to inform agents about masters that:
   * are currently 'enabled' in the database, configured, etc.
   * have not had a large number of failures recently (server busy response is
     not a failure but should bear some weight on the decision process)
