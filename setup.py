@@ -16,19 +16,37 @@
 
 import os
 import sys
+import ast
 import shutil
 import setuptools
 from distutils.core import setup
+from os.path import abspath, dirname, join
 from distutils.command.clean import clean as _clean
 
 os.environ['PYFARM_SETUP_RUNNING'] = 'True'
 
 cwd = os.path.dirname(os.path.abspath(__file__))
-root = os.path.join(cwd, 'lib', 'python')
-if root not in sys.path:
-    sys.path.insert(0, root)
 
-from pyfarm import __version__
+initpy = abspath(
+    join(
+        dirname(__file__), "lib", "python", "pyfarm",
+        "__init__.py"
+    )
+)
+author = None
+parsed_version = None
+
+with open(initpy, "r") as stream:
+    module = ast.parse(stream.read(), stream.name)
+
+for obj in module.body:
+    if isinstance(obj, ast.Assign) and obj.targets[0].id == "__version__":
+        parsed_version = map(lambda num: num.n, obj.value.elts)
+    elif isinstance(obj, ast.Assign) and obj.targets[0].id == "__author__":
+        author = obj.value.s
+
+assert isinstance(parsed_version, list), "did not find __version__"
+assert isinstance(author, basestring), "did not find __author__"
 
 ETC_DIRS = (os.path.join('etc', 'default'), )
 PY_VERSION_INFO = sys.version_info
@@ -150,15 +168,15 @@ requires = requirements()
 
 setup(
     name='pyfarm',
-    version=".".join(map(str, __version__)),
+    version=".".join(map(str, parsed_version)),
     package_dir={'' : libdir},
     data_files=getetc(),
     packages=setuptools.find_packages(libdir),
     setup_requires=requires,
     install_requires=requires,
     url='http://pyfarm.net',
-    license='LGPL',
-    author='Oliver Palmer',
+    license='Apache v2.0',
+    author=author,
     author_email='',
     description='',
     scripts=setuptools.findall('bin'),
