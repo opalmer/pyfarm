@@ -8,4 +8,11 @@ install:
   - pip install . --use-mirrors
   - pip install -r requirements.txt --use-mirrors
 
-script: nosetests 
+script: ./dev/bin/travis-ci/build.sh
+
+env:
+  - DB=postgres
+  - DB=mysql
+
+before_script: ./dev/bin/travis-ci/before_script.sh
+after_script: ./dev/bin/travis-ci/after_script.sh
