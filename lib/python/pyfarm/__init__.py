@@ -60,6 +60,6 @@ _etc_paths_ = filter(
 
 # be sure we were able to construct a least one etc path
 if not _etc_paths_:
-    raise OSError("failed to construct any etc paths")
+    raise OSError("FIXME: failed to construct any etc paths")
 
 PYFARM_ETC = os.environ.get('PYFARM_ETC') or _etc_paths_[0]
