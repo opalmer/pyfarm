@@ -48,4 +48,4 @@ PyFarm 1.0.0 provides job types out of the box:
 
 If you wish to request a new builtin type or check the integration status of
 one checkout their tickets
-`on github <https://github.com/opalmer/pyfarm/issues?labels=3rd+party+integration&page=1&state=open>`
+`on github <https://github.com/opalmer/pyfarm/issues?labels=3rd+party+integration&page=1&state=open>`_
