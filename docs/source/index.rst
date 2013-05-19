@@ -12,11 +12,11 @@
 .. See the License for the specific language governing permissions and
 .. limitations under the License.
 
-Welcome to PyFarm's documentation!
-==================================
+PyFarm - A Python Based Distributed Job System
+==============================================
 
 .. note::
-    This is a placeholder document, more to follow later.
+    These documents are still undergoing revision
 
 **Table of Contents**
 
