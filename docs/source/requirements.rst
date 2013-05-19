@@ -35,7 +35,7 @@ Below are the libraries generated from
 :download:`requirements.txt <../../requirements.txt>` which were used to build
 PyFarm.  Some of the below dependencies are only be required for development.
 
-.. include:: .requirements_python.rst
+.. include:: include/python_requirements.rst
 
 Supported Software (Job Types)
 ------------------------------

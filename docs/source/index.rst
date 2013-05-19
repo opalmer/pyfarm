@@ -25,6 +25,7 @@ PyFarm - A Python Based Distributed Job System
 
    design/index.rst
    requirements.rst
+   downloads.rst
    license.rst
 
 

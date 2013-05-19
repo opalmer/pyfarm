@@ -56,6 +56,7 @@ help:
 
 clean:
 	-rm -rf $(BUILDDIR)/*
+	-rm -rf source/downloads
 
 api:
 	-rm -rf source/python/pyfarm

@@ -54,7 +54,8 @@ test.%:
 	@env PYTHONPATH=$(PYTHONPATH) $(PYTHON) $(SCRIPT)
 
 docs.%: TARGET=$(subst docs.,,$@)
-docs.%: clean setup.install
+docs.%:
+	@python setup.py develop
 	$(MAKE) -s -C docs $(TARGET)
 
 tests: test.preferences
