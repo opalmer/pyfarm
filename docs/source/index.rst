@@ -24,6 +24,7 @@ Welcome to PyFarm's documentation!
    :maxdepth: 2
 
    design/index.rst
+   requirements.rst
    license.rst
 
 
