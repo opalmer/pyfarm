@@ -40,7 +40,10 @@ PyFarm.  Some of the below dependencies are only be required for development.
 Supported Software (Job Types)
 ------------------------------
 
-PyFarm 1.0.0 provides job types out of the box:
+| **TODO**: add links to job type specific documentation
+PyFarm 1.0.0 provides several job types out of the box.  Each of these software
+packages will have their own requirements as well so please visit the
+manufacturers website for more information.
 
 * Maya
 * Houdini
