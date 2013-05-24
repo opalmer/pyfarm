@@ -85,7 +85,7 @@ def requirements():
         'psutil>=0.6.0',
         'netifaces>=0.8',
         'sqlalchemy>=0.7.0',
-        'Jinja2==%s.%s' % sys.version_info[0:2]
+        'Jinja2==%s.%s' % (PY_MAJOR, PY_MINOR)
     ]
 
     # NOTE: commenting this out for now since it's not as easy
@@ -172,10 +172,14 @@ def getetc():
 libdir = os.path.join('lib', 'python')
 requires = requirements()
 
+with open('requirements.txt', 'w') as requirestxt:
+    for requirement in requires:
+        print >> requirestxt, requirement
+
 setup(
     name='pyfarm',
     version=".".join(map(str, parsed_version)),
-    package_dir={'' : libdir},
+    package_dir={'': libdir},
     data_files=getetc(),
     packages=setuptools.find_packages(libdir),
     setup_requires=requires,
@@ -186,5 +190,5 @@ setup(
     author_email='',
     description='',
     scripts=setuptools.findall('bin'),
-    cmdclass={'clean' : clean}
+    cmdclass={'clean': clean}
 )
