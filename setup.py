@@ -74,16 +74,18 @@ def requirements():
         'nose',
         'appdirs',
         'colorama',
-        'PyYaml'
+        'PyYaml',
+        'pylint'
     ]
 
     versioned_requires = [
+        'distribute>=0.6.40',
         'sphinx>=1.1',
-        'Jinja2>=2.3',
         'twisted>=11',
         'psutil>=0.6.0',
         'netifaces>=0.8',
-        'sqlalchemy>=0.7.0'
+        'sqlalchemy>=0.7.0',
+        'Jinja2==%s.%s' % sys.version_info[0:2]
     ]
 
     # NOTE: commenting this out for now since it's not as easy
