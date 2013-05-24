@@ -18,7 +18,13 @@ from __future__ import with_statement
 
 import os
 import sys
-import ast
+
+from _ast import *
+try:
+    from ast import parse
+except ImportError:
+    parse = lambda source, filename: compile(source, filename, 'exec', PyCF_ONLY_AST)
+
 import shutil
 import setuptools
 from distutils.core import setup
@@ -39,12 +45,12 @@ author = None
 parsed_version = None
 
 with open(initpy, "r") as stream:
-    module = ast.parse(stream.read(), stream.name)
+    module = parse(stream.read(), stream.name)
 
 for obj in module.body:
-    if isinstance(obj, ast.Assign) and obj.targets[0].id == "__version__":
+    if isinstance(obj, Assign) and obj.targets[0].id == "__version__":
         parsed_version = map(lambda num: num.n, obj.value.elts)
-    elif isinstance(obj, ast.Assign) and obj.targets[0].id == "__author__":
+    elif isinstance(obj, Assign) and obj.targets[0].id == "__author__":
         author = obj.value.s
 
 assert isinstance(parsed_version, list), "did not find __version__"
@@ -59,7 +65,7 @@ def requirements():
     generates a list of requirements depending on python version
     and operating system
     """
-    requires = []
+    requires = set()
 
     # split out versioned/unversioned requirements for easier
     # maintenance
@@ -71,14 +77,10 @@ def requirements():
         'PyYaml'
     ]
 
-    # if os.environ.get('READTHEDOCS', None) != 'True':
-    # unversioned_requires.append('PyYaml')
-
     versioned_requires = [
         'sphinx>=1.1',
         'Jinja2>=2.3',
         'twisted>=11',
-        'txJSON-RPC<.4',
         'psutil>=0.6.0',
         'netifaces>=0.8',
         'sqlalchemy>=0.7.0'
@@ -117,10 +119,10 @@ def requirements():
     if sys.platform.startswith("win"):
         unversioned_requires.append("pywin32")
 
-    requires.extend(versioned_requires)
-    requires.extend(unversioned_requires)
+    requires.update(set(versioned_requires))
+    requires.update(set(unversioned_requires))
 
-    return requires
+    return list(requires)
 # end requirements
 
 class clean(_clean):

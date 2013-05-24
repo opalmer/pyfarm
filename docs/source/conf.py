@@ -17,8 +17,13 @@
 from __future__ import with_statement
 
 import os
-import ast
-import time
+
+from _ast import *
+try:
+    from ast import parse
+except ImportError:
+    parse = lambda source, filename: compile(source, filename, 'exec', PyCF_ONLY_AST)
+
 import shutil
 import urllib2
 import hashlib
@@ -69,14 +74,14 @@ print "generating dynamic content"
 # information
 print "..parsing version/author(s)"
 with open(initpy, "r") as stream:
-    module = ast.parse(stream.read(), stream.name)
+    module = parse(stream.read(), stream.name)
 
 author = None
 parsed_version = None
 for obj in module.body:
-    if isinstance(obj, ast.Assign) and obj.targets[0].id == "__version__":
+    if isinstance(obj, Assign) and obj.targets[0].id == "__version__":
         parsed_version = map(lambda num: num.n, obj.value.elts)
-    elif isinstance(obj, ast.Assign) and obj.targets[0].id == "__author__":
+    elif isinstance(obj, Assign) and obj.targets[0].id == "__author__":
         author = obj.value.s
 
 assert isinstance(parsed_version, list), "did not find __version__"
