@@ -171,10 +171,6 @@ def getetc():
 libdir = os.path.join('lib', 'python')
 requires = requirements()
 
-with open('requirements.txt', 'w') as requirestxt:
-    for requirement in requires:
-        print >> requirestxt, requirement
-
 setup(
     name='pyfarm',
     version=".".join(map(str, parsed_version)),
