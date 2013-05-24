@@ -79,7 +79,6 @@ def requirements():
     ]
 
     versioned_requires = [
-        'distribute>=0.6.40',
         'sphinx>=1.1',
         'twisted>=11',
         'psutil>=0.6.0',
