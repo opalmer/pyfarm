@@ -20,11 +20,16 @@ module for database specific preference handling
 
 import warnings
 
-from pyfarm.datatypes.backports import OrderedDict
+try:
+    from collections import OrderedDict
+except ImportError:
+    from ordereddict import OrderedDict
+
 from pyfarm.pref.core.baseclass import Preferences
 from pyfarm.logger import Logger
 
 logger = Logger(__name__)
+
 
 class DatabasePreferences(Preferences):
     """
