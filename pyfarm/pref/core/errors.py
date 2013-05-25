@@ -19,7 +19,6 @@
 
 class PreferenceLoadError(OSError):
     """raised whenever we have trouble loading a preference file"""
-    pass
 # end PreferenceLoadError
 
 
@@ -27,5 +26,4 @@ class EmptyPreferenceError(ValueError):
     """
     raised when a preference file we attempted to load does not contain data.
     """
-    pass
 # end EmptyPreferenceError
