@@ -18,8 +18,10 @@
 
 title Success
 
-if [ "TRAVIS_PYTHON_VERSION" != "2.5" ]; then
+if [ "$BUILD_DOCS" != "true" ]; then
+    echo "Nothing left to do, only built the docs"
+elif [ "$TRAVIS_PYTHON_VERSION" != "2.5" ]; then
     runcmd coveralls
 else
-    echo "Nothing to do for after_success, running Python 2.5"
+    echo "Nothing left to do, running Python 2.5"
 fi
