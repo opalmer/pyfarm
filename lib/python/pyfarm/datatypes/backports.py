@@ -17,30 +17,26 @@
 """
 Retrieves the proper object or constructs a new one to match later
 versions of Python.  For any missing object the init file in the PyFarm
-package will handle retrieval and setup of an object from this module.  As an
-example:
-
->>> try:
-...     from itertools import permutations
-... except ImportError:
-...     import itertools
-...     from pyfarm.datatypes.backports import permutations
-...     itertools.permutations = permutations
+package will handle retrieval and setup of an object from this module
 """
 
 import sys
 
-try:
+MAJOR, MINOR, MICRO = sys.version_info
+
+if (MAJOR, MINOR) >= (2, 7):
     from collections import OrderedDict
-except ImportError:
+    from importlib import import_module
+else:
     from ordereddict import OrderedDict
 
-try:
+if (MAJOR, MINOR) >= (2, 6):
     from collections import namedtuple
-except ImportError:
+    from itertools import product, permutations
+else:
+    from itertools_recipes import product, permutations
     from operator import itemgetter as _itemgetter
     from keyword import iskeyword as _iskeyword
-    import sys as _sys
 
     def namedtuple(typename, field_names, verbose=False, rename=False):
         """
@@ -144,200 +140,9 @@ except ImportError:
         # sys._getframe is not defined (Jython for example) or sys._getframe is not
         # defined for arguments greater than 0 (IronPython).
         try:
-            result.__module__ = _sys._getframe(1).f_globals.get('__name__', '__main__')
+            result.__module__ = sys._getframe(1).f_globals.get('__name__', '__main__')
         except (AttributeError, ValueError):
             pass
 
         return result
     # end namedtuple
-
-try:
-    from itertools import product
-except ImportError:
-    def product(*args, **kwds):
-        """
-        product(*iterables) --> product object
-
-        Cartesian product of input iterables.  Equivalent to nested for-loops.
-
-        For example, product(A, B) returns the same as:  ((x,y) for x in A for y in B).
-        The leftmost iterators are in the outermost for-loop, so the output tuples
-        cycle in a manner similar to an odometer (with the rightmost element changing
-        on every iteration).
-
-        product('ab', range(3)) --> ('a',0) ('a',1) ('a',2) ('b',0) ('b',1) ('b',2)
-        product((0,1), (0,1), (0,1)) --> (0,0,0) (0,0,1) (0,1,0) (0,1,1) (1,0,0) ...
-        """
-        # product('ABCD', 'xy') --> Ax Ay Bx By Cx Cy Dx Dy
-        # product(range(2), repeat=3) --> 000 001 010 011 100 101 110 111
-        pools = map(tuple, args) * kwds.get('repeat', 1)
-        result = [[]]
-        for pool in pools:
-            result = [x+[y] for x in result for y in pool]
-        for prod in result:
-            yield tuple(prod)
-    # end product
-
-try:
-    from itertools import permutations
-except ImportError:
-    def permutations(iterable, r=None):
-        """
-        permutations(iterable[, r]) --> permutations object
-
-        Return successive r-length permutations of elements in the iterable.
-
-        permutations(range(3), 2) --> (0,1), (0,2), (1,0), (1,2), (2,0), (2,1)
-        """
-        pool = tuple(iterable)
-        n = len(pool)
-        r = n if r is None else r
-        for indices in product(range(n), repeat=r):
-            if len(set(indices)) == r:
-                yield tuple(pool[i] for i in indices)
-    # end permutations
-
-if sys.version_info[0:2] <= (2, 6):
-    import os as _os
-    from tempfile import (
-        template, gettempdir, _bin_openflags, _text_openflags,
-        _mkstemp_inner,
-    )
-
-    class _TemporaryFileWrapper:
-        """Temporary file wrapper
-
-        This class provides a wrapper around files opened for
-        temporary use.  In particular, it seeks to automatically
-        remove the file when it is no longer needed.
-        """
-
-        def __init__(self, file, name, delete=True):
-            self.file = file
-            self.name = name
-            self.close_called = False
-            self.delete = delete
-        # end __init__
-
-        def __getattr__(self, name):
-            # Attribute lookups are delegated to the underlying file
-            # and cached for non-numeric results
-            # (i.e. methods are cached, closed and friends are not)
-            file = self.__dict__['file']
-            a = getattr(file, name)
-            if not issubclass(type(a), type(0)):
-                setattr(self, name, a)
-            return a
-        # end __getattr__
-
-        # The underlying __enter__ method returns the wrong object
-        # (self.file) so override it to return the wrapper
-        def __enter__(self):
-            self.file.__enter__()
-            return self
-        # end __enter__
-
-        # NT provides delete-on-close as a primitive, so we don't need
-        # the wrapper to do anything special.  We still use it so that
-        # file.name is useful (i.e. not "(fdopen)") with NamedTemporaryFile.
-        if _os.name != 'nt':
-            # Cache the unlinker so we don't get spurious errors at
-            # shutdown when the module-level "os" is None'd out.  Note
-            # that this must be referenced as self.unlink, because the
-            # name TemporaryFileWrapper may also get None'd out before
-            # __del__ is called.
-            unlink = _os.unlink
-
-            def close(self):
-                if not self.close_called:
-                    self.close_called = True
-                    self.file.close()
-                    if self.delete:
-                        self.unlink(self.name)
-
-            # end close
-
-            def __del__(self):
-                self.close()
-            # end __del__
-
-            # Need to trap __exit__ as well to ensure the file gets
-            # deleted when used in a with statement
-            def __exit__(self, exc, value, tb):
-                result = self.file.__exit__(exc, value, tb)
-                self.close()
-                return result
-            # end __exit__
-    # end _TemporaryFileWrapper
-
-    def NamedTemporaryFile(mode='w+b', bufsize=-1, suffix="",
-                           prefix=template, dir=None, delete=True):
-        """Create and return a temporary file.
-        Arguments:
-        'prefix', 'suffix', 'dir' -- as for mkstemp.
-        'mode' -- the mode argument to os.fdopen (default "w+b").
-        'bufsize' -- the buffer size argument to os.fdopen (default -1).
-        'delete' -- whether the file is deleted on close (default True).
-        The file is created as mkstemp() would do it.
-
-        Returns an object with a file-like interface; the name of the file
-        is accessible as file.name.  The file will be automatically deleted
-        when it is closed unless the 'delete' argument is set to False.
-        """
-
-        if dir is None:
-            dir = gettempdir()
-
-        if 'b' in mode:
-            flags = _bin_openflags
-        else:
-            flags = _text_openflags
-
-        # Setting O_TEMPORARY in the flags causes the OS to delete
-        # the file when it is closed.  This is only supported by Windows.
-        if _os.name == 'nt' and delete:
-            flags |= _os.O_TEMPORARY
-
-        (fd, name) = _mkstemp_inner(dir, prefix, suffix, flags)
-        file = _os.fdopen(fd, mode, bufsize)
-        return _TemporaryFileWrapper(file, name, delete)
-
-try:
-    from importlib import import_module
-
-except ImportError:
-    import sys
-
-    def _resolve_name(name, package, level):
-        """Return the absolute name of the module to be imported."""
-        if not hasattr(package, 'rindex'):
-            raise ValueError("'package' not set to a string")
-        dot = len(package)
-        for x in xrange(level, 1, -1):
-            try:
-                dot = package.rindex('.', 0, dot)
-            except ValueError:
-                raise ValueError("attempted relative import beyond top-level "
-                                 "package")
-        return "%s.%s" % (package[:dot], name)
-
-
-    def import_module(name, package=None):
-        """Import a module.
-
-        The 'package' argument is required when performing a relative import. It
-        specifies the package to use as the anchor point from which to resolve the
-        relative import to an absolute import.
-
-        """
-        if name.startswith('.'):
-            if not package:
-                raise TypeError("relative imports require the 'package' argument")
-            level = 0
-            for character in name:
-                if character != '.':
-                    break
-                level += 1
-            name = _resolve_name(name[level:], package, level)
-        __import__(name)
-        return sys.modules[name]
