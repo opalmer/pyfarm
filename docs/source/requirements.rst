@@ -31,9 +31,17 @@ supported databases see
 
 Python
 ------
-Below are the libraries generated from
-:download:`requirements.txt <../../requirements.txt>` which were used to build
-PyFarm.  Some of the below dependencies are only be required for development.
+Below is a dynamic list of requirements constructed from PyFarm's `setup.py`
+script.  There's not currently a `requirements.txt` file associated with this
+project because of the differences in dependencies between Python versions.
+PyFarm however can still be installed into a virtual environment using pip:
+
+::
+
+    pip install -e .
+
+.. note::
+    installation directly from pypi will be supported in the future
 
 .. include:: include/python_requirements.rst
 

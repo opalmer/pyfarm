@@ -24,6 +24,7 @@ try:
 except ImportError:
     parse = lambda source, filename: compile(source, filename, 'exec', PyCF_ONLY_AST)
 
+import sys
 import shutil
 import urllib2
 import hashlib
@@ -60,11 +61,13 @@ master_doc = 'index'
 
 project = u'PyFarm'
 root = abspath(join(dirname(__file__), "..", ".."))
+
+if root not in sys.path:
+    sys.path.append(root)
+
 docroot = join(root, "docs", "source")
-requirements = join(root, "requirements.txt")
 initpy = join(root, "lib", "python", project.lower(), "__init__.py")
 tmpdir = tempfile.mkdtemp(suffix="-pyfarm-docs")
-assert isfile(requirements), "%s does not exist" % requirements
 assert isfile(initpy), "%s does not exist" % initpy
 
 print "generating dynamic content"
@@ -95,17 +98,23 @@ version = ".".join(map(str, parsed_version[0:2]))
 
 # create a requirements file to
 print "...python requirements"
+import setup as _setup
 python_requirements = join(docroot, "include", "python_requirements.rst")
+
 with open(python_requirements, "w") as destination:
-    with open(requirements, "r") as requirements:
-        for line in requirements:
-            if not line.startswith("#") and project.lower() not in line:
-                print >> destination, "* %s" % line.split("==")[0]
+    supported_versions = ((2, 5), (2, 6), (2, 7))
 
-print "..TODO: design index"
+    for major, minor in supported_versions:
+        header = "Python %s.%s" % (major, minor)
+        print >> destination, header
+        print >> destination, "+" * len(header)
+
+        for requirement in sorted(_setup.requirements(major, minor, develop=False)):
+            print >> destination, "* %s" % requirement
+
+        print >> destination
+
 print "..TODO: jobtypes"
-print "..TODO: download links"
-
 print "..download links"
 
 download_release = (
