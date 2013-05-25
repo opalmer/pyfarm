@@ -20,7 +20,7 @@ import inspect
 
 from pyfarm import errors
 from pyfarm.logger import Logger
-from pyfarm.preferences.jobtypes import JobTypePreferences
+from pyfarm.pref.jobtypes import JobTypePreferences
 
 jobtype_prefs = JobTypePreferences()
 

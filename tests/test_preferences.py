@@ -31,11 +31,11 @@ try:
 except ImportError:
     from ordereddict import OrderedDict
 
-from pyfarm import preferences
+from pyfarm import pref
 from importlib import import_module
 
-from pyfarm.preferences.core.baseclass import Loader, Preferences
-from pyfarm.preferences.core.errors import PreferenceLoadError
+from pyfarm.pref.core.baseclass import Loader, Preferences
+from pyfarm.pref.core.errors import PreferenceLoadError
 from pyfarm import __version__
 
 # location where we'll be saving our test data
@@ -224,14 +224,14 @@ def test_subclass():
 
     # test subclasses of custom preferences
     files = lambda name: "__" not in name and name != "base"
-    dirname = os.path.dirname(preferences.__file__)
+    dirname = os.path.dirname(pref.__file__)
     names = filter(files, set((i.split(".")[0] for i in os.listdir(dirname))))
     skip = (
         "__package__", "__doc__", "pyfarm.logger.Logger",
         "ordereddict.OrderedDict", "Logger"
     )
 
-    module_names = [ "%s.%s" % (preferences.__name__, name) for name in names ]
+    module_names = [ "%s.%s" % (pref.__name__, name) for name in names ]
     for module in map(import_module, module_names):
         for name, obj in vars(module).iteritems():
             if name != "Preferences" and \

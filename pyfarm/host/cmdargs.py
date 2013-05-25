@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from pyfarm.preferences.network import NetworkPreferences
+from pyfarm.pref.network import NetworkPreferences
 
 from pyfarm.datatypes.system import TOTAL_RAM, CPU_COUNT
 from pyfarm.cmdargs import *

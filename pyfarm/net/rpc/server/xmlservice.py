@@ -14,13 +14,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from __future__ import with_statement
+
 import os
 
 from twisted.internet import reactor
 from twisted.web import resource, xmlrpc
 
 from pyfarm.logger import Logger
-from pyfarm.preferences import prefs
+from pyfarm.pref import prefs
 from pyfarm.net.rpc.client import utility
 
 TEST_MODE = False

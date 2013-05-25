@@ -16,7 +16,11 @@
 
 from uuid import uuid4
 from urllib import urlopen
-from json import dumps, loads
+
+try:
+    from json import dumps, loads
+except ImportError:
+    from simplejson import dumps, loads
 
 from pyfarm.errors import RPCFault
 

@@ -22,8 +22,8 @@ from itertools import izip
 from sqlalchemy import create_engine
 from sqlalchemy.exc import OperationalError
 
-from pyfarm.preferences.simple import LoggingPreferences
-from pyfarm.preferences.database import DatabasePreferences
+from pyfarm.pref.simple import LoggingPreferences
+from pyfarm.pref.database import DatabasePreferences
 from pyfarm.logger import Logger
 from pyfarm.errors import ConfigurationError
 

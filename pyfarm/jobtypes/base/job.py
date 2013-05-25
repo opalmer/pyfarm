@@ -21,8 +21,8 @@ import itertools
 from sqlalchemy import orm
 
 from pyfarm import errors
-from pyfarm.preferences.simple import FilesystemPreferences
-from pyfarm.preferences.jobtypes import JobTypePreferences
+from pyfarm.pref.simple import FilesystemPreferences
+from pyfarm.pref.jobtypes import JobTypePreferences
 from pyfarm.datatypes.enums import OperatingSystem
 from pyfarm.logger import Logger, Observer
 from pyfarm.datatypes.system import USER, OS

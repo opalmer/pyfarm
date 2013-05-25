@@ -16,7 +16,7 @@
 
 import socket
 import netifaces
-from pyfarm.preferences.network import NetworkPreferences
+from pyfarm.pref.network import NetworkPreferences
 
 from pyfarm import errors
 from pyfarm.logger import Logger

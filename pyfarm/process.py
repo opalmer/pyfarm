@@ -37,7 +37,7 @@ from pyfarm.datatypes.system import OS, USER
 #from pyfarm.db.contexts import Session  # TODO: replace with new objects
 from pyfarm.db import tables
 from pyfarm import errors
-from pyfarm.preferences import prefs
+from pyfarm.pref import prefs
 
 from twisted.internet import protocol, reactor, error
 

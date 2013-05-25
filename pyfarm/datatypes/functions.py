@@ -18,7 +18,7 @@
 functions for use within the datatypes module
 """
 
-from pyfarm.preferences.simple import EnumPreferences
+from pyfarm.pref.simple import EnumPreferences
 from pyfarm.datatypes.backports import namedtuple
 from pyfarm.datatypes.objects import ReadOnlyDict
 

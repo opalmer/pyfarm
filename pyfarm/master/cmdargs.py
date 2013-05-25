@@ -13,7 +13,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from pyfarm.preferences import prefs
+from pyfarm.pref import prefs
 from pyfarm.cmdargs import *
 from pyfarm.net.functions import openport
 

@@ -19,9 +19,9 @@
 import os as _os
 
 from pyfarm.datatypes.enums import State as _state
-from pyfarm.preferences.jobtypes import JobTypePreferences
-from pyfarm.preferences.simple import JobSystemPreferences
-from pyfarm.preferences.database import DatabasePreferences
+from pyfarm.pref.jobtypes import JobTypePreferences
+from pyfarm.pref.simple import JobSystemPreferences
+from pyfarm.pref.database import DatabasePreferences
 
 # preference setup
 jtprefs = JobTypePreferences()
