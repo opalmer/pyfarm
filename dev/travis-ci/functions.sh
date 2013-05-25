@@ -39,6 +39,29 @@ function runcmd {
     fi
 }
 
+function retrycmd {
+    attempt=1
+
+    while [ $attempt -lt 5 ]; do
+        echo "${BOLD}running (attempt ${attempt}): $@${NORMAL}"
+        $@
+        exit_code=$?
+
+        if [ $exit_code -ne 0 ]; then
+            echo "${BOLD}${RED}failed: $@ (exit $exit_code)${NORMAL}"
+            attempt=$(( $attempt + 1))
+        else
+            echo "${BOLD}${GREEN}finished: $@${NORMAL}"
+            break
+        fi
+    done
+
+    if [ $attempt -eq 5 ]; then
+        echo "${BOLD}${RED}failed after $attempt attempts: $@ (exit $exit_code)${NORMAL}"
+        exit $exit_code
+    fi
+}
+
 function todo {
     echo "${BOLD}${YELLOW}TODO: $1${NORMAL}"
 }

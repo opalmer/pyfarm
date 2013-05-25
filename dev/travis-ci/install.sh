@@ -28,6 +28,6 @@ elif [ "$DB" == "mysql" ]; then
 fi
 
 title Installing Packages
-runcmd sudo apt-get -y install $SYSTEM_PACKAGES
-runcmd pip install $PYTHON_PACKAGES --use-mirrors
-runcmd pip install -e . --use-mirrors
+retrycmd sudo apt-get -y install $SYSTEM_PACKAGES
+retrycmd pip install $PYTHON_PACKAGES --use-mirrors
+retrycmd pip install -e . --use-mirrors
