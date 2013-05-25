@@ -28,8 +28,7 @@ from pyfarm.db.tables.dependency import J2JDependency
 from pyfarm.db.tables._bases import TaskBase
 from pyfarm.db.tables import Base, Frame, \
     REQUEUE_FAILED, REQUEUE_MAX, TABLE_JOB, JOB_QUERY_FRAME_LIMIT, \
-    TABLE_JOB_SOFTWARE, MAX_USERNAME_LENGTH, TABLE_J2J_DEPENDENCIES,\
-    ACTIVE_FRAME_STATES
+    TABLE_JOB_SOFTWARE, MAX_USERNAME_LENGTH, ACTIVE_FRAME_STATES
 
 
 class JobSoftware(Base):

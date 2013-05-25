@@ -15,10 +15,12 @@
 # limitations under the License.
 
 import os
-import psutil
 import datetime
 from UserDict import UserDict
+
+import psutil
 from twisted.internet import task
+
 
 try:
     import pwd

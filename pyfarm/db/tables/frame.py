@@ -14,15 +14,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from datetime import datetime
 from sqlalchemy import event, Column, ForeignKey
 from sqlalchemy.orm import relationship, validates
-from sqlalchemy.types import Integer, DateTime
+from sqlalchemy.types import Integer
 
 from pyfarm.logger import Logger
 from pyfarm.db.tables._bases import TaskBase
-from pyfarm.db.tables import Base, TABLE_FRAME, TABLE_JOB, TABLE_HOST, \
-    FRAME_STATE_START, FRAME_STATE_STOP
+from pyfarm.db.tables import Base, TABLE_FRAME, TABLE_JOB, TABLE_HOST
 from pyfarm.datatypes.enums import State
 
 logger = Logger(__name__)

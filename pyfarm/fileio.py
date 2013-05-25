@@ -19,12 +19,12 @@ module which contains functions for loading information
 from disk
 """
 
-import os
 import imp
-import yaml
-import tempfile
-try: from yaml import CLoader as Loader, CDumper as Dumper
-except ImportError: from yaml import Loader, Dumper
+
+try:
+    from yaml import CLoader as Loader, CDumper as Dumper
+except ImportError:
+    from yaml import Loader, Dumper
 
 from pyfarm.logger import Logger
 

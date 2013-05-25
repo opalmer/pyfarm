@@ -61,12 +61,9 @@ master_doc = 'index'
 
 project = u'PyFarm'
 root = abspath(join(dirname(__file__), "..", ".."))
-
-if root not in sys.path:
-    sys.path.append(root)
-
+sys.path.insert(0, root)
 docroot = join(root, "docs", "source")
-initpy = join(root, "lib", "python", project.lower(), "__init__.py")
+initpy = join(root, project.lower(), "__init__.py")
 tmpdir = tempfile.mkdtemp(suffix="-pyfarm-docs")
 assert isfile(initpy), "%s does not exist" % initpy
 

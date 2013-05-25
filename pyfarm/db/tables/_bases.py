@@ -20,7 +20,7 @@ contains the main base classes used by other tables
 
 import socket
 from datetime import datetime
-from sqlalchemy import Column, event
+from sqlalchemy import Column
 from sqlalchemy.orm import validates
 from sqlalchemy.types import String, Boolean, Integer, DateTime
 

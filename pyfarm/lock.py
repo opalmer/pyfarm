@@ -17,10 +17,12 @@
 import os
 import time
 import atexit
-import psutil
 import tempfile
 
+import psutil
+
 from pyfarm.logger import Logger
+
 
 KILL_SLEEP = 2
 LOCK_ROOT = os.path.join(tempfile.gettempdir(), 'pyfarm', 'lock')

@@ -15,23 +15,28 @@
 # limitations under the License.
 
 from __future__ import with_statement
-
 import os
-import nose
 import uuid
-import yaml
 import shutil
 import random
 import inspect
 import tempfile
 from UserDict import IterableUserDict
 
+import nose
+import yaml
+
+try:
+    from collections import OrderedDict
+except ImportError:
+    from ordereddict import OrderedDict
+
 from pyfarm import preferences
 from importlib import import_module
-from pyfarm.datatypes.backports import OrderedDict
-from pyfarm.preferences.base.baseclass import Loader, Preferences
-from pyfarm.preferences.base.errors import PreferenceLoadError
-from pyfarm import __version__, PYFARM_ETC
+
+from pyfarm.preferences.core.baseclass import Loader, Preferences
+from pyfarm.preferences.core.errors import PreferenceLoadError
+from pyfarm import __version__
 
 # location where we'll be saving our test data
 TMP_TEST_DIRS = []
@@ -56,22 +61,23 @@ TEST_FILENAME = None
 TEST_FILEPATH = None
 CONFIGDIRS = Loader.configdirs[:]
 
+
 def maketestdict():
-    s = lambda : str(uuid.uuid4())
-    i = lambda : random.randint(0, 500000000)
-    d = lambda : random.choice([True, False, None, s(), i()])
+    s = lambda: str(uuid.uuid4())
+    i = lambda: random.randint(0, 500000000)
+    d = lambda: random.choice([True, False, None, s(), i()])
     callables = (s, i, d)
     choices = [
         random.choice(callables)() for x in xrange(random.randint(3, 20))
     ]
 
-    rd = lambda : {
-        s() : d(),
-        s() : d(),
-        s() : d(),
-        s() : choices,
-        s() : d(),
-        s() : d(),
+    rd = lambda: {
+        s(): d(),
+        s(): d(),
+        s(): d(),
+        s(): choices,
+        s(): d(),
+        s(): d(),
     }
 
     out = rd()
@@ -80,6 +86,7 @@ def maketestdict():
     rddd[s()] = rd()
     return out
 # end maketestdict
+
 
 def prerun():
     global TEST_DATA, TEST_FILEPATH, TEST_FILENAME, CONFIGDIRS
@@ -115,9 +122,11 @@ def prerun():
     Loader.configdirs = tuple(configdirs)
 # end prerun
 
+
 def postrun():
     Loader.configdirs = CONFIGDIRS
 # end postrun
+
 
 @nose.with_setup(setup=prerun, teardown=postrun)
 def test_load():
@@ -142,6 +151,7 @@ def test_load():
     dataB = tuple(sorted(loaded.iteritems()))
     assert dataA == dataB
 # end test_load
+
 
 @nose.with_setup(setup=prerun, teardown=postrun)
 def test_loadmultiple():
@@ -184,6 +194,7 @@ def test_loadmultiple():
         assert where[0] == file_data[key]
 # end test_loadmultiple
 
+
 def test_versions():
     expected = (
         ".".join(map(str, __version__)),
@@ -193,6 +204,7 @@ def test_versions():
     assert isinstance(Loader.versions, tuple)
     assert Loader.versions == expected
 # end test_versions
+
 
 @nose.with_setup(setup=postrun)
 def test_configdirs():
@@ -204,6 +216,7 @@ def test_configdirs():
     assert isinstance(Loader.configdirs, tuple)
     assert Loader.configdirs == expected
 # end test_configdirs
+
 
 def test_subclass():
     assert issubclass(Loader, IterableUserDict)

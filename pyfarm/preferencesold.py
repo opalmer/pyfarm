@@ -16,15 +16,16 @@
 
 import os
 import string
-import psutil
 import tempfile
 import warnings
+
+import psutil
 
 from pyfarm import PYFARM_ETC, PYFARM_ROOT, fileio, errors
 from pyfarm.datatypes.enums import OperatingSystem
 from pyfarm.logger import Logger
-
 from pyfarm.datatypes.system import OS, OSNAME
+
 
 if not os.path.isdir(PYFARM_ETC):
     raise OSError("configuration directory does not exist: %s" % PYFARM_ETC)

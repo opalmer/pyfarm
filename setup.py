@@ -19,9 +19,11 @@ from __future__ import with_statement
 import os
 import sys
 
+PY_MAJOR, PY_MINOR, PY_MICRO = sys.version_info[0:3]
+
 # quite a few packages won't support anything lower so
 # raise an exception instead of an odd failure later on
-assert sys.version_info[0:2] >= (2, 5), "Python 2.5 or higher is required"
+assert (PY_MAJOR, PY_MINOR) >= (2, 5), "Python 2.5 or higher is required"
 
 from _ast import *
 try:
@@ -39,12 +41,7 @@ os.environ["PYFARM_SETUP_RUNNING"] = "True"
 
 cwd = os.path.dirname(os.path.abspath(__file__))
 
-initpy = abspath(
-    join(
-        dirname(__file__), "lib", "python", "pyfarm",
-        "__init__.py"
-    )
-)
+initpy = abspath(join(dirname(__file__), "pyfarm", "__init__.py"))
 author = None
 parsed_version = None
 
@@ -59,10 +56,6 @@ for obj in module.body:
 
 assert isinstance(parsed_version, list), "did not find __version__"
 assert isinstance(author, basestring), "did not find __author__"
-
-ETC_DIRS = (os.path.join("etc", "default"), )
-PY_VERSION_INFO = sys.version_info
-PY_MAJOR, PY_MINOR, PY_MICRO = PY_VERSION_INFO[0:3]
 
 def requirements(major, minor, develop=False, docs=True):
     """
@@ -110,7 +103,7 @@ def requirements(major, minor, develop=False, docs=True):
 def getetc():
     """returns the files to copy over from etc/"""
     results = []
-    for dirname in ETC_DIRS:
+    for dirname in os.listdir(os.path.join("pyfarm", "preferences", "etc")):
         results.append((dirname, setuptools.findall(dirname)))
 
     return results
@@ -187,6 +180,6 @@ if __name__ == "__main__":
         author=author,
         author_email="",
         description="",
-        scripts=setuptools.findall("bin"),
+        scripts=setuptools.findall("scripts"),
         cmdclass={"clean": clean}
     )
