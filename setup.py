@@ -64,24 +64,21 @@ ETC_DIRS = (os.path.join("etc", "default"), )
 PY_VERSION_INFO = sys.version_info
 PY_MAJOR, PY_MINOR, PY_MICRO = PY_VERSION_INFO[0:3]
 
-def requirements(major=None, minor=None):
+def requirements(major, minor, develop=False):
     """
-    generates a list of requirements depending on the Python version
-    and operating system
+    generates a list of requirements depending on the Python version,
+    operating system, and develop keyword
     """
-    major = PY_MAJOR if major is None else major
-    minor = PY_MINOR if minor is None else minor
     requires = [
-        "nose",
-        "appdirs",
-        "colorama",
-        "PyYaml",
-        "sphinx",
-        "psutil",
-        "netifaces",
-        "sqlalchemy",
-        "Jinja2==%s.%s" % (major, minor)
+        "appdirs", "colorama", "PyYaml",
+        "psutil", "netifaces", "sqlalchemy",
     ]
+
+    # for local development
+    if develop:
+        requires.append("Jinja2==%s.%s" % (major, minor))
+        requires.append("sphinx")
+        requires.append("nose")
 
     if (major, minor) > (2, 5):
         requires.append("zope.interface")
@@ -152,7 +149,9 @@ class clean(_clean):
 
 if __name__ == '__main__':
     libdir = os.path.join("lib", "python")
-    requires = requirements()
+    requires = requirements(
+        PY_MAJOR, PY_MINOR, "install" not in sys.argv
+    )
 
     setup(
         name="pyfarm",
