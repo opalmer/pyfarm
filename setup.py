@@ -80,22 +80,23 @@ def requirements(major, minor, develop=False):
         requires.append("sphinx")
         requires.append("nose")
 
+    # backports of modules introduced in 2.7
+    if (major, minor) < (2, 7):
+        requires.append("argparse")
+        requires.append("ordereddict")
+        requires.append("importlib")
+
+    # higer than 2.5
     if (major, minor) > (2, 5):
         requires.append("zope.interface")
         requires.append("twisted")
 
-    if (major, minor) < (2, 7):
-        requires.append("argparse")
-        requires.append("ordereddict")
-
-    if (major, minor) < (2, 6):
-        requires.append("simplejson")
-
+    # 2.5 exclusive
     if (major, minor) == (2, 5):
-        # SyntaxError - "Exception as e"
+        requires.append("simplejson")
         requires.append("zope.interface<=3.8.0")
-        # support dropped - http://twistedmatrix.com/trac/ticket/5553
         requires.append("twisted<=12.1")
+        requires.append("itertools_recipes")
 
     if sys.platform.startswith("win"):
         requires.append("pywin32")
