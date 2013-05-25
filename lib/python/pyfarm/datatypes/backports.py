@@ -22,7 +22,7 @@ package will handle retrieval and setup of an object from this module
 
 import sys
 
-MAJOR, MINOR, MICRO = sys.version_info
+MAJOR, MINOR, MICRO = sys.version_info[0:3]
 
 if (MAJOR, MINOR) >= (2, 7):
     from collections import OrderedDict
