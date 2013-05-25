@@ -20,6 +20,7 @@ module for common preference classes
 
 from pyfarm.pref.core.baseclass import Preferences
 
+
 class NamedPreferences(Preferences):
     """
     simple class which will use either the current class name or
