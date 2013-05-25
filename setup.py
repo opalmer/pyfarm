@@ -64,7 +64,7 @@ ETC_DIRS = (os.path.join("etc", "default"), )
 PY_VERSION_INFO = sys.version_info
 PY_MAJOR, PY_MINOR, PY_MICRO = PY_VERSION_INFO[0:3]
 
-def requirements(major, minor, develop=False):
+def requirements(major, minor, develop=False, docs=True):
     """
     generates a list of requirements depending on the Python version,
     operating system, and develop keyword
@@ -76,9 +76,12 @@ def requirements(major, minor, develop=False):
 
     # for local development
     if develop:
-        requires.append("Jinja2==%s.%s" % (major, minor))
-        requires.append("sphinx")
         requires.append("nose")
+
+        if docs:
+            requires.append("Jinja2==%s.%s" % (major, minor))
+            requires.append("sphinx")
+
 
     # backports of modules introduced in 2.7
     if (major, minor) < (2, 7):
@@ -148,10 +151,18 @@ class clean(_clean):
     # end run
 # end clean
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     libdir = os.path.join("lib", "python")
+
+    # disable docs for some of the travis jobs
+    build_docs = True
+    if "TRAVIS_JOB_NUMBER" in os.environ and "TRAVIS_DOCS" not in os.environ:
+        build_docs = False
+
     requires = requirements(
-        PY_MAJOR, PY_MINOR, "install" not in sys.argv
+        PY_MAJOR, PY_MINOR,
+        develop="install" not in sys.argv,
+        docs=build_docs
     )
 
     setup(

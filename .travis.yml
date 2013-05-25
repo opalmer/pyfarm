@@ -8,6 +8,7 @@ env:
   - DB=postgres
   - DB=mysql
   - DB=sqlite
+  - TRAVIS_DOCS=true
 
 install: dev/travis-ci/install.sh
 script: dev/travis-ci/build.sh
