@@ -156,7 +156,7 @@ if __name__ == "__main__":
 
     # disable docs for some of the travis jobs
     build_docs = True
-    if "TRAVIS_JOB_NUMBER" in os.environ and "TRAVIS_DOCS" not in os.environ:
+    if "TRAVIS_JOB_NUMBER" in os.environ and "BUILD_DOCS" not in os.environ:
         build_docs = False
 
     requires = requirements(
