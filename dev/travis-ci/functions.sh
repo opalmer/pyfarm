@@ -2,7 +2,7 @@
 
 BOLD=`tput bold`
 GREEN=`tput setf 2`
-YELLOW=`tupt setf 3`
+YELLOW=`tput setf 3`
 RED=`tput setf 4`
 NORMAL=`tput sgr 0`
 
