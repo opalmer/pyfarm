@@ -11,5 +11,5 @@ if [ "BUILD_DOCS" == "true" ]; then
 fi
 
 title Build Step: tests
-runcmd nosetests tests
+runcmd coverage run --source=pyfarm tests/* --verbose -s
 todo write out/copy test database configuration file
