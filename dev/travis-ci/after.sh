@@ -16,6 +16,10 @@
 
 . dev/travis-ci/functions.sh
 
+title Success
+
 if [ "TRAVIS_PYTHON_VERSION" != "2.5" ]; then
-    coveralls
+    runcmd coveralls
+else
+    echo "Nothing to do for after_success, running Python 2.5"
 fi
