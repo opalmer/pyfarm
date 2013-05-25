@@ -166,7 +166,7 @@ if __name__ == "__main__":
 
     # coveralls only supported in Python 2.5
     if (
-        "TRAVIS_JOB_NUMBER" in os.environ
+        "TRAVIS" in os.environ
         and "BUILD_DOCS" not in os.environ
         and (PY_MAJOR, PY_MINOR) > (2, 5)
         and os.environ.get("TRAVIS_PYTHON_VERSION", "2.5") != "2.5"
