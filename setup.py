@@ -69,6 +69,8 @@ def requirements(major=None, minor=None):
     generates a list of requirements depending on the Python version
     and operating system
     """
+    major = PY_MAJOR if major is None else major
+    minor = PY_MINOR if minor is None else minor
     requires = [
         "nose",
         "appdirs",
@@ -78,10 +80,8 @@ def requirements(major=None, minor=None):
         "psutil",
         "netifaces",
         "sqlalchemy",
-        "Jinja2==%s.%s" % (PY_MAJOR, PY_MINOR)
+        "Jinja2==%s.%s" % (major, minor)
     ]
-    major = PY_MAJOR if major is None else major
-    minor = PY_MINOR if minor is None else minor
 
     if (major, minor) > (2, 5):
         requires.append("zope.interface")
