@@ -65,20 +65,11 @@ def requirements():
     generates a list of requirements depending on python version
     and operating system
     """
-    requires = set()
-
-    # split out versioned/unversioned requirements for easier
-    # maintenance
-    unversioned_requires = [
-        'zope.interface',
+    requires = [
         'nose',
         'appdirs',
         'colorama',
         'PyYaml',
-        'pylint'
-    ]
-
-    versioned_requires = [
         'sphinx>=1.1',
         'twisted>=11',
         'psutil>=0.6.0',
@@ -87,16 +78,11 @@ def requirements():
         'Jinja2==%s.%s' % (PY_MAJOR, PY_MINOR)
     ]
 
-    # NOTE: commenting this out for now since it's not as easy
-    #       as adding the code below
-#    # determine if we need to install PyQt or PySide
-#    try:
-#        import PyQt4
-#    except ImportError:
-#        try:
-#            import PySide
-#        except ImportError:
-#            unversioned_requires.append('PySide')
+    if sys.version[0:2] > (2, 5):
+        requires.append('zope.interface')
+    else:
+        # Python2.5 error - 'Exception as e' used
+        requires.append('zope.interface<=3.8.0')
 
     try:
         import json
