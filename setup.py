@@ -72,11 +72,13 @@ def requirements(major, minor, develop=False, docs=True):
     requires = [
         "appdirs", "colorama", "PyYaml",
         "psutil", "netifaces", "sqlalchemy",
+        "requests"
     ]
 
     # for local development
     if develop:
         requires.append("nose")
+        requires.append("python-coveralls")
 
         if docs:
             requires.append("Jinja2==%s.%s" % (major, minor))
@@ -99,7 +101,6 @@ def requirements(major, minor, develop=False, docs=True):
         requires.append("simplejson")
         requires.append("zope.interface<=3.8.0")
         requires.append("twisted<=12.1")
-        requires.append("itertools_recipes")
 
     if sys.platform.startswith("win"):
         requires.append("pywin32")

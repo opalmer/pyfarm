@@ -33,7 +33,6 @@ if (MAJOR, MINOR) >= (2, 6):
     from collections import namedtuple
     from itertools import product, permutations
 else:
-    from itertools_recipes import permutations
     from operator import itemgetter as _itemgetter
     from keyword import iskeyword as _iskeyword
 
@@ -147,8 +146,10 @@ else:
     # end namedtuple
 
     def product(*args, **kwds):
-        # product('ABCD', 'xy') --> Ax Ay Bx By Cx Cy Dx Dy
-        # product(range(2), repeat=3) --> 000 001 010 011 100 101 110 111
+        """
+        product('ABCD', 'xy') --> Ax Ay Bx By Cx Cy Dx Dy
+        product(range(2), repeat=3) --> 000 001 010 011 100 101 110 111
+        """
         pools = map(tuple, args) * kwds.get('repeat', 1)
         result = [[]]
         for pool in pools:
@@ -156,3 +157,16 @@ else:
         for prod in result:
             yield tuple(prod)
     # end product
+
+    def permutations(iterable, r=None):
+        """
+        permutations('ABCD', 2) --> AB AC AD BA BC BD CA CB CD DA DB DC
+        permutations(range(3)) --> 012 021 102 120 201 210
+        """
+        pool = tuple(iterable)
+        n = len(pool)
+        r = n if r is None else r
+        for indices in product(range(n), repeat=r):
+            if len(set(indices)) == r:
+                yield tuple(pool[i] for i in indices)
+    # end permutations
