@@ -15,5 +15,5 @@ fi
 
 title Installing Packages
 runcmd sudo apt-get -y install $SYSTEM_PACKAGES
-runcmd pip install $PYTHON_PACKAGES
+runcmd pip install $PYTHON_PACKAGES --use-mirrors
 runcmd pip install -e . --use-mirrors
