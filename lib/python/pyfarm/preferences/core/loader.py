@@ -31,8 +31,8 @@ except ImportError:
 
 from pyfarm import __version__, PYFARM_ETC
 from pyfarm.logger import Logger
-from pyfarm.preferences.base.errors import EmptyPreferenceError, PreferenceLoadError
-from pyfarm.preferences.base.enums import NOTFOUND
+from pyfarm.preferences.core.errors import EmptyPreferenceError, PreferenceLoadError
+from pyfarm.preferences.core.enums import NOTFOUND
 
 logger = Logger(__name__)
 

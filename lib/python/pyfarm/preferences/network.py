@@ -15,7 +15,7 @@
 # limitations under the License.
 
 import re
-from pyfarm.preferences.base.baseclass import Preferences
+from pyfarm.preferences.core.baseclass import Preferences
 from pyfarm.net.functions import openport
 
 class NetworkPreferences(Preferences):

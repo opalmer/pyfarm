@@ -18,7 +18,7 @@
 module for common preference classes
 """
 
-from pyfarm.preferences.base.baseclass import Preferences
+from pyfarm.preferences.core.baseclass import Preferences
 
 class NamedPreferences(Preferences):
     """
