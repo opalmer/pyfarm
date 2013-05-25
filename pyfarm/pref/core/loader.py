@@ -29,10 +29,12 @@ try:
 except ImportError:
     from yaml import Loader as YAMLLoader
 
-from pyfarm import __version__, PYFARM_ETC
+from pyfarm import __version__
 from pyfarm.logger import Logger
-from pyfarm.preferences.core.errors import EmptyPreferenceError, PreferenceLoadError
-from pyfarm.preferences.core.enums import NOTFOUND
+from pyfarm.pref.core.enums import NOTFOUND
+from pyfarm.pref.core.errors import (
+    EmptyPreferenceError, PreferenceLoadError
+)
 
 logger = Logger(__name__)
 

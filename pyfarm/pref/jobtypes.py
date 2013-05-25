@@ -19,7 +19,7 @@ from os.path import sep
 
 from pyfarm import dist
 from pyfarm.datatypes.system import OSNAME
-from pyfarm.preferences.core.baseclass import Preferences
+from pyfarm.pref.core.baseclass import Preferences
 from pyfarm.utility import expandPath
 
 
