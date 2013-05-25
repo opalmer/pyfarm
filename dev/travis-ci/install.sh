@@ -14,6 +14,6 @@ elif [ "$DB" == "mysql" ]; then
 fi
 
 title Installing Packages
-runcmd sudo aptitude -y install $SYSTEM_PACKAGES
+runcmd sudo apt-get -y install $SYSTEM_PACKAGES
 runcmd pip install $PYTHON_PACKAGES
 runcmd pip install -e . --use-mirrors

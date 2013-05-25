@@ -88,26 +88,23 @@ def requirements():
         import json
 
     except ImportError:
-        unversioned_requires.append('simplejson')
+        requires.append('simplejson')
 
     # determine if we need to install ordereddict
     try:
         from collections import OrderedDict
     except ImportError:
-        unversioned_requires.append('ordereddict')
+        requires.append('ordereddict')
 
     # determine if we need to install argparse
     try:
         import argparse
     except ImportError:
-        unversioned_requires.append('argparse')
+        requires.append('argparse')
 
     # windows specific requirements
     if sys.platform.startswith("win"):
-        unversioned_requires.append("pywin32")
-
-    requires.update(set(versioned_requires))
-    requires.update(set(unversioned_requires))
+        requires.append("pywin32")
 
     return list(requires)
 # end requirements
