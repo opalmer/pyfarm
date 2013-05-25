@@ -26,8 +26,9 @@ import inspect
 import tempfile
 from UserDict import IterableUserDict
 
-from pyfarm.datatypes.backports import import_module, OrderedDict
 from pyfarm import preferences
+from importlib import import_module
+from pyfarm.datatypes.backports import OrderedDict
 from pyfarm.preferences.base.baseclass import Loader, Preferences
 from pyfarm.preferences.base.errors import PreferenceLoadError
 from pyfarm import __version__, PYFARM_ETC

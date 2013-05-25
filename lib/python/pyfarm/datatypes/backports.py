@@ -26,7 +26,6 @@ MAJOR, MINOR, MICRO = sys.version_info[0:3]
 
 if (MAJOR, MINOR) >= (2, 7):
     from collections import OrderedDict
-    from importlib import import_module
 else:
     from ordereddict import OrderedDict
 
@@ -34,7 +33,7 @@ if (MAJOR, MINOR) >= (2, 6):
     from collections import namedtuple
     from itertools import product, permutations
 else:
-    from itertools_recipes import product, permutations
+    from itertools_recipes import permutations
     from operator import itemgetter as _itemgetter
     from keyword import iskeyword as _iskeyword
 
@@ -146,3 +145,14 @@ else:
 
         return result
     # end namedtuple
+
+    def product(*args, **kwds):
+        # product('ABCD', 'xy') --> Ax Ay Bx By Cx Cy Dx Dy
+        # product(range(2), repeat=3) --> 000 001 010 011 100 101 110 111
+        pools = map(tuple, args) * kwds.get('repeat', 1)
+        result = [[]]
+        for pool in pools:
+            result = [x+[y] for x in result for y in pool]
+        for prod in result:
+            yield tuple(prod)
+    # end product
