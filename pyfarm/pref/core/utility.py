@@ -25,12 +25,21 @@ except ImportError:
     from pyfarm.datatypes.backports import product
 
 
-def getPreferenceDirs(version, roots, user=True, system=True, cull=True):
+def configurationDirs(
+        version, roots, subdir="etc", extension="*.yml",
+        user=True, system=True, cull=True
+    ):
     """
     returns a list of preference files which exist on disk
 
     :param list roots:
         additional root directories to search for preferences in
+
+    :param string subdir:
+        the subdirectory under each root that we're looking for
+
+    :param string extension:
+        the file extension we're looking for
 
     :param bool user:
         If True then add user data directories as well
@@ -53,10 +62,10 @@ def getPreferenceDirs(version, roots, user=True, system=True, cull=True):
     appdirs = AppDirs("pyfarm", "pyfarm")
 
     if user:
-        roots.insert(0, os.path.join(appdirs.user_data_dir, "etc"))
+        roots.insert(0, os.path.join(appdirs.user_data_dir, subdir))
 
     if system:
-        roots.insert(1, os.path.join(appdirs.site_data_dir, "etc"))
+        roots.insert(1, os.path.join(appdirs.site_data_dir, subdir))
 
     # generate a list of subdirectories to visit so
     # preference files can be locked off
@@ -74,8 +83,11 @@ def getPreferenceDirs(version, roots, user=True, system=True, cull=True):
     directories = []
     for root, versiondir in product(roots, version_subdirs):
         path = os.path.join(root, versiondir) if versiondir else root
-        if not cull or os.path.isdir(path) and fnfilter(os.listdir(path), "*.yml"):
+        if (
+            not cull
+            or (os.path.isdir(path) and fnfilter(os.listdir(path), extension))
+        ):
             directories.append(path)
 
     return directories
-# end getPreferenceDirs
+# end configurationDirs

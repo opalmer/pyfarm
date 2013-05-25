@@ -14,39 +14,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import string
-from os.path import sep
-
-from pyfarm import dist
-from pyfarm.datatypes.system import OSNAME
 from pyfarm.pref.core.baseclass import Preferences
-from pyfarm.utility import expandPath
 
-
+# FIXME:
 class JobTypePreferences(Preferences):
     """jobtype preferences"""
     def __init__(self):
         super(JobTypePreferences, self).__init__(filename="jobtypes")
     # end __init__
 
-    # TODO: add function for file extension generation
-
     def _search_paths(self, data):
-        paths = []
-
-        for entry in data:
-            template = string.Template(entry.replace("/", sep))
-            expanded = expandPath(template.safe_substitute({
-                "pyfarm" : dist.location,
-                "root" : self.get(
-                    "filesystem.roots.%s" % OSNAME.lower(), filename=None
-                )
-            }))
-
-            if expanded not in paths:
-                paths.append(expanded)
-
-        return paths
+        # TODO: fix this, need to use the enw path system
+        raise NotImplementedError
     # ene _search_paths
 
     def get(self, key, **kwargs):
@@ -59,7 +38,3 @@ class JobTypePreferences(Preferences):
             return self._search_paths(data)
     # end get
 # end JobTypePreferences
-
-
-j = JobTypePreferences()
-print j.get('search-paths')

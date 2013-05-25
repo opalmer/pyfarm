@@ -17,11 +17,9 @@
 from __future__ import with_statement
 
 import os
-import pprint
-from os.path import isdir, isfile
+from os.path import abspath, dirname, join, isfile
 from UserDict import IterableUserDict
 
-import appdirs
 import yaml
 
 try:
@@ -32,11 +30,13 @@ except ImportError:
 from pyfarm import __version__
 from pyfarm.logger import Logger
 from pyfarm.pref.core.enums import NOTFOUND
+from pyfarm.pref.core.utility import configurationDirs
 from pyfarm.pref.core.errors import (
     EmptyPreferenceError, PreferenceLoadError
 )
 
 logger = Logger(__name__)
+
 
 class Loader(IterableUserDict):
     """
@@ -63,103 +63,38 @@ class Loader(IterableUserDict):
         Raised if we failed to find any preference files by the given name or
         if we failed to find any preference directories
     """
-    DATA = {}     # contains previous data loaded in a formatted form
-    FILEDATA = {} # contains specific data per file
-
-    # Configuration data which contains the
-    # directories where we will load user defined
-    # preferences from
-    config = appdirs.AppDirs("pyfarm", "pyfarmdev")
-
-    # List of directories where we will search for preferences.  As an
-    # example the default configuration will list three entries:
-    #   0.4.0
-    #   0.4
-    #   default
-    versions = (
-        ".".join(map(str, __version__)),
-        ".".join(map(str, __version__[0:2])),
-        ""
-    )
+    DATA = {}      # contains previous data loaded in a formatted form
+    FILEDATA = {}  # contains specific data per file
 
     # All possible root directors where we should expect to find
     # preferences.  Please note that we do not filter this list
     # here since a long running process may later have access to a
     # missing directory.
-    configdirs = (
-        config.user_data_dir,
-        config.site_data_dir,
-        PYFARM_ETC
+    configdirs = configurationDirs(
+        __version__,
+        abspath(join(dirname(__file__), "..", "etc"))
     )
 
     extension = "%syml" % os.path.extsep
-    joinargs = lambda self, items: os.path.join(*items)
 
     def __init__(self, filename, force=False):
-        data = {}
-        self.name = filename
 
-        # ensure we're being provided a string
-        if not isinstance(filename, (str, unicode)):
-            raise TypeError("filename must be a string")
-        else:
+        if not filename.endswith(self.extension):
             filename = "%s%s" % (filename, self.extension)
 
-        self.filename = filename
 
-        # create a list of possible configuration directories
-        dirnames = []
-        for version in self.versions:
-            for dirname in self.configdirs:
-                path = os.path.join(dirname, version)
-                dirnames.append(path)
-
-        # Filter the directory list down to only places
-        # which actually exist.  Raise an ex
-        self.dirnames = filter(isdir, dirnames)
-        if not self.dirnames:
-            msg = "no preference directories were found after "
-            msg += "trying %s" % pprint.pformat(dirnames)
-            raise PreferenceLoadError(msg)
-
-        # now create a list of possible files
-        joinfile = lambda root : os.path.join(root, filename)
-        all_filenames = map(joinfile, self.dirnames)
-        filenames = filter(isfile, all_filenames)
-
-        if not filenames:
-            msg = "failed to find any preference files after "
-            msg += "trying %s" % pprint.pformat(all_filenames)
-            raise PreferenceLoadError(msg)
-
-        self.filenames = []
-        for filepath in reversed(filenames):
-            try:
-                yamldata = self.load(filepath, force=force)
-                self.validate(filepath=filepath, filedata=yamldata)
-
-            except EmptyPreferenceError: # skip empty files
-                logger.warning("%s does not contain data" % filepath)
-                continue
-
-            except Exception, error: # relog any unhandled exceptions
-                logger.error("error while loading %s: %s" % (filepath, error))
-                continue
-
-            # if the preference loaded then append
-            # it to our filename list and update our internal data
-            self.filenames.append(filepath)
-            data.update(yamldata)
-
-        # if we still don't have any files in self.filenames
-        # then we have a problem and should raise and error
-        if not data:
+        for configdir in self.configdirs:
+            self.name = join(configdir, filename)
+            if isfile(self.name):
+                break
+        else:
             raise PreferenceLoadError(
-                "failed to find or load data for %s" % filename
+                "no preference files found for %s" % self.name
             )
 
+        data = self.load(self.name, force=force)
+        self.validate(filepath=self.name, filedata=data)
         IterableUserDict.__init__(self, data)
-        self.validate()
     # end __init__
 
     def __repr__(self):
