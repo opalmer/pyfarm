@@ -5,14 +5,7 @@ python:
   - "2.7"
 
 install:
-  - pip install . --use-mirrors
-  - pip install -r requirements.txt --use-mirrors
+- pip install distribute==0.6.42 --use-mirrors
+- pip install -e . --use-mirrors
 
-script: ./dev/bin/travis-ci/build.sh
-
-env:
-  - DB=postgres
-  - DB=mysql
-
-before_script: ./dev/bin/travis-ci/before_script.sh
-after_script: ./dev/bin/travis-ci/after_script.sh
+script: dev/travis-ci/build.sh
