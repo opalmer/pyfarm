@@ -144,8 +144,6 @@ class clean(_clean):
 # end clean
 
 if __name__ == "__main__":
-    libdir = os.path.join("lib", "python")
-
     # disable docs for some of the travis jobs
     build_docs = True
     if "TRAVIS_JOB_NUMBER" in os.environ and "BUILD_DOCS" not in os.environ:
@@ -170,9 +168,9 @@ if __name__ == "__main__":
     setup(
         name="pyfarm",
         version=".".join(map(str, parsed_version)),
-        package_dir={"": libdir},
+        package_dir={"pyfarm": "pyfarm"},
         data_files=getetc(),
-        packages=setuptools.find_packages(libdir),
+        packages=setuptools.find_packages("."),
         setup_requires=requires,
         install_requires=requires,
         url="http://pyfarm.net",
