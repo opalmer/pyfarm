@@ -20,7 +20,7 @@ module for database specific preference handling
 
 import warnings
 
-from ordereddict import OrderedDict
+from pyfarm.datatypes.backports import OrderedDict
 from pyfarm.preferences.base.baseclass import Preferences
 from pyfarm.logger import Logger
 
