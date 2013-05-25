@@ -78,7 +78,6 @@ def requirements(major, minor, develop=False, docs=True):
     # for local development
     if develop:
         requires.append("nose")
-        requires.append("python-coveralls")
 
         if docs:
             requires.append("Jinja2==%s.%s" % (major, minor))
@@ -166,7 +165,7 @@ if __name__ == "__main__":
         docs=build_docs
     )
 
-    # coveralls only support in Python 2.5
+    # coveralls only supported in Python 2.5
     if (
         "TRAVIS_JOB_NUMBER" in os.environ
         and "BUILD_DOCS" not in os.environ
