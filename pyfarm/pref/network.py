@@ -18,6 +18,7 @@ import re
 from pyfarm.pref.core.baseclass import Preferences
 from pyfarm.net.functions import openport
 
+
 class NetworkPreferences(Preferences):
     """retrieves network preferences"""
     # stores a dictionary of ports we have
