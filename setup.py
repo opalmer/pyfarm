@@ -166,6 +166,9 @@ if __name__ == "__main__":
         docs=build_docs
     )
 
+    if "TRAVIS_JOB_NUMBER" in os.environ and "BUILD_DOCS" not in os.environ:
+        requires.append("coverage")
+
     setup(
         name="pyfarm",
         version=".".join(map(str, parsed_version)),
