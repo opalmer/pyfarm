@@ -97,7 +97,7 @@ release = ".".join(map(str, parsed_version))
 version = ".".join(map(str, parsed_version[0:2]))
 
 # create a requirements file to
-print "...python requirements"
+print "..python requirements"
 import setup as _setup
 python_requirements = join(docroot, "include", "python_requirements.rst")
 
