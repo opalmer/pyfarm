@@ -71,8 +71,7 @@ def requirements(major, minor, develop=False, docs=True):
     """
     requires = [
         "appdirs", "colorama", "PyYaml",
-        "psutil", "netifaces", "sqlalchemy",
-        "requests"
+        "psutil", "netifaces", "sqlalchemy"
     ]
 
     # for local development
