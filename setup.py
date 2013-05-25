@@ -166,8 +166,13 @@ if __name__ == "__main__":
         docs=build_docs
     )
 
-    if "TRAVIS_JOB_NUMBER" in os.environ and "BUILD_DOCS" not in os.environ:
+    if (
+        "TRAVIS_JOB_NUMBER" in os.environ
+        and "BUILD_DOCS" not in os.environ
+        and (PY_MAJOR, PY_MINOR) > (2, 5)
+    ):
         requires.append("coverage")
+        requires.append("python-coveralls")
 
     setup(
         name="pyfarm",
