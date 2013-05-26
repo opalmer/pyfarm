@@ -59,10 +59,9 @@ clean:
 	-rm -rf source/downloads
 
 api:
-	-rm -rf source/python/pyfarm
-	-sphinx-apidoc ../lib/python/pyfarm/ -o source/python/pyfarm
+	-sphinx-apidoc ../pyfarm/ --output-dir=source/python --force
 
-html:
+html: api
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
