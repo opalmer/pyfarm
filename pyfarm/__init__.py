@@ -14,12 +14,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-The __init__.py file for PyFarm which handles module backports, adding the
-project root as a site package, as well as setup of several top level
-variables.
-"""
+
+from os.path import abspath, dirname
 
 __version__ = (1, 0, 0)
 __versionstr__ = ".".join(map(str, __version__))
 __author__ = "Oliver Palmer"
+
+# root of PyFarm's project directory, mainly
+# used by pyfarm.config
+PYROOT = abspath(dirname(__file__))
