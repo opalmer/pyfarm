@@ -44,8 +44,14 @@ extensions = [
     'sphinx.ext.doctest',
     'sphinx.ext.coverage',
     'sphinx.ext.ifconfig',
-    'sphinx.ext.viewcode'
+    'sphinx.ext.viewcode',
+    'sphinx.ext.intersphinx'
 ]
+
+pymajor, pyminor = sys.version_info[0:2]
+intersphinx_mapping = {
+    'python': ('http://docs.python.org/%s.%s' % (pymajor, pyminor), None)
+}
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
