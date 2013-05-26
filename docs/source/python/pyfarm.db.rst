@@ -1,0 +1,34 @@
+db Package
+==========
+
+:mod:`db` Package
+-----------------
+
+.. automodule:: pyfarm.db
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+:mod:`engines` Module
+---------------------
+
+.. automodule:: pyfarm.db.engines
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+:mod:`session` Module
+---------------------
+
+.. automodule:: pyfarm.db.session
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+Subpackages
+-----------
+
+.. toctree::
+
+    pyfarm.db.tables
+
