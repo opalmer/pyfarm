@@ -4,17 +4,13 @@
 *.pyc
 *.pyo
 *.swp
-*notes*
-*.timings
-*.profile
 *~
-build
-.*
-tools*
-dev*
-*.yml
-*.bat
-*.cmd
-*prototyping*
-*dist*
 *egg*
+.coverage
+.profile
+build
+dist
+
+# auto generated files
+docs/source/include/python_requirements.rst
+docs/source/downloads.rst
