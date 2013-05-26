@@ -39,8 +39,7 @@ DEFAULT_CONFIG_ROOT = join(PYROOT, "config", "etc")
 
 
 def configDirectories(
-        roots=DEFAULT_CONFIG_ROOT,
-        user=DEFAULT_USER_PATHS, system=DEFAULT_SYSTEM_PATHS):
+        roots=None, user=DEFAULT_USER_PATHS, system=DEFAULT_SYSTEM_PATHS):
     """
     generator which emits a list of paths were we should
     search for configurationfiles
@@ -59,7 +58,7 @@ def configDirectories(
         preference files
     """
     if roots is None:
-        roots = []
+        roots = [DEFAULT_CONFIG_ROOT]
     elif isinstance(roots, basestring):
         roots = [roots]
 

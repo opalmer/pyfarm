@@ -12,41 +12,41 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# NOTE: not all values are required to be populated, port and driver for example
-#       will be defined my sqlalchemy if they are not provided.
-database:
-  host:   # hostname to connect to
-  port:   # port the master is running on
-  user:   # username to connect with
-  pass:   # password to connect with
-  name:   # name of database
-  engine: # type of engine (mysql, postgresql, etc)
-  driver: # specifies the python module to connect with
+# NOTE: not all values are required, such as port and driver for example.
+# mydbconfig:
+#   host:      # hostname to connect to
+#   port:      # port the master is running on
+#   username:  # username to connect with
+#   password:  # password to connect with
+#   database:  # name of database
+#   engine:    # type of engine (mysql, postgresql, etc)
+#   driver:    # specifies the python module to connect with
 
 db-vmdb:
   host: localhost
   port: 9999
-  user: someuser
-  pass: somepass
-  name: pyfarm
+  username: someuser
+  password: somepass
+  database: pyfarm
   driver: psycopg2ct
-  engine: psycopg2
+  engine: postgresql
 
 # example sqlite db to be used for local testing *only*
 db-sqlite:
-  host: /tmp/pyfarm.sql
   host: ':memory:'
   engine: sqlite
 
-setup:
-  # list of possible configs to use, first db which we can connect without
-  # raising an error will be be used in all future connections
-  configs:
-    testing:
-     - db-sqlite             # name of the configuration to use
-     - db-vmdb
-     - foo
-    production:
-     - db-vmdb
-  rebuild: false           # if true then we drop any existing tables
-  close-connections: true  # if true we attempt to close every connection made
+
+# list of possible configs to use, first db which we can connect without
+# raising an error will be be used in all future connections
+configs:
+  testing:
+   - db-sqlite
+   - db-vmdb
+   - foo
+  production:
+   - db-vmdb
+
+engine:
+  rebuild: false            # if true, drop and rebuild all tables
+  close-connections: false  # if true, attempt to close every connection made
