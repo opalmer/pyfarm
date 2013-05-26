@@ -103,7 +103,8 @@ def requirements(major, minor, develop=False, docs=True):
 def getetc():
     """returns the files to copy over from etc/"""
     results = []
-    for dirname in os.listdir(os.path.join("pyfarm", "preferences", "etc")):
+
+    for dirname in os.listdir(os.path.join("pyfarm", "config", "etc")):
         results.append((dirname, setuptools.findall(dirname)))
 
     return results
