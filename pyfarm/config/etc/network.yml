@@ -1,0 +1,61 @@
+# Copyright 2013 Oliver Palmer
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+
+# Permissions and settings related
+# to remote access/control of RPC
+# related services
+rpc:
+  restart: true  # allows/disallows RPC to be restarted remotely
+  shutdown: true # allows/disallows RPC to be shutdown remotely
+  delay: 3       # seconds between shutdown and restart
+
+# Optional ports for each service.  If one or more of these values
+# is not provided the an attempt will be make to determine an open
+# port for you
+#ports:
+#  heartbeat: 9030
+#  host: 9031
+#  master: 9032
+
+# Group and prefix should remain the defaults unless there is
+# a spcific reason to make a change.  Interval will control
+# the time between each heartbeat
+heartbeat:
+  group: 224.0.0.1
+  prefix: pyfarmmulticastheartbeat
+  interval: 60
+
+# Used to verify if the address we think we should be using is the
+# one we actually used to communicate with for a remote host.  Turning
+# this feature off will not prevent pyfarm from running but may
+# prevent certain checks from being run.
+remote_check:
+  enable: true
+  hostname: pyfarm.net
+  port: 80
+
+# Used to determine the address the interface is actually#
+# bound to.  On some networks the only way to determine the correct
+# ip is to attempt a connection and then request the address used
+remote_addr_check:
+  # Addresses to iterate over, only the first address which
+  # we successfully resolve will be used.  You are free
+  # to change this list and use either direct ip addresses
+  # or dns resolvable names.
+  addresses:
+    - [8.8.8.8, 53] # google public dns
+    - [8.8.4.4, 53] # google public dns
+    - [208.67.222.222, 53] # opendns
+    - [208.67.220.220, 53] # opendns
