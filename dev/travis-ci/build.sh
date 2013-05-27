@@ -28,7 +28,7 @@ title Build Step: tests
 
 # coveralls does not support 2.5...
 if [ "$TRAVIS_PYTHON_VERSION" != "2.5" ]; then
-    runcmd coverage run --source=pyfarm tests --verbose -s
+    coverage run --source=pyfarm -m nose tests/ --verbose -s
 else
     runcmd nosetests tests --verbose -s
 fi
