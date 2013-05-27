@@ -66,7 +66,7 @@ class TempFile(file):
 # end TempFile
 
 
-def ymlload(stream):
+def loadYaml(stream):
     """
     Loads data from the provided file stream, stream like object, or file
     path.
@@ -94,51 +94,47 @@ def ymlload(stream):
     finally:
         if callable(getattr(stream, 'close', None)):
             stream.close()
-# end load
+# end loadYaml
 
 
-def ymldump(data, stream=None, pretty=False):
+def dumpYaml(data, path=None, pretty=False):
     """
-    Dumps data to the requested stream if provided or a temporary file.
+    dumps data to the requested file path
 
     :param data:
-        the data we are attempting to dump
+        The data we're attempting to dump.  The type input to this
+        parameter can be anything yaml itself can normally handle.
 
-    :type stream: str or :py:class:`StringIO.StringIO` or file
-    :param stream:
-        the
+    :param str path:
+        the path to dump the yaml file to
 
-    :param boolean pretty:
+    :param bool pretty:
         if True then dump the data in a more human readable form
 
     :returns:
-        returns the path or object the data was dumped to
+        returns the path we dumped the data to
     """
-    if stream is None:
-        stream = TempFile(suffix='.yml')
-        return_object = stream.name
+    if path is None:
+        stream = TempFile(suffix=".yml", delete=False)
 
-    elif isinstance(stream, basestring):
-        stream = open(stream, 'w')
-        return_object = stream.name
+    elif isinstance(path, basestring):
+        dirname = os.path.dirname(path)
+        if not os.path.isdir(dirname):
+            os.makedirs(dirname)
 
-    else:
-        return_object = stream
+        stream = open(path, "w")
 
-    # construct arguments to pass along
-    # to the yaml dumper
+    elif not isinstance(path, basestring):
+        raise TypeError("expected a string for `path`")
+
+    # arguments to pass to the dumper
     args = [data, stream]
-    if pretty:
-        kwargs = {'default_flow_style': False, 'indent': 4}
-    else:
-        kwargs = {}
+    kwargs = {"default_flow_style": False, "indent": 4} if pretty else {}
 
     try:
         _dumpyaml(*args, **kwargs)
-        return return_object
+        return stream.name
 
     finally:
-        closeable = callable(getattr(stream, 'close', None))
-        if return_object is not stream and closeable:
-            stream.close()
-# end ymldump
+        stream.close()
+# end dumpYaml
