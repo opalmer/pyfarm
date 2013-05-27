@@ -66,34 +66,29 @@ class TempFile(file):
 # end TempFile
 
 
-def loadYaml(stream):
+def loadYaml(source):
     """
     Loads data from the provided file stream, stream like object, or file
     path.
 
-    :type stream: str or :py:class:`StringIO.StringIO` or file
-    :param stream:
+    :type source: str or :py:class:`StringIO.StringIO` or file
+    :param source:
         The object or path to load data from
 
     :exception TypeError:
         raised if we get an unexpected type for `stream`
     """
-    if isinstance(stream, basestring) and os.path.isfile(stream):
-        stream = open(stream, 'r')
+    if isinstance(source, basestring):
+        source = open(source, 'r')
 
-    elif not isinstance(stream, file) and not isinstance(stream, StringIO):
-        msg = "Expected stream to be a file path, file object, or"
-        msg += "StringIO instance.  Got %s instead" % type(stream)
-        raise TypeError(msg)
+    elif not isinstance(source, (file, StringIO)):
+        raise TypeError("expected a filepath, file, or StringIO object")
 
-    # load and return data from the stream and
-    # be sure the close the stream afterwards
     try:
-        return _loadyaml(stream, Loader=YAMLLoader)
+        return _loadyaml(source, Loader=YAMLLoader)
 
     finally:
-        if callable(getattr(stream, 'close', None)):
-            stream.close()
+        source.close()
 # end loadYaml
 
 
@@ -123,6 +118,9 @@ def dumpYaml(data, path=None, pretty=False):
             os.makedirs(dirname)
 
         stream = open(path, "w")
+
+    elif isinstance(path, (file, StringIO)):
+        stream = path
 
     elif not isinstance(path, basestring):
         raise TypeError("expected a string for `path`")

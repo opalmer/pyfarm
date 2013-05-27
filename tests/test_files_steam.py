@@ -80,3 +80,22 @@ def test_dumpyaml_path():
     dump_path = dumpYaml("", path=expected_dump_path)
     assert os.path.isdir(os.path.dirname(expected_dump_path))
     assert dump_path == expected_dump_path
+
+@setup
+@raises(TypeError)
+def test_loadyaml_error():
+    loadYaml(lambda: None)
+
+@setup
+def test_loadyaml_path():
+    data = os.environ.data.copy()
+    dumped_path = dumpYaml(data)
+    assert loadYaml(dumped_path) == data
+
+@setup
+def test_loadyaml_stream():
+    data = os.environ.data.copy()
+    dumped_path = dumpYaml(data)
+    s = open(dumped_path, "r")
+    assert loadYaml(s) == data
+    assert s.closed
