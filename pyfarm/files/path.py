@@ -118,3 +118,30 @@ def expandenv(envvar, validate=True, pathsep=None):
 
     return results
 # end expandenv
+
+
+def which(program):
+    """
+    returns the path to the requested program
+
+    .. note::
+        This function will not resolve aliases
+
+    :raise OSError:
+        raised if the path to the program could not be found
+    """
+    # Returns the full path to the requested program.  If the path
+    # is in fact valid then we have nothing left to do.
+    fullpath = os.path.abspath(program)
+    if os.path.isfile(fullpath):
+        return fullpath
+
+    for path in expandenv('PATH', validate=True):
+        fullpath = os.path.join(path, program)
+        if os.path.isfile(fullpath):
+            return fullpath
+
+    # if all else fails, fail
+    args = (program, os.environ.get('PATH'))
+    raise OSError("failed to find program '%s' in %s" % args)
+# end which

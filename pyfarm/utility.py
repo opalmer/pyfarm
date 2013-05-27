@@ -27,31 +27,6 @@ from pyfarm.files.path import expandenv
 
 PyMajor, PyMinor, PyMicro = sys.version_info[0:3]
 
-def which(program):
-    """
-    returns the path to the requested program
-
-    .. note::
-        This function will not resolve aliases
-
-    :raise OSError:
-        raised if the path to the program could not be found
-    """
-    # Returns the full path to the requested program.  If the path
-    # is in fact valid then we have nothing left to do.
-    fullpath = os.path.abspath(program)
-    if os.path.isfile(fullpath):
-        return fullpath
-
-    for path in expandenv('PATH', validate=True):
-        fullpath = os.path.join(path, program)
-        if os.path.isfile(fullpath):
-            return fullpath
-
-    # if all else fails, fail
-    args = (program, os.environ.get('PATH'))
-    raise OSError("failed to find program '%s' in %s" % args)
-# end which
 
 def user():
     """returns the current user name"""
@@ -62,34 +37,3 @@ def user():
     except ImportError:
         return getpass.getuser()
 # end user
-
-def tempfile(prefix=None, suffix=None, delete=False):
-    """
-    A wrapper around :py:class:`tempfile.NamedTemporaryFile` which ensures that
-    Python versions before 2.6 will respect the delete keyword.
-
-    :param boolean delete:
-        if True then delete the file after closing
-
-    :returns:
-        returns a temp file object
-    """
-    # construct arguments to pass to the constructor of
-    # NamedTemporaryFile
-    kwargs = {
-        'prefix' : 'pyfarm-' if prefix is None else prefix,
-        'suffix' : suffix if suffix is not None else ''
-    }
-
-    if (PyMajor, PyMicro) >= (2, 6):
-        kwargs['delete'] = delete
-        return NamedTemporaryFile(**kwargs)
-
-    elif delete:
-        return NamedTemporaryFile(**kwargs)
-
-    else:
-        _stream = NamedTemporaryFile(**kwargs)
-        _stream.close()
-        return open(_stream.name, 'w')
-# end tempfile
