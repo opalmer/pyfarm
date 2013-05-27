@@ -18,6 +18,7 @@ from __future__ import with_statement
 
 import os
 import nose
+import time
 from nose.tools import raises
 
 from core.prepost import mktmp, pretest_cleanup_env, posttest_cleanup_files
@@ -35,6 +36,16 @@ setup = nose.with_setup(
 def test_tempfile_delete():
     with TempFile(delete=True) as s:
         assert os.path.isfile(s.name)
+
+    max_time = 10
+    start = time.time()
+
+    while time.time()-start <= max_time:
+        if not os.path.isfile(s.name):
+            break
+
+        time.sleep(.1)
+
     assert not os.path.isfile(s.name)
 
 
