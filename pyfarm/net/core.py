@@ -16,11 +16,12 @@
 
 import socket
 
-def openport(bindhost='localhost'):
+
+def getPort(bindhost='localhost'):
     """returns a port which we are able to bind to"""
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.bind((bindhost, 0))
     address = s.getsockname()[1]
     s.close()
     return address
-# end openport
+# end getPort
