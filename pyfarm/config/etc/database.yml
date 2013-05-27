@@ -28,12 +28,12 @@ db-vmdb:
   username: someuser
   password: somepass
   database: pyfarm
-  driver: psycopg2ct
+  driver: psycopg2
   engine: postgresql
 
 # example sqlite db to be used for local testing *only*
 db-sqlite:
-  host: ':memory:'
+  database: ':memory:'
   engine: sqlite
 
 
