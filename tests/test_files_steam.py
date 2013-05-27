@@ -18,9 +18,11 @@ from __future__ import with_statement
 
 import os
 import nose
+from nose.tools import raises
 
 from core.prepost import mktmp, pretest_cleanup_env, posttest_cleanup_files
-from pyfarm.files.stream import TempFile, ymlload, ymldump
+from pyfarm.files.stream import TempFile, loadYaml, dumpYaml
+from pyfarm.files import path
 
 
 setup = nose.with_setup(
@@ -56,4 +58,25 @@ def test_tempfile_basename():
         base = os.path.basename(s.name)
         assert base.startswith("foo")
         assert base.endswith(".txt")
-        
+
+
+@setup
+@raises(TypeError)
+def test_dumpyaml_error():
+    dumpYaml("", lambda: None)
+
+
+@setup
+def test_dumpyaml_tmppath():
+    dump_path = dumpYaml("")
+    assert dump_path.endswith(".yml")
+    assert os.path.dirname(dump_path) == path.SESSION_DIRECTORY
+
+
+@setup
+def test_dumpyaml_path():
+    d = mktmp()
+    expected_dump_path = os.path.join(d, "foo", "foo.yml")
+    dump_path = dumpYaml("", path=expected_dump_path)
+    assert os.path.isdir(os.path.dirname(expected_dump_path))
+    assert dump_path == expected_dump_path
