@@ -16,7 +16,6 @@
 
 """stores all custom errors which can be raised by pyfarm"""
 
-from txjsonrpc import jsonrpclib
 
 class Error(Exception):
     """base exception for all pyfarm errors"""
@@ -138,14 +137,3 @@ class InvalidDatabase(ConfigurationError):
     """
     pass
 # end InvalidDatabase
-
-
-class RPCFault(jsonrpclib.Fault):
-    """
-    general fault raised by client and server applications
-    operating over rpc
-    """
-    def __init__(self, code, message):
-        jsonrpclib.Fault.__init__(self, code, message)
-    # end __init__
-# end RPCFault
