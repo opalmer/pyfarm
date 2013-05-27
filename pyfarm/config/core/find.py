@@ -27,7 +27,7 @@ from os.path import join, isfile, isdir
 try:
     from itertools import product
 except ImportError:
-    from pyfarm.datatypes.backports import product
+    from pyfarm.backports import product
 
 from appdirs import AppDirs
 from pyfarm import __version__, PYROOT
