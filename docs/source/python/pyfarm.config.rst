@@ -17,14 +17,6 @@ config Package
     :undoc-members:
     :show-inheritance:
 
-:mod:`errors` Module
---------------------
-
-.. automodule:: pyfarm.config.errors
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 Subpackages
 -----------
 
