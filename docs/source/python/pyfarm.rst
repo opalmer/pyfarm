@@ -89,6 +89,7 @@ Subpackages
     pyfarm.config
     pyfarm.datatypes
     pyfarm.db
+    pyfarm.files
     pyfarm.host
     pyfarm.jobtypes
     pyfarm.master
