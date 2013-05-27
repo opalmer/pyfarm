@@ -42,15 +42,17 @@ class TempFile(file):
         when/if support is dropped for Python 2.5 this class will remain
         but instead directly use :func:`tempfile.NamedTemporaryFile`
     """
-    def __init__(self, name=None, extension=None,
-                 mode='w', buffering=-1, dir=None, delete=False):
+    def __init__(self, name=None, suffix=None,
+                 mode='w', buffering=-1, root=None, delete=False):
         self.__delete = delete
-        dir = tempdir() if dir is None else dir
-        fd, filepath = tempfile.mkstemp(dir=dir, suffix=extension)
 
-        if name is not None and extension is not None:
+        # setup our root directory and filepath
+        dirname = tempdir() if root is None else root
+        fd, filepath = tempfile.mkstemp(dir=root, suffix=suffix)
+
+        if name is not None and suffix is not None:
             raise ValueError(
-                "name and extension cannot be provided at the same time"
+                "name and suffix cannot be provided at the same time"
             )
 
         elif name is not None:
