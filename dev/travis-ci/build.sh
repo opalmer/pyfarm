@@ -32,5 +32,3 @@ if [ "$TRAVIS_PYTHON_VERSION" != "2.5" ]; then
 else
     runcmd nosetests --verbose -s
 fi
-
-todo write out/copy test database configuration file
