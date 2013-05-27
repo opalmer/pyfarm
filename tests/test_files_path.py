@@ -17,34 +17,40 @@
 import os
 import stat
 import uuid
+import nose
 import tempfile
 from nose.tools import raises
 
-from core.prepost import mktmp, tsetup_files_path
+from core.prepost import mktmp, pretest_cleanup_env, posttest_cleanup_files
 from pyfarm.files import path
 
+setup = nose.with_setup(
+    setup=pretest_cleanup_env, 
+    teardown=posttest_cleanup_files
+)
 
-@tsetup_files_path
+
+@setup
 def test_tempdir_session():
     sessiondir = path.tempdir(unique=False)
     assert path.tempdir(unique=False) == sessiondir == path.SESSION_DIRECTORY
 
 
-@tsetup_files_path
+@setup
 def test_tempdir_envvar():
     os.environ["PYFARM_TMP"] = mktmp()
     assert path.tempdir(respect_env=True) == os.environ["PYFARM_TMP"]
     assert path.tempdir(respect_env=False) == path.SESSION_DIRECTORY
 
 
-@tsetup_files_path
+@setup
 def test_tempdir_unique():
     assert path.tempdir(
         respect_env=False,
         unique=True) != path.tempdir(respect_env=False, unique=True)
 
 
-@tsetup_files_path
+@setup
 def test_tempdir_mode():
     st_mode = os.stat(path.tempdir(unique=True)).st_mode
     assert stat.S_IMODE(st_mode) == path.DEFAULT_PERMISSIONS
@@ -53,7 +59,7 @@ def test_tempdir_mode():
     assert stat.S_IMODE(st_mode) == mymode
 
 
-@tsetup_files_path
+@setup
 def test_expandpath():
     os.environ["FOO"] = "foo"
     joined_path = os.path.join("~", "$FOO")
@@ -61,13 +67,13 @@ def test_expandpath():
     assert path.expandpath(joined_path) == expected
 
 
-@tsetup_files_path
+@setup
 @raises(EnvironmentError)
 def test_expandenv_raise_enverror():
     path.expandenv(str(uuid.uuid4()))
 
 
-@tsetup_files_path
+@setup
 @raises(ValueError)
 def test_expandenv_raise_valuerror():
     var = str(uuid.uuid4())
@@ -75,7 +81,7 @@ def test_expandenv_raise_valuerror():
     path.expandenv(var)
 
 
-@tsetup_files_path
+@setup
 def test_expandenv_path_validation():
     envvars = {
         "FOO1": mktmp(), "FOO2": mktmp(),
@@ -86,7 +92,7 @@ def test_expandenv_path_validation():
     assert path.expandenv("FOOBARA") == [os.environ["FOO1"], os.environ["FOO2"]]
 
 
-@tsetup_files_path
+@setup
 def test_expandenv_path_novalidation():
     envvars = {
         "FOO4": mktmp(), "FOO5": mktmp(),
@@ -100,13 +106,13 @@ def test_expandenv_path_novalidation():
     ]
 
 
-@tsetup_files_path
+@setup
 @raises(OSError)
 def test_which_oserror():
     path.which("<FOO>")
 
 
-@tsetup_files_path
+@setup
 def test_which():
     fh, filename = tempfile.mkstemp(
         prefix="pyfarm-", suffix=".sh",
@@ -123,7 +129,7 @@ def test_which():
     assert path.which(basename) == filename
 
 
-@tsetup_files_path
+@setup
 def test_which_fullpath():
     thisfile = os.path.abspath(__file__)
     assert path.which(thisfile) == thisfile

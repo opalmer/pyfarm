@@ -17,6 +17,17 @@
 import nose
 from nose.tools import raises
 
+from core.prepost import mktmp, pretest_cleanup_env, posttest_cleanup_files
 from pyfarm.files.stream import TempFile, ymlload, ymldump
 
-raise Exception("needs testing: ymlload, ymldump, TempFile")
+
+setup = nose.with_setup(
+    setup=pretest_cleanup_env,
+    teardown=posttest_cleanup_files
+)
+
+
+@setup
+@raises(ValueError)
+def test_tempfile_error():
+    TempFile(name="foo", suffix="foo")

@@ -29,7 +29,7 @@ from pyfarm.files import path
 CLEAN_ENV = os.environ.copy()
 
 
-def pretest_files_path():
+def pretest_cleanup_env():
     path.SESSION_DIRECTORY = None
 
     for varname, value in os.environ.copy().iteritems():
@@ -39,7 +39,7 @@ def pretest_files_path():
             os.environ[varname] = CLEAN_ENV[varname]
 
 
-def posttest_files_path():
+def posttest_cleanup_files():
     # remove any directories we created
     prefix = path.DEFAULT_DIRECTORY_PREFIX
     root = os.path.dirname(
@@ -51,5 +51,3 @@ def posttest_files_path():
 
 
 mktmp = lambda: tempfile.mkdtemp(prefix=path.DEFAULT_DIRECTORY_PREFIX)
-tsetup_files_path = nose.with_setup(
-    setup=pretest_files_path, teardown=posttest_files_path)
