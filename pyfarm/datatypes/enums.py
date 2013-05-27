@@ -20,42 +20,16 @@ named value mappings which do not change during execution
 """
 
 import imp
-import sys
-from pyfarm.datatypes.functions import LoadEnum
-
-Software = LoadEnum("Software")
-SoftwareType = LoadEnum("SoftwareType")
-State = LoadEnum("State")
-EnvMergeMode = LoadEnum("EnvMergeMode")
-
-def __os_get(self, item=None):
-    item = item.upper() if isinstance(item, (str, unicode)) else item
-    if isinstance(item, (int, str, unicode)) and item in self.__mapped:
-        return self.__mapped[item]
-
-    elif isinstance(item, (int, str, unicode)) and item not in self.__mapped:
-        raise ValueError("%s does not seem to be a valid mapping" % item)
-
-    platform = sys.platform
-    if platform.startswith("linux"):
-        platform = "LINUX"
-
-    elif platform.startswith("win"):
-        platform = "WINDOWS"
-
-    elif platform.startswith("darwin"):
-        platform = "MAC"
-
-    elif platform not in self.__mapped:
-        return self.OTHER
-
-    return self.__mapped[platform]
-# end __os_get
-
-OperatingSystem = LoadEnum(
-    "OperatingSystem",
-    methods={"get" : __os_get}
+from pyfarm.config.enum import (
+    Software as _Softare, SoftwareType as _SoftwareType,
+    State as _State, EnvMergeMode as _EnvMergeMode,
+    DependencyType as _DependencyType, OperatingSystem as _OperatingSystem
 )
 
-DependencyType = LoadEnum("DependencyType")
-PythonExtensions = [ ext[0] for ext in imp.get_suffixes() ]
+Software = _Softare()
+SoftwareType =_SoftwareType()
+State = _State()
+EnvMergeMode = _EnvMergeMode()
+OperatingSystem = _OperatingSystem()
+DependencyType = _DependencyType()
+PythonExtensions = [ext[0] for ext in imp.get_suffixes()]
