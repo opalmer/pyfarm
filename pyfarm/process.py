@@ -33,11 +33,10 @@ from pyfarm.jobtypes.base import job
 from pyfarm.datatypes.objects import ScheduledRun
 from pyfarm.datatypes.enums import State, OperatingSystem
 from pyfarm.datatypes.system import OS, USER
-#from pyfarm.db.modify.host import update_memory # TODO: replace with new objects
-#from pyfarm.db.contexts import Session  # TODO: replace with new objects
 from pyfarm.db import tables
 from pyfarm import errors
-from pyfarm.pref import prefs
+
+# TODO: add pyfarm.config code
 
 from twisted.internet import protocol, reactor, error
 

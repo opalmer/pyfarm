@@ -47,6 +47,6 @@ configs:
   production:
    - db-vmdb
 
-engine:
+setup:
   rebuild: false            # if true, drop and rebuild all tables
   close-connections: false  # if true, attempt to close every connection made

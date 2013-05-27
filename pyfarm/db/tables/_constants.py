@@ -19,14 +19,13 @@
 import os as _os
 
 from pyfarm.datatypes.enums import State as _state
-from pyfarm.pref.jobtypes import JobTypePreferences
-from pyfarm.pref.simple import JobSystemPreferences
-from pyfarm.pref.database import DatabasePreferences
+from pyfarm.config.database import DBConfig
+from pyfarm.config.core import Loader
 
 # preference setup
-jtprefs = JobTypePreferences()
-jsprefs = JobSystemPreferences()
-dbprefs = DatabasePreferences()
+jsprefs = Loader("jobsystem.yml")
+jtprefs = Loader("jobtypes.yml")
+dbprefs = DBConfig()
 
 # length of certain string fields
 MAX_HOSTNAME_LENGTH = 255

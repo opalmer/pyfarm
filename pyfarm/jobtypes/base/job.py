@@ -21,15 +21,14 @@ import itertools
 from sqlalchemy import orm
 
 from pyfarm import errors
-from pyfarm.pref.simple import FilesystemPreferences
-from pyfarm.pref.jobtypes import JobTypePreferences
+from pyfarm.config.core import Loader
 from pyfarm.datatypes.enums import OperatingSystem
 from pyfarm.logger import Logger, Observer
 from pyfarm.datatypes.system import USER, OS
 from pyfarm.db import session
 
-fsprefs = FilesystemPreferences()
-jtprefs = JobTypePreferences()
+fsprefs = Loader("filesystem.yml")
+jtprefs = Loader("jobtypes.yml")
 
 class BaseJob(Logger):
     """

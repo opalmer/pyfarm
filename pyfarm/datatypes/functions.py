@@ -18,12 +18,14 @@
 functions for use within the datatypes module
 """
 
-from pyfarm.pref.simple import EnumPreferences
-from pyfarm.datatypes.backports import namedtuple
+# from pyfarm.pref.simple import EnumPreferences
+try:
+    from collections import namedtuple
+except ImportError:
+    from pyfarm.backports import namedtuple
+
 from pyfarm.datatypes.objects import ReadOnlyDict
 
-# TODO: replace with new preference loader
-enumprefs = EnumPreferences()
 
 def notimplemented(name, module='psutil'):
     msg = "this version of %s does not implement %s(), " % (module, name)
@@ -31,9 +33,11 @@ def notimplemented(name, module='psutil'):
     raise NotImplementedError(msg)
 # end notimplemented
 
+
 def bytes_to_megabytes(value):
     return int(value / 1024 / 1024)
 # end bytes_to_megabytes
+
 
 def LoadEnum(name, methods=None, classonly=False):
     """

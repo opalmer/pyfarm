@@ -24,13 +24,14 @@ from sqlalchemy import Column
 from sqlalchemy.orm import validates
 from sqlalchemy.types import String, Boolean, Integer, DateTime
 
-from pyfarm.net import openport
+from pyfarm.net.core import getPort
 from pyfarm.logger import Logger
 from pyfarm.datatypes.enums import State
 from pyfarm.db.tables import MAX_HOSTNAME_LENGTH, MAX_IPV4_LENGTH, \
     MIN_PORT, MAX_PORT, DEFAULT_PRIORITY
 
 logger = Logger(__name__)
+
 
 class NetworkHost(object):
     """mixin which defines common attributes that all network nodes have"""
@@ -47,7 +48,7 @@ class NetworkHost(object):
 
         # autoselect if an integer was not provided for the port
         if not isinstance(port, int):
-            port = openport()
+            port = getPort()
 
         self.port = port
 
