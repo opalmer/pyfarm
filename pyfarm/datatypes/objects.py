@@ -15,42 +15,51 @@
 # limitations under the License.
 
 import UserDict
-import datetime
+from datetime import datetime
+
 
 class ReadOnlyDict(UserDict.IterableUserDict):
-    """custom dictionary that is read only"""
+    """custom dictionary that is read only after instancing"""
     err_type = NotImplementedError
 
-    def __init__(self, dict=None, **kwargs):
+    def __init__(self, data=None, **kwargs):
         self.err_msg = "%s does not implement " % self.__class__.__name__
         self.__setup = False
 
-        UserDict.IterableUserDict.__init__(self, dict, **kwargs)
+        UserDict.IterableUserDict.__init__(self, data, **kwargs)
         self.__setup = True
     # end __init__
 
     def __err(self, method):
         return self.err_type(self.err_msg + method.func_code.co_name)
-    # end __error
 
-    def __setitem__(self, key, item): raise self.__err(self.__setitem__)
-    def __delitem__(self, key): raise self.__err(self.__delitem__)
-    def setdefault(self, key, failobj=None): raise self.__err(self.setdefault)
-    def clear(self): raise self.__err(self.clear)
-    def pop(self, key, *args): raise self.__err(self.pop)
-    def popitem(self): raise self.__err(self.popitem)
+    def __setitem__(self, key, item):
+        raise self.__err(self.__setitem__)
+
+    def __delitem__(self, key):
+        raise self.__err(self.__delitem__)
+
+    def setdefault(self, key, failobj=None):
+        raise self.__err(self.setdefault)
+
+    def clear(self):
+        raise self.__err(self.clear)
+
+    def pop(self, key, *args):
+        raise self.__err(self.pop)
+
+    def popitem(self):
+        raise self.__err(self.popitem)
 
     def update(self, dict=None, **kwargs):
         if self.__setup:
             raise self.__err(self.__delitem__)
         UserDict.IterableUserDict.update(self, dict, **kwargs)
-    # end update
 
     def copy(self, readonly=True):
         if readonly:
             return self.__class__(self.data.copy())
         return dict(self.data.copy())
-    # end copy
 # end ReadOnlyDict
 
 
@@ -75,8 +84,9 @@ class ScheduledRun:
             return self.timeout
 
         else:
-            delta = datetime.datetime.now() - self.lastrun
-            return delta.seconds + 1 # accounts for most inaccuracies in time calc
+            # accounts for most inaccuracies in time calculation
+            delta = datetime.now() - self.lastrun
+            return delta.seconds + 1
     # end lastupdate
 
     def shouldRun(self, force=False):
