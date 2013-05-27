@@ -28,9 +28,6 @@ from pyfarm.files import path
 CLEAN_ENV = os.environ.copy()
 
 
-raise Exception("needs test: which")
-
-
 def pretest():
     path.SESSION_DIRECTORY = None
 
@@ -130,3 +127,32 @@ def test_expandenv_path_novalidation():
     assert expanded == [
         os.environ["FOO5"], os.environ["FOO4"], os.environ["FOO6"]
     ]
+
+
+@nosesetup
+@raises(OSError)
+def test_which_oserror():
+    path.which("<FOO>")
+
+
+@nosesetup
+def test_which():
+    fh, filename = tempfile.mkstemp(
+        prefix="pyfarm-", suffix=".sh",
+        dir=path.tempdir()
+    )
+
+    with open(filename, "w") as stream:
+        pass
+
+    os.environ["PATH"] = os.pathsep.join(
+        [os.environ["PATH"], os.path.dirname(filename)]
+    )
+    basename = os.path.basename(filename)
+    assert path.which(basename) == filename
+
+
+@nosesetup
+def test_which_fullpath():
+    thisfile = os.path.abspath(__file__)
+    assert path.which(thisfile) == thisfile
