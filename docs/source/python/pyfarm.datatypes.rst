@@ -9,14 +9,6 @@ datatypes Package
     :undoc-members:
     :show-inheritance:
 
-:mod:`backports` Module
------------------------
-
-.. automodule:: pyfarm.datatypes.backports
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 :mod:`enums` Module
 -------------------
 

@@ -17,6 +17,14 @@ config Package
     :undoc-members:
     :show-inheritance:
 
+:mod:`enum` Module
+------------------
+
+.. automodule:: pyfarm.config.enum
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 Subpackages
 -----------
 

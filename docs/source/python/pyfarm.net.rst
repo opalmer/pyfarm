@@ -9,18 +9,11 @@ net Package
     :undoc-members:
     :show-inheritance:
 
-:mod:`functions` Module
------------------------
+:mod:`core` Module
+------------------
 
-.. automodule:: pyfarm.net.functions
+.. automodule:: pyfarm.net.core
     :members:
     :undoc-members:
     :show-inheritance:
-
-Subpackages
------------
-
-.. toctree::
-
-    pyfarm.net.rpc
 

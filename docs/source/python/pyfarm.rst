@@ -9,6 +9,14 @@ pyfarm Package
     :undoc-members:
     :show-inheritance:
 
+:mod:`backports` Module
+-----------------------
+
+.. automodule:: pyfarm.backports
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 :mod:`cmdargs` Module
 ---------------------
 
