@@ -14,21 +14,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-module which contains functions for loading information
-from disk
-"""
-
 import imp
 
-try:
-    from yaml import CLoader as Loader, CDumper as Dumper
-except ImportError:
-    from yaml import Loader, Dumper
-
-from pyfarm.logger import Logger
-
-logger = Logger(__name__)
 
 class module:
     CACHE = {}
@@ -59,6 +46,5 @@ class module:
             stream, path, description = imp.find_module(name, paths)
             module = imp.load_module(name, stream, path, description)
             cls.CACHE[namespace] = module
-            logger.debug("loaded %s" % stream.name)
 
         return cls.CACHE[namespace]
