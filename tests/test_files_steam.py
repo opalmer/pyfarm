@@ -14,8 +14,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from __future__ import with_statement
+
+import os
 import nose
-from nose.tools import raises
 
 from core.prepost import mktmp, pretest_cleanup_env, posttest_cleanup_files
 from pyfarm.files.stream import TempFile, ymlload, ymldump
@@ -28,6 +30,30 @@ setup = nose.with_setup(
 
 
 @setup
-@raises(ValueError)
-def test_tempfile_error():
-    TempFile(name="foo", suffix="foo")
+def test_tempfile_delete():
+    with TempFile(delete=True) as s:
+        assert os.path.isfile(s.name)
+    assert not os.path.isfile(s.name)
+
+
+@setup
+def test_tempfile_nodelete():
+    with TempFile(delete=False) as s:
+        assert os.path.isfile(s.name)
+    assert os.path.isfile(s.name)
+
+
+@setup
+def test_tempfile_dirname():
+    d = mktmp()
+    with TempFile(root=d, delete=True) as s:
+        assert os.path.dirname(s.name) == d
+
+@setup
+def test_tempfile_basename():
+    d = mktmp()
+    with TempFile(prefix="foo", suffix=".txt", root=d, delete=True) as s:
+        base = os.path.basename(s.name)
+        assert base.startswith("foo")
+        assert base.endswith(".txt")
+        
