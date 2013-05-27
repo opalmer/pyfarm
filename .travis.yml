@@ -12,4 +12,4 @@ env:
 
 install: dev/travis-ci/install.sh
 script: dev/travis-ci/build.sh
-after_success: dev/travis-ci/
+after_success: dev/travis-ci/after.sh
