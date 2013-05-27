@@ -25,10 +25,10 @@ files Package
     :undoc-members:
     :show-inheritance:
 
-:mod:`yml` Module
------------------
+:mod:`stream` Module
+--------------------
 
-.. automodule:: pyfarm.files.yml
+.. automodule:: pyfarm.files.stream
     :members:
     :undoc-members:
     :show-inheritance:

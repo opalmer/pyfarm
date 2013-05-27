@@ -29,7 +29,6 @@ from pyfarm.config.core.errors import (
     SubKeyError, PreferenceLoadError, PreferencesNotFoundError
 )
 
-raise NotImplementedError("should be using files.yml")
 
 class Loader(IterableUserDict):
     """

@@ -28,6 +28,9 @@ from pyfarm.files import path
 CLEAN_ENV = os.environ.copy()
 
 
+raise Exception("needs test: which")
+
+
 def pretest():
     path.SESSION_DIRECTORY = None
 
