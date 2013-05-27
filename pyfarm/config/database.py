@@ -26,7 +26,7 @@ from pyfarm.config.core.errors import DBConfigError
 from pyfarm.config.core.warning import MissingConfigWaring, SQLConnectionWarning
 
 
-class Database(Loader):
+class DBConfig(Loader):
     """
     Custom class which allows for specific behaviors when working
     with the database.yml config.
