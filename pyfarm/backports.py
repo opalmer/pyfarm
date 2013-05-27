@@ -15,14 +15,17 @@
 # limitations under the License.
 
 """
-Retrieves the proper object or constructs a new one to match later
-versions of Python.  For any missing object the init file in the PyFarm
-package will handle retrieval and setup of an object from this module
+Reimplementation of certain objects and functions which are not
+present in earlier versions of Python.
+
+.. note::
+    this code comes from the standard library, none of it is original
 """
 
 import sys
 from operator import itemgetter as _itemgetter
 from keyword import iskeyword as _iskeyword
+
 
 def namedtuple(typename, field_names, verbose=False, rename=False):
     """
@@ -133,6 +136,7 @@ def namedtuple(typename, field_names, verbose=False, rename=False):
     return result
 # end namedtuple
 
+
 def product(*args, **kwds):
     """
     product('ABCD', 'xy') --> Ax Ay Bx By Cx Cy Dx Dy
@@ -145,6 +149,7 @@ def product(*args, **kwds):
     for prod in result:
         yield tuple(prod)
 # end product
+
 
 def permutations(iterable, r=None):
     """
