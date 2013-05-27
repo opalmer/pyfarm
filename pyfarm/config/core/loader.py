@@ -25,10 +25,11 @@ except ImportError:
     from yaml import Loader as _YAMLLoader
 
 from pyfarm.config.core import find
-from pyfarm.config.errors import (
+from pyfarm.config.core.errors import (
     SubKeyError, PreferenceLoadError, PreferencesNotFoundError
 )
 
+raise NotImplementedError("should be using files.yml")
 
 class Loader(IterableUserDict):
     """
@@ -36,10 +37,13 @@ class Loader(IterableUserDict):
     and caching the results.
     """
     __configdata__ = {}
+    FILENAME = None
 
-    def __init__(self, filename, data=None):
+    def __init__(self, filename=None, data=None):
         data = {} if data is None else data
+        filename = self.FILENAME or filename
         assert isinstance(data, dict), "data should be a dictionary object"
+        assert isinstance(filename, basestring), "filename not resolved"
         self.files = find.configFiles(filename)
 
         if not self.files:

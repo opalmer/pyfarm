@@ -17,39 +17,58 @@
 import re
 from warnings import warn
 
-from sqlalchemy.engine.url import URL as _SQAUrl
+from sqlalchemy.engine.url import URL
 from sqlalchemy.engine import create_engine
-from sqlalchemy.exc import ArgumentError
+from sqlalchemy.exc import OperationalError
 
 from pyfarm.config.core import Loader
-from pyfarm.config.errors import DBConfigError
-
-class URL(_SQAUrl):
-    def __str__(self):
-        print "="*20, "TODO: needs fixes for sqlite urls"
-        return super(URL, self).__str__()
-
-class MissingConfigWaring(Warning):
-    """
-    used when a configuration is parsed by we cannot find a
-    database entry
-    """
+from pyfarm.config.core.errors import DBConfigError
+from pyfarm.config.core.warning import MissingConfigWaring, SQLConnectionWarning
 
 
 class Database(Loader):
+    """
+    Custom class which allows for specific behaviors when working
+    with the database.yml config.
+    """
     REGEX_CONFIG = re.compile("^configs[.].+$")
+    FILENAME = "database.yml"
 
-    def __init__(self):
-        Loader.__init__(self, "database.yml")
-    # end __init__
+    def engines(self, config_name, test=True):
+        """
+        Generator which yields all engines for the provided configuration.
 
-    def engine(self, config_name):
-        """returns an engine for `config_name`"""
+        :param string config_name:
+            The configuration name to use.  Using `production` would search
+            database configurations matching `configs.production`.
+
+        :param bool test:
+            if True then iterate over each configuration but only
+            yield those that we can successfully connect to
+        """
         for url in self.get("configs.%s" % config_name):
-            try:
-                print create_engine(url)
-            except ArgumentError:
-                raise
+            engine = create_engine(url)
+
+            if test:
+                try:
+                    engine.connect()
+
+                except OperationalError:  # TODO: add warning logger
+                    warn(
+                        "failed to connect to %s" % str(url),
+                        SQLConnectionWarning
+                    )
+                    continue
+
+            yield engine
+    # end engines
+
+    def engine(self, config_name, test=True):
+        """
+        convenience method which returns a single engine from :meth:`engines`
+        """
+        for engine in self.engines(config_name, test=test):
+            return engine
     # end engine
 
     def get(self, key, failobj=None):
@@ -67,7 +86,7 @@ class Database(Loader):
                 try:
                     config = self.get(config_name)
 
-                except KeyError:
+                except KeyError:  # TODO: add warning logger
                     msg = "database configuration `%s` " % config_name
                     msg += "does not exist, skipping"
                     warn(msg, MissingConfigWaring)
@@ -95,7 +114,3 @@ class Database(Loader):
         return value
     # end get
 # end Database
-
-
-d = Database()
-print d.engine("testing")
