@@ -51,5 +51,5 @@ def posttest_files_path():
 
 
 mktmp = lambda: tempfile.mkdtemp(prefix=path.DEFAULT_DIRECTORY_PREFIX)
-setup_files_path = nose.with_setup(
+tsetup_files_path = nose.with_setup(
     setup=pretest_files_path, teardown=posttest_files_path)
