@@ -25,14 +25,6 @@ pyfarm Package
     :undoc-members:
     :show-inheritance:
 
-:mod:`fileio` Module
---------------------
-
-.. automodule:: pyfarm.fileio
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 :mod:`lock` Module
 ------------------
 
@@ -69,14 +61,6 @@ pyfarm Package
 ---------------------
 
 .. automodule:: pyfarm.utility
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-:mod:`yml` Module
------------------
-
-.. automodule:: pyfarm.yml
     :members:
     :undoc-members:
     :show-inheritance:
