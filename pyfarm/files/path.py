@@ -80,16 +80,13 @@ def expandpath(path):
 # end expandpath
 
 
-def expandenv(envvar, validate=True, expand=True, pathsep=None):
+def expandenv(envvar, validate=True, pathsep=None):
     """
     Takes the environment variable given by `envvar`, splits it into
     multiple paths, then expands/validates them as requested.
 
     :param bool validate:
         if True then only paths which exist will be returned
-
-    :param bool expand:
-        if True then environment vars within `envvar` will also be expanded
 
     :param str pathsep:
         if provided then use this as the value to split the environment
@@ -113,10 +110,11 @@ def expandenv(envvar, validate=True, expand=True, pathsep=None):
     results = []
     pathsep = os.pathsep if pathsep is None else pathsep
 
-    for path in os.environ[envvar].split(pathsep):
-        path = expandpath(path) if expand else path
+    for path in map(expandpath, os.environ[envvar].split(pathsep)):
         if not validate or validate and os.path.exists(path):
             results.append(path)
+
+
 
     return results
 # end expandenv
