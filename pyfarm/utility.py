@@ -22,51 +22,10 @@ of PyFarm.
 import os
 import sys
 import getpass
-from itertools import ifilter, imap
 from tempfile import NamedTemporaryFile
-from os.path import exists, expanduser, expandvars
+from pyfarm.files.path import expandenv
 
 PyMajor, PyMinor, PyMicro = sys.version_info[0:3]
-
-def expandPath(path):
-    """expands all paths of a path"""
-    return expanduser(expandvars(path))
-# end expandPath
-
-def expandPaths(envvar, error=True, validate=False, expand=True):
-    """
-    Takes the given environment variable, expands it, and returns
-    a list of paths which have a length.
-
-    :param boolean error:
-        if True and envvar does not exist in os.environ then raise a
-        KeyError
-
-    :param boolean validate:
-        if True require the path to be real before allowing it to be returned
-
-    :param boolean expand:
-        if True expand environment variables in each path
-
-    :except KeyError:
-        raised if error is True and envvar is not in os.environ
-    """
-    if error and envvar not in os.environ:
-        raise KeyError("$%s is not in the environment")
-
-    def filter_path(path):
-        # do nothing if the path is blank or validation
-        # is turned on and the path is not real
-        if not path or validate and not exists(path):
-            return False
-
-        # in all other cases, let the path through
-        return True
-    # end filter_path
-
-    filter = ifilter(filter_path, os.environ.get(envvar, '').split(os.pathsep))
-    return imap(expandPath, filter) if expand else filter
-# end expandPaths
 
 def which(program):
     """
@@ -84,7 +43,7 @@ def which(program):
     if os.path.isfile(fullpath):
         return fullpath
 
-    for path in expandPaths('PATH', validate=True):
+    for path in expandenv('PATH', validate=True):
         fullpath = os.path.join(path, program)
         if os.path.isfile(fullpath):
             return fullpath
