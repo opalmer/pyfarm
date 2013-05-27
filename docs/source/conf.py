@@ -50,7 +50,8 @@ extensions = [
 
 pymajor, pyminor = sys.version_info[0:2]
 intersphinx_mapping = {
-    'python': ('http://docs.python.org/%s.%s' % (pymajor, pyminor), None)
+    'python': ('http://docs.python.org/%s.%s' % (pymajor, pyminor), None),
+    'sqlalchemy': ('http://www.sqlalchemy.org/docs/', None)
 }
 
 # Add any paths that contain templates here, relative to this directory.
