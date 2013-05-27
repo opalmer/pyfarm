@@ -23,7 +23,8 @@ import threading
 
 THREAD_RLOCK = threading.RLock()
 SESSION_DIRECTORY = None
-DEFAULT_PERMISSIONS = stat.S_IRUSR|stat.S_IWUSR|stat.S_IRGRP|stat.S_IWGRP
+DEFAULT_DIRECTORY_PREFIX = os.environ.get("PYFARM_TMP_PREFIX", "pyfarm-")
+DEFAULT_PERMISSIONS = stat.S_IRWXU|stat.S_IRWXG
 
 
 def tempdir(unique=False, respect_env=True, mode=DEFAULT_PERMISSIONS):
@@ -55,15 +56,16 @@ def tempdir(unique=False, respect_env=True, mode=DEFAULT_PERMISSIONS):
         return dirname
     else:
         if unique:
-            dirname = tempfile.mkdtemp(prefix="pyfarm")
+            dirname = tempfile.mkdtemp(prefix=DEFAULT_DIRECTORY_PREFIX)
             os.chmod(dirname, mode)
             return dirname
 
         else:
             with THREAD_RLOCK:
                 if SESSION_DIRECTORY is None:
-                    SESSION_DIRECTORY = tempfile.mkdtemp(prefix="pyfarm")
-                    os.chmod(SESSION_DIRECTORY, mode)
+                    path = tempfile.mkdtemp(prefix=DEFAULT_DIRECTORY_PREFIX)
+                    os.chmod(path, mode)
+                    SESSION_DIRECTORY = path
 
                 return SESSION_DIRECTORY
 # end tempdir
