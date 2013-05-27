@@ -29,7 +29,7 @@ class PreferencesNotFoundError(PreferencesError):
     """
 
 
-class SubKeyError(PreferencesError):
+class SubKeyError(PreferencesError, KeyError):
     """
     Raised when we failed to find a subkey for a given request.  Similar to
     :class:`KeyError` but spec to when requesting nested keys from a

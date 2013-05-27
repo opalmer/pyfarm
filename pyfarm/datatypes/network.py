@@ -16,13 +16,13 @@
 
 import socket
 import netifaces
-from pyfarm.pref.network import NetworkPreferences
 
+from pyfarm.config.core import Loader
 from pyfarm import errors
 from pyfarm.logger import Logger
 
 logger = Logger(__name__)
-prefs = NetworkPreferences()
+prefs = Loader("network.yml")
 
 # setup network information
 INTERFACES = {}

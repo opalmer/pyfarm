@@ -13,17 +13,20 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from pyfarm.pref import prefs
+
+from pyfarm.config.core import Loader
 from pyfarm.cmdargs import *
-from pyfarm.net.functions import openport
+from pyfarm.net import getPort
 
 parser.description = "Entry point for PyFarm's master."
 
+prefs = Loader("network.yml")
+
 try:
-    port = prefs.get('network.ports.master')
+    port = prefs.get('ports.master')
 
 except KeyError:
-    port = openport()
+    port = getPort()
 
 parser.set_defaults(port=port)
 

@@ -20,9 +20,9 @@ import inspect
 
 from pyfarm import errors
 from pyfarm.logger import Logger
-from pyfarm.pref.jobtypes import JobTypePreferences
+from pyfarm.config.core import Loader
 
-jobtype_prefs = JobTypePreferences()
+jobtype_prefs = Loader("jobtypes.yml")
 
 PATHS = []
 JOBTYPES = {}
@@ -30,6 +30,7 @@ JOBTYPES = {}
 __all__ = ['find', 'jobtype', 'jobtypes', 'paths']
 
 logger = Logger(__name__)
+
 
 def paths():
     """
@@ -110,6 +111,7 @@ def find(name=None):
     return jobtype_path
 # end find
 
+
 def jobtype(name):
     if name in JOBTYPES:
         return JOBTYPES[name]
@@ -138,6 +140,7 @@ def jobtype(name):
 
     return module.Job
 # end jobtype
+
 
 def jobtypes():
     """returns a list of jobtype names from all locations"""

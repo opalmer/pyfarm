@@ -14,24 +14,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from pyfarm.pref.network import NetworkPreferences
-
+from pyfarm.config.core import Loader
 from pyfarm.datatypes.system import TOTAL_RAM, CPU_COUNT
 from pyfarm.cmdargs import *
-from pyfarm.net.functions import openport
+from pyfarm.net import getPort
 
 parser.description = "Entry point for PyFarm's host."
 
-netprefs = NetworkPreferences()
+netprefs = Loader("network.yml")
 
-DEFAULT_JOBTYPES = [] # TODO: replace with object
-DEFAULT_SOFTWARE = [] # TODO: replace with object
+DEFAULT_JOBTYPES = []  # TODO: replace with object
+DEFAULT_SOFTWARE = []  # TODO: replace with object
 
 try:
     port = netprefs.get('ports.host')
 
 except KeyError:
-    port = openport()
+    port = getPort()
 
 parser.set_defaults(port=port)
 

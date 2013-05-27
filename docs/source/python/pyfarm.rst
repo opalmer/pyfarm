@@ -86,6 +86,5 @@ Subpackages
     pyfarm.jobtypes
     pyfarm.master
     pyfarm.net
-    pyfarm.pref
     pyfarm.web
 

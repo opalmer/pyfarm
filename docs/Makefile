@@ -59,7 +59,8 @@ clean:
 	-rm -rf source/downloads
 
 api:
-	-sphinx-apidoc ../pyfarm/ --output-dir=source/python --force
+	-rm source/python/*
+	-sphinx-apidoc ../pyfarm/ --output-dir=source/python
 
 html: api
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
