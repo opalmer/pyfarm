@@ -25,10 +25,4 @@ if [ "$BUILD_DOCS" == "true" ]; then
 fi
 
 title Build Step: tests
-
-# coveralls does not support 2.5...
-if [ "$TRAVIS_PYTHON_VERSION" != "2.5" ]; then
-    coverage run --source=pyfarm -m nose tests/ --verbose -s
-else
-    runcmd nosetests tests --verbose -s
-fi
+nosetests --verbose --with-coverage --cover-package=pyfarm
