@@ -14,6 +14,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from __future__ import with_statement
+
 import time
 import threading
 from itertools import ifilter
@@ -27,7 +29,7 @@ class Assignment(ScheduledRun, Logger):
 
     def __init__(self):
         Logger.__init__(self, self)
-        ScheduledRun.__init__(self, prefs.get('master.assignment-interval'))
+        ScheduledRun.__init__(self, prefs.get("master.assignment-interval"))
     # end __init__
 
     def run(self, force=False):

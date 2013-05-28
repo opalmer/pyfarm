@@ -14,6 +14,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from __future__ import with_statement
+
 import os
 import pwd
 import datetime
@@ -59,7 +61,7 @@ class Process(Logger):
             self.environ.update(environ)
 
         # Update the environment with the current environment to make
-        # sure we're not missing any required variables.  This should
+        # sure we"re not missing any required variables.  This should
         # also take care of a bug on the windows implementation
         # of spawnProcess that causes win32 programs to crash when the
         # environment is not populated properly
@@ -77,8 +79,8 @@ class Process(Logger):
         # construct the arguments and keywords for spawn process
         self.args = [self.protocol, self._command]
         self.kwargs = {
-            'args' : self._args,
-            'env' : self.environ.copy()
+            "args": self._args,
+            "env": self.environ.copy()
         }
 
         if OS in (OperatingSystem.LINUX, OperatingSystem.MAC) and pwd:
@@ -91,7 +93,6 @@ class Process(Logger):
                 msg = "no need to change uid/gid, they are the same as "
                 msg += "the current user's group and id"
                 self.debug(msg)
-    # end __init__
 
     def updateState(self, state):
         state_name = State.get(state)
@@ -138,13 +139,12 @@ class Process(Logger):
                 ramuse = max(self.memsurvey.rss)
                 self.info("updating frame ram usage to %s" % ramuse)
                 frame.ram = ramuse
-    # end updateState
 
     def start(self):
         if self.process is None:
-            self.debug('running: %s' % self.command)
+            self.debug("running: %s" % self.command)
 
-            # try to spawn the process though it's
+            # try to spawn the process though itR's
             # possible this may fail if we don't have permission
             # to do something like setuid
             try:
@@ -161,7 +161,6 @@ class Process(Logger):
 
         else:
             self.warning("process already started (pid %s)" % self.pid)
-    # end start
 
     def started(self):
         """called when the process has started"""
@@ -178,7 +177,6 @@ class Process(Logger):
         # start the memory survey task
         self.memsurvey.setup(self.pid)
         self.memsurvey_task.start(self.memsurvey.timeout)
-    # end started
 
     def stopped(self, reason):
         """called when the process has stopped"""
@@ -208,7 +206,6 @@ class Process(Logger):
             self.updateState(State.DONE)
 
         update_memory.update(force=True, reset=False)
-    # end stopped
 
     def signal(self, signal):
         try:
@@ -217,14 +214,11 @@ class Process(Logger):
 
         except error.ProcessExitedAlready:
             self.warning("process %s has already stopped" % self.pid)
-    # end signal
 
     def stop(self, wait=False):
         """sends SIGHUP to the process asking it to terminate"""
-        self.signal('HUP')
-    # end stop
+        self.signal("HUP")
 
     def kill(self):
         """sends a SIGKILL to the process informing it to terminate immediately"""
-        self.signal('KILL')
-    # end kill
+        self.signal("KILL")

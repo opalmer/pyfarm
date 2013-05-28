@@ -14,6 +14,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from __future__ import with_statement
+
 import os
 import time
 import atexit
@@ -25,7 +27,7 @@ from pyfarm.logger import Logger
 
 
 KILL_SLEEP = 2
-LOCK_ROOT = os.path.join(tempfile.gettempdir(), 'pyfarm', 'lock')
+LOCK_ROOT = os.path.join(tempfile.gettempdir(), "pyfarm", "lock")
 logger = Logger(__name__)
 
 # create root lock folder if it does not exist
@@ -33,12 +35,11 @@ if not os.path.isdir(LOCK_ROOT):
     os.makedirs(LOCK_ROOT)
     logger.debug("created directory: %s" % LOCK_ROOT)
 
+
 class ProcessLockError(Exception):
     """raised when we had trouble acquiring a lock"""
     def __init__(self, msg=None):
         super(ProcessLockError, self).__init__(msg)
-    # end __init__
-# end ProcessLockError
 
 
 class LockFile(Logger):
@@ -53,23 +54,20 @@ class LockFile(Logger):
         if pid is not None and not psutil.pid_exists(pid):
             self.warning("removing stale lock file")
             self.remove()
-    # end __init__
 
     def remove(self):
         """removes the lock file on disk"""
         if os.path.isfile(self.path):
             os.remove(self.path)
             self.debug("removed lock file %s" % self.path)
-    # end remove
 
     def filepid(self):
         """returns the pid in the file or None"""
         if not os.path.isfile(self.path):
             return None
 
-        with open(self.path, 'r') as stream:
+        with open(self.path, "r") as stream:
             return int(stream.read())
-    # end filepid
 
     def locked(self):
         """
@@ -78,7 +76,7 @@ class LockFile(Logger):
         if not os.path.isfile(self.path):
             return False
 
-        with open(self.path, 'r') as stream:
+        with open(self.path, "r") as stream:
             data = stream.read()
 
             # return False if the data in the file
@@ -93,7 +91,6 @@ class LockFile(Logger):
                 return False
 
             return True
-    # end locked
 
     def lock(self, force=False):
         """
@@ -124,12 +121,10 @@ class LockFile(Logger):
             self.warning("force overwriting lock file %s!" % self.path)
             self.remove()
 
-        with open(self.path, 'w') as lockfile:
+        with open(self.path, "w") as lockfile:
             lockfile.write(str(self.pid))
             args = (self.name, self.pid)
             self.debug("wrote lock file for '%s' with pid %s" % args)
-    # end lock
-# end LockFile
 
 
 class ProcessLock(object, Logger):
@@ -185,7 +180,6 @@ class ProcessLock(object, Logger):
 
         if register:
             atexit.register(self.lock.remove)
-    # end __int__
 
     def __enter__(self):
         # if the lock.remove function has been registered as an exit
@@ -199,7 +193,6 @@ class ProcessLock(object, Logger):
                 self.debug("removed exit handler ProcessLock(%s)" % self.name)
 
         return self
-    # end __enter__
 
     def __exit__(self, type, value, trackback):
         # run all exit actions
@@ -208,11 +201,8 @@ class ProcessLock(object, Logger):
 
         if self.lock.locked():
             self.lock.remove()
-    # end __exit__
 
     def addExitAction(self, method, args=(), kwargs={}):
         """adds a method to be called on exit"""
         self.actions.append((method, args, kwargs))
         self.debug("added exit action - %s" % method.func_name)
-    # end addExitAction
-# end ProcessLock
