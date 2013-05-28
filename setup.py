@@ -82,7 +82,7 @@ def requirements(major, minor, develop=False, docs=True):
         requires.append("ordereddict")
         requires.append("importlib")
 
-    # higer than 2.5
+    # higher than 2.5
     if (major, minor) > (2, 5):
         requires.append("zope.interface")
         requires.append("twisted")
