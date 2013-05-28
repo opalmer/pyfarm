@@ -16,12 +16,10 @@
 
 . dev/travis-ci/functions.sh
 
-title Success
-
-if [ "$BUILD_DOCS" != "true" ]; then
-    echo "Nothing left to do, only built the docs"
-elif [ "$TRAVIS_PYTHON_VERSION" != "2.5" ]; then
+if [[ "$TRAVIS_PYTHON_VERSION" != "2.5" &&  "$BUILD_DOCS" != "true" ]]; then
     runcmd coveralls
 else
     echo "Nothing left to do, running Python 2.5"
 fi
+
+title Success

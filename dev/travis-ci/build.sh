@@ -22,7 +22,7 @@ pip freeze
 if [ "$BUILD_DOCS" == "true" ]; then
     title Build Step: documentation
     runcmd make -C docs html
+else
+    title Build Step: tests
+    nosetests -s --verbose --with-doctest --with-coverage --cover-package=pyfarm
 fi
-
-title Build Step: tests
-nosetests --verbose --with-coverage --cover-package=pyfarm
