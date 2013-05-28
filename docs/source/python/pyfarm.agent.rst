@@ -1,10 +1,10 @@
-host Package
-============
+agent Package
+=============
 
-:mod:`host` Package
--------------------
+:mod:`agent` Package
+--------------------
 
-.. automodule:: pyfarm.host
+.. automodule:: pyfarm.agent
     :members:
     :undoc-members:
     :show-inheritance:
@@ -12,7 +12,7 @@ host Package
 :mod:`cmdargs` Module
 ---------------------
 
-.. automodule:: pyfarm.host.cmdargs
+.. automodule:: pyfarm.agent.cmdargs
     :members:
     :undoc-members:
     :show-inheritance:
@@ -20,8 +20,15 @@ host Package
 :mod:`master` Module
 --------------------
 
-.. automodule:: pyfarm.host.master
+.. automodule:: pyfarm.agent.master
     :members:
     :undoc-members:
     :show-inheritance:
+
+Subpackages
+-----------
+
+.. toctree::
+
+    pyfarm.agent.process
 

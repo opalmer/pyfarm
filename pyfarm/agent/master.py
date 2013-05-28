@@ -18,12 +18,13 @@
 
 import socket
 
-#from pyfarm.db import query # TODO: replace with new objects
 from pyfarm.logger import Logger
 from pyfarm.datatypes.network import FQDN
 from pyfarm import errors
 
 logger = Logger(__name__)
+
+# TODO: replace module with dns query
 
 def get(master=None):
     """

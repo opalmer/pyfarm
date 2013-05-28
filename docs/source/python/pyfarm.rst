@@ -49,14 +49,6 @@ pyfarm Package
     :undoc-members:
     :show-inheritance:
 
-:mod:`process` Module
----------------------
-
-.. automodule:: pyfarm.process
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 :mod:`queue` Module
 -------------------
 
@@ -78,11 +70,11 @@ Subpackages
 
 .. toctree::
 
+    pyfarm.agent
     pyfarm.config
     pyfarm.datatypes
     pyfarm.db
     pyfarm.files
-    pyfarm.host
     pyfarm.jobtypes
     pyfarm.master
     pyfarm.net

@@ -15,115 +15,22 @@
 # limitations under the License.
 
 import os
+import pwd
 import datetime
 from UserDict import UserDict
 
-import psutil
-from twisted.internet import task
+from twisted.internet import task, reactor, error
 
-
-try:
-    import pwd
-
-except ImportError:
-    pwd = None
-
-from pyfarm.logger import Logger, Observer
-from pyfarm.jobtypes.base import job
-from pyfarm.datatypes.objects import ScheduledRun
-from pyfarm.datatypes.enums import State, OperatingSystem
-from pyfarm.datatypes.system import OS, USER
-from pyfarm.db import tables
 from pyfarm import errors
+from pyfarm.agent.process.protocol import ProcessProtocol
+from pyfarm.agent.process.stats import MemorySurvey
+from pyfarm.datatypes.enums import OperatingSystem, State
+from pyfarm.datatypes.system import USER, OS
+from pyfarm.db import tables
+from pyfarm.logger import Logger
 
-# TODO: add pyfarm.config code
-
-from twisted.internet import protocol, reactor, error
-
-# TODO: documentation
-# TODO: db handling on process success/finish
-
-class MemorySurvey(ScheduledRun, Logger):
-    def __init__(self):
-        ScheduledRun.__init__(self, prefs.get('host.proc-mem-survey-interval'))
-        Logger.__init__(self, self)
-        self.process = None
-        self.pid = None
-        self.vms = []
-        self.rss = []
-    # end __init__
-
-    def setup(self, pid):
-        if self.process is None:
-            self.process = psutil.Process(pid)
-            self.pid = pid
-    # end process
-
-    def run(self, force=False):
-        if self.process is None:
-            self.error("process has not been setup yet")
-
-        elif self.shouldRun(force):
-            meminfo = self.process.get_memory_info()
-            vms = [ meminfo.vms ]
-            rss = [ meminfo.rss ]
-
-            for process in self.process.get_children(recursive=True):
-                child_meminfo = process.get_memory_info()
-                vms.append(child_meminfo.vms)
-                rss.append(child_meminfo.rss)
-
-            # get the total ram usage across all processes (children
-            # included)
-            vms = sum(vms) / 1024 / 1024
-            rss = sum(rss) / 1024 / 1024
-
-            # since could be
-            if vms not in self.vms:
-                self.vms.append(vms)
-
-            if rss not in self.rss:
-                self.rss.append(rss)
-
-            args = (self.pid, vms, rss)
-            self.debug("ran memory survey for parent %s (vms: %s, rss: %s)" % args)
-    # end run
-# end MemorySurvey
-
-
-class ProcessProtocol(protocol.ProcessProtocol, Logger):
-    def __init__(self, process, arguments, log):
-        Logger.__init__(self, self)
-        self.process = process
-        self.arguments = arguments
-
-        # setup the logger
-        self.observer = Observer(log)
-        self.process_logger = Logger(stdout_observer=False, inherit_observers=False)
-        self.addObserver(self.observer)
-        self.process_logger.addObserver(self.observer)
-    # end __init__
-
-    def connectionMade(self):
-        """send a log message the the process log file"""
-        self.transport.write(" ".join(self.arguments))
-        self.transport.closeStdin()
-        self.process.running = True
-    # end connectionMade
-
-    def outReceived(self, data):
-        self.process_logger.msg(data.strip(), level='STDOUT', system=None)
-    # end outReceived
-
-    def errReceived(self, data):
-        self.process_logger.msg(data.strip(), level='STDERR', system=None)
-    # end errReceived
-
-    def processExited(self, reason):
-        self.process.stopped(reason)
-        self.removeObserver(self.observer)
-    # end processExited
-# end ProcessProtocol
+# TODO: use pyfarm.config
+# TODO: remove database calls
 
 
 class Process(Logger):
@@ -321,23 +228,3 @@ class Process(Logger):
         """sends a SIGKILL to the process informing it to terminate immediately"""
         self.signal('KILL')
     # end kill
-# end Process
-
-
-class ProcessFrame(job.Frame, Process):
-    """
-    Wraps Process when provided input based on the frame id.  This class
-    should be inherited by any job class looking to setup and
-    run a command.  See the methods on the Process class to determine
-    prerun, postrun, and exit behaviors.
-    """
-    def __init__(self, id):
-        job.Frame.__init__(self, id)
-
-        Process.__init__(self,
-            self.command, self.args,
-            self.environ, self.logfile,
-            user=self.user, job=self
-        )
-    # end __init__
-# end ProcessRow
