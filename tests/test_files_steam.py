@@ -17,11 +17,12 @@
 from __future__ import with_statement
 
 import os
+import sys
 import nose
 import time
 from nose.tools import raises
 
-from core.skip import Skip, SkipTest
+from core.skip import SkipTest
 from core.prepost import mktmp, pretest_cleanup_env, posttest_cleanup_files
 from pyfarm.files.stream import TempFile, loadYaml, dumpYaml
 from pyfarm.files import path
@@ -37,8 +38,10 @@ setup = nose.with_setup(
 def test_tempfile_delete():
     # travis seems to have issues with deleting
     # files on time, this should pass locally however
-    if "TRAVIS" in os.environ:
+    if "TRAVIS" in os.environ and sys.version_info[0:2] >= (2,7):
         raise SkipTest
+    elif "TRAVIS" in os.environ and sys.version_info[0:2] <= (2, 7):
+        return
 
     with TempFile(delete=True) as s:
         assert os.path.isfile(s.name)
