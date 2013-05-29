@@ -16,6 +16,14 @@
 
 Domain Name Services for Resource Resolution
 ============================================
+
+.. note::
+    This design has been **deprecated** due to design of the
+    :ref:`master <design-master_architecture>` which should remove the need
+    for this subsystem.  This design may be revisited in the future but
+    for now it's no longer necessary.
+
+
 In the past pyfarm has always made the assumption that a single DNS name
 was equal to a single resource or address.  Primarily this was done for
 simplicity however for services which need to scale, a single name can usually

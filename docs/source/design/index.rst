@@ -20,8 +20,19 @@ Documents contained here are not necessarily a representation of the
 final product however they do serve as a guide towards some of the expected
 behaviors and intents.
 
+Proposed Designs
+-----------------
+
+.. toctree::
+    :maxdepth: 2
+
+    master_architecture
+    agent-master_assignment_fallback_behaviors
+
+Deprecated Designs
+------------------
+
 .. toctree::
     :maxdepth: 2
 
     dns_resolution_service
-    client-server_assignment_fallback_behaviors
