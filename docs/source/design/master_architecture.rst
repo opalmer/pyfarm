@@ -32,7 +32,7 @@ can be routed to any master that the frontend sees as an appropriate resource.
 For smaller groups or single users however the communication protocol however
 the setup can still be simplified down to a few step.
 
-In a general sense the 'master' can now scale in one of several ways:
+In a general sense the master can now scale in one of several ways:
 
 .. csv-table::
     :header: Type, Scalability, Failures Over Time, Description
@@ -59,6 +59,8 @@ Job Processing
     * get assignment
     * job relationship information
     * query current assignments
+    * modify running jobs - (**TODO** needs definition, is this a direct
+      communication?  Queue the request to another 'talkback' service?)
     * new job/task creation *(eliminates the need for 3rd party code to require*
       *sqlalchemy, twisted, etc)*
 
@@ -68,6 +70,7 @@ Agent Information
     * agent state changes (**some** assumptions should be made about the
       state to save on queries)
     * acquire new agent limitations (max ram/load/etc) with the agent itself
+    * unhandled exceptions raised
     * current resource usage
         * ram
         * cpu load
@@ -96,15 +99,18 @@ This section will be expanded in a later design however that future design
 include some information on:
 
 
+* **Agent Talkback:** Certain requests to the master may require us to
+  communicate something with the client.  More than likely this will be
+  a 'talkback' server that simply send commands to agents from the masters
+* **Referenced Resources (href):** Responses should reference other resources
+  rather than containing all the information requested (perhaps include an
+  override in the url?). For example 'processed jobs' for an agent
+  would reference other resource urls to retrieve the job object(s).
 * **Models:** Received responses should be wrapped into a model object so
   resolution of additional resources or resolution of properties can be
   performed in a uniform fashion.  The *key* here is to keep as few
   dependencies on the underlying data structure and as few dependencies on
   libraries outside of Python itself.
-* **Referenced Resources (href):** Responses should reference other resources
-  rather than containing all the information requested (perhaps include an
-  override in the url?). For example 'processed jobs' for an agent
-  would reference other resource urls to retrieve the job object(s).
-* **Time**: Datetime should always be represented by ISO 8601 and set in GMT
-* **State Information**: Information that is not specific to a single host (
+* **Time:**: Datetime should always be represented by ISO 8601 and set in GMT
+* **State Information:** Information that is not specific to a single host (
   never needs to be known in other scopes) should not be stored in the session
