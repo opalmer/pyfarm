@@ -16,6 +16,14 @@
 
 Agent<->Master Assignment Fallback Behaviors
 =============================================
+
+.. note::
+    This design has been **deprecated** due to the design of the
+    :ref:`master <design-master_architecture>` which should remove the need
+    for this system.  This design is also being deprecated because the
+    :ref:`dns design <design-dns_resource_resolution>` on which this
+    document is based is also deprecated.
+
 This document describes the process the agent should attempt after failing to
 contact one or more masters for a new task assignment.  It is intended to
 describe the expected behavior(s) when certain failure conditions are met,
