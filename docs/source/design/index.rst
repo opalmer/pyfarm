@@ -27,7 +27,6 @@ Proposed Designs
     :maxdepth: 2
 
     master_architecture
-    agent-master_assignment_fallback_behaviors
 
 Deprecated Designs
 ------------------
@@ -35,4 +34,5 @@ Deprecated Designs
 .. toctree::
     :maxdepth: 2
 
-    dns_resolution_service
+    deprecated/dns_resolution_service
+    deprecated/agent-master_assignment_fallback_behaviors
