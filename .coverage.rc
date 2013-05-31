@@ -1,15 +1,9 @@
 [run]
 source =
-    tests/*
     pyfarm/*
 
 omit =
-    *twisted*
-    *nose*
-    *sqlalchemy*
-    *colorama*
-    *yaml*
-    *virtualenv*
+    */twisted/*, */nose/*, */sqlalchemy/*, */colorama/*, */yaml/*, */virtualenv/*, *appdirs.py
 
 
 [report]
