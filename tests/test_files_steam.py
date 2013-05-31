@@ -38,7 +38,7 @@ setup = nose.with_setup(
 def test_tempfile_delete():
     # travis seems to have issues with deleting
     # files on time, this should pass locally however
-    if "TRAVIS" in os.environ and sys.version_info[0:2] >= (2,7):
+    if "TRAVIS" in os.environ and sys.version_info[0:2] >= (2, 7):
         raise SkipTest
     elif "TRAVIS" in os.environ and sys.version_info[0:2] <= (2, 7):
         return
