@@ -1,5 +1,11 @@
 [run]
-source = tests,pyfarm
+source =
+    tests/*
+    pyfarm/*
+omit =
+    *site-packages*
+
+
 
 [report]
 exclude_lines =
