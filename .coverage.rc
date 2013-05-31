@@ -2,9 +2,14 @@
 source =
     tests/*
     pyfarm/*
-omit =
-    *site-packages*
 
+omit =
+    *twisted*
+    *nose*
+    *sqlalchemy*
+    *colorama*
+    *yaml*
+    *virtualenv*
 
 
 [report]
