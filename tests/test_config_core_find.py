@@ -18,7 +18,7 @@ import os
 from nose.tools import raises, eq_
 from nose.plugins.skip import SkipTest
 
-from pyfarmnose.prepost import envsetup, mktmp, mktmps
+from tests.pyfarmnose import envsetup, mktmp, mktmps
 from pyfarm.config.core import find
 from pyfarm.files.file import yamlDump
 

@@ -22,7 +22,7 @@ import time
 from nose.tools import raises, eq_
 from nose.plugins.skip import SkipTest
 
-from pyfarmnose.prepost import mktmp, envsetup
+from tests.pyfarmnose import mktmp, envsetup
 from pyfarm.files.file import TempFile, yamlLoad, yamlDump
 from pyfarm.files import path
 

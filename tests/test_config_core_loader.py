@@ -32,7 +32,7 @@ from pyfarm.files.file import yamlDump
 from pyfarm.config.core.find import configFiles
 from pyfarm.config.core import errors
 from pyfarm.config.core.loader import Loader
-from pyfarmnose.prepost import (
+from tests.pyfarmnose import (
     pretest_cleanup_env, posttest_cleanup_files, mktmps, mktmp
 )
 
