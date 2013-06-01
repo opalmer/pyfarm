@@ -17,24 +17,17 @@
 from __future__ import with_statement
 
 import os
-import nose
 import time
 
 from nose.tools import raises
 from nose.plugins.skip import SkipTest
 
-from pyfarmnose.prepost import mktmp, pretest_cleanup_env, posttest_cleanup_files
+from pyfarmnose.prepost import mktmp, envsetup
 from pyfarm.files.stream import TempFile, loadYaml, dumpYaml
 from pyfarm.files import path
 
 
-setup = nose.with_setup(
-    setup=pretest_cleanup_env,
-    teardown=posttest_cleanup_files
-)
-
-
-@setup
+@envsetup
 def test_tempfile_delete():
     # travis seems to have issues with deleting
     # files on time, this should pass locally however
@@ -56,20 +49,20 @@ def test_tempfile_delete():
     assert not os.path.isfile(s.name)
 
 
-@setup
+@envsetup
 def test_tempfile_nodelete():
     with TempFile(delete=False) as s:
         assert os.path.isfile(s.name)
     assert os.path.isfile(s.name)
 
 
-@setup
+@envsetup
 def test_tempfile_dirname():
     d = mktmp()
     with TempFile(root=d, delete=True) as s:
         assert os.path.dirname(s.name) == d
 
-@setup
+@envsetup
 def test_tempfile_basename():
     d = mktmp()
     with TempFile(prefix="foo", suffix=".txt", root=d, delete=True) as s:
@@ -78,20 +71,20 @@ def test_tempfile_basename():
         assert base.endswith(".txt")
 
 
-@setup
+@envsetup
 @raises(TypeError)
 def test_dumpyaml_error():
     dumpYaml("", lambda: None)
 
 
-@setup
+@envsetup
 def test_dumpyaml_tmppath():
     dump_path = dumpYaml("")
     assert dump_path.endswith(".yml")
     assert os.path.dirname(dump_path) == path.SESSION_DIRECTORY
 
 
-@setup
+@envsetup
 def test_dumpyaml_path():
     d = mktmp()
     expected_dump_path = os.path.join(d, "foo", "foo.yml")
@@ -99,18 +92,18 @@ def test_dumpyaml_path():
     assert os.path.isdir(os.path.dirname(expected_dump_path))
     assert dump_path == expected_dump_path
 
-@setup
+@envsetup
 @raises(TypeError)
 def test_loadyaml_error():
     loadYaml(lambda: None)
 
-@setup
+@envsetup
 def test_loadyaml_path():
     data = os.environ.data.copy()
     dumped_path = dumpYaml(data)
     assert loadYaml(dumped_path) == data
 
-@setup
+@envsetup
 def test_loadyaml_stream():
     data = os.environ.data.copy()
     dumped_path = dumpYaml(data)

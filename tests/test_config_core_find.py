@@ -15,10 +15,9 @@
 # limitations under the License.
 
 import os
-from nose import with_setup
 from nose.tools import raises
 
-from pyfarmnose.prepost import mktmp, pretest_cleanup_env, posttest_cleanup_files
+from pyfarmnose.prepost import mktmp, envsetup
 from pyfarm.config.core import find
 from pyfarm.files.stream import dumpYaml
 
@@ -29,54 +28,50 @@ except ImportError:
 
 VERSION = (1, 2, 3)
 
-setup = with_setup(
-    setup=pretest_cleanup_env, teardown=posttest_cleanup_files
-)
-
 @raises(AssertionError)
-@setup
+@envsetup
 def test_directories_version_error():
     find.configDirectories(version=0)
 
 
 @raises(AssertionError)
-@setup
+@envsetup
 def test_directories_user_error():
     find.configDirectories(user=0)
 
 
 @raises(AssertionError)
-@setup
+@envsetup
 def test_directories_system_error():
     find.configDirectories(system=0)
 
 
 @raises(AssertionError)
-@setup
+@envsetup
 def test_directories_roots_error():
     find.configDirectories(roots=0)
 
 
-@setup
+@envsetup
 def test_output_types():
     assert isinstance(find.configDirectories(), list)
     assert isinstance(find.configFiles(""), list)
 
 
-@setup
+@envsetup
 def test_directories_roots():
     roots = [mktmp() for _ in xrange(3)]
     assert roots == find.configDirectories(roots=roots)
 
 
-@setup
+@envsetup
 def test_directories_roots_environ():
     roots = [mktmp() for _ in xrange(3)]
     os.environ["PYFARM_CFGROOT"] = os.pathsep.join(roots)
     assert roots == find.configDirectories(roots=roots)
 
 
-@setup
+@envsetup
 def test_unversioned_directories():
     user = [mktmp() for _ in xrange(3)]
     system = [mktmp() for _ in xrange(3)]
@@ -101,7 +96,7 @@ def test_unversioned_directories():
         kwargs.setdefault("version", []) # just in case one was created somewhere
         assert expected == find.configDirectories(**kwargs)
 
-@setup
+@envsetup
 def test_versioned_directories():
     user = [mktmp() for _ in xrange(3)]
     system = [mktmp() for _ in xrange(3)]
@@ -149,7 +144,7 @@ def test_versioned_directories():
             assert all_paths == filtered_config_dirs
 
 
-@setup
+@envsetup
 def test_files_by_name():
     ymlname = "pyfarm_unittest.yml"
     user = [mktmp() for _ in xrange(3)]

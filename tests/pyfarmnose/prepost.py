@@ -19,10 +19,10 @@ Functions used for the file :mod:`pyfarm.files` tests
 """
 
 import os
-import nose
 import shutil
 import tempfile
 from fnmatch import filter as fnfilter
+from nose.tools import with_setup
 
 from pyfarm.files import path
 
@@ -51,3 +51,4 @@ def posttest_cleanup_files():
 
 
 mktmp = lambda: tempfile.mkdtemp(prefix=path.DEFAULT_DIRECTORY_PREFIX)
+envsetup = with_setup(setup=pretest_cleanup_env, teardown=posttest_cleanup_files)
