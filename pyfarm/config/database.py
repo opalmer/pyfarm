@@ -23,8 +23,12 @@ from sqlalchemy.engine import create_engine
 from sqlalchemy.exc import OperationalError
 
 from pyfarm.config.core import Loader
-from pyfarm.config.core.errors import DBConfigError
-from pyfarm.config.core.warning import MissingConfigWaring, SQLConnectionWarning
+from pyfarm.config.core.errors import PreferencesError
+from pyfarm.config.core.warning import MissingConfigWaring
+
+
+class DBConfigError(PreferencesError):
+    """raised when there's trouble either parsing or finding a db config"""
 
 
 class DBConfig(Loader):
@@ -82,6 +86,9 @@ class DBConfig(Loader):
         if self.REGEX_CONFIG.match(key):
             configs = [value] if isinstance(value, basestring) else value
             value = []
+
+            if configs is None:
+                raise DBConfigError("no configurations for `%s`" % key)
 
             for config_name in configs:
                 try:
