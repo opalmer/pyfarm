@@ -84,7 +84,7 @@ class DBConfig(Loader):
 
             for config_name in configs:
                 try:
-                    config = self.get(config_name)
+                    config = self[config_name]
 
                 except KeyError:  # TODO: add warning logger
                     msg = "database configuration `%s` " % config_name

@@ -18,12 +18,7 @@ from __future__ import with_statement
 
 from UserDict import IterableUserDict
 
-import yaml
-try:
-    from yaml import CLoader as _YAMLLoader
-except ImportError:
-    from yaml import Loader as _YAMLLoader
-
+from pyfarm.files.file import yamlLoad
 from pyfarm.config.core import find
 from pyfarm.config.core.errors import (
     SubKeyError, PreferenceLoadError, PreferencesNotFoundError
@@ -34,25 +29,51 @@ class Loader(IterableUserDict):
     """
     Objects responsible for loading configuration files from disk
     and caching the results.
+
+    :type filename: str
+    :param filename:
+        the name of the file to find (ex.
+
+    :type data: dict
+    :param data:
+        initial data to load into :class:`Loader`
+
+    :type cached: bool
+    :param cached:
+        if True then load data from the cache if we've already created
+        a loader by `filename`
+
+    :type load: bool
+    :param load:
+        if True then load in all files by `filename` using
+        :func:`find.configFiles`
+
+    :param findkwargs:
+        any additional keywords to pass along to :func:`find.configFiles`
     """
-    __configdata__ = {}
+    _DATA = {}
     FILENAME = None
 
-    def __init__(self, filename=None, data=None):
+    def __init__(self, filename=None, data=None, cached=True, load=True,
+                 **findkwargs):
         data = {} if data is None else data
         filename = self.FILENAME or filename
         assert isinstance(data, dict), "data should be a dictionary object"
         assert isinstance(filename, basestring), "filename not resolved"
-        self.files = find.configFiles(filename)
 
-        if not self.files:
-            raise PreferencesNotFoundError(
-                "failed to find any preference files for %s" % filename
-            )
+        if load:
+            self.files = find.configFiles(filename, **findkwargs)
 
-        # load data from each file
-        for filepath in self.files:
-            data.update(self._load(filepath))
+            if not self.files:
+                raise PreferencesNotFoundError(
+                    "failed to find any preference files for %s" % filename
+                )
+
+            # load data from each file
+            for filepath in self.files:
+                data.update(self._load(filepath, cached=cached))
+        else:
+            self.files = []
 
         self.__instanced = False
         IterableUserDict.__init__(self, data)
@@ -60,31 +81,40 @@ class Loader(IterableUserDict):
     # end __init__
 
     @classmethod
-    def _load(cls, filepath):
-        """underlying method to load data from a yaml file path"""
-        if filepath not in cls.__configdata__:
-            with open(filepath, 'r') as stream:
-                try:
-                    data = yaml.load(stream, Loader=_YAMLLoader)
-                    cls.__configdata__[filepath] = data
+    def _load(cls, filepath, cached=True):
+        """
+        Underlying classmethod to load data from a yaml path.  This
+        classmethod will raise a :class:`PreferenceLoadError` for
+        any exception thrown while loading the file.
+        """
+        if not cached or filepath not in cls._DATA:
+            try:
+                data = yamlLoad(filepath)
+                cls._DATA[filepath] = data
 
-                except Exception, e:
-                    raise PreferenceLoadError(
-                        "failed to load %s: %s" % (stream.name, e)
-                    )
+            except Exception, e:
+                raise PreferenceLoadError(
+                    "failed to load %s: %s" % (filepath, e)
+                )
 
-        return cls.__configdata__[filepath]
+        return cls._DATA[filepath]
 
     def which(self, key):
-        """determine which file defined the 'default' value for the given key"""
-        return self.where(key)[-1]
+        """
+        Determine which file defined the 'default' value for the given
+        key.  This returns `None` if the key could not be found.
+        """
+        try:
+            return self.where(key)[-1]
+        except IndexError:
+            return None
     # end which
 
     def where(self, key):
         """determine where the value for the provided key was defined"""
         paths = []
         for path in self.files:
-            if key in self.__configdata__[path]:
+            if key in self._DATA[path]:
                 paths.append(path)
         return paths
     # end where
@@ -115,7 +145,7 @@ class Loader(IterableUserDict):
             # it's not a top level key and it's not
             # a key we can break down
             if "." not in key:
-                raise
+                return failobj
 
             # walk down the key and retrieve the data
             data = self
@@ -133,15 +163,13 @@ class Loader(IterableUserDict):
 
     def update(self, dict=None, **kwargs):
         # TODO: add warning message
-        if self.__instanced:
-            pass
-        return IterableUserDict.update(self, dict, **kwargs)
+        if not self.__instanced:
+            return IterableUserDict.update(self, dict, **kwargs)
     # end update
 
     def __setitem__(self, key, value):
         # TODO: add warning message
-        if self.__instanced:
-            pass
-        return IterableUserDict.__setitem__(self, key, value)
+        if not self.__instanced:
+            return IterableUserDict.__setitem__(self, key, value)
     # end __setitem__
 # end Loader
