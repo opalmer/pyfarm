@@ -19,7 +19,7 @@ from __future__ import with_statement
 import os
 import time
 
-from nose.tools import raises
+from nose.tools import raises, eq_
 from nose.plugins.skip import SkipTest
 
 from pyfarmnose.prepost import mktmp, envsetup
@@ -35,7 +35,7 @@ def test_tempfile_delete():
         raise SkipTest
 
     with TempFile(delete=True) as s:
-        assert os.path.isfile(s.name)
+        eq_(os.path.isfile(s.name), True)
 
     max_time = 15
     start = time.time()
@@ -46,29 +46,31 @@ def test_tempfile_delete():
 
         time.sleep(.1)
 
-    assert not os.path.isfile(s.name)
+    eq_(os.path.isfile(s.name), False)
 
 
 @envsetup
 def test_tempfile_nodelete():
     with TempFile(delete=False) as s:
-        assert os.path.isfile(s.name)
-    assert os.path.isfile(s.name)
+        eq_(os.path.isfile(s.name), True)
+
+    eq_(os.path.isfile(s.name), True)
 
 
 @envsetup
 def test_tempfile_dirname():
     d = mktmp()
     with TempFile(root=d, delete=True) as s:
-        assert os.path.dirname(s.name) == d
+        eq_(os.path.dirname(s.name), d)
+
 
 @envsetup
 def test_tempfile_basename():
     d = mktmp()
     with TempFile(prefix="foo", suffix=".txt", root=d, delete=True) as s:
         base = os.path.basename(s.name)
-        assert base.startswith("foo")
-        assert base.endswith(".txt")
+        eq_(base.startswith("foo"), True, "%s does not start with foo" % base)
+        eq_(base.endswith(".txt"), True, "%s does not end with .txt" % base)
 
 
 @envsetup
@@ -80,8 +82,8 @@ def test_dumpyaml_error():
 @envsetup
 def test_dumpyaml_tmppath():
     dump_path = yamlDump("")
-    assert dump_path.endswith(".yml")
-    assert os.path.dirname(dump_path) == path.SESSION_DIRECTORY
+    eq_(dump_path.endswith(".yml"), True, "%s does end with .yml" % dump_path)
+    eq_(os.path.dirname(dump_path), path.SESSION_DIRECTORY)
 
 
 @envsetup
@@ -89,8 +91,9 @@ def test_dumpyaml_path():
     d = mktmp()
     expected_dump_path = os.path.join(d, "foo", "foo.yml")
     dump_path = yamlDump("", path=expected_dump_path)
-    assert os.path.isdir(os.path.dirname(expected_dump_path))
-    assert dump_path == expected_dump_path
+    eq_(os.path.isdir(os.path.dirname(expected_dump_path)), True)
+    eq_(dump_path, expected_dump_path)
+
 
 @envsetup
 @raises(TypeError)
@@ -102,7 +105,7 @@ def test_loadyaml_error():
 def test_loadyaml_path():
     data = os.environ.data.copy()
     dumped_path = yamlDump(data)
-    assert yamlLoad(dumped_path) == data
+    eq_(yamlLoad(dumped_path), data)
 
 
 @envsetup
@@ -110,5 +113,5 @@ def test_loadyaml_stream():
     data = os.environ.data.copy()
     dumped_path = yamlDump(data)
     s = open(dumped_path, "r")
-    assert yamlLoad(s) == data
-    assert s.closed
+    eq_(yamlLoad(s), data)
+    eq_(s.closed, True, "%s not closed" % s.name)
