@@ -14,3 +14,6 @@ dist
 # auto generated files
 docs/source/include/python_requirements.rst
 docs/source/downloads.rst
+
+# configuration files
+pyfarm/config/etc/database.yml
