@@ -9,6 +9,14 @@ files Package
     :undoc-members:
     :show-inheritance:
 
+:mod:`file` Module
+------------------
+
+.. automodule:: pyfarm.files.file
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 :mod:`module` Module
 --------------------
 
@@ -21,14 +29,6 @@ files Package
 ------------------
 
 .. automodule:: pyfarm.files.path
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-:mod:`stream` Module
---------------------
-
-.. automodule:: pyfarm.files.stream
     :members:
     :undoc-members:
     :show-inheritance:

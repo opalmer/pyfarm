@@ -25,10 +25,3 @@ agent Package
     :undoc-members:
     :show-inheritance:
 
-Subpackages
------------
-
-.. toctree::
-
-    pyfarm.agent.process
-

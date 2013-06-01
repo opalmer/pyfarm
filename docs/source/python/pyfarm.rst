@@ -73,9 +73,7 @@ Subpackages
     pyfarm.agent
     pyfarm.config
     pyfarm.datatypes
-    pyfarm.db
     pyfarm.files
-    pyfarm.jobtypes
     pyfarm.master
     pyfarm.net
     pyfarm.web
