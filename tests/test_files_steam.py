@@ -23,7 +23,7 @@ from nose.tools import raises
 from nose.plugins.skip import SkipTest
 
 from pyfarmnose.prepost import mktmp, envsetup
-from pyfarm.files.stream import TempFile, loadYaml, dumpYaml
+from pyfarm.files.file import TempFile, yamlLoad, yamlDump
 from pyfarm.files import path
 
 
@@ -74,12 +74,12 @@ def test_tempfile_basename():
 @envsetup
 @raises(TypeError)
 def test_dumpyaml_error():
-    dumpYaml("", lambda: None)
+    yamlDump("", lambda: None)
 
 
 @envsetup
 def test_dumpyaml_tmppath():
-    dump_path = dumpYaml("")
+    dump_path = yamlDump("")
     assert dump_path.endswith(".yml")
     assert os.path.dirname(dump_path) == path.SESSION_DIRECTORY
 
@@ -88,25 +88,27 @@ def test_dumpyaml_tmppath():
 def test_dumpyaml_path():
     d = mktmp()
     expected_dump_path = os.path.join(d, "foo", "foo.yml")
-    dump_path = dumpYaml("", path=expected_dump_path)
+    dump_path = yamlDump("", path=expected_dump_path)
     assert os.path.isdir(os.path.dirname(expected_dump_path))
     assert dump_path == expected_dump_path
 
 @envsetup
 @raises(TypeError)
 def test_loadyaml_error():
-    loadYaml(lambda: None)
+    yamlLoad(lambda: None)
+
 
 @envsetup
 def test_loadyaml_path():
     data = os.environ.data.copy()
-    dumped_path = dumpYaml(data)
-    assert loadYaml(dumped_path) == data
+    dumped_path = yamlDump(data)
+    assert yamlLoad(dumped_path) == data
+
 
 @envsetup
 def test_loadyaml_stream():
     data = os.environ.data.copy()
-    dumped_path = dumpYaml(data)
+    dumped_path = yamlDump(data)
     s = open(dumped_path, "r")
-    assert loadYaml(s) == data
+    assert yamlLoad(s) == data
     assert s.closed

@@ -19,7 +19,7 @@ from nose.tools import raises
 
 from pyfarmnose.prepost import envsetup, mktmp, mktmps
 from pyfarm.config.core import find
-from pyfarm.files.stream import dumpYaml
+from pyfarm.files.file import yamlDump
 
 try:
     from itertools import product
@@ -164,7 +164,7 @@ def test_files_by_name():
         for filepath in find.configDirectories(**kwargs):
             filename = os.path.join(filepath, ymlname)
             if filename not in filenames:
-                dumpYaml("", filename)
+                yamlDump("", filename)
                 if "TRAVIS" in os.environ:
                     for i in xrange(50):
                         if os.path.isfile(filename):

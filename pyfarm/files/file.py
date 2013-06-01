@@ -20,13 +20,12 @@ import os
 import tempfile
 from StringIO import StringIO
 
-# get the fastest loader
 try:
     from yaml import CLoader as YAMLLoader
 except ImportError:
     from yaml import Loader as YAMLLoader
 
-from yaml import load as _loadyaml, dump as _dumpyaml
+from yaml import load as _yamlLoad, dump as _yamlDump
 
 from pyfarm.files.path import tempdir
 
@@ -52,7 +51,6 @@ class TempFile(file):
         prefix = "" if prefix is None else prefix
         fd, filepath = tempfile.mkstemp(prefix=prefix, suffix=suffix, dir=root)
         super(TempFile, self).__init__(filepath, mode=mode, buffering=buffering)
-    # end __init__
 
     def close(self):
         """
@@ -62,11 +60,9 @@ class TempFile(file):
         super(TempFile, self).close()
         if self.__delete:
             os.remove(self.name)
-    # end close
-# end TempFile
 
 
-def loadYaml(source):
+def yamlLoad(source):
     """
     Loads data from the provided file stream, stream like object, or file
     path.
@@ -85,14 +81,13 @@ def loadYaml(source):
         raise TypeError("expected a filepath, file, or StringIO object")
 
     try:
-        return _loadyaml(source, Loader=YAMLLoader)
+        return _yamlLoad(source, Loader=YAMLLoader)
 
     finally:
         source.close()
-# end loadYaml
 
 
-def dumpYaml(data, path=None, pretty=False):
+def yamlDump(data, path=None, pretty=False):
     """
     dumps data to the requested file path
 
@@ -130,9 +125,8 @@ def dumpYaml(data, path=None, pretty=False):
     kwargs = {"default_flow_style": False, "indent": 4} if pretty else {}
 
     try:
-        _dumpyaml(*args, **kwargs)
+        _yamlDump(*args, **kwargs)
         return stream.name
 
     finally:
         stream.close()
-# end dumpYaml
