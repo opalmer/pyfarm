@@ -14,18 +14,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# TODO: these tests should really be testing the **provided** configs, not random data
+
 import os
-from nose.tools import with_setup
+from nose.tools import with_setup, eq_
 
 from pyfarmnose import mktmp, pretest_cleanup_env, posttest_cleanup_files
-from pyfarm.files.file import yamlDump
 from pyfarm.config.database import Loader, DBConfig
 
 
 def prerun():
     pretest_cleanup_env()
     d = mktmp()
-    config_path = os.path.join(d, "database.yml")
     os.environ["PYFARM_TMP_DBDIR"] = d
     data = {
         "db1": {"database": ":memory:", "engine": "sqlite"},
@@ -33,17 +33,34 @@ def prerun():
         "db3": {"database": "$PYFARM_TMP_DBDIR/db3.sql", "engine": "sqlite"},
         "configs": {"unittests-config": ["db1", "db2", "db3"]}
     }
-    yamlDump(data, config_path)
-    Loader._DATA[config_path] = data
+
+    loader = Loader("database.yml")
+    for filepath in loader._DATA.iterkeys():
+        loader._DATA[filepath] = data
 
 
-setupenv = with_setup(
-    setup=prerun,
-    teardown=posttest_cleanup_files
-)
+def postrun():
+    Loader._DATA.clear()
+    posttest_cleanup_files()
+
+
+setupenv = with_setup(setup=prerun, teardown=postrun)
 
 
 @setupenv
-def test_foo():
+def test_engine():
     config = DBConfig()
-    print config.engine("unittests-config")
+    engine = config.engine("unittests-config")
+    eq_(engine.url.database, config.get("configs.unittests-config")[0].database)
+
+
+@setupenv
+def test_engines():
+    config = DBConfig()
+
+    for index, engine in enumerate(config.engines("unittests-config")):
+        eq_(engine.url.database, config.get("configs.unittests-config")[index].database)
+
+        if os.path.isfile(engine.url.database):
+            dirname = os.path.dirname(engine.url.database)
+            eq_(dirname, os.environ["PYFARM_TMP_DBDIR"])

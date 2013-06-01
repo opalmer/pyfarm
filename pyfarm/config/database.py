@@ -15,6 +15,7 @@
 # limitations under the License.
 
 import re
+import os
 from warnings import warn
 
 from sqlalchemy.engine.url import URL
@@ -84,7 +85,7 @@ class DBConfig(Loader):
 
             for config_name in configs:
                 try:
-                    config = self[config_name]
+                    config = self[config_name].copy()
 
                 except KeyError:  # TODO: add warning logger
                     msg = "database configuration `%s` " % config_name
@@ -92,13 +93,18 @@ class DBConfig(Loader):
                     warn(msg, MissingConfigWaring)
 
                 else:
+                    if "database" in config:
+                        config["database"] = os.path.expandvars(
+                            config["database"]
+                        )
+
                     # attempt to get the engine otherwise
                     # fail (required key)
                     try:
                         engine = config.pop("engine")
                     except KeyError:
                         raise DBConfigError(
-                            "missing `engine` in configs." % config_name
+                            "missing `engine` in configs.%s" % config_name
                         )
 
                     driver_parts = [engine]
