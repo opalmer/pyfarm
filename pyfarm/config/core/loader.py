@@ -150,6 +150,9 @@ class Loader(IterableUserDict):
             # walk down the key and retrieve the data
             data = self
             for subkey in key.split("."):
+                if data is None:
+                    return None
+
                 try:
                     data = data[subkey]
 
