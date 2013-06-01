@@ -71,12 +71,10 @@ def requirements(major, minor, develop=False, docs=True):
     # for local development
     if develop:
         requires.append("nose")
-        requires.append("nose-cov")
 
         if docs:
             requires.append("Jinja2==%s.%s" % (major, minor))
             requires.append("sphinx")
-
 
     # backports of modules introduced in 2.7
     if (major, minor) < (2, 7):
