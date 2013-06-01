@@ -57,6 +57,7 @@ for obj in module.body:
 assert isinstance(parsed_version, list), "did not find __version__"
 assert isinstance(author, basestring), "did not find __author__"
 
+
 def requirements(major, minor, develop=False, docs=True):
     """
     generates a list of requirements depending on the Python version,
@@ -70,6 +71,7 @@ def requirements(major, minor, develop=False, docs=True):
     # for local development
     if develop:
         requires.append("nose")
+        requires.append("nose-cov")
 
         if docs:
             requires.append("Jinja2==%s.%s" % (major, minor))

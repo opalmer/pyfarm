@@ -24,5 +24,5 @@ if [ "$BUILD_DOCS" == "true" ]; then
     runcmd make -C docs html
 else
     title Build Step: tests
-    nosetests -s --verbose --with-doctest --with-coverage --cover-package=pyfarm
+    nosetests -s --verbose --with-doctest --with-cov --cov=pyfarm
 fi
