@@ -20,7 +20,7 @@ import os
 import stat
 import uuid
 import tempfile
-from nose.tools import raises
+from nose.tools import raises, eq_
 
 from pyfarmnose.prepost import mktmp, envsetup
 from pyfarm.files import path
@@ -29,30 +29,34 @@ from pyfarm.files import path
 @envsetup
 def test_tempdir_session():
     sessiondir = path.tempdir(unique=False)
-    assert path.tempdir(unique=False) == sessiondir == path.SESSION_DIRECTORY
+    eq_(path.tempdir(unique=False), sessiondir)
+    eq_(path.tempdir(unique=False), path.SESSION_DIRECTORY)
+    eq_(sessiondir, path.SESSION_DIRECTORY)
 
 
 @envsetup
 def test_tempdir_envvar():
     os.environ["PYFARM_TMP"] = mktmp()
-    assert path.tempdir(respect_env=True) == os.environ["PYFARM_TMP"]
-    assert path.tempdir(respect_env=False) == path.SESSION_DIRECTORY
+    eq_(path.tempdir(respect_env=True), os.environ["PYFARM_TMP"])
+    eq_(path.tempdir(respect_env=False), path.SESSION_DIRECTORY)
 
 
 @envsetup
 def test_tempdir_unique():
-    assert path.tempdir(
-        respect_env=False,
-        unique=True) != path.tempdir(respect_env=False, unique=True)
+    eq_(
+        path.tempdir(respect_env=False, unique=True)
+        != path.tempdir(respect_env=False, unique=True),
+        True
+    )
 
 
 @envsetup
 def test_tempdir_mode():
     st_mode = os.stat(path.tempdir(unique=True)).st_mode
-    assert stat.S_IMODE(st_mode) == path.DEFAULT_PERMISSIONS
+    eq_(stat.S_IMODE(st_mode), path.DEFAULT_PERMISSIONS)
     mymode = stat.S_IRWXU
     st_mode = os.stat(path.tempdir(unique=True, mode=mymode)).st_mode
-    assert stat.S_IMODE(st_mode) == mymode
+    eq_(stat.S_IMODE(st_mode), mymode)
 
 
 @envsetup
@@ -60,7 +64,7 @@ def test_expandpath():
     os.environ["FOO"] = "foo"
     joined_path = os.path.join("~", "$FOO")
     expected = os.path.expanduser(os.path.expandvars(joined_path))
-    assert path.expandpath(joined_path) == expected
+    eq_(path.expandpath(joined_path), expected)
 
 
 @envsetup
@@ -85,7 +89,10 @@ def test_expandenv_path_validation():
         "FOOBARA": os.pathsep.join(["$FOO1", "$FOO2", "$FOO3"])
     }
     os.environ.update(envvars)
-    assert path.expandenv("FOOBARA") == [os.environ["FOO1"], os.environ["FOO2"]]
+    eq_(
+        path.expandenv("FOOBARA"),
+        [os.environ["FOO1"], os.environ["FOO2"]]
+    )
 
 
 @envsetup
@@ -97,9 +104,10 @@ def test_expandenv_path_novalidation():
     }
     os.environ.update(envvars)
     expanded = path.expandenv("FOOBARB", validate=False)
-    assert expanded == [
-        os.environ["FOO5"], os.environ["FOO4"], os.environ["FOO6"]
-    ]
+    eq_(
+        expanded,
+        [os.environ["FOO5"], os.environ["FOO4"], os.environ["FOO6"]]
+    )
 
 
 @envsetup
@@ -122,10 +130,10 @@ def test_which():
         [os.environ["PATH"], os.path.dirname(filename)]
     )
     basename = os.path.basename(filename)
-    assert path.which(basename) == filename
+    eq_(path.which(basename), filename)
 
 
 @envsetup
 def test_which_fullpath():
     thisfile = os.path.abspath(__file__)
-    assert path.which(thisfile) == thisfile
+    eq_(path.which(thisfile), thisfile)

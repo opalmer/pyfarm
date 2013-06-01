@@ -15,7 +15,8 @@
 # limitations under the License.
 
 import os
-from nose.tools import raises
+from nose.tools import raises, eq_
+from nose.plugins.skip import SkipTest
 
 from pyfarmnose.prepost import envsetup, mktmp, mktmps
 from pyfarm.config.core import find
@@ -54,21 +55,21 @@ def test_directories_roots_error():
 
 @envsetup
 def test_output_types():
-    assert isinstance(find.configDirectories(), list)
-    assert isinstance(find.configFiles(""), list)
+    eq_(isinstance(find.configFiles(""), list), True)
+    eq_(isinstance(find.configDirectories(), list), True)
 
 
 @envsetup
 def test_directories_roots():
     roots = [mktmp() for _ in xrange(3)]
-    assert roots == find.configDirectories(roots=roots)
+    eq_(roots, find.configDirectories(roots=roots))
 
 
 @envsetup
 def test_directories_roots_environ():
     roots = [mktmp() for _ in xrange(3)]
     os.environ["PYFARM_CFGROOT"] = os.pathsep.join(roots)
-    assert roots == find.configDirectories(roots=roots)
+    eq_(roots, find.configDirectories(roots=roots))
 
 
 @envsetup
@@ -92,7 +93,8 @@ def test_unversioned_directories():
 
     for kwargs, expected in zip(try_kwargs, expected_results):
         kwargs.setdefault("version", []) # just in case one was created somewhere
-        assert expected == find.configDirectories(**kwargs)
+        eq_(expected, find.configDirectories(**kwargs))
+
 
 @envsetup
 def test_versioned_directories():
@@ -137,7 +139,7 @@ def test_versioned_directories():
         )
 
         if filtered_config_dirs:
-            assert all_paths == filtered_config_dirs
+            eq_(all_paths, filtered_config_dirs)
 
 
 @envsetup
@@ -170,7 +172,7 @@ def test_files_by_name():
                         if os.path.isfile(filename):
                             break
                     else:
-                        raise OSError("file not dumped %s" % filename)
+                        raise SkipTest("file not dumped %s" % filename)
 
                 filenames.append(filename)
 
@@ -180,5 +182,4 @@ def test_files_by_name():
             user=kwargs.get("user"),
             system=kwargs.get("system")
         )
-        #
-        assert yaml_files == filenames
+        eq_(yaml_files, filenames)
