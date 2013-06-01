@@ -1,0 +1,21 @@
+sqlite1:
+  engine: sqlite
+  database: ':memory:'
+
+sqlite2:
+  engine: sqlite
+  database: $PYFARM_TMP_DBDIR/db2.sql
+
+sqlite3:
+  engine: sqlite
+  database: $PYFARM_TMP_DBDIR/db2.sql
+
+configs:
+  testing:
+    - sqlite1
+    - sqlite2
+    - sqlite3
+
+setup:
+  rebuild: false
+  close-connections: false

@@ -19,15 +19,24 @@
 PYTHON_PACKAGES="distribute==0.6.42"
 SYSTEM_PACKAGES="libyaml-dev"
 
+title Write Configuration
+export PYFARM_CFGROOT=$PWD/_CFG_
+mkdir -pv $PYFARM_CFGROOT
+cp -rfv pyfarm/config/etc $PYFARM_CFGROOT
+rm -fv $PYFARM_CFGROOT/database.yml.template
+
 if [ "$DB" == "postgres" ]; then
     SYSTEM_PACKAGES="$SYSTEM_PACKAGES libpq-dev"
     PYTHON_PACKAGES="$PYTHON_PACKAGES psycopg2"
-
+    cp -fv dev/travis-ci/etc/database_$DB.yml $PYFARM_CFGROOT/
 elif [ "$DB" == "mysql" ]; then
     PYTHON_PACKAGES="$PYTHON_PACKAGES pymysql"
+    cp -fv dev/travis-ci/etc/database_$DB.yml $PYFARM_CFGROOT/
+else
+    cp -fv dev/travis-ci/etc/database_sqlite.yml $PYFARM_CFGROOT/
 fi
 
-title Installing Packages
-retrycmd sudo apt-get -y install $SYSTEM_PACKAGES
-retrycmd pip install $PYTHON_PACKAGES --use-mirrors
-retrycmd pip install -e . --use-mirrors
+#title Installing Packages
+#retrycmd sudo apt-get -y install $SYSTEM_PACKAGES
+#retrycmd pip install $PYTHON_PACKAGES --use-mirrors
+#retrycmd pip install -e . --use-mirrors

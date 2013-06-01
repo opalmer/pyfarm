@@ -1,0 +1,14 @@
+mysql:
+   host: 127.0.0.1
+   username: root
+   database: pyfarm
+   engine: mysql
+   driver: pymysql
+
+config:
+  testing:
+    - mysql
+
+setup:
+  rebuild: false
+  close-connections: false

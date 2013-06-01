@@ -16,6 +16,8 @@
 
 . dev/travis-ci/functions.sh
 
+env
+
 title Python Packages
 pip freeze
 
@@ -24,5 +26,5 @@ if [ "$BUILD_DOCS" == "true" ]; then
     runcmd make -C docs html
 else
     title Build Step: tests
-    nosetests -s --verbose --with-doctest --with-cov --cov=pyfarm
+    nosetests -s --verbose --with-cov --cov=pyfarm
 fi

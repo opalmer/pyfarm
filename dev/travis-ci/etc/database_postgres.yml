@@ -1,0 +1,14 @@
+postgres:
+   host: 127.0.0.1
+   username: postgres
+   database: pyfarm
+   engine: postgresql
+   driver: psycopg2
+
+config:
+  testing:
+    - postgres
+
+setup:
+  rebuild: false
+  close-connections: false

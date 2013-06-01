@@ -19,7 +19,7 @@
 if [[ "$TRAVIS_PYTHON_VERSION" != "2.5" &&  "$BUILD_DOCS" != "true" ]]; then
     runcmd coveralls
 else
-    echo "Nothing left to do, running Python 2.5"
+    echo "Nothing left to do, running Python 2.5 or the docs were built"
 fi
 
 title Success
