@@ -13,7 +13,7 @@
 # limitations under the License.
 
 # NOTE: not all values are required, such as port and driver for example.
-# mydbconfig:
+# databaseA:
 #   host:      # hostname to connect to
 #   port:      # port the master is running on
 #   username:  # username to connect with
@@ -21,22 +21,16 @@
 #   database:  # name of database
 #   engine:    # type of engine (mysql, postgresql, etc)
 #   driver:    # specifies the python module to connect with
+#
 
-db-vmdb:
-  host: localhost
-  port: 9999
-  username: someuser
-  password: somepass
-  database: pyfarm
-  driver: psycopg2
-  engine: postgresql
-
-
-# list of possible configs to use, first db which we can connect without
-# raising an error will be be used in all future connections
+# List of possible configs to use, first db which we can connect without
+# raising an error will be be used in all future connections.
+#  Example Configuration:
+#     configs:
+#       prooduction:
+#         - databaseA
+#         - databaseB
 configs:
-  testing:
-   - db-vmdb
 
 setup:
   rebuild: false            # if true, drop and rebuild all tables
