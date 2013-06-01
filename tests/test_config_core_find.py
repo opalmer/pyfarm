@@ -17,7 +17,7 @@
 import os
 from nose.tools import raises
 
-from pyfarmnose.prepost import mktmp, envsetup
+from pyfarmnose.prepost import envsetup, mktmp, mktmps
 from pyfarm.config.core import find
 from pyfarm.files.stream import dumpYaml
 
@@ -73,9 +73,7 @@ def test_directories_roots_environ():
 
 @envsetup
 def test_unversioned_directories():
-    user = [mktmp() for _ in xrange(3)]
-    system = [mktmp() for _ in xrange(3)]
-    roots = [mktmp() for _ in xrange(3)]
+    user, system, roots = mktmps(3)
 
     try_kwargs = (
         {},
@@ -98,9 +96,7 @@ def test_unversioned_directories():
 
 @envsetup
 def test_versioned_directories():
-    user = [mktmp() for _ in xrange(3)]
-    system = [mktmp() for _ in xrange(3)]
-    roots = [mktmp() for _ in xrange(3)]
+    user, system, roots = mktmps(3)
     version = [1, 2, 3]
     versions = find._versionSubdirs(version)
 
@@ -147,9 +143,7 @@ def test_versioned_directories():
 @envsetup
 def test_files_by_name():
     ymlname = "pyfarm_unittest.yml"
-    user = [mktmp() for _ in xrange(3)]
-    system = [mktmp() for _ in xrange(3)]
-    roots = [mktmp() for _ in xrange(3)]
+    user, system, roots = mktmps(3)
 
     try_kwargs = (
         {"roots": roots},

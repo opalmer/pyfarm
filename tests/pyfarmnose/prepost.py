@@ -50,5 +50,14 @@ def posttest_cleanup_files():
         shutil.rmtree(tmpdirectory)
 
 
+def mktmps(list_count, depth=3):
+    results = []
+
+    for i in xrange(list_count):
+        results.append([mktmp() for _ in xrange(depth)])
+
+    return results
+
+
 mktmp = lambda: tempfile.mkdtemp(prefix=path.DEFAULT_DIRECTORY_PREFIX)
 envsetup = with_setup(setup=pretest_cleanup_env, teardown=posttest_cleanup_files)
