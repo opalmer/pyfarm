@@ -31,20 +31,11 @@ db-vmdb:
   driver: psycopg2
   engine: postgresql
 
-# example sqlite db to be used for local testing *only*
-db-sqlite:
-  database: ':memory:'
-  engine: sqlite
-
 
 # list of possible configs to use, first db which we can connect without
 # raising an error will be be used in all future connections
 configs:
   testing:
-   - db-sqlite
-   - db-vmdb
-   - foo
-  production:
    - db-vmdb
 
 setup:
