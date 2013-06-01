@@ -23,7 +23,7 @@ import time
 from nose.tools import raises
 from nose.plugins.skip import SkipTest
 
-from core.prepost import mktmp, pretest_cleanup_env, posttest_cleanup_files
+from pyfarmnose.prepost import mktmp, pretest_cleanup_env, posttest_cleanup_files
 from pyfarm.files.stream import TempFile, loadYaml, dumpYaml
 from pyfarm.files import path
 

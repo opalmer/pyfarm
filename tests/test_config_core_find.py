@@ -18,7 +18,7 @@ import os
 from nose import with_setup
 from nose.tools import raises
 
-from core.prepost import mktmp, pretest_cleanup_env, posttest_cleanup_files
+from pyfarmnose.prepost import mktmp, pretest_cleanup_env, posttest_cleanup_files
 from pyfarm.config.core import find
 from pyfarm.files.stream import dumpYaml
 

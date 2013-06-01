@@ -23,7 +23,7 @@ import nose
 import tempfile
 from nose.tools import raises
 
-from core.prepost import mktmp, pretest_cleanup_env, posttest_cleanup_files
+from pyfarmnose.prepost import mktmp, pretest_cleanup_env, posttest_cleanup_files
 from pyfarm.files import path
 
 setup = nose.with_setup(
