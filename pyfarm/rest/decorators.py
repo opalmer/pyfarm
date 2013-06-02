@@ -27,7 +27,13 @@ class expires(object):
 
     :type name: str
     :param name:
-        if provided
+        if provided then retrieve the expiration length
+        from a configuration file
+
+    :type now: :py:class:`.datetime`
+    :param now:
+        defines the time we will calculate the timedelta
+        against
     """
     def __init__(self, seconds=0, minutes=0, hours=0,
                  days=0, weeks=0, now=None, name=None):
