@@ -100,17 +100,6 @@ def requirements(major, minor, develop=False, docs=True):
 # end requirements
 
 
-def getetc():
-    """returns the files to copy over from etc/"""
-    results = []
-
-    for dirname in os.listdir(os.path.join("pyfarm", "config", "etc")):
-        results.append((dirname, setuptools.findall(dirname)))
-
-    return results
-# end getetc
-
-
 class clean(_clean):
     """
     custom clean class which runs the standard clean then cleans up
@@ -166,19 +155,42 @@ if __name__ == "__main__":
         requires.append("coverage")
         requires.append("python-coveralls")
 
+    # get all packages but make sure we don't include any
+    # non-python code
+    packages = filter(
+        lambda name: name == "pyfarm" or name.startswith("pyfarm."),
+        setuptools.find_packages(".")
+    )
+
     setup(
         name="pyfarm",
         version=".".join(map(str, parsed_version)),
-        package_dir={"pyfarm": "pyfarm"},
-        data_files=getetc(),
-        packages=setuptools.find_packages("."),
+        data_files=[("pyfarm-files", setuptools.findall("pyfarm-files"))],
+        packages=packages,
         setup_requires=requires,
         install_requires=requires,
         url="http://pyfarm.net",
         license="Apache v2.0",
         author=author,
-        author_email="",
-        description="",
+        description="A Python based distributed job system",
+        long_description=open("README.md", "r").read(),
         scripts=setuptools.findall("scripts"),
-        cmdclass={"clean": clean}
+        cmdclass={"clean": clean},
+        zip_safe=False,
+        classifiers=[
+            "Development Status :: 3 - Alpha",
+            "Environment :: Other Environment",
+            "Intended Audience :: Developers",
+            "Intended Audience :: End Users/Desktop",
+            "Intended Audience :: Science/Research",
+            "Intended Audience :: Other Audience",
+            "License :: OSI Approved :: Apache Software License",
+            "Natural Language :: English",
+            "Operating System :: OS Independent",
+            "Programming Language :: Python :: 2 :: Only", # waiting on 3rd party packages
+            "Programming Language :: Python :: 2.5",
+            "Programming Language :: Python :: 2.6",
+            "Programming Language :: Python :: 2.7",
+            "Topic :: System :: Distributed Computing",
+        ]
     )
