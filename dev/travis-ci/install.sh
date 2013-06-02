@@ -36,7 +36,7 @@ else
     cp -fv dev/travis-ci/etc/database_sqlite.yml $PYFARM_CFGROOT/
 fi
 
-#title Installing Packages
-#retrycmd sudo apt-get -y install $SYSTEM_PACKAGES
-#retrycmd pip install $PYTHON_PACKAGES --use-mirrors
-#retrycmd pip install -e . --use-mirrors
+title Installing Packages
+retrycmd sudo apt-get -y install $SYSTEM_PACKAGES
+retrycmd pip install $PYTHON_PACKAGES --use-mirrors
+retrycmd pip install -e . --use-mirrors
