@@ -16,8 +16,6 @@
 
 . dev/travis-ci/functions.sh
 
-export PYFARM_CFGROOT=$PWD/_CFG_
-
 title Python Packages
 pip freeze
 
