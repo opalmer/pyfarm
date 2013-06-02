@@ -31,12 +31,12 @@ except ImportError:
     from pyfarm.backports import product
 
 from appdirs import AppDirs
-from pyfarm import __version__, PYROOT
+from pyfarm import __version__, dist
 
 DEFAULT_SUBDIR = "etc"
 DEFAULT_USER_PATHS = False
 DEFAULT_SYSTEM_PATHS = False
-DEFAULT_CONFIG_ROOT = join(PYROOT, "config", "etc")
+DEFAULT_CONFIG_ROOT = join(dist.location, "pyfarm-files", "config")
 DEFAULT_VERSION = list(__version__)
 
 
