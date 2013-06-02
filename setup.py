@@ -162,6 +162,13 @@ if __name__ == "__main__":
         setuptools.find_packages(".")
     )
 
+    # command line scripts used for operating pyfarm
+    entry_points = {
+        "console_scripts": [
+            "pyfarm_master = pyfarm.script.master:run_master"
+        ]
+    }
+
     setup(
         name="pyfarm",
         version=".".join(map(str, parsed_version)),
@@ -177,6 +184,7 @@ if __name__ == "__main__":
         scripts=setuptools.findall("scripts"),
         cmdclass={"clean": clean},
         zip_safe=False,
+        entry_points=entry_points,
         classifiers=[
             "Development Status :: 3 - Alpha",
             "Environment :: Other Environment",
