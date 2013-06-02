@@ -16,7 +16,7 @@
 
 . dev/travis-ci/functions.sh
 
-PYTHON_PACKAGES="distribute==0.6.42"
+PYTHON_PACKAGES="distribute==0.6.42 coverage"
 SYSTEM_PACKAGES="libyaml-dev"
 
 title Write Configuration
