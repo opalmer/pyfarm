@@ -22,12 +22,12 @@ SYSTEM_PACKAGES="libyaml-dev"
 if [ "$DB" == "postgres" ]; then
     SYSTEM_PACKAGES="$SYSTEM_PACKAGES libpq-dev"
     PYTHON_PACKAGES="$PYTHON_PACKAGES psycopg2"
-    cp -fv dev/travis-ci/etc/database_$DB.yml pyfarm/config/etc/
+    cp -fv dev/travis-ci/etc/database_$DB.yml pyfarm/config/etc/database.yml
 elif [ "$DB" == "mysql" ]; then
     PYTHON_PACKAGES="$PYTHON_PACKAGES pymysql"
-    cp -fv dev/travis-ci/etc/database_$DB.yml pyfarm/config/etc/
+    cp -fv dev/travis-ci/etc/database_$DB.yml pyfarm/config/etc/database.yml
 else
-    cp -fv dev/travis-ci/etc/database_sqlite.yml pyfarm/config/etc/
+    cp -fv dev/travis-ci/etc/database_sqlite.yml pyfarm/config/etc/database.yml
 fi
 
 title Installing Packages
