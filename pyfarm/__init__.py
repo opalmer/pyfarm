@@ -14,13 +14,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
-from os.path import abspath, dirname
-
 __version__ = (1, 0, 0)
 __versionstr__ = ".".join(map(str, __version__))
 __author__ = "Oliver Palmer"
 
-# root of PyFarm's project directory, mainly
-# used by pyfarm.config
-PYROOT = abspath(dirname(__file__))
+# create a dist variable which we can use in the package
+# to retrieve some location information about the installation
+import pkg_resources
+try:
+    dist = pkg_resources.get_distribution("pyfarm")
+
+except pkg_resources.DistributionNotFound:
+    raise pkg_resources.DistributionNotFound(
+        "failed to find the `pyfarm` package, has it been installed with pip?"
+    )
