@@ -25,6 +25,5 @@ try:
     dist = pkg_resources.get_distribution("pyfarm")
 
 except pkg_resources.DistributionNotFound:
-    raise pkg_resources.DistributionNotFound(
-        "failed to find the `pyfarm` package, has it been installed with pip?"
-    )
+    msg = "failed to find the `pyfarm` package, has it been installed with pip?"
+    raise pkg_resources.DistributionNotFound(msg)
