@@ -96,7 +96,7 @@ General Response Implementation Notes
 -------------------------------------
 
 This section will be expanded in a later design however that future design
-include some information on:
+should include some information on:
 
 
 * **Agent Talkback:** Certain requests to the master may require us to
@@ -111,6 +111,6 @@ include some information on:
   performed in a uniform fashion.  The *key* here is to keep as few
   dependencies on the underlying data structure and as few dependencies on
   libraries outside of Python itself.
-* **Time:**: Datetime should always be represented by ISO 8601 and set in GMT
+* **Time:** Datetime should always be represented by ISO 8601 and set in GMT
 * **State Information:** Information that is not specific to a single host (
   never needs to be known in other scopes) should not be stored in the session
