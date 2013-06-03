@@ -25,3 +25,11 @@ master Package
     :undoc-members:
     :show-inheritance:
 
+:mod:`core` Module
+------------------
+
+.. automodule:: pyfarm.master.core
+    :members:
+    :undoc-members:
+    :show-inheritance:
+

@@ -25,22 +25,30 @@ Overview
 --------
 
 The master operates as a manager of multiple agents, their tasks, and also
-serves as a point of communication between the agent(s) and the database.
+serves as a point of communication between the agent and the database.
 A master does not always represent a single machine, more often it represents
 a resource that points to several hosts.  This is done to ensure that a request
 can be routed to any master that the frontend sees as an appropriate resource.
-For smaller groups or single users however the communication protocol however
-the setup can still be simplified down to a few step.
+For smaller groups or single users however the setup can be simplified while
+the communication protocol remains the same.
 
-In a general sense the master can now scale in one of several ways:
+In a general sense the master can scale in one of several ways:
 
 .. csv-table::
     :header: Type, Scalability, Failures Over Time, Description
     :widths: 50, 15, 25, 120
 
     Single Master, Low, High, Each agent speaks directly with the master
-    HTTP Frontend + Multiple Masters, Moderate, Low, Each agent speaks to an HTTP server which distributes the request to the masters
-    Load Balancer + Multiple Frontends/Masters, High, Very Low, Each agent speaks to a load balancer which then distributes the request to a frontend/http server combination
+    HTTP Frontend + Multiple Masters, Moderate-High, Low, Each agent speaks to an HTTP server which distributes the request to the masters
+    Load Balancer + Multiple Frontends/Masters, High, Very Low, Each agent speaks to a load balancer which then distributes the request to a frontend/http server combination.
+
+
+.. note::
+    Testing at scale will need to be performed in order to ensure the highest
+    consistency possible while in operation.  Any differences noted when
+    operating at different scales should be **well** documented. Discrepancies
+    that cannot be solved either by tuning the code or by reasonable degradation
+    of performance/features should raise errors.
 
 
 Capabilities
@@ -50,7 +58,7 @@ Because the master will serve as the single point for each agent to talk
 to it must be able to serve multiple requests.  See below for more
 information.
 
-| **TODO** add links to json document specifications, url resources, and media types.
+| **TODO** add links to json document specifications, url resources, and media types as they are added to the master
 | **TODO** add additional (missing) capabilities
 
 Job Processing
@@ -100,8 +108,11 @@ should include some information on:
 
 
 * **Agent Talkback:** Certain requests to the master may require us to
-  communicate something with the client.  More than likely this will be
-  a 'talkback' server that simply send commands to agents from the masters
+  communicate something with the agent.  More than likely this will be
+  a 'talkback' server that simply send commands to agents from the masters.
+  This will not be used for direct replies instead it's intended for
+  situations which may introduce latency such as pagination and sending
+  commands to batches of agents.
 * **Referenced Resources (href):** Responses should reference other resources
   rather than containing all the information requested (perhaps include an
   override in the url?). For example 'processed jobs' for an agent
@@ -111,6 +122,9 @@ should include some information on:
   performed in a uniform fashion.  The *key* here is to keep as few
   dependencies on the underlying data structure and as few dependencies on
   libraries outside of Python itself.
-* **Time:** Datetime should always be represented by ISO 8601 and set in GMT
-* **State Information:** Information that is not specific to a single host (
-  never needs to be known in other scopes) should not be stored in the session
+* **Time:** datetime should always be represented to the standard
+  :rfc:`1123` dictates
+* **State Information:** Information that is not specific to a single host
+  (never needs to be known in other scopes) should not be stored in the session.
+  This should help to minimize memory overhead and lessen the chance of
+  differences in state between instance of masters.
