@@ -2,9 +2,11 @@ PyFarm
 ======
 .. image:: https://travis-ci.org/opalmer/pyfarm.png?branch=master
     :alt: Build Status
+    :target: https://travis-ci.org/opalmer/pyfarm
 
 .. image:: https://coveralls.io/repos/opalmer/pyfarm/badge.png?branch=master
     :alt: Coverage Status
+    :target: https://coveralls.io/r/opalmer/pyfarm
 
 A Python based distributed job system which is intended to be easy to deploy
 and maintain.  Initially developed to be used solely by the Visual Effects
