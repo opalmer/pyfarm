@@ -22,16 +22,14 @@ CONFIG_DIR="pyfarm-files/config"
 
 # NOTE: some files here may need to be copied from a source (as database.yml is)
 cp -fv $CONFIG_DIR/filesystem.yml.template $CONFIG_DIR/filesystem.yml
+cp -fv dev/travis-ci/config/database_$DB.yml $CONFIG_DIR/database.yml
 
 if [ "$DB" == "postgres" ]; then
     SYSTEM_PACKAGES="$SYSTEM_PACKAGES libpq-dev"
     PYTHON_PACKAGES="$PYTHON_PACKAGES psycopg2"
-    cp -fv dev/travis-ci/etc/database_$DB.yml $CONFIG_DIR/database.yml
+
 elif [ "$DB" == "mysql" ]; then
     PYTHON_PACKAGES="$PYTHON_PACKAGES pymysql"
-    cp -fv dev/travis-ci/etc/database_$DB.yml $CONFIG_DIR/database.yml
-else
-    cp -fv dev/travis-ci/etc/database_sqlite.yml $CONFIG_DIR/database.yml
 fi
 
 title Installing Packages
