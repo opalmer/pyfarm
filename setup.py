@@ -68,7 +68,7 @@ def requirements(major, minor, develop=False, docs=True):
         "appdirs", "colorama", "PyYaml",
         "psutil", "netifaces", "sqlalchemy",
         "flask", "flask-sqlalchemy", "flask-security",
-        "flask-admin", "flask-bcrypt", "flask-cache",
+        "flask-bcrypt", "flask-cache",
         "flask-restless"
     ]
 
@@ -90,6 +90,7 @@ def requirements(major, minor, develop=False, docs=True):
     if (major, minor) > (2, 5):
         requires.append("zope.interface")
         requires.append("twisted")
+        requires.append("flask-admin")  # agent/master code won't need this
 
     # 2.5 exclusive
     if (major, minor) == (2, 5):
