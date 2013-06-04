@@ -16,4 +16,4 @@ docs/source/include/python_requirements.rst
 docs/source/downloads.rst
 
 # configuration files
-pyfarm/config/etc/database.yml
+pyfarm-files/config/database.yml
