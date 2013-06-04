@@ -14,35 +14,36 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from sqlalchemy.types import Integer
+from itertools import ifilter
+from sqlalchemy import Column, Integer
 from sqlalchemy.orm import object_session
-from sqlalchemy import Column
-
-from pyfarm.logger import Logger
 from pyfarm.datatypes.enums import State
 
-logger = Logger(__name__)
 
-class PyFarmBase(object):
+class TableBase(object):
     """
-    base class which defines some base functions and attributes
-    for all classes to inherit
+    Base class which defines some base functions and attributes
+    for all tables to inherit.
+
+    :type repr_attrs: list or tuple
+    :cvar repr_attrs:
+        if provided only produce these attributes in `__repr__`
+
+    :cvar repr_attrs_skip_none:
     """
     repr_attrs = ()
     repr_attrs_skip_none = False
 
-    # base column definitions which all other classes inherit
+    # inherited by all other tables
     id = Column(Integer, primary_key=True, autoincrement=True)
 
     @property
     def session(self):
         return object_session(self)
-    # end session
 
     def __getparentattr(self, name):
         """retrieve a value from the right most class (including mixins)"""
-        classes = []
-        classes.extend(self.__class__.__bases__)
+        classes = list(self.__class__.__bases__)
         classes.append(self.__class__)
 
         for base in reversed(classes):
@@ -50,17 +51,16 @@ class PyFarmBase(object):
                 value = getattr(base, name)
                 if value is not None and value:
                     return value
-    # end __getparentattr
 
     def __repr__(self):
         values = []
         none = (None, repr(None), 'none')
         repr_attrs = self.__getparentattr('repr_attrs')
         repr_attrs_skip_none = self.__getparentattr('repr_attrs_skip_none')
+        _hasattr = lambda attribute: hasattr(self, attribute)
 
-        for attr in ( attr for attr in repr_attrs if hasattr(self, attr) ):
+        for attr in ifilter(_hasattr, repr_attrs):
             original_value = getattr(self, attr)
-            value = original_value
 
             if attr == 'state' and original_value is not None:
                 value = State.get(original_value)
@@ -77,5 +77,3 @@ class PyFarmBase(object):
             values.append("%s=%s" % (attr, value))
 
         return "%s(%s)" % (self.__class__.__name__, ", ".join(values))
-    # end __repr__
-# end PyFarmBase
