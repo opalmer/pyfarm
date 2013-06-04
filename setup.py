@@ -18,6 +18,7 @@ from __future__ import with_statement
 
 import os
 import sys
+from StringIO import StringIO
 
 PY_MAJOR, PY_MINOR, PY_MICRO = sys.version_info[0:3]
 
@@ -169,6 +170,15 @@ if __name__ == "__main__":
         ]
     }
 
+    # readme for long_description
+    # TODO: remove this, don't need the note after the first release
+    readme = StringIO()
+    print >> readme, ".. note::"
+    print >> readme, "    This page is a placeholder only, no files have been uploaded yet."
+    print >> readme, ""
+    readme.write(open("README.rst", "r").read())
+    readme = readme.getvalue()
+
     setup(
         name="pyfarm",
         version=".".join(map(str, parsed_version)),
@@ -179,8 +189,10 @@ if __name__ == "__main__":
         url="http://pyfarm.net",
         license="Apache v2.0",
         author=author,
+        author_email="development@pyfarm.net",
         description="A Python based distributed job system",
-        long_description=open("README.rst", "r").read(),
+        long_description=readme,
+        bugtrack_url="https://github.com/opalmer/pyfarm/issues",
         scripts=setuptools.findall("scripts"),
         cmdclass={"clean": clean},
         zip_safe=False,
