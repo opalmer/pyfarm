@@ -66,7 +66,10 @@ def requirements(major, minor, develop=False, docs=True):
     """
     requires = [
         "appdirs", "colorama", "PyYaml",
-        "psutil", "netifaces", "sqlalchemy"
+        "psutil", "netifaces", "sqlalchemy",
+        "flask", "flask-sqlalchemy", "flask-security",
+        "flask-admin", "flask-bcrypt", "flask-cache",
+        "flask-restless"
     ]
 
     # for local development
@@ -214,3 +217,5 @@ if __name__ == "__main__":
             "Topic :: System :: Distributed Computing",
         ]
     )
+
+    print "TODO: change requirements at runtime based on the module being used"
