@@ -13,3 +13,28 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+import os
+try:
+    import json
+except ImportError:
+    import simplejson as json
+
+from flask import Flask
+from flask.ext.sqlalchemy import SQLAlchemy
+from flask.ext import admin, wtf
+from flask import Flask
+
+from flask.ext.classy import FlaskView
+
+class AgentView(FlaskView):
+    def agent(self):
+        # TODO: this is probably not returning JSON
+        return json.dumps({os.environ.data})
+
+
+
+def master():
+    app = Flask(__name__)
+    AgentView.register(app)
+    app.run()
