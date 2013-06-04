@@ -180,7 +180,7 @@ if __name__ == "__main__":
         license="Apache v2.0",
         author=author,
         description="A Python based distributed job system",
-        long_description=open("README.md", "r").read(),
+        long_description=open("README.rst", "r").read(),
         scripts=setuptools.findall("scripts"),
         cmdclass={"clean": clean},
         zip_safe=False,
