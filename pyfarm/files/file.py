@@ -17,6 +17,7 @@
 from __future__ import with_statement
 
 import os
+import shutil
 import tempfile
 from StringIO import StringIO
 
@@ -130,3 +131,15 @@ def yamlDump(data, path=None, pretty=False):
 
     finally:
         stream.close()
+
+# Placeholders that are called internally
+# so they can be overridden by an extension.
+makedirs = os.makedirs
+remove = os.remove
+chown = os.chown
+chmod = os.chmod
+chdir = os.chdir
+rmtree = shutil.rmtree
+copy = shutil.copy
+copy2 = shutil.copy
+copytree = shutil.copytree
