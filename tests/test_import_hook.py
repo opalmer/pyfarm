@@ -90,7 +90,6 @@ def test_hook():
 
     with open(module_filepath, "w") as foobar:
         print >> foobar, "test = lambda: True"
-        print foobar.name
 
     loader = ExtensionImporter(ExtensionImporter.DEFAULT_CHOICES, "")
     loader.install()
