@@ -17,11 +17,3 @@ script Package
     :undoc-members:
     :show-inheritance:
 
-:mod:`webapp` Module
---------------------
-
-.. automodule:: pyfarm.script.webapp
-    :members:
-    :undoc-members:
-    :show-inheritance:
-

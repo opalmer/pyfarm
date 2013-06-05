@@ -9,14 +9,6 @@ rest Package
     :undoc-members:
     :show-inheritance:
 
-:mod:`core` Module
-------------------
-
-.. automodule:: pyfarm.rest.core
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 :mod:`decorators` Module
 ------------------------
 

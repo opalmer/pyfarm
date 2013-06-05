@@ -33,6 +33,14 @@ pyfarm Package
     :undoc-members:
     :show-inheritance:
 
+:mod:`exthook` Module
+---------------------
+
+.. automodule:: pyfarm.exthook
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 :mod:`lock` Module
 ------------------
 
@@ -73,7 +81,7 @@ Subpackages
     pyfarm.agent
     pyfarm.config
     pyfarm.datatypes
-    pyfarm.db
+    pyfarm.ext
     pyfarm.files
     pyfarm.master
     pyfarm.net
