@@ -14,9 +14,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from pyfarm.config.core import Loader
+from pyfarm.ext.config.core.loader import Loader
+from pyfarm.ext.utility import getPort
 from pyfarm.cmdargs import *
-from pyfarm.net import getPort
 
 parser.description = "Entry point for PyFarm's master."
 
