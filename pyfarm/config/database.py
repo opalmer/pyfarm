@@ -22,9 +22,9 @@ from sqlalchemy.engine.url import URL
 from sqlalchemy.engine import create_engine
 from sqlalchemy.exc import OperationalError
 
-from pyfarm.config.core import Loader
-from pyfarm.config.core.errors import PreferencesError
-from pyfarm.config.core.warning import MissingConfigWaring
+from pyfarm.ext.config.core.loader import Loader
+from pyfarm.ext.config.core.errors import PreferencesError
+from pyfarm.ext.config.core.warning import MissingConfigWaring
 
 
 class DBConfigError(PreferencesError):

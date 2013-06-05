@@ -19,8 +19,8 @@ import tempfile
 import psutil
 
 from pyfarm.datatypes.enums import OperatingSystem
-from pyfarm.utility import user
 from pyfarm.datatypes.functions import bytes_to_megabytes
+from pyfarm.ext.utility import user
 
 OS = OperatingSystem.get()
 OSNAME = OperatingSystem.get(OS)

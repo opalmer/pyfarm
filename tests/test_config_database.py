@@ -20,7 +20,7 @@ import os
 from nose.tools import with_setup, eq_
 
 from pyfarmnose import mktmp, pretest_cleanup_env, posttest_cleanup_files
-from pyfarm.config.database import Loader, DBConfig
+from pyfarm.ext.config.database import Loader, DBConfig
 
 
 def prerun():

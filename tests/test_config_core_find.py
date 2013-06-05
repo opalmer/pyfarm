@@ -19,8 +19,8 @@ from nose.tools import raises, eq_
 from nose.plugins.skip import SkipTest
 
 from tests.pyfarmnose import envsetup, mktmp, mktmps
-from pyfarm.config.core import find
-from pyfarm.files.file import yamlDump
+from pyfarm.ext.config.core import find
+from pyfarm.ext.files.file import yamlDump
 
 try:
     from itertools import product

@@ -23,8 +23,8 @@ from nose.tools import raises, eq_
 from nose.plugins.skip import SkipTest
 
 from tests.pyfarmnose import mktmp, envsetup
-from pyfarm.files.file import TempFile, yamlLoad, yamlDump
-from pyfarm.files import path
+from pyfarm.ext.files.file import TempFile, yamlLoad, yamlDump
+from pyfarm.ext.files import path
 
 
 @envsetup

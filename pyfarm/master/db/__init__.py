@@ -13,11 +13,3 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-"""
-This is just a very simple module to handle retrieval and initial process
-of a new job from the database.  This module may later be expanded on or
-replaced.
-"""
-
-

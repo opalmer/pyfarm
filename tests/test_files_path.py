@@ -23,7 +23,7 @@ import tempfile
 from nose.tools import raises, eq_
 
 from tests.pyfarmnose import mktmp, envsetup
-from pyfarm.files import path
+from pyfarm.ext.files import path
 
 
 @envsetup

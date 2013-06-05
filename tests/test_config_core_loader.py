@@ -28,10 +28,10 @@ except ImportError:
 from nose.tools import raises, with_setup, eq_
 
 
-from pyfarm.files.file import yamlDump
-from pyfarm.config.core.find import configFiles
-from pyfarm.config.core import errors
-from pyfarm.config.core.loader import Loader
+from pyfarm.ext.files.file import yamlDump
+from pyfarm.ext.config.core.find import configFiles
+from pyfarm.ext.config.core import errors
+from pyfarm.ext.config.core.loader import Loader
 from tests.pyfarmnose import (
     pretest_cleanup_env, posttest_cleanup_files, mktmps, mktmp
 )

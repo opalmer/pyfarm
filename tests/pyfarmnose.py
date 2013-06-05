@@ -24,6 +24,7 @@ import tempfile
 from fnmatch import filter as fnfilter
 from nose.tools import with_setup
 
+# NOTE: do not use pyfarm.ext for tests
 from pyfarm.files import path
 
 CLEAN_ENV = os.environ.copy()

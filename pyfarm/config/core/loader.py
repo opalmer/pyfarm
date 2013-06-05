@@ -18,8 +18,8 @@ from __future__ import with_statement
 
 from UserDict import IterableUserDict
 
-from pyfarm.files.file import yamlLoad
-from pyfarm.config.core import find
+from pyfarm.ext.files.file import yamlLoad
+from pyfarm.ext.config.core import find
 from pyfarm.config.core.errors import (
     SubKeyError, PreferenceLoadError, PreferencesNotFoundError
 )

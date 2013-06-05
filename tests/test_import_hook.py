@@ -21,6 +21,8 @@ import sys
 import inspect
 from nose.tools import with_setup, raises, eq_
 from pyfarmnose import mktmp, posttest_cleanup_files, pretest_cleanup_env
+
+# NOTE: this test is testing the import hook, do not modify this line
 from pyfarm.exthook import ExtensionImporter
 
 MODULE_DIR = None

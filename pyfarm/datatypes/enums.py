@@ -20,7 +20,7 @@ named value mappings which do not change during execution
 """
 
 import imp
-from pyfarm.config.enum import (
+from pyfarm.ext.config.enum import (
     Software as _Softare, SoftwareType as _SoftwareType,
     State as _State, EnvMergeMode as _EnvMergeMode,
     DependencyType as _DependencyType, OperatingSystem as _OperatingSystem

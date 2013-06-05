@@ -22,10 +22,9 @@ of PyFarm.
 import os
 import sys
 import getpass
-from tempfile import NamedTemporaryFile
-from pyfarm.files.path import expandenv
+import socket
 
-PyMajor, PyMinor, PyMicro = sys.version_info[0:3]
+PY_MAJOR, PY_MINOR, PY_MICRO = sys.version_info[0:3]
 
 
 def user():
@@ -36,4 +35,12 @@ def user():
 
     except ImportError:
         return getpass.getuser()
-# end user
+
+
+def getPort(bindhost='localhost'):
+    """returns a port which we are able to bind to"""
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.bind((bindhost, 0))
+    address = s.getsockname()[1]
+    s.close()
+    return address

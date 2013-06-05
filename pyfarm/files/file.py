@@ -27,7 +27,7 @@ except ImportError:
 
 from yaml import load as _yamlLoad, dump as _yamlDump
 
-from pyfarm.files.path import tempdir
+from pyfarm.ext.files.path import tempdir
 
 
 class TempFile(file):

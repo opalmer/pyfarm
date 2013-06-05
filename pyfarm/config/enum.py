@@ -23,7 +23,7 @@ try:
 except ImportError:
     from pyfarm.backports import namedtuple
 
-from pyfarm.config.core import Loader
+from pyfarm.ext.config.core.loader import Loader
 
 
 class EnumBuilder(type):

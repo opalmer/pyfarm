@@ -18,8 +18,8 @@ import sys
 import uuid
 from nose.tools import eq_, with_setup
 
-from pyfarm.config.core import Loader
-from pyfarm.config import enum
+from pyfarm.ext.config.core.loader import Loader
+from pyfarm.ext.config import enum
 
 SYS_PLATFORM = sys.platform
 
