@@ -65,11 +65,11 @@ def requirements(major, minor, develop=False, docs=True):
     operating system, and develop keyword
     """
     requires = [
-        "appdirs", "colorama", "PyYaml",
+        "appdirs", "PyYaml",
         "psutil", "netifaces", "sqlalchemy",
-        "flask", "flask-sqlalchemy", "flask-security",
-        "flask-bcrypt", "flask-cache",
-        "flask-restless"
+        "flask", "flask-sqlalchemy"#, "colorama",
+        # "flask-bcrypt", "flask-cache",
+        # "flask-restless", "flask-security",
     ]
 
     # for local development
@@ -87,19 +87,19 @@ def requirements(major, minor, develop=False, docs=True):
         requires.append("importlib")
 
     # higher than 2.5
-    if (major, minor) > (2, 5):
-        requires.append("zope.interface")
-        requires.append("twisted")
-        requires.append("flask-admin")  # agent/master code won't need this
+    # if (major, minor) > (2, 5):
+    #     requires.append("zope.interface")
+    #     requires.append("twisted")
+    #     requires.append("flask-admin")  # agent/master code won't need this
 
     # 2.5 exclusive
-    if (major, minor) == (2, 5):
-        requires.append("simplejson")
-        requires.append("zope.interface<=3.8.0")
-        requires.append("twisted<=12.1")
+    # if (major, minor) == (2, 5):
+    #     requires.append("simplejson")
+    #     requires.append("zope.interface<=3.8.0")
+    #     requires.append("twisted<=12.1")
 
-    if sys.platform.startswith("win"):
-        requires.append("pywin32")
+    # if sys.platform.startswith("win"):
+    #     requires.append("pywin32")
 
     return list(requires)
 # end requirements
@@ -141,7 +141,7 @@ class clean(_clean):
 if __name__ == "__main__":
     # disable docs for some of the travis jobs
     build_docs = True
-    if "TRAVIS_JOB_NUMBER" in os.environ and "BUILD_DOCS" not in os.environ:
+    if "TRAVIS" in os.environ and "BUILD_DOCS" not in os.environ:
         build_docs = False
 
     requires = requirements(
