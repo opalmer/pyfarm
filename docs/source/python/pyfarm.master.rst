@@ -33,3 +33,10 @@ master Package
     :undoc-members:
     :show-inheritance:
 
+Subpackages
+-----------
+
+.. toctree::
+
+    pyfarm.master.models
+

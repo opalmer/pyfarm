@@ -41,10 +41,10 @@ pyfarm Package
     :undoc-members:
     :show-inheritance:
 
-:mod:`lock` Module
-------------------
+:mod:`files` Module
+-------------------
 
-.. automodule:: pyfarm.lock
+.. automodule:: pyfarm.files
     :members:
     :undoc-members:
     :show-inheritance:
@@ -53,14 +53,6 @@ pyfarm Package
 --------------------
 
 .. automodule:: pyfarm.logger
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-:mod:`queue` Module
--------------------
-
-.. automodule:: pyfarm.queue
     :members:
     :undoc-members:
     :show-inheritance:
@@ -82,9 +74,7 @@ Subpackages
     pyfarm.config
     pyfarm.datatypes
     pyfarm.ext
-    pyfarm.files
     pyfarm.master
-    pyfarm.net
     pyfarm.rest
     pyfarm.script
 
