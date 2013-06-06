@@ -49,14 +49,6 @@ pyfarm Package
     :undoc-members:
     :show-inheritance:
 
-:mod:`logger` Module
---------------------
-
-.. automodule:: pyfarm.logger
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 :mod:`utility` Module
 ---------------------
 
@@ -70,7 +62,6 @@ Subpackages
 
 .. toctree::
 
-    pyfarm.agent
     pyfarm.config
     pyfarm.datatypes
     pyfarm.ext

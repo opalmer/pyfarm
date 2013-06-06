@@ -15,13 +15,12 @@
 # limitations under the License.
 
 import socket
+from warnings import warn
 import netifaces
 
 from pyfarm.ext.config.core.loader import Loader
 from pyfarm import errors
-from pyfarm.logger import Logger
 
-logger = Logger(__name__)
 prefs = Loader("network.yml")
 
 # setup network information
@@ -38,18 +37,16 @@ FQDN = socket.getfqdn(HOSTNAME)
 # used as a fallback in case the code below cannot resolve the hostname
 # from the ip address
 for address, port in prefs.get('remote_addr_check.addresses'):
-    logger.debug("using %s:%s to check for bound address" % (address, port))
     try:
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         s.connect((address, port))
         BOUND_IP = s.getsockname()[0]
-        logger.debug("bound address is %s" % BOUND_IP)
         break
 
     except socket.error, error:
-        msg = "failed to connect to %s:%s to check "  % (address, port)
+        msg = "failed to connect to %s:%s to check " % (address, port)
         msg += "bound address %s" % error
-        logger.warning(msg)
+        warn(msg, RuntimeWarning)
 
     finally:
         s.close()
@@ -57,7 +54,7 @@ for address, port in prefs.get('remote_addr_check.addresses'):
 else:
     msg = "failed to match IP address to bound address using "
     msg += "remote addresse(s)"
-    logger.warning(msg)
+    warn(msg, RuntimeWarning)
 
 for ifacename in netifaces.interfaces():
     interface = netifaces.ifaddresses(ifacename)
@@ -73,28 +70,24 @@ for ifacename in netifaces.interfaces():
             ADDRESSES[ifacename] = addr
 
         elif 'addr' not in address:
-            logger.debug("%s does not have an address entry, skipping" % ifacename)
             continue
 
         if addr.startswith("127.") or addr.startswith("0.0.") or addr.startswith("169.254."):
-            logger.debug("%s seems to be a local adapter, skipping" % ifacename)
             continue
 
         # try to resolve the hostname and use it for
         # verification
         try:
-            logger.debug("looking up hostname for address %s" % addr)
             name, aliaslist, addresslist = socket.gethostbyaddr(addr)
             hostname = name.split(".")[0]
 
         except socket.herror, error:
-            logger.warning("failed to retrieve hostname for %s" % address)
+            warn("failed to retrieve hostname for %s" % address, RuntimeWarning)
 
             if addr == BOUND_IP:
                 IP = addr
                 SUBNET = address.get('netmask')
                 INTERFACE = ifacename
-                logger.debug("matched %s to bound ip, using it instead" % addr)
                 break
 
         else:
@@ -105,8 +98,6 @@ for ifacename in netifaces.interfaces():
                 IP = addr
                 SUBNET = address.get('netmask')
                 INTERFACE = ifacename
-            else:
-                logger.debug("%s does not map to the local host's name" % addr)
 
 # by this point in the process these values should be set to
 # their expected values
@@ -116,4 +107,4 @@ if IP is None:
 if SUBNET is None:
     raise errors.NetworkSetupError("failed to setup subnet")
 
-HOSTID = None # populated by the top level process
+HOSTID = None  # populated by the top level process

@@ -24,5 +24,5 @@ if [ "$BUILD_DOCS" == "true" ]; then
     runcmd make -C docs html
 else
     title Build Step: tests
-    coverage run `which nosetests` -s --verbose --with-doctest
+    coverage run `which nosetests` -s --verbose --with-doctest tests
 fi

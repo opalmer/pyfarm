@@ -24,8 +24,8 @@ from UserDict import UserDict
 from twisted.internet import task, reactor, error
 
 from pyfarm import errors
-from pyfarm.agent.process.protocol import ProcessProtocol
-from pyfarm.agent.process.stats import MemorySurvey
+from old.agent.process.protocol import ProcessProtocol
+from old.agent.process.stats import MemorySurvey
 from pyfarm.datatypes.enums import OperatingSystem, State
 from pyfarm.datatypes.system import USER, OS
 from pyfarm.db import tables
