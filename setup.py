@@ -196,7 +196,6 @@ if __name__ == "__main__":
         author_email="development@pyfarm.net",
         description="A Python based distributed job system",
         long_description=readme,
-        bugtrack_url="https://github.com/opalmer/pyfarm/issues",
         scripts=setuptools.findall("scripts"),
         cmdclass={"clean": clean},
         zip_safe=False,
