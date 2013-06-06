@@ -17,7 +17,7 @@
 import socket
 import netifaces
 
-from pyfarm.ext.config.core import Loader
+from pyfarm.ext.config.core.loader import Loader
 from pyfarm import errors
 from pyfarm.logger import Logger
 

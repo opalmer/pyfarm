@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from pyfarm.config.core import Loader
+from pyfarm.ext.config.core.loader import Loader
 from pyfarm.datatypes.system import TOTAL_RAM, CPU_COUNT
 from pyfarm.cmdargs import *
 from pyfarm.net import getPort
