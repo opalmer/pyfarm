@@ -25,13 +25,13 @@ from fnmatch import filter as fnfilter
 from nose.tools import with_setup
 
 # NOTE: do not use pyfarm.ext for tests
-from pyfarm.files import path
+from pyfarm.ext import files
 
 CLEAN_ENV = os.environ.copy()
 
 
 def pretest_cleanup_env():
-    path.SESSION_DIRECTORY = None
+    files.SESSION_DIRECTORY = None
 
     for varname, value in os.environ.copy().iteritems():
         if varname not in CLEAN_ENV:
@@ -42,7 +42,7 @@ def pretest_cleanup_env():
 
 def posttest_cleanup_files():
     # remove any directories we created
-    prefix = path.DEFAULT_DIRECTORY_PREFIX
+    prefix = files.DEFAULT_DIRECTORY_PREFIX
     root = os.path.dirname(
         tempfile.mkdtemp(prefix=prefix)
     )
@@ -60,5 +60,5 @@ def mktmps(list_count, depth=3):
     return results
 
 
-mktmp = lambda: tempfile.mkdtemp(prefix=path.DEFAULT_DIRECTORY_PREFIX)
+mktmp = lambda: tempfile.mkdtemp(prefix=files.DEFAULT_DIRECTORY_PREFIX)
 envsetup = with_setup(setup=pretest_cleanup_env, teardown=posttest_cleanup_files)

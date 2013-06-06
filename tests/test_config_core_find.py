@@ -20,7 +20,7 @@ from nose.plugins.skip import SkipTest
 
 from tests.pyfarmnose import envsetup, mktmp, mktmps
 from pyfarm.ext.config.core import find
-from pyfarm.ext.files.file import yamlDump
+from pyfarm.files import yamlDump
 
 try:
     from itertools import product
