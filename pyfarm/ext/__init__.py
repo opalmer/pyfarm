@@ -19,9 +19,6 @@ Module used for providing extensions to PyFarm.  For example
 the code to produce temporary files and directories could
 be loaded using the below instead of a direct import
 
->>> from pyfarm.ext.files import file
-
-
 .. note::
     Internally PyFarm attempts to use this system prior to falling back
     on its own functions.  This may not be the case in all situations however.
