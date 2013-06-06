@@ -14,10 +14,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from pyfarm.utility import getPort
 from pyfarm.ext.config.core.loader import Loader
 from pyfarm.datatypes.system import TOTAL_RAM, CPU_COUNT
 from pyfarm.cmdargs import *
-from pyfarm.net import getPort
 
 parser.description = "Entry point for PyFarm's host."
 
@@ -30,7 +30,7 @@ try:
     port = netprefs.get('ports.host')
 
 except KeyError:
-    port = getPort()
+    port =
 
 parser.set_defaults(port=port)
 
