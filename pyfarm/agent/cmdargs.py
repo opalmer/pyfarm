@@ -30,7 +30,7 @@ try:
     port = netprefs.get('ports.host')
 
 except KeyError:
-    port =
+    port = getPort()
 
 parser.set_defaults(port=port)
 
