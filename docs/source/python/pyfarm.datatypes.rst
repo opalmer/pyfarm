@@ -9,14 +9,6 @@ datatypes Package
     :undoc-members:
     :show-inheritance:
 
-:mod:`enums` Module
--------------------
-
-.. automodule:: pyfarm.datatypes.enums
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 :mod:`functions` Module
 -----------------------
 

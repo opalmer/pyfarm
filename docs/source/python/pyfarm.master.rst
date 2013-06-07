@@ -9,14 +9,6 @@ master Package
     :undoc-members:
     :show-inheritance:
 
-:mod:`cmdargs` Module
----------------------
-
-.. automodule:: pyfarm.master.cmdargs
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 :mod:`core` Module
 ------------------
 

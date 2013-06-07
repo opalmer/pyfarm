@@ -70,6 +70,7 @@ Subpackages
 
 .. toctree::
 
+    pyfarm.admin
     pyfarm.config
     pyfarm.datatypes
     pyfarm.ext
