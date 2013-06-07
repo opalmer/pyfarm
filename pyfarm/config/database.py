@@ -16,15 +16,11 @@
 
 import re
 import os
-from warnings import warn
 
 from sqlalchemy.engine.url import URL
-from sqlalchemy.engine import create_engine
-from sqlalchemy.exc import OperationalError
 
 from pyfarm.ext.config.core.loader import Loader
-from pyfarm.ext.config.core.errors import PreferencesError
-from pyfarm.ext.config.core.warning import MissingConfigWaring
+from pyfarm.config.core.errors import PreferencesError
 
 
 class DBConfigError(PreferencesError):
@@ -39,91 +35,52 @@ class DBConfig(Loader):
     REGEX_CONFIG = re.compile("^configs[.].+$")
     FILENAME = "database.yml"
 
-    def engines(self, config_name, test=True):
+    def url(self, config_name):
         """
-        Generator which yields all engines for the provided configuration.
-
-        :param string config_name:
-            The configuration name to use.  Using `production` would search
-            database configurations matching `configs.production`.
-
-        :param bool test:
-            if True then iterate over each configuration but only
-            yield those that we can successfully connect to
+        convenience method which returns the url for the given configuration
+        name
         """
-        for url in self.get("configs.%s" % config_name):
-            engine = create_engine(url)
-
-            if test:
-                try:
-                    engine.connect()
-
-                except OperationalError:  # TODO: add warning logger
-                    warn(
-                        "failed to connect to %s" % str(url),
-                        SQLConnectionWarning
-                    )
-                    continue
-
-            yield engine
-    # end engines
-
-    def engine(self, config_name, test=True):
-        """
-        convenience method which returns a single engine from :meth:`engines`
-        """
-        for engine in self.engines(config_name, test=test):
-            return engine
-    # end engine
+        return self.get("configs.%s" % config_name)
 
     def get(self, key, failobj=None):
         """
         Same as :meth:`Loader.get` except for database configurations
         which will return a a list of :class:`URL` object.
         """
-        value = Loader.get(self, key, failobj=failobj)
+        if not self.REGEX_CONFIG.match(key):
+            return Loader.get(self, key, failobj=failobj)
 
-        if self.REGEX_CONFIG.match(key):
-            configs = [value] if isinstance(value, basestring) else value
-            value = []
+        else:
+            config_value = Loader.get(self, key, failobj=failobj)
 
-            if configs is None:
+
+            if config_value is None:
                 raise DBConfigError("no configurations for `%s`" % key)
 
-            for config_name in configs:
-                try:
-                    config = self[config_name].copy()
+            try:
+                config = self[config_value].copy()
 
-                except KeyError:  # TODO: add warning logger
-                    msg = "database configuration `%s` " % config_name
-                    msg += "does not exist, skipping"
-                    warn(msg, MissingConfigWaring)
+            except KeyError:
+                msg = "database configuration `%s` " % config_value
+                msg += "does not exist, skipping"
+                raise DBConfigError(msg)
 
-                else:
-                    if "database" in config:
-                        config["database"] = os.path.expandvars(
-                            config["database"]
-                        )
+            # expand any environment variables in the database name
+            if "database" in config:
+                config["database"] = os.path.expandvars(config["database"])
 
-                    # attempt to get the engine otherwise
-                    # fail (required key)
-                    try:
-                        engine = config.pop("engine")
-                    except KeyError:
-                        raise DBConfigError(
-                            "missing `engine` in configs.%s" % config_name
-                        )
+            # attempt to get the engine otherwise
+            # fail (required key)
+            try:
+                engine = config.pop("engine")
+            except KeyError:
+                raise DBConfigError("missing `engine` in configs.%s" %
+                                    config_value)
 
-                    driver_parts = [engine]
-                    driver = config.pop("driver", None)
+            driver_parts = [engine]
+            driver = config.pop("driver", None)
 
-                    if driver is not None:
-                        driver_parts.append(driver)
+            if driver is not None:
+                driver_parts.append(driver)
 
-                    # TODO: engine does NOT properly handle sqlite urls
-
-                    value.append(URL("+".join(driver_parts), **config))
-
-        return value
-    # end get
-# end Database
+            return str(URL("+".join(driver_parts), **config))
