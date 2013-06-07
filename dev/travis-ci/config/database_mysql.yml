@@ -6,8 +6,7 @@ mysql:
    driver: pymysql
 
 config:
-  testing:
-    - mysql
+  testing: mysql
 
 setup:
   rebuild: false

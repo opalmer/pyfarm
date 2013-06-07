@@ -6,8 +6,7 @@ postgres:
    driver: psycopg2
 
 config:
-  testing:
-    - postgres
+  testing: postgres
 
 setup:
   rebuild: false
