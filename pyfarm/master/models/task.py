@@ -14,26 +14,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-Contains all the models the master operates on.
-"""
-
-# NOTE: All models must be loaded here so the mapper
-#       can create the relationships on startup
-from pyfarm.master.models.task import Task
-from pyfarm.master.models.agent import Agent
+from pyfarm.flaskapp import db
+from pyfarm.config.enum import TaskState
+from pyfarm.master.models.constants import TABLE_TASK, TABLE_AGENT
+from pyfarm.master.models.mixins import RandIdMixin, StateMixin
 
 
-if __name__ == '__main__':
-    from pyfarm.flaskapp import db, app
-    from flask.ext.admin import Admin
-    from flask.ext.admin.contrib.sqlamodel import ModelView
-
-    db.drop_all()
-    db.create_all()
-
-    admin = Admin(app, name="PyFarm")
-    admin.add_view(ModelView(Agent, db.session))
-    admin.add_view(ModelView(Task, db.session))
-
-    app.run(debug=True)
+class Task(db.Model, RandIdMixin, StateMixin):
+    """Defines task which a child of a :class:`.Job`"""
+    __tablename__ = TABLE_TASK
+    _agentid = db.Column(db.Integer, db.ForeignKey("%s.id" % TABLE_AGENT))
+    STATE_ENUM = TaskState()

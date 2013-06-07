@@ -14,26 +14,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-Contains all the models the master operates on.
-"""
+import re
 
-# NOTE: All models must be loaded here so the mapper
-#       can create the relationships on startup
-from pyfarm.master.models.task import Task
-from pyfarm.master.models.agent import Agent
+REGEX_IPV4 = re.compile("^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$")
+REGEX_HOSTNAME = re.compile("^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$")
 
+MAX_HOSTNAME_LENGTH = 255
+MAX_SOFTWARE_LENGTH = 128
+MAX_GROUP_LENGTH = 128
+MAX_IPV4_LENGTH = 15
+MAX_USERNAME_LENGTH = 255
 
-if __name__ == '__main__':
-    from pyfarm.flaskapp import db, app
-    from flask.ext.admin import Admin
-    from flask.ext.admin.contrib.sqlamodel import ModelView
-
-    db.drop_all()
-    db.create_all()
-
-    admin = Admin(app, name="PyFarm")
-    admin.add_view(ModelView(Agent, db.session))
-    admin.add_view(ModelView(Task, db.session))
-
-    app.run(debug=True)
+TABLE_PREFIX = "pyfarm_"
+TABLE_AGENT = "%sagent" % TABLE_PREFIX
+TABLE_TASK = "%stask" % TABLE_PREFIX
