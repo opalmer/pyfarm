@@ -28,10 +28,8 @@ def prerun():
     d = mktmp()
     os.environ["PYFARM_TMP_DBDIR"] = d
     data = {
-        "db1": {"database": ":memory:", "engine": "sqlite"},
-        "db2": {"database": os.path.join(d, "db2.sql"), "engine": "sqlite"},
-        "db3": {"database": "$PYFARM_TMP_DBDIR/db3.sql", "engine": "sqlite"},
-        "configs": {"unittests-config": ["db1", "db2", "db3"]}
+        "db": {"database": ":memory:", "engine": "sqlite"},
+        "configs": {"unittests-config": "db"}
     }
 
     loader = Loader("database.yml")
@@ -48,19 +46,6 @@ setupenv = with_setup(setup=prerun, teardown=postrun)
 
 
 @setupenv
-def test_engine():
+def test_url():
     config = DBConfig()
-    engine = config.engine("unittests-config")
-    eq_(engine.url.database, config.get("configs.unittests-config")[0].database)
-
-
-@setupenv
-def test_engines():
-    config = DBConfig()
-
-    for index, engine in enumerate(config.engines("unittests-config")):
-        eq_(engine.url.database, config.get("configs.unittests-config")[index].database)
-
-        if os.path.isfile(engine.url.database):
-            dirname = os.path.dirname(engine.url.database)
-            eq_(dirname, os.environ["PYFARM_TMP_DBDIR"])
+    eq_(config.url("unittests-config"), "sqlite:///:memory:")
