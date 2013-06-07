@@ -5,7 +5,7 @@ mysql:
    engine: mysql
    driver: pymysql
 
-config:
+configs:
   testing: mysql
 
 setup:

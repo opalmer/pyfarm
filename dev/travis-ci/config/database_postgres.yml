@@ -5,7 +5,7 @@ postgres:
    engine: postgresql
    driver: psycopg2
 
-config:
+configs:
   testing: postgres
 
 setup:
