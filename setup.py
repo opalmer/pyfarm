@@ -87,10 +87,10 @@ def requirements(major, minor, develop=False, docs=True):
         requires.append("importlib")
 
     # higher than 2.5
-    # if (major, minor) > (2, 5):
+    if (major, minor) > (2, 5):
+        requires.append("flask-admin")  # agent/master code won't need this
     #     requires.append("zope.interface")
     #     requires.append("twisted")
-    #     requires.append("flask-admin")  # agent/master code won't need this
 
     # 2.5 exclusive
     # if (major, minor) == (2, 5):
