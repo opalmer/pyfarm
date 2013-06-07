@@ -66,7 +66,8 @@ def requirements(major, minor, develop=False, docs=True):
     """
     requires = [
         "appdirs", "PyYaml",
-        "psutil", "netifaces", "sqlalchemy",
+        "psutil", "netifaces",
+        "Jinja2==%s.%s" % (major, minor),
         "flask", "flask-sqlalchemy"#, "colorama",
         # "flask-bcrypt", "flask-cache",
         # "flask-restless", "flask-security",
@@ -77,7 +78,6 @@ def requirements(major, minor, develop=False, docs=True):
         requires.append("nose")
 
         if docs:
-            requires.append("Jinja2==%s.%s" % (major, minor))
             requires.append("sphinx")
 
     # backports of modules introduced in 2.7
