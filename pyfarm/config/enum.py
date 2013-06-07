@@ -90,7 +90,11 @@ class SoftwareType(Enum):
     __metaclass__ = EnumBuilder
 
 
-class State(Enum):
+class TaskState(Enum):
+    __metaclass__ = EnumBuilder
+
+
+class HostState(Enum):
     __metaclass__ = EnumBuilder
 
 

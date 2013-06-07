@@ -29,7 +29,7 @@ SoftwareType:
   INCLUDE: 5
   EXCLUDE: 6
 
-State:
+TaskState:
   PAUSED: 7
   BLOCKED: 8
   QUEUED: 9
@@ -38,17 +38,23 @@ State:
   DONE: 12
   FAILED: 13
 
+HostState:
+  OFFLINE: 14   # host is unreachable
+  ONLINE: 15    # online but not doing anything at the moment
+  DISABLED: 16  # host online but not allowed to process anything
+  RUNNING: 17   # currently processing something
+
 EnvMergeMode:
-  UPDATE: 14
-  REPLACE: 15
-  FILL: 16
+  UPDATE: 18
+  REPLACE: 19
+  FILL: 20
 
 OperatingSystem:
-  LINUX: 17
-  WINDOWS: 18
-  MAC: 19
-  OTHER: 20
+  LINUX: 21
+  WINDOWS: 22
+  MAC: 23
+  OTHER: 24
 
 DependencyType:
-  F2F: 21
-  J2J: 22
+  F2F: 25
+  J2J: 26
