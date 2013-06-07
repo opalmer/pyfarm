@@ -18,8 +18,8 @@ from sqlalchemy.orm import validates
 
 from pyfarm.flaskapp import db
 from pyfarm.config.enum import HostState
-from pyfarm.master.models.mixins import StateMixin, RandIdMixin
-from pyfarm.master.models.constants import (MAX_HOSTNAME_LENGTH,
+from pyfarm.models.mixins import StateMixin, RandIdMixin
+from pyfarm.models.constants import (MAX_HOSTNAME_LENGTH,
     MAX_IPV4_LENGTH, REGEX_IPV4, REGEX_HOSTNAME, TABLE_AGENT)
 
 

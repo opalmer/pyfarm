@@ -16,8 +16,8 @@
 
 from pyfarm.flaskapp import db
 from pyfarm.config.enum import TaskState
-from pyfarm.master.models.constants import TABLE_TASK, TABLE_AGENT
-from pyfarm.master.models.mixins import RandIdMixin, StateMixin
+from pyfarm.models.constants import TABLE_TASK, TABLE_AGENT
+from pyfarm.models.mixins import RandIdMixin, StateMixin
 
 
 class Task(db.Model, RandIdMixin, StateMixin):

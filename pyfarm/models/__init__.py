@@ -20,8 +20,8 @@ Contains all the models the master operates on.
 
 # NOTE: All models must be loaded here so the mapper
 #       can create the relationships on startup
-from pyfarm.master.models.task import Task
-from pyfarm.master.models.agent import Agent
+from pyfarm.models.task import Task
+from pyfarm.models.agent import Agent
 
 
 if __name__ == '__main__':
@@ -33,7 +33,7 @@ if __name__ == '__main__':
     db.create_all()
 
     admin = Admin(app, name="PyFarm")
-    admin.add_view(ModelView(Agent, db.session))
-    admin.add_view(ModelView(Task, db.session))
+    admin.add_view(ModelView(Agent, db.session, category="Database"))
+    admin.add_view(ModelView(Task, db.session, category="Database"))
 
     app.run(debug=True)
