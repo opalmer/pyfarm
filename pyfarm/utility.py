@@ -20,11 +20,9 @@ of PyFarm.
 """
 
 import os
-import sys
-import getpass
 import socket
-
-PY_MAJOR, PY_MINOR, PY_MICRO = sys.version_info[0:3]
+import getpass
+from random import choice
 
 
 def user():
@@ -37,10 +35,20 @@ def user():
         return getpass.getuser()
 
 
-def getPort(bindhost='localhost'):
+def randport():
     """returns a port which we are able to bind to"""
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.bind((bindhost, 0))
+    s.bind(("", 0))
     address = s.getsockname()[1]
     s.close()
     return address
+
+
+def randstr(length=12, chars="abcdef0123456789"):
+    """returns a psudo-random hexidecimal string"""
+    return "".join(choice(chars) for _ in xrange(length))
+
+
+def randint():
+    """returns a base 16 integer from :func:`randstr`"""
+    return int(randstr(), 16)
