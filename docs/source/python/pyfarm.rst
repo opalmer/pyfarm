@@ -49,6 +49,14 @@ pyfarm Package
     :undoc-members:
     :show-inheritance:
 
+:mod:`flaskapp` Module
+----------------------
+
+.. automodule:: pyfarm.flaskapp
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 :mod:`utility` Module
 ---------------------
 

@@ -9,3 +9,11 @@ models Package
     :undoc-members:
     :show-inheritance:
 
+:mod:`agent` Module
+-------------------
+
+.. automodule:: pyfarm.master.models.agent
+    :members:
+    :undoc-members:
+    :show-inheritance:
+

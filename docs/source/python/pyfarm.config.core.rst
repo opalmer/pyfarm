@@ -33,11 +33,3 @@ core Package
     :undoc-members:
     :show-inheritance:
 
-:mod:`warning` Module
----------------------
-
-.. automodule:: pyfarm.config.core.warning
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
