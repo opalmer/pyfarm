@@ -18,10 +18,11 @@ import os
 import tempfile
 import psutil
 
-from pyfarm.datatypes.enums import OperatingSystem
+from pyfarm.ext.config.enum import OperatingSystem as _OperatingSystem
 from pyfarm.datatypes.functions import bytes_to_megabytes
 from pyfarm.ext.utility import user
 
+OperatingSystem = _OperatingSystem()
 OS = OperatingSystem.get()
 OSNAME = OperatingSystem.get(OS)
 CPU_COUNT = psutil.NUM_CPUS
