@@ -29,7 +29,7 @@ class Agent(db.Model, RandIdMixin, StateMixin):
 
     # columns
     hostname = db.Column(db.String(MAX_HOSTNAME_LENGTH), nullable=False)
-    ip = db.Column(db.String(MAX_IPV4_LENGTH), nullable=False, unique=True)
+    ip = db.Column(db.String(MAX_IPV4_LENGTH), nullable=False)
     subnet = db.Column(db.String(MAX_IPV4_LENGTH), nullable=False)
     enabled = db.Column(db.Boolean, default=True)
 
