@@ -22,18 +22,3 @@ Contains all the models the master operates on.
 #       can create the relationships on startup
 from pyfarm.models.task import Task
 from pyfarm.models.agent import Agent
-
-
-if __name__ == '__main__':
-    from pyfarm.flaskapp import db, app
-    from flask.ext.admin import Admin
-    from flask.ext.admin.contrib.sqlamodel import ModelView
-
-    db.drop_all()
-    db.create_all()
-
-    admin = Admin(app, name="PyFarm")
-    admin.add_view(ModelView(Agent, db.session, category="Database"))
-    admin.add_view(ModelView(Task, db.session, category="Database"))
-
-    app.run(debug=True)
