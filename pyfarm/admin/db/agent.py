@@ -15,9 +15,9 @@
 # limitations under the License.
 
 from pyfarm.models import Agent
-from pyfarm.admin.db.core import CoreDatabaseModelView
+from pyfarm.admin.db.core import CoreTableView
 
 
-class AgentModelView(CoreDatabaseModelView):
+class AgentModelView(CoreTableView):
     def __init__(self):
-        super(AgentModelView, self).__init__(Agent)
+        super(AgentModelView, self).__init__(Agent, endpoint="agent")

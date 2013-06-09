@@ -15,17 +15,9 @@
 # limitations under the License.
 
 from pyfarm.models import Task
-from pyfarm.admin.db.core import CoreDatabaseModelView
+from pyfarm.admin.db.core import CoreTableView
 
 
-class TaskModelView(CoreDatabaseModelView):
-    # the list for this column queries all agents
-    # column_exclude_list = ("agent", )
-
-
-    # TODO: need a formatter for the agent column
-
-    # column_formatters
-
+class TaskModelView(CoreTableView):
     def __init__(self):
-        super(TaskModelView, self).__init__(Task)
+        super(TaskModelView, self).__init__(Task, endpoint="task")
