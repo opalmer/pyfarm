@@ -24,9 +24,9 @@ if __name__ == '__main__':
     from pyfarm.utility import randstr, randint
     from pyfarm.models.agent import Agent
     from pyfarm.flaskapp import app, db
+    from pyfarm.config.enum import OperatingSystem
 
     admin = Admin(app, name="PyFarm")
-    # admin.add_view(TableView(name="Tables", endpoint="tables"))
     admin.add_view(AgentModelView())
     admin.add_view(TaskModelView())
 
@@ -42,6 +42,7 @@ if __name__ == '__main__':
     randi = lambda: random.randint(0, 255)
     randip = lambda: ".".join(map(str, [randi(), randi(), randi(), randi()]))
 
+    OS_ENUM = OperatingSystem()
 
     for i in xrange(5000):
         agent = Agent()
@@ -50,6 +51,10 @@ if __name__ == '__main__':
         agent.hostname = randstr()
         agent.id = randint()
         agent.state = random.randint(14, 17)
+        agent.cpus = random.randint(1, 4)
+        agent.ram = random.randint(50, 5000)
+        agent.port = random.randint(1025, 65500)
+        agent.os = random.choice(OS_ENUM.values())
         db.session.add(agent)
 
     db.session.commit()
