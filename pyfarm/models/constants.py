@@ -16,15 +16,24 @@
 
 import re
 
+# regex constants
 REGEX_IPV4 = re.compile("^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$")
 REGEX_HOSTNAME = re.compile("^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$")
 
+# table field constants
 MAX_HOSTNAME_LENGTH = 255
 MAX_SOFTWARE_LENGTH = 128
 MAX_GROUP_LENGTH = 128
 MAX_IPV4_LENGTH = 15
 MAX_USERNAME_LENGTH = 255
 
+# agent constants
+MIN_RAM_MB = 1
+MAX_RAM_MB = 1.7592186e13
+MIN_AGENT_PORT = 1025
+MAX_AGENT_PORT = 65500
+
+# database constants
 TABLE_PREFIX = "pyfarm_"
 TABLE_AGENT = "%sagent" % TABLE_PREFIX
 TABLE_TASK = "%stask" % TABLE_PREFIX
