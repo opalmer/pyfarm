@@ -41,6 +41,7 @@ class Agent(db.Model, RandIdMixin, StateMixin):
 
     # relationships
     tasks = db.relationship("Task", backref="agent", lazy="dynamic")
+    groups = db.relationship("Group", backref="group", lazy="dynamic")
 
     @validates("hostname")
     def validate_hostname(self, key, value):
