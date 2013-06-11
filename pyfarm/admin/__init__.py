@@ -26,14 +26,6 @@ if __name__ == '__main__':
     from pyfarm.flaskapp import app, db
 
 
-    admin = Admin(app, name="PyFarm")
-    admin.add_view(AgentModelView())
-    admin.add_view(AgentTagsModelView())
-    admin.add_view(TaskModelView())
-
-
-    app.run(debug=True)
-
     db.drop_all()
     db.create_all()
 
@@ -56,3 +48,12 @@ if __name__ == '__main__':
 
     db.session.commit()
     ######################################################
+
+
+    admin = Admin(app, name="PyFarm")
+    admin.add_view(AgentModelView())
+    admin.add_view(AgentTagsModelView())
+    admin.add_view(TaskModelView())
+
+
+    app.run(debug=True)
