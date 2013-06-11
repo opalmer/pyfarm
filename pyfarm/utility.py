@@ -22,7 +22,7 @@ of PyFarm.
 import os
 import socket
 import getpass
-from random import choice
+import binascii
 
 
 def user():
@@ -44,9 +44,9 @@ def randport():
     return address
 
 
-def randstr(length=12, chars="abcdef0123456789"):
-    """returns a psudo-random hexidecimal string"""
-    return "".join(choice(chars) for _ in xrange(length))
+def randstr():
+    """returns a random hexidecimal string based on :func:`os.urandom`"""
+    return binascii.b2a_hex(os.urandom(6))
 
 
 def randint():
