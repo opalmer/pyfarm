@@ -19,16 +19,11 @@ from flask.ext.admin.contrib.sqlamodel import ModelView
 from pyfarm.flaskapp import db
 
 
-class CoreDatabaseModelView(ModelView):
+class CoreTableModelView(ModelView):
     """
     Subclass of the standard :class:`ModelView` which takes into
     account contextual information such as a task or agent's state.
     """
-
-    # TODO: make part of the instance so subclasses can add to
-    # TODO: STATE needs a formatter
-    # column_formatters
-
     def __init__(self, model, session=db.session, **kwargs):
         kwargs.setdefault("category", "Database")
 
@@ -44,4 +39,7 @@ class CoreDatabaseModelView(ModelView):
 
             self.form_args = {"state": {"choices": form_args, "coerce": int}}
 
-        super(CoreDatabaseModelView, self).__init__(model, session, **kwargs)
+
+        kwargs.setdefault("endpoint", "tables/%s" % model.__tablename__)
+
+        super(CoreTableModelView, self).__init__(model, session, **kwargs)

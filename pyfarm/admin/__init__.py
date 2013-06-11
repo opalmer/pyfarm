@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from pyfarm.admin.db.agent import AgentModelView
+from pyfarm.admin.db.agent import AgentModelView, AgentTagsModelView
 from pyfarm.admin.db.task import TaskModelView
 
 if __name__ == '__main__':
@@ -28,7 +28,9 @@ if __name__ == '__main__':
 
     admin = Admin(app, name="PyFarm")
     admin.add_view(AgentModelView())
+    admin.add_view(AgentTagsModelView())
     admin.add_view(TaskModelView())
+
 
     app.run(debug=True)
 
@@ -43,8 +45,7 @@ if __name__ == '__main__':
     randi = lambda: random.randint(0, 255)
     randip = lambda: ".".join(map(str, [randi(), randi(), randi(), randi()]))
 
-
-    for i in xrange(5000):
+    for i in xrange(5):
         agent = Agent()
         agent.ip = randip()
         agent.subnet = randip()

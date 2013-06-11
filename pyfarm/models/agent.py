@@ -20,10 +20,17 @@ from pyfarm.flaskapp import db
 from pyfarm.config.enum import HostState
 from pyfarm.models.mixins import StateMixin, RandIdMixin
 from pyfarm.models.constants import (MAX_HOSTNAME_LENGTH,
-    MAX_IPV4_LENGTH, REGEX_IPV4, REGEX_HOSTNAME, TABLE_AGENT)
+    MAX_IPV4_LENGTH, REGEX_IPV4, REGEX_HOSTNAME, TABLE_AGENT, TABLE_AGENT_TAGS)
+
+
+class AgentTags(db.Model):
+    __tablename__ = TABLE_AGENT_TAGS
+    _agentid = db.Column(db.Integer, db.ForeignKey("%s.id" % TABLE_AGENT), primary_key=True)
+    tag = db.Column(db.String)
 
 
 class Agent(db.Model, RandIdMixin, StateMixin):
+    """Information related to the agent"""
     __tablename__ = TABLE_AGENT
     STATE_ENUM = HostState()
 
@@ -35,6 +42,7 @@ class Agent(db.Model, RandIdMixin, StateMixin):
 
     # relationships
     tasks = db.relationship("Task", backref="agent", lazy="dynamic")
+    tags = db.relationship("AgentTags", backref="agent", lazy="dynamic")
 
     @validates("hostname")
     def validate_hostname(self, key, value):

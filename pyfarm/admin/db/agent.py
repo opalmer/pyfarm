@@ -14,10 +14,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from pyfarm.models import Agent
-from pyfarm.admin.db.core import CoreDatabaseModelView
+from pyfarm.models import Agent, AgentTags
+from pyfarm.admin.db.core import CoreTableModelView
 
 
-class AgentModelView(CoreDatabaseModelView):
+class AgentTagsModelView(CoreTableModelView):
+    def __init__(self):
+        super(AgentTagsModelView, self).__init__(AgentTags)
+
+
+class AgentModelView(CoreTableModelView):
     def __init__(self):
         super(AgentModelView, self).__init__(Agent)
