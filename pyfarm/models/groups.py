@@ -14,20 +14,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-<<<<<<< HEAD:pyfarm/admin/tables/task.py
-from pyfarm.models import Task
-from pyfarm.admin.tables.core import CoreTableModelView
+from pyfarm.flaskapp import db
+from pyfarm.models.constants import TABLE_SOFTWARE, TABLE_AGENT
+from pyfarm.models.mixins import RandIdMixin
 
 
-class TaskModelView(CoreTableModelView):
-    def __init__(self):
-        super(TaskModelView, self).__init__(Task)
-=======
-from pyfarm.models import Agent
-from pyfarm.admin.db.core import CoreTableView
-
-
-class AgentModelView(CoreTableView):
-    def __init__(self):
-        super(AgentModelView, self).__init__(Agent, endpoint="agent")
->>>>>>> 8c86fa216a3cd88aa9fe3594ae745996725f5bfe:pyfarm/admin/db/agent.py
+class Software(db.Model):
+    """Generic table which can be used to define group relationships"""
+    __tablename__ = TABLE_SOFTWARE
+    _agentid = db.Column(db.Integer, db.ForeignKey("%s.id" % TABLE_AGENT))
+    name = db.Column(db.String, unique=True, index=True, nullable=False)

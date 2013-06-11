@@ -14,20 +14,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-<<<<<<< HEAD:pyfarm/admin/tables/task.py
 from pyfarm.models import Task
-from pyfarm.admin.tables.core import CoreTableModelView
-
-
-class TaskModelView(CoreTableModelView):
-    def __init__(self):
-        super(TaskModelView, self).__init__(Task)
-=======
-from pyfarm.models import Agent
 from pyfarm.admin.db.core import CoreTableView
 
 
-class AgentModelView(CoreTableView):
+class TaskModelView(CoreTableView):
     def __init__(self):
-        super(AgentModelView, self).__init__(Agent, endpoint="agent")
->>>>>>> 8c86fa216a3cd88aa9fe3594ae745996725f5bfe:pyfarm/admin/db/agent.py
+        super(TaskModelView, self).__init__(Task, endpoint="task")

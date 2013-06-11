@@ -30,6 +30,15 @@ if __name__ == '__main__':
     from pyfarm.utility import randstr, randint
     from pyfarm.models.agent import Agent
     from pyfarm.flaskapp import app, db
+<<<<<<< HEAD
+=======
+    from pyfarm.config.enum import OperatingSystem
+
+    admin = Admin(app, name="PyFarm")
+    admin.add_view(AgentModelView())
+    admin.add_view(TaskModelView())
+
+>>>>>>> 8c86fa216a3cd88aa9fe3594ae745996725f5bfe
 
     db.drop_all()
     db.create_all()
@@ -42,18 +51,33 @@ if __name__ == '__main__':
     randi = lambda: random.randint(0, 255)
     randip = lambda: ".".join(map(str, [randi(), randi(), randi(), randi()]))
 
+<<<<<<< HEAD
     for i in xrange(5):
+=======
+    OS_ENUM = OperatingSystem()
+
+    for i in xrange(5000):
+>>>>>>> 8c86fa216a3cd88aa9fe3594ae745996725f5bfe
         agent = Agent()
         agent.ip = randip()
         agent.subnet = randip()
         agent.hostname = randstr()
         agent.id = randint()
+<<<<<<< HEAD
         agent.state = random.choice(agent_state.values())
+=======
+        agent.state = random.randint(14, 17)
+        agent.cpus = random.randint(1, 4)
+        agent.ram = random.randint(50, 5000)
+        agent.port = random.randint(1025, 65500)
+        agent.os = random.choice(OS_ENUM.values())
+>>>>>>> 8c86fa216a3cd88aa9fe3594ae745996725f5bfe
         db.session.add(agent)
 
     db.session.commit()
     ######################################################
 
+<<<<<<< HEAD
     admin = Admin(app, name="PyFarm")
     admin.add_view(AgentModelView())
     admin.add_view(AgentTagsModelView())
@@ -63,4 +87,6 @@ if __name__ == '__main__':
     admin.add_view(JobSoftwareModelView())
     admin.add_view(TaskModelView())
 
+=======
+>>>>>>> 8c86fa216a3cd88aa9fe3594ae745996725f5bfe
     app.run(debug=True)

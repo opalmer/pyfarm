@@ -18,12 +18,20 @@ import re
 from sqlalchemy.orm import validates
 
 from pyfarm.flaskapp import db
+<<<<<<< HEAD
 from pyfarm.ext.config.core.loader import Loader
 from pyfarm.ext.config.enum import AgentState
 from pyfarm.models.mixins import StateValidationMixin, RandIdMixin
 from pyfarm.models.constants import (
     DBDATA, TABLE_AGENT, TABLE_AGENT_TAGS, TABLE_AGENT_SOFTWARE
 )
+=======
+from pyfarm.config.enum import HostState, OperatingSystem
+from pyfarm.models.mixins import StateMixin, RandIdMixin
+from pyfarm.models.constants import (MAX_HOSTNAME_LENGTH,
+    MAX_IPV4_LENGTH, REGEX_IPV4, REGEX_HOSTNAME, TABLE_AGENT,
+    MIN_RAM_MB, MAX_RAM_MB, MIN_AGENT_PORT, MAX_AGENT_PORT)
+>>>>>>> 8c86fa216a3cd88aa9fe3594ae745996725f5bfe
 
 REGEX_HOSTNAME = re.compile("^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*"
                             "[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9]"
@@ -53,6 +61,7 @@ class Agent(db.Model, RandIdMixin, StateValidationMixin):
     state, allocation configuration, etc.
     """
     __tablename__ = TABLE_AGENT
+<<<<<<< HEAD
     STATE_ENUM = AgentState()
     STATE_DEFAULT = STATE_ENUM.ONLINE
 
@@ -86,6 +95,24 @@ class Agent(db.Model, RandIdMixin, StateValidationMixin):
     tasks = db.relationship("Task", backref="agent", lazy="dynamic")
     tags = db.relationship("AgentTags", backref="agent", lazy="dynamic")
     software = db.relation("AgentSoftware", backref="agent", lazy="dynamic")
+=======
+    STATE_ENUM = HostState()
+    OS_ENUM = OperatingSystem()
+
+    # columns
+    enabled = db.Column(db.Boolean, default=True)
+    hostname = db.Column(db.String(MAX_HOSTNAME_LENGTH), nullable=False)
+    ip = db.Column(db.String(MAX_IPV4_LENGTH), nullable=False)
+    port = db.Column(db.Integer, nullable=False)
+    subnet = db.Column(db.String(MAX_IPV4_LENGTH), nullable=False)
+    cpus = db.Column(db.Integer, nullable=False)
+    ram = db.Column(db.Integer, nullable=False)
+    os = db.Column(db.Integer, nullable=False)
+
+    # relationships
+    tasks = db.relationship("Task", backref="agent", lazy="dynamic")
+    groups = db.relationship("Group", backref="group", lazy="dynamic")
+>>>>>>> 8c86fa216a3cd88aa9fe3594ae745996725f5bfe
 
     @validates("hostname")
     def validate_hostname(self, key, value):
@@ -102,6 +129,7 @@ class Agent(db.Model, RandIdMixin, StateValidationMixin):
 
         return value
 
+<<<<<<< HEAD
     @validates("ram", "cpus", "port")
     def validate_resource(self, key, value):
         if value is None:
@@ -120,7 +148,40 @@ class Agent(db.Model, RandIdMixin, StateValidationMixin):
         if min_value > value or value > max_value:
             msg = "value for `%s` must be between " % key
             msg += "%s and %s" % (min_value, max_value)
+=======
+    @validates("cpus")
+    def validate_cpus(self, key, value):
+        if value < 1:
+            raise ValueError("at least one cpu is required")
+
+        return value
+
+    @validates("ram")
+    def validate_ram(self, key, value):
+        if value < MIN_RAM_MB or value > MAX_RAM_MB:
+            args = (MIN_RAM_MB, MAX_RAM_MB)
+            raise ValueError("ram must be between %s and %s megabytes" % args)
+
+        return value
+
+    @validates("os")
+    def validates_os(self, key, value):
+        if value not in self.OS_ENUM:
+            msg = "`%s` is not a valid operating system, " % value
+            msg += "valid systems are %s" % self.OS_ENUM.values()
+>>>>>>> 8c86fa216a3cd88aa9fe3594ae745996725f5bfe
             raise ValueError(msg)
 
         return value
 
+<<<<<<< HEAD
+=======
+    @validates("port")
+    def validates_port(self, key, value):
+        if value < MIN_AGENT_PORT or value > MAX_AGENT_PORT:
+            args = (MIN_AGENT_PORT, MAX_AGENT_PORT)
+            msg = "port number must be between %s and %s" % args
+            raise ValueError(msg)
+
+        return value
+>>>>>>> 8c86fa216a3cd88aa9fe3594ae745996725f5bfe
