@@ -19,14 +19,11 @@ from pyfarm.utility import randint
 from pyfarm.flaskapp import db
 
 
-class StateMixin(object):
+class StateValidationMixin(object):
     """
     Mixin that adds a `state` column and uses a class
     level `STATE_ENUM` attribute to assist in validation.
     """
-    STATE_ENUM = None
-    state = db.Column(db.Integer, nullable=False)
-
     @validates("state")
     def validate_state(self, key, value):
         if value not in self.STATE_ENUM.values():
