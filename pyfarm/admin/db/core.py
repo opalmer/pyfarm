@@ -25,6 +25,7 @@ class CoreTableModelView(ModelView):
     account contextual information such as a task or agent's state.
     """
     STATE_DEFAULT = None
+    column_display_pk = False
 
     def __init__(self, model, session=db.session, **kwargs):
         kwargs.setdefault("category", "Database")
@@ -35,6 +36,9 @@ class CoreTableModelView(ModelView):
 
         if self.form_args is None:
             self.form_args = {}
+
+        if self.column_formatters is None:
+            self.column_formatters = {}
 
         # if the model has a state attribute then we need to create
         # a menu to display the state
@@ -57,11 +61,14 @@ class CoreTableModelView(ModelView):
                 default_value = model.STATE_ENUM.get(
                     model.STATE_DEFAULT).capitalize()
                 value = (model.STATE_DEFAULT, default_value)
-                print value
                 index = form_args.index(value)
                 del form_args[index]
                 form_args.insert(0, value)
 
             self.form_args.update(state={"choices": form_args, "coerce": int})
+            self.column_formatters.update(
+                state=lambda view, context, model, name:
+                model.STATE_ENUM.get(model.state).capitalize()
+            )
 
         super(CoreTableModelView, self).__init__(model, session, **kwargs)
