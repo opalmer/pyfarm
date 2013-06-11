@@ -21,7 +21,6 @@ models Package
 -----------------------
 
 .. automodule:: pyfarm.models.constants
-<<<<<<< HEAD:docs/source/python/pyfarm.models.rst
     :members:
     :undoc-members:
     :show-inheritance:
@@ -30,8 +29,6 @@ models Package
 -----------------
 
 .. automodule:: pyfarm.models.job
-=======
->>>>>>> 8c86fa216a3cd88aa9fe3594ae745996725f5bfe:docs/source/python/pyfarm.models.rst
     :members:
     :undoc-members:
     :show-inheritance:

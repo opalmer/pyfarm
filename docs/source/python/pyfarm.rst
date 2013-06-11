@@ -75,5 +75,4 @@ Subpackages
     pyfarm.datatypes
     pyfarm.ext
     pyfarm.models
-    pyfarm.rest
 
