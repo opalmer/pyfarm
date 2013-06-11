@@ -15,7 +15,7 @@
 # limitations under the License.
 
 from pyfarm.models import Agent, AgentTags
-from pyfarm.admin.db.core import CoreTableModelView
+from pyfarm.admin.tables.core import CoreTableModelView
 
 
 class AgentTagsModelView(CoreTableModelView):
@@ -23,6 +23,8 @@ class AgentTagsModelView(CoreTableModelView):
         super(AgentTagsModelView, self).__init__(AgentTags)
 
 
+# TODO: editor widgets in view
+# TODO: add action for batch edits
 class AgentModelView(CoreTableModelView):
     def __init__(self):
         super(AgentModelView, self).__init__(Agent)

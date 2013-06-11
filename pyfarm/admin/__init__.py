@@ -14,8 +14,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from pyfarm.admin.db.agent import AgentModelView, AgentTagsModelView
-from pyfarm.admin.db.task import TaskModelView
+from pyfarm.admin.tables.agent import AgentModelView, AgentTagsModelView
+from pyfarm.admin.tables.task import TaskModelView
 
 if __name__ == '__main__':
     import random

@@ -15,7 +15,7 @@
 # limitations under the License.
 
 from pyfarm.models import Task
-from pyfarm.admin.db.core import CoreTableModelView
+from pyfarm.admin.tables.core import CoreTableModelView
 
 
 class TaskModelView(CoreTableModelView):
