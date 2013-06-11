@@ -19,6 +19,5 @@ from pyfarm.admin.db.core import CoreTableModelView
 
 
 class TaskModelView(CoreTableModelView):
-    # the list for this column queries all agents
     def __init__(self):
         super(TaskModelView, self).__init__(Task)
