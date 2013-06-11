@@ -20,5 +20,6 @@ Contains all the models the master operates on.
 
 # NOTE: All models must be loaded here so the mapper
 #       can create the relationships on startup
+from pyfarm.models.job import JobTags, JobSoftware, Job
 from pyfarm.models.task import Task
-from pyfarm.models.agent import AgentTags, Agent
+from pyfarm.models.agent import AgentTags, AgentSoftware, Agent

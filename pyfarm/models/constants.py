@@ -14,8 +14,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-TABLE_PREFIX = "pyfarm_"
-TABLE_TASK = "%stask" % TABLE_PREFIX
+from pyfarm.ext.config.core.loader import Loader
+
+DBDATA = Loader("dbdata.yml")
+
+TABLE_PREFIX = DBDATA.get("tables.prefix")
 TABLE_AGENT = "%sagent" % TABLE_PREFIX
 TABLE_AGENT_TAGS = "%s_tags" % TABLE_AGENT
-
+TABLE_AGENT_SOFTWARE = "%s_software" % TABLE_AGENT
+TABLE_JOB = "%sjob" % TABLE_PREFIX
+TABLE_JOB_TAGS = "%s_tags" % TABLE_JOB
+TABLE_JOB_SOFTWARE = "%s_software" % TABLE_JOB
+TABLE_TASK = "%stask" % TABLE_PREFIX

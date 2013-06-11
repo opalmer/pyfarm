@@ -12,12 +12,24 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Values used for validation and some column related information
-# when creating new agents in the database.
-db:
+# contains data used for validation and default
+# population of column values
+
+tables:
+  prefix: pyfarm_
+
+agent:
   min_cpus: 1
   max_cpus: 128
   min_ram: 32
   max_ram: 262144
+  min_port: 49152
+  max_port: 65535
   ram_allocation: .8
   cpu_allocation: 1.0
+
+task:
+  priority: 500
+
+job:
+  priority: 500

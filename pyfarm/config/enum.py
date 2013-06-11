@@ -82,27 +82,19 @@ class Enum(object):
         return self._data.values()
 
 
-class Software(Enum):
+class WorkState(Enum):
     __metaclass__ = EnumBuilder
 
 
-class SoftwareType(Enum):
+class AgentState(Enum):
     __metaclass__ = EnumBuilder
 
 
-class TaskState(Enum):
+class DictMergeMode(Enum):
     __metaclass__ = EnumBuilder
 
 
-class HostState(Enum):
-    __metaclass__ = EnumBuilder
-
-
-class EnvMergeMode(Enum):
-    __metaclass__ = EnumBuilder
-
-
-class DependencyType(Enum):
+class WorkDependencyType(Enum):
     __metaclass__ = EnumBuilder
 
 

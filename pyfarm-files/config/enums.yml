@@ -18,43 +18,40 @@
 # represented here are mainly for reference but could be used to build
 # other enums as well.
 
-Software:
-  MAYA: 0
-  HOUDINI: 1
-  NUKE: 2
-  BLENDER: 3
-  VRAY: 4
-
-SoftwareType:
-  INCLUDE: 5
-  EXCLUDE: 6
-
-TaskState:
-  PAUSED: 7
-  BLOCKED: 8
-  QUEUED: 9
-  ASSIGN: 10
-  RUNNING: 11
-  DONE: 12
-  FAILED: 13
-
-HostState:
-  OFFLINE: 14   # host is unreachable
-  ONLINE: 15    # online but not doing anything at the moment
-  DISABLED: 16  # host online but not allowed to process anything
-  RUNNING: 17   # currently processing something
-
-EnvMergeMode:
-  UPDATE: 18
-  REPLACE: 19
-  FILL: 20
+# Key/value pairs which are stored as integers in the database and are
+# accessable as objects in pyfarm.ext.config.enums.
+#
+# WARNING: changing values here may put these values out of sync with
+#          entries in the database!
+#
 
 OperatingSystem:
-  LINUX: 21
-  WINDOWS: 22
-  MAC: 23
-  OTHER: 24
+  LINUX: 0
+  WINDOWS: 1
+  MAC: 2
+  OTHER: 3
 
-DependencyType:
-  F2F: 25
-  J2J: 26
+DictMergeMode:
+  UPDATE: 4
+  REPLACE: 5
+  FILL: 6
+
+WorkDependencyType:
+  JOB2JOB: 7
+  TASK2TASK: 8
+
+WorkState:
+  PAUSED: 9
+  BLOCKED: 10
+  QUEUED: 11
+  ASSIGN: 12
+  RUNNING: 13
+  DONE: 14
+  FAILED: 15
+
+AgentState:
+  OFFLINE: 16   # host is unreachable
+  ONLINE: 17    # online but not doing anything at the moment
+  DISABLED: 18  # host online but not allowed to process anything
+  RUNNING: 19   # currently processing something
+

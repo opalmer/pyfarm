@@ -14,19 +14,27 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from datetime import datetime
+
 from pyfarm.flaskapp import db
-from pyfarm.config.enum import TaskState
-from pyfarm.models.constants import TABLE_TASK, TABLE_AGENT
+from pyfarm.config.enum import WorkState
+from pyfarm.models.constants import DBDATA, TABLE_JOB, TABLE_TASK, TABLE_AGENT
 from pyfarm.models.mixins import RandIdMixin, StateValidationMixin
 
 
 class Task(db.Model, RandIdMixin, StateValidationMixin):
     """Defines task which a child of a :class:`.Job`"""
     __tablename__ = TABLE_TASK
-    STATE_ENUM = TaskState()
+    STATE_ENUM = WorkState()
     STATE_DEFAULT = STATE_ENUM.QUEUED
 
+    # relational ids
     _agentid = db.Column(db.Integer, db.ForeignKey("%s.id" % TABLE_AGENT))
-    state = db.Column(db.Integer, nullable=False)
-
-
+    _jobid = db.Column(db.Integer, db.ForeignKey("%s.id" % TABLE_JOB))
+    state = db.Column(db.Integer, default=STATE_DEFAULT, nullable=False)
+    priority = db.Column(db.Integer, default=DBDATA.get("task.priority"),
+                         nullable=False)
+    attempts = db.Column(db.Integer, default=0)
+    time_submitted = db.Column(db.DateTime, default=datetime.now)
+    time_started = db.Column(db.DateTime)
+    time_finished = db.Column(db.DateTime)

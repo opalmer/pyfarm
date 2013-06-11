@@ -14,5 +14,5 @@ Subpackages
 
 .. toctree::
 
-    pyfarm.admin.db
+    pyfarm.admin.tables
 

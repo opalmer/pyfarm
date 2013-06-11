@@ -74,8 +74,6 @@ Subpackages
     pyfarm.config
     pyfarm.datatypes
     pyfarm.ext
-    pyfarm.master
     pyfarm.models
     pyfarm.rest
-    pyfarm.script
 

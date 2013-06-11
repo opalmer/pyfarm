@@ -1,10 +1,10 @@
-models Package
+tables Package
 ==============
 
-:mod:`models` Package
+:mod:`tables` Package
 ---------------------
 
-.. automodule:: pyfarm.models
+.. automodule:: pyfarm.admin.tables
     :members:
     :undoc-members:
     :show-inheritance:
@@ -12,15 +12,15 @@ models Package
 :mod:`agent` Module
 -------------------
 
-.. automodule:: pyfarm.models.agent
+.. automodule:: pyfarm.admin.tables.agent
     :members:
     :undoc-members:
     :show-inheritance:
 
-:mod:`constants` Module
------------------------
+:mod:`core` Module
+------------------
 
-.. automodule:: pyfarm.models.constants
+.. automodule:: pyfarm.admin.tables.core
     :members:
     :undoc-members:
     :show-inheritance:
@@ -28,15 +28,7 @@ models Package
 :mod:`job` Module
 -----------------
 
-.. automodule:: pyfarm.models.job
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-:mod:`mixins` Module
---------------------
-
-.. automodule:: pyfarm.models.mixins
+.. automodule:: pyfarm.admin.tables.job
     :members:
     :undoc-members:
     :show-inheritance:
@@ -44,7 +36,7 @@ models Package
 :mod:`task` Module
 ------------------
 
-.. automodule:: pyfarm.models.task
+.. automodule:: pyfarm.admin.tables.task
     :members:
     :undoc-members:
     :show-inheritance:

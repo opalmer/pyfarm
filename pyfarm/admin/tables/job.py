@@ -14,25 +14,25 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from pyfarm.models import Agent, AgentTags, AgentSoftware
+from pyfarm.models import Job, JobTags, JobSoftware
 from pyfarm.admin.tables.core import CoreTableModelView
 
 
-class AgentTagsModelView(CoreTableModelView):
+class JobTagsModelView(CoreTableModelView):
     def __init__(self):
-        super(AgentTagsModelView, self).__init__(AgentTags)
+        super(JobTagsModelView, self).__init__(JobTags)
 
 
-class AgentSoftwareModelView(CoreTableModelView):
+class JobSoftwareModelView(CoreTableModelView):
     def __init__(self):
-        super(AgentSoftwareModelView, self).__init__(AgentSoftware)
+        super(JobSoftwareModelView, self).__init__(JobSoftware)
 
 
 # TODO: editor widgets in view
 # TODO: add action for batch edits
 # TODO: if action + form (above) is not possible, create some 'general' actions
-class AgentModelView(CoreTableModelView):
+class JobModelView(CoreTableModelView):
     # TODO: add form for creation that includes **tagging**
     # form = None
     def __init__(self):
-        super(AgentModelView, self).__init__(Agent)
+        super(JobModelView, self).__init__(Job)
