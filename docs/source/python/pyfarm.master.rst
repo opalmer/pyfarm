@@ -9,10 +9,11 @@ master Package
     :undoc-members:
     :show-inheritance:
 
-Subpackages
------------
+:mod:`core` Module
+------------------
 
-.. toctree::
-
-    pyfarm.master.models
+.. automodule:: pyfarm.master.core
+    :members:
+    :undoc-members:
+    :show-inheritance:
 
