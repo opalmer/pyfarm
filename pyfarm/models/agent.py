@@ -18,7 +18,7 @@ from sqlalchemy.orm import validates
 
 from pyfarm.flaskapp import db
 from pyfarm.config.enum import HostState
-from pyfarm.models.mixins import StateMixin, RandIdMixin
+from pyfarm.models.mixins import StateValidationMixin, RandIdMixin
 from pyfarm.models.constants import (MAX_HOSTNAME_LENGTH,
     MAX_IPV4_LENGTH, REGEX_IPV4, REGEX_HOSTNAME, TABLE_AGENT, TABLE_AGENT_TAGS)
 
@@ -29,16 +29,18 @@ class AgentTags(db.Model):
     tag = db.Column(db.String)
 
 
-class Agent(db.Model, RandIdMixin, StateMixin):
+class Agent(db.Model, RandIdMixin, StateValidationMixin):
     """Information related to the agent"""
     __tablename__ = TABLE_AGENT
     STATE_ENUM = HostState()
+    STATE_DEFAULT = STATE_ENUM.ONLINE
 
     # columns
+    enabled = db.Column(db.Boolean, default=True)
+    state = db.Column(db.Integer, nullable=False)
     hostname = db.Column(db.String(MAX_HOSTNAME_LENGTH), nullable=False)
     ip = db.Column(db.String(MAX_IPV4_LENGTH), nullable=False)
     subnet = db.Column(db.String(MAX_IPV4_LENGTH), nullable=False)
-    enabled = db.Column(db.Boolean, default=True)
 
     # relationships
     tasks = db.relationship("Task", backref="agent", lazy="dynamic")

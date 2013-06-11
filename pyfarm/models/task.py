@@ -17,11 +17,16 @@
 from pyfarm.flaskapp import db
 from pyfarm.config.enum import TaskState
 from pyfarm.models.constants import TABLE_TASK, TABLE_AGENT
-from pyfarm.models.mixins import RandIdMixin, StateMixin
+from pyfarm.models.mixins import RandIdMixin, StateValidationMixin
 
 
-class Task(db.Model, RandIdMixin, StateMixin):
+class Task(db.Model, RandIdMixin, StateValidationMixin):
     """Defines task which a child of a :class:`.Job`"""
     __tablename__ = TABLE_TASK
-    _agentid = db.Column(db.Integer, db.ForeignKey("%s.id" % TABLE_AGENT))
     STATE_ENUM = TaskState()
+    STATE_DEFAULT = STATE_ENUM.QUEUED
+
+    _agentid = db.Column(db.Integer, db.ForeignKey("%s.id" % TABLE_AGENT))
+    state = db.Column(db.Integer, nullable=False)
+
+
