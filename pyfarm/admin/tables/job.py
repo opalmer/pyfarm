@@ -28,6 +28,7 @@ class JobSoftwareModelView(CoreTableModelView):
         super(JobSoftwareModelView, self).__init__(JobSoftware)
 
 
+# TODO: cannot edit _environ in ui!!!
 # TODO: editor widgets in view
 # TODO: add action for batch edits
 # TODO: if action + form (above) is not possible, create some 'general' actions
