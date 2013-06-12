@@ -38,6 +38,7 @@ class Task(db.Model, RandIdMixin, StateValidationMixin, StateChangedMixin):
     priority = db.Column(db.Integer, default=DBDATA.get("task.priority"),
                          nullable=False)
     attempts = db.Column(db.Integer, default=0)
+    frame = db.Column(db.Integer)
     time_submitted = db.Column(db.DateTime, default=datetime.now)
     time_started = db.Column(db.DateTime)
     time_finished = db.Column(db.DateTime)
