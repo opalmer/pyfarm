@@ -36,14 +36,16 @@ REGEX_IPV4 = re.compile("^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|"
 class AgentTags(db.Model):
     """Table model used to store tags for agents"""
     __tablename__ = TABLE_AGENT_TAGS
-    _agentid = db.Column(db.Integer, db.ForeignKey("%s.id" % TABLE_AGENT), primary_key=True)
+    _agentid = db.Column(db.Integer, db.ForeignKey("%s.id" % TABLE_AGENT),
+                         primary_key=True)
     tag = db.Column(db.String)
 
 
 class AgentSoftware(db.Model):
     """Table model used to store tags for agents"""
     __tablename__ = TABLE_AGENT_SOFTWARE
-    _agentid = db.Column(db.Integer, db.ForeignKey("%s.id" % TABLE_AGENT), primary_key=True)
+    _agentid = db.Column(db.Integer, db.ForeignKey("%s.id" % TABLE_AGENT),
+                         primary_key=True)
     software = db.Column(db.String)
 
 

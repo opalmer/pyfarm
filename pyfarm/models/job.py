@@ -23,6 +23,7 @@ try:
 except ImportError:
     import simplejson as json
 
+from sqlalchemy import event
 from sqlalchemy.orm import validates
 
 from pyfarm.flaskapp import db
@@ -30,7 +31,8 @@ from pyfarm.config.enum import WorkState
 from pyfarm.models.constants import (
     DBDATA, TABLE_JOB, TABLE_JOB_TAGS, TABLE_JOB_SOFTWARE
 )
-from pyfarm.models.mixins import RandIdMixin, StateValidationMixin
+from pyfarm.models.mixins import (
+    RandIdMixin, StateValidationMixin, StateChangedMixin)
 
 
 class JobTags(db.Model):
@@ -47,7 +49,7 @@ class JobSoftware(db.Model):
     software = db.Column(db.String)
 
 
-class Job(db.Model, RandIdMixin, StateValidationMixin):
+class Job(db.Model, RandIdMixin, StateValidationMixin, StateChangedMixin):
     """Defines task which a child of a :class:`.Job`"""
     __tablename__ = TABLE_JOB
     STATE_ENUM = WorkState()
@@ -93,3 +95,6 @@ class Job(db.Model, RandIdMixin, StateValidationMixin):
             raise TypeError("expected a dictionary or string for %s" % key)
 
         return value
+
+
+event.listen(Job.state, "set", Job.stateChangedEvent)

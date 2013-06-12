@@ -14,15 +14,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from warnings import warn
 from datetime import datetime
+from sqlalchemy import event
 
 from pyfarm.flaskapp import db
 from pyfarm.config.enum import WorkState
 from pyfarm.models.constants import DBDATA, TABLE_JOB, TABLE_TASK, TABLE_AGENT
-from pyfarm.models.mixins import RandIdMixin, StateValidationMixin
+from pyfarm.models.mixins import (
+    RandIdMixin, StateValidationMixin, StateChangedMixin)
 
 
-class Task(db.Model, RandIdMixin, StateValidationMixin):
+class Task(db.Model, RandIdMixin, StateValidationMixin, StateChangedMixin):
     """Defines task which a child of a :class:`.Job`"""
     __tablename__ = TABLE_TASK
     STATE_ENUM = WorkState()
@@ -38,3 +41,13 @@ class Task(db.Model, RandIdMixin, StateValidationMixin):
     time_submitted = db.Column(db.DateTime, default=datetime.now)
     time_started = db.Column(db.DateTime)
     time_finished = db.Column(db.DateTime)
+
+    @staticmethod
+    def agentChangedEvent(target, new_value, old_value, initiator):
+        """set the state to ASSIGN whenever the agent is changed"""
+        if new_value is not None:
+            target.state == target.STATE_ENUM.ASSIGN
+
+
+event.listen(Task._agentid, "set", Task.agentChangedEvent)
+event.listen(Task.state, "set", Task.stateChangedEvent)

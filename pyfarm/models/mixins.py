@@ -14,6 +14,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from warnings import warn
+
+from datetime import datetime
 from sqlalchemy.orm import validates
 from pyfarm.utility import randint
 from pyfarm.flaskapp import db
@@ -47,3 +50,27 @@ class RandIdMixin(object):
     id = db.Column(
         db.Integer, primary_key=True, default=randint,
         nullable=False, unique=True)
+
+
+class StateChangedMixin(object):
+    """
+    Mixin which adds a static method to be used when the model
+    state changes
+    """
+    @staticmethod
+    def stateChangedEvent(target, new_value, old_value, initiator):
+        """update the datetime objects depending on the new value"""
+        if target.id is None:
+            pass
+
+        elif new_value == target.STATE_ENUM.RUNNING:
+            target.time_started = datetime.now()
+            target.attempts += 1
+
+        elif new_value in (target.STATE_ENUM.DONE, target.STATE_ENUM.FAILED):
+            if target.time_started is None:
+                msg = "job %s has not been started yet, state is " % target.id
+                msg += "being set to %s" % target.STATE_ENUM.get(new_value)
+                warn(msg)
+
+            target.time_finished = datetime.now()
