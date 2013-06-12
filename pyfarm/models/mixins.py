@@ -22,6 +22,13 @@ from pyfarm.utility import randint
 from pyfarm.flaskapp import db
 
 
+class StateChangeOrderWarning(RuntimeWarning):
+    """
+    Warning which is used whenever the column state changes in
+    an unexpected order
+    """
+
+
 class StateValidationMixin(object):
     """
     Mixin that adds a `state` column and uses a class
@@ -65,12 +72,14 @@ class StateChangedMixin(object):
 
         elif new_value == target.STATE_ENUM.RUNNING:
             target.time_started = datetime.now()
-            target.attempts += 1
+
+            if hasattr(target, "attempts"):
+                target.attempts += 1
 
         elif new_value in (target.STATE_ENUM.DONE, target.STATE_ENUM.FAILED):
             if target.time_started is None:
                 msg = "job %s has not been started yet, state is " % target.id
                 msg += "being set to %s" % target.STATE_ENUM.get(new_value)
-                warn(msg)
+                warn(msg,  StateChangeOrderWarning)
 
             target.time_finished = datetime.now()
