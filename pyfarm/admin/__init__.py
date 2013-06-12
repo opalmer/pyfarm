@@ -23,13 +23,14 @@ from pyfarm.admin.tables.agent import (
 from pyfarm.admin.tables.task import TaskModelView
 
 if __name__ == '__main__':
+    import os
     import random
     from flask.ext.admin import Admin
 
     from pyfarm.config.enum import AgentState
     from pyfarm.utility import randstr, randint
-    from pyfarm.models.agent import Agent
     from pyfarm.flaskapp import app, db
+    from pyfarm.models import Agent, Job
 
     db.drop_all()
     db.create_all()
@@ -42,7 +43,9 @@ if __name__ == '__main__':
     randi = lambda: random.randint(0, 255)
     randip = lambda: ".".join(map(str, [randi(), randi(), randi(), randi()]))
 
-    for i in xrange(5):
+    jobs = []
+
+    for i in xrange(15):
         agent = Agent()
         agent.ip = randip()
         agent.subnet = randip()
@@ -51,7 +54,22 @@ if __name__ == '__main__':
         agent.state = random.choice(agent_state.values())
         db.session.add(agent)
 
+        job = Job()
+        job.environ = os.environ
+        db.session.add(job)
+        jobs.append(job)
+
     db.session.commit()
+
+    # randomly set the state to trigger the event when the column
+    # state changes
+    for job in jobs:
+        job.state = job.STATE_ENUM.RUNNING
+        job.state = job.STATE_ENUM.DONE
+        db.session.add(job)
+
+    db.session.commit()
+
     ######################################################
 
     admin = Admin(app, name="PyFarm")
