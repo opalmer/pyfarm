@@ -29,11 +29,10 @@ from sqlalchemy.orm import validates
 from pyfarm.flaskapp import db
 from pyfarm.config.enum import WorkState
 from pyfarm.models.constants import (
-    DBDATA, TABLE_JOB, TABLE_JOB_TAGS, TABLE_JOB_SOFTWARE
+    DBDATA, TABLE_JOB, TABLE_JOB_TAGS, TABLE_JOB_SOFTWARE, TABLE_TASK
 )
 from pyfarm.models.mixins import (
     RandIdMixin, StateValidationMixin, StateChangedMixin)
-
 
 class JobTags(db.Model):
     __tablename__ = TABLE_JOB_TAGS
@@ -64,8 +63,16 @@ class Job(db.Model, RandIdMixin, StateValidationMixin, StateChangedMixin):
     _environ = db.Column(db.Text)  # underlying storage for .environ
 
     # relationships
-    # TODO: add relationship to agents
     tasks = db.relationship("Task", backref="job", lazy="dynamic")
+    tasks_done = db.relationship("Task", lazy="dynamic",
+        primaryjoin="(Task.state == %s) & "
+                    "(Task._jobid == Job.id)" % STATE_ENUM.DONE)
+    tasks_failed = db.relationship("Task", lazy="dynamic",
+        primaryjoin="(Task.state == %s) & "
+                    "(Task._jobid == Job.id)" % STATE_ENUM.FAILED)
+    tasks_queued = db.relationship("Task", lazy="dynamic",
+        primaryjoin="(Task.state == %s) & "
+                    "(Task._jobid == Job.id)" % STATE_ENUM.QUEUED)
     tags = db.relationship("JobTags", backref="job", lazy="dynamic")
     software = db.relationship("JobSoftware", backref="job", lazy="dynamic")
 
