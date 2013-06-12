@@ -102,7 +102,6 @@ def requirements(major, minor, develop=False, docs=True):
     #     requires.append("pywin32")
 
     return list(requires)
-# end requirements
 
 
 class clean(_clean):
@@ -135,8 +134,6 @@ class clean(_clean):
 
             for filename in map(join, files):
                 rm(filename)
-    # end run
-# end clean
 
 if __name__ == "__main__":
     # disable docs for some of the travis jobs
