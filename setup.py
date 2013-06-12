@@ -93,8 +93,8 @@ def requirements(major, minor, develop=False, docs=True):
     #     requires.append("twisted")
 
     # 2.5 exclusive
-    # if (major, minor) == (2, 5):
-    #     requires.append("simplejson")
+    if (major, minor) == (2, 5):
+        requires.append("simplejson")
     #     requires.append("zope.interface<=3.8.0")
     #     requires.append("twisted<=12.1")
 
