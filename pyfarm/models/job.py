@@ -61,9 +61,7 @@ class Job(db.Model, RandIdMixin, StateValidationMixin, StateChangedMixin):
     time_submitted = db.Column(db.DateTime, default=datetime.now)
     time_started = db.Column(db.DateTime)
     time_finished = db.Column(db.DateTime)
-
-    # TODO: need to test environ/_environ setup
-    _environ = db.Column(db.UnicodeText)
+    _environ = db.Column(db.Text)  # underlying storage for .environ
 
     # relationships
     # TODO: add relationship to agents
@@ -73,7 +71,7 @@ class Job(db.Model, RandIdMixin, StateValidationMixin, StateChangedMixin):
 
     @property
     def environ(self):
-        if self._environ is None:
+        if not self._environ:
             return os.environ.copy()
 
         value = json.loads(self._environ)
@@ -86,6 +84,8 @@ class Job(db.Model, RandIdMixin, StateValidationMixin, StateChangedMixin):
             value = json.dumps(value)
         elif isinstance(value, UserDict):
             value = json.dumps(value.data)
+        else:
+            raise TypeError("expected a dict or UserDict object for `environ`")
 
         self._environ = value
 
