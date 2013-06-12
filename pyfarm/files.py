@@ -48,13 +48,18 @@ from yaml import load as _yamlLoad, dump as _yamlDump
 # so they can be overridden by an extension.
 makedirs = os.makedirs
 remove = os.remove
-chown = os.chown
-chmod = os.chmod
-chdir = os.chdir
-rmtree = shutil.rmtree
 copy = shutil.copy
 copy2 = shutil.copy
+rmtree = shutil.rmtree
 copytree = shutil.copytree
+chdir = os.chdir
+chmod = os.chmod
+
+try:
+    chown = os.chown
+except AttributeError:
+    # TODO: need to write a windows equivalent with win32api
+    chown = lambda *args, **kwargs: None
 
 
 class TempFile(file):
