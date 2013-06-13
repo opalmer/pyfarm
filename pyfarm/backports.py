@@ -22,6 +22,7 @@ present in earlier versions of Python.
     this code comes from the standard library, none of it is original
 """
 
+import __builtin__
 import sys
 from operator import itemgetter as _itemgetter
 from keyword import iskeyword as _iskeyword
@@ -166,3 +167,18 @@ def permutations(iterable, r=None):
     for indices in product(range(n), repeat=r):
         if len(set(indices)) == r:
             yield tuple(pool[i] for i in indices)
+
+
+class property(__builtin__.property):
+    __metaclass__ = type
+
+    def setter(self, method):
+        return property(self.fget, method, self.fdel)
+
+    def deleter(self, method):
+        return property(self.fget, self.fset, method)
+
+    @__builtin__.property
+    def __doc__(self):
+        """Doc seems not to be set correctly when subclassing"""
+        return self.fget.__doc__

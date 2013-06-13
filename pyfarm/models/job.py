@@ -28,6 +28,11 @@ try:
 except ImportError:
     import simplejson as json
 
+try:
+    property.setter
+except AttributeError:
+    from pyfarm.backports import property
+
 from sqlalchemy import event
 from sqlalchemy.orm import validates
 
@@ -59,16 +64,18 @@ class Job(db.Model, RandIdMixin, StateValidationMixin, StateChangedMixin):
     STATE_ENUM = WorkState()
     STATE_DEFAULT = STATE_ENUM.QUEUED
 
-    state = db.Column(db.Integer, default=STATE_DEFAULT, nullable=False)
+    state = db.Column(db.Integer, default=STATE_DEFAULT)
     cmd = db.Column(db.String)
-    priority = db.Column(db.Integer, default=DBDATA.get("job.priority"),
-                         nullable=False)
-
+    priority = db.Column(db.Integer, default=DBDATA.get("job.priority"))
     user = db.Column(db.String(DBDATA.get("job.max_username_length")))
     notes = db.Column(db.Text, default="")
     time_submitted = db.Column(db.DateTime, default=datetime.now)
     time_started = db.Column(db.DateTime)
     time_finished = db.Column(db.DateTime)
+    # NOTE: range to be generated using numpy.arange
+    start = db.Column(db.Float, nullable=False)
+    end = db.Column(db.Float, nullable=False)
+    by = db.Column(db.Float, default=1)
 
     # underlying storage for properties
     _environ = db.Column(db.Text)
