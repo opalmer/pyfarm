@@ -139,8 +139,11 @@ def namedtuple(typename, field_names, verbose=False, rename=False):
 
 def product(*args, **kwds):
     """
-    product('ABCD', 'xy') --> Ax Ay Bx By Cx Cy Dx Dy
-    product(range(2), repeat=3) --> 000 001 010 011 100 101 110 111
+    >>> list(product('AB', 'cd'))
+    [('A', 'c'), ('A', 'd'), ('B', 'c'), ('B', 'd')]
+
+    >>> list(product(range(2), repeat=2))
+    [(0, 0), (0, 1), (1, 0), (1, 1)]
     """
     pools = map(tuple, args) * kwds.get('repeat', 1)
     result = [[]]
@@ -148,13 +151,15 @@ def product(*args, **kwds):
         result = [x+[y] for x in result for y in pool]
     for prod in result:
         yield tuple(prod)
-# end product
 
 
 def permutations(iterable, r=None):
     """
-    permutations('ABCD', 2) --> AB AC AD BA BC BD CA CB CD DA DB DC
-    permutations(range(3)) --> 012 021 102 120 201 210
+    >>> list(permutations('AB', 2))
+    [('A', 'B'), ('B', 'A')]
+
+    >>> list(permutations(range(3)))
+    [(0, 1, 2), (0, 2, 1), (1, 0, 2), (1, 2, 0), (2, 0, 1), (2, 1, 0)]
     """
     pool = tuple(iterable)
     n = len(pool)
@@ -162,4 +167,3 @@ def permutations(iterable, r=None):
     for indices in product(range(n), repeat=r):
         if len(set(indices)) == r:
             yield tuple(pool[i] for i in indices)
-# end permutations
