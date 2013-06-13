@@ -24,7 +24,7 @@ class ExtensionImporter(object):
     It has been located here to remove the requirement to install flask in all
     cases such as on the agent.
     """
-    DEFAULT_CHOICES = ['pyfarm_%s', 'pyfarm.%s']
+    DEFAULT_CHOICES = ["pyfarm_%s", "pyfarm.%s"]
 
     def __init__(self, module_choices, wrapper_module):
         assert isinstance(module_choices, list), \
@@ -37,8 +37,8 @@ class ExtensionImporter(object):
 
         self.module_choices = module_choices
         self.wrapper_module = wrapper_module
-        self.prefix = wrapper_module + '.'
-        self.prefix_cutoff = wrapper_module.count('.') + 1
+        self.prefix = wrapper_module + "."
+        self.prefix_cutoff = wrapper_module.count(".") + 1
 
     def __eq__(self, other):
         return self.__class__.__module__ == other.__class__.__module__ and \
@@ -59,7 +59,7 @@ class ExtensionImporter(object):
     def load_module(self, fullname):
         if fullname in sys.modules:
             return sys.modules[fullname]
-        modname = fullname.split('.', self.prefix_cutoff)[self.prefix_cutoff]
+        modname = fullname.split(".", self.prefix_cutoff)[self.prefix_cutoff]
         for path in self.module_choices:
             realname = path % modname
             try:
@@ -85,10 +85,10 @@ class ExtensionImporter(object):
                     raise exc_type, exc_value, tb.tb_next
                 continue
             module = sys.modules[fullname] = sys.modules[realname]
-            if '.' not in modname:
+            if "." not in modname:
                 setattr(sys.modules[self.wrapper_module], modname, module)
             return module
-        raise ImportError('No module named %s' % fullname)
+        raise ImportError("No module named %s" % fullname)
 
     def is_important_traceback(self, important_module, tb):
         """Walks a traceback's frames and checks if any of the frames
@@ -105,10 +105,10 @@ class ExtensionImporter(object):
     def is_important_frame(self, important_module, tb):
         """Checks a single frame if it's important."""
         g = tb.tb_frame.f_globals
-        if '__name__' not in g:
+        if "__name__" not in g:
             return False
 
-        module_name = g['__name__']
+        module_name = g["__name__"]
 
         # Python 2.7 Behavior.  Modules are cleaned up late so the
         # name shows up properly here.  Success!
@@ -119,6 +119,6 @@ class ExtensionImporter(object):
         # module name at that point is no longer set.  Try guessing from
         # the filename then.
         filename = os.path.abspath(tb.tb_frame.f_code.co_filename)
-        test_string = os.path.sep + important_module.replace('.', os.path.sep)
-        return test_string + '.py' in filename or \
-               test_string + os.path.sep + '__init__.py' in filename
+        test_string = os.path.sep + important_module.replace(".", os.path.sep)
+        return test_string + ".py" in filename or \
+               test_string + os.path.sep + "__init__.py" in filename
