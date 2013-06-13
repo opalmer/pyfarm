@@ -134,7 +134,6 @@ def namedtuple(typename, field_names, verbose=False, rename=False):
         pass
 
     return result
-# end namedtuple
 
 
 def product(*args, **kwds):
