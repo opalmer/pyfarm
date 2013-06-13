@@ -18,11 +18,6 @@ import sys
 from warnings import warn
 from textwrap import dedent
 
-try:
-    from collections import namedtuple
-except ImportError:
-    from pyfarm.backports import namedtuple
-
 from pyfarm.ext.config.core.loader import Loader
 
 
