@@ -31,7 +31,7 @@ except ImportError:
 try:
     property.setter
 except AttributeError:
-    from pyfarm.backports import property
+    from pyfarm.backports import _property as property
 
 from sqlalchemy import event
 from sqlalchemy.orm import validates
