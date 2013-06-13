@@ -33,3 +33,4 @@ task:
 
 job:
   priority: 500
+  max_username_length: 255
