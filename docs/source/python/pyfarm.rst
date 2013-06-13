@@ -57,6 +57,14 @@ pyfarm Package
     :undoc-members:
     :show-inheritance:
 
+:mod:`system` Module
+--------------------
+
+.. automodule:: pyfarm.system
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 :mod:`utility` Module
 ---------------------
 
@@ -72,7 +80,6 @@ Subpackages
 
     pyfarm.admin
     pyfarm.config
-    pyfarm.datatypes
     pyfarm.ext
     pyfarm.models
 
