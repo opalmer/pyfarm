@@ -173,8 +173,9 @@ class ProcessorInfo(object):
         Returns the load across all cpus value from zero to one.  A value
         of 1.0 means the average load across all cpus is 100%.
 
-        >>> assert psutil.cpu_percent(.5) / processor.CORES > 0
-        >>> assert processor.load(.5) > 0
+        >>> if "TRAVIS" not in os.environ:
+        ...     assert psutil.cpu_percent(.5) / processor.CORES > 0
+        ...     assert processor.load(.5) > 0
         """
         return psutil.cpu_percent(iterval) / self.CORES
 
@@ -250,9 +251,9 @@ class MemoryInfo(object):
         """
         Total virtual memory (swap) installed on the system
 
-        >>> assert convert.bytetomb(psutil.total_virtmem()) == memory.TOTAL_SWAP
+        >>> assert convert.bytetomb(psutil.swap_memory().total) == memory.TOTAL_SWAP
         """
-        return convert.bytetomb(psutil.total_virtmem())
+        return convert.bytetomb(psutil.swap_memory().total)
 
     def swapUsed(self):
         """
