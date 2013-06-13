@@ -66,7 +66,7 @@ def requirements(major, minor, develop=False, docs=True):
     """
     requires = [
         "appdirs", "PyYaml",
-        "psutil", "netifaces",
+        "psutil", "netifaces", "numpy",
         "Jinja2==%s.%s" % (major, minor),
         "flask", "flask-sqlalchemy"#, "colorama",
         # "flask-bcrypt", "flask-cache",
