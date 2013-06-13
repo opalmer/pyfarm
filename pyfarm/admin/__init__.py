@@ -14,13 +14,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from pyfarm.admin.tables.job import (
-    JobModelView, JobTagsModelView, JobSoftwareModelView
-)
-from pyfarm.admin.tables.agent import (
-    AgentModelView, AgentTagsModelView, AgentSoftwareModelView
-)
-from pyfarm.admin.tables.task import TaskModelView
+try:
+    from pyfarm.admin.tables.job import (
+        JobModelView, JobTagsModelView, JobSoftwareModelView
+    )
+    from pyfarm.admin.tables.agent import (
+        AgentModelView, AgentTagsModelView, AgentSoftwareModelView
+    )
+    from pyfarm.admin.tables.task import TaskModelView
+except ImportError:
+    import sys
+
+    if sys.version_info[0:2] <= (2, 5):
+        from warnings import warn
+        warn("admin modules require Python 2.6 or higher", ImportWarning)
+    else:
+        raise
+
 
 if __name__ == '__main__':
     import os
