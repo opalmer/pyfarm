@@ -19,6 +19,8 @@ General utility functions that are not specific to individual components
 of PyFarm.
 """
 
+from __future__ import division
+
 import os
 import socket
 import getpass
@@ -103,3 +105,27 @@ def floatrange(start, end, by=1, cutoff=True, create_endpoint=True):
 
     if create_endpoint and last_value != end:
         yield float(end) if isinstance(by, float) else end
+
+
+class convert(object):
+    """Namespace containing various static methods for conversion"""
+
+    @staticmethod
+    def bytetomb(value):
+        """
+        Convert bytes to megabytes
+
+        >>> convert.bytetomb(10485760)
+        10.0
+        """
+        return value / 1024 / 1024
+
+    @staticmethod
+    def mbtogb(value):
+        """
+        Convert megabytes to gigabytes
+
+        >>> convert.mbtogb(2048)
+        2.0
+        """
+        return value / 1024
