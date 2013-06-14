@@ -18,15 +18,9 @@ from warnings import warn
 
 from datetime import datetime
 from sqlalchemy.orm import validates
+from pyfarm.warning import ColumnStateChangeWarning
 from pyfarm.utility import randint
 from pyfarm.flaskapp import db
-
-
-class StateChangeOrderWarning(RuntimeWarning):
-    """
-    Warning which is used whenever the column state changes in
-    an unexpected order
-    """
 
 
 class StateValidationMixin(object):
@@ -80,6 +74,6 @@ class StateChangedMixin(object):
             if target.time_started is None:
                 msg = "job %s has not been started yet, state is " % target.id
                 msg += "being set to %s" % target.STATE_ENUM.get(new_value)
-                warn(msg,  StateChangeOrderWarning)
+                warn(msg,  ColumnStateChangeWarning)
 
             target.time_finished = datetime.now()

@@ -26,8 +26,9 @@ except ImportError:
     import sys
 
     if sys.version_info[0:2] <= (2, 5):
+        from pyfarm.warning import CompatibilityWarning
         from warnings import warn
-        warn("admin modules require Python 2.6 or higher", ImportWarning)
+        warn("admin modules require Python 2.6 or higher", CompatibilityWarning)
     else:
         raise
 

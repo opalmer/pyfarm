@@ -18,6 +18,7 @@ import sys
 from warnings import warn
 from textwrap import dedent
 
+from pyfarm.warning import ConfigurationWarning
 from pyfarm.ext.config.core.loader import Loader
 
 
@@ -110,7 +111,6 @@ class OperatingSystem(Enum):
         elif sys.platform.startswith("darwin"):
             return self.MAC
         else:
-            warn(
-                "unknown operating system: %s" % sys.platform,
-                RuntimeWarning)
+            warn("unknown operating system: %s" % sys.platform,
+                ConfigurationWarning)
             return self.OTHER

@@ -24,8 +24,30 @@ class PyFarmWarning(Warning):
     """Base class which all other warning related to PyFarm subclass from"""
 
 
-class NetworkWarning(Warning):
+class NetworkWarning(PyFarmWarning):
     """
-    Warning emitted when we have a non-error condition related to
+    Emitted when we have a non-error condition related to
     network problems or unexpected issues
+    """
+
+
+class ConfigurationWarning(PyFarmWarning):
+    """
+    Emitted when there an issue with a configuration or
+    configuration file
+    """
+
+
+class ColumnStateChangeWarning(PyFarmWarning):
+    """
+    Emitted when the state column in a table changes in an unexpected
+    order
+    """
+
+
+class CompatibilityWarning(PyFarmWarning):
+    """
+    Emitted when there a potential compatibility problem that
+    might cause unexpected behavior.  This can usually be avoided
+    by changing the configuration or using a different execution path.
     """
