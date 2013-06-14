@@ -25,10 +25,10 @@ pyfarm Package
     :undoc-members:
     :show-inheritance:
 
-:mod:`errors` Module
---------------------
+:mod:`error` Module
+-------------------
 
-.. automodule:: pyfarm.errors
+.. automodule:: pyfarm.error
     :members:
     :undoc-members:
     :show-inheritance:
@@ -69,6 +69,14 @@ pyfarm Package
 ---------------------
 
 .. automodule:: pyfarm.utility
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+:mod:`warning` Module
+---------------------
+
+.. automodule:: pyfarm.warning
     :members:
     :undoc-members:
     :show-inheritance:
