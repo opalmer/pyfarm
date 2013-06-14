@@ -66,7 +66,7 @@ def requirements(major, minor, develop=False, docs=True):
     """
     requires = [
         "appdirs", "PyYaml",
-        "psutil", "netifaces", "numpy",
+        "psutil", "netifaces",
         "Jinja2==%s.%s" % (major, minor),
         "flask", "flask-sqlalchemy"#, "colorama",
         # "flask-bcrypt", "flask-cache",
@@ -79,6 +79,14 @@ def requirements(major, minor, develop=False, docs=True):
 
         if docs:
             requires.append("sphinx")
+
+    # ipaddress is included in Python 3.x but
+    # is not 'final'.  If it does not exist we'll
+    # download and install it
+    try:
+        import ipaddress
+    except ImportError:
+        requires.append("ipaddress")
 
     # backports of modules introduced in 2.7
     if (major, minor) < (2, 7):
