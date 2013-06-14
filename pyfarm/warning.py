@@ -51,3 +51,11 @@ class CompatibilityWarning(PyFarmWarning):
     might cause unexpected behavior.  This can usually be avoided
     by changing the configuration or using a different execution path.
     """
+
+
+class NotImplementedWarning(PyFarmWarning):
+    """
+    Emitted when a feature is being worked on but is not yet
+    implemented.  This is typically a warning for a developer to handle
+    and can be safely ignored.
+    """
