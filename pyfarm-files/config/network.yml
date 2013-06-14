@@ -16,28 +16,17 @@
 # NOTE: these are PLACEHOLDER values
 #
 
-rpc:
-  restart: true
-  shutdown: true
-  delay: 3
-
-heartbeat:
-  group: 224.0.0.1
-  prefix: pyfarmmulticastheartbeat
-  interval: 60
-
 ports:
   master: 0
   host: 0
 
-remote_check:
+remote_address_check:
   enable: true
-  hostname: pyfarm.net
-  port: 80
 
-remote_addr_check:
+  # Addresses to use to help discover the 'public'
+  # ip we can use to talk to other hosts on
+  # the network
   addresses:
-    - [8.8.8.8, 53] # google public dns
-    - [8.8.4.4, 53] # google public dns
-    - [208.67.222.222, 53] # opendns
-    - [208.67.220.220, 53] # opendns
+    - example.com
+    - pyfarm.net
+    - google.com
