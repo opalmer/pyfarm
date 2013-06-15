@@ -46,7 +46,7 @@ import netifaces
 
 from pyfarm.warning import NotImplementedWarning, NetworkWarning
 from pyfarm.ext.config.core.loader import Loader
-from pyfarm.ext.config.enum import OperatingSystem as _OperatingSystem
+from pyfarm.ext.config.enum import OperatingSystem
 from pyfarm.utility import convert
 
 
@@ -67,8 +67,30 @@ class OperatingSystemInfo(object):
 
     Namespace class which returns information about
     the current operating system such as case-sensitivity, type, etc.
+
+    :attr OS:
+        Integer containing the os type, this is a mapping to a value
+        on :class:`OperatingSystem`
+
+    :attr IS_LINUX:
+        set to True if running linux
+
+    :attr IS_WINDOWS:
+        set to True if running windows
+
+    :attr IS_MAC:
+        set to True if running mac os
+
+    :attr IS_OTHER:
+        set to True if running something we could not determine a mapping for
+
+    :attr IS_POSIX:
+        set to True if running a posix platform (such as linux or mac)
+
+    :attr CASE_SENSITIVE:
+        set to True if the filesystem is case sensitive
     """
-    _enum = _OperatingSystem()
+    _enum = OperatingSystem()
     OS = _enum.get()
     IS_LINUX = OS == _enum.LINUX
     IS_WINDOWS = OS == _enum.WINDOWS
