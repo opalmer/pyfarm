@@ -23,6 +23,12 @@ from __future__ import division
 
 import os
 import binascii
+from decimal import Decimal, ROUND_HALF_DOWN
+
+try:
+    _range = xrange
+except NameError:
+    _range = range
 
 
 def randstr():
@@ -35,10 +41,101 @@ def randint():
     return int(randstr(), 16)
 
 
-def floatrange(start, end, by=1, cutoff=True, create_endpoint=True):
+def rounded(value, places=4, rounding=ROUND_HALF_DOWN):
     """
-    Produces an array which can contain floats.  Results are
-    produced by :func:`numpy.arange`
+    Returns a floating point number rounded to `places`.
+
+    >>> rounded(0.44999999999999996)
+    0.45
+    >>> rounded(0.44999999999999996, places=1)
+    0.4
+
+    :type value: float
+    :param value:
+        the value to round
+
+    :type places: int
+    :param places:
+        the number of decimal places to round to
+    """
+    if isinstance(value, int) or int(value) == value:
+        return value
+
+    if not isinstance(places, int):
+        raise TypeError("expected an integer for `places`")
+
+    if not places >= 1:
+        raise ValueError("expected at least one decimal place for `places`")
+
+    # rounding
+    dec = Decimal(value)
+    zeros = "0" * (places - 1)
+    rounded_float = dec.quantize(Decimal("0.%s1" % zeros),
+                                 rounding=rounding)
+    return float(rounded_float)
+
+
+def _floatrange_generator(start, end, by, add_endpoint):
+    """
+    Underlying function for generating float ranges.  Values
+    are passed into this function via :func:`floatrange`
+    """
+    # we can handle either integers or floats here
+    float_start = isinstance(start, (float, int))
+    float_end = isinstance(end, (float, int))
+    float_by = isinstance(by, (float, int))
+    last_value = None
+
+    if float_start and end is None and by is None:
+        end = start
+        by = 1
+        i = 0
+        while i <= end:
+            yield i
+            last_value = i
+            i = rounded(i + by)
+
+    elif float_start and float_by and end is None:
+        end = start
+        i = 0
+        while i <= end:
+            yield i
+            last_value = i
+            i = rounded(i + by)
+
+    elif float_start and float_end and by is None:
+        by = 1
+        i = start
+        while i <= end:
+            yield i
+            last_value = i
+            i = rounded(i + by)
+
+    elif float_start and float_end and float_by:
+        i = start
+        while i <= end:
+            yield i
+            last_value = i
+            i = rounded(i + by)
+
+    # produce the endpoint if requested
+    if add_endpoint and last_value is not None and last_value != end:
+        yield end
+
+
+def floatrange(start, end=None, by=None, add_endpoint=False):
+    """
+    Creates a generator which produces a list between `start` and `end` with
+    a spacing of `by`.  See below for some examples:
+
+    >>> list(floatrange(2))
+    [0, 1]
+    >>> list(floatrange(2.5))
+    [0, 1, 2]
+    >>> list(floatrange(1, by=.15))
+    [0, 0.15, 0.3, 0.45, 0.6, 0.75, 0.9]
+    >>> list(floatrange(1, by=.15, add_endpoint=True))
+    [0, 0.15, 0.3, 0.45, 0.6, 0.75, 0.9, 1]
 
     :type start: int or float
     :param start:
@@ -52,32 +149,37 @@ def floatrange(start, end, by=1, cutoff=True, create_endpoint=True):
     :param by:
         the 'step' to use in the range
 
-    :type cutoff: bool
-    :param cutoff:
-        If True then don't produce numbers that exceed `end`
-
-    :type create_endpoint: bool
-    :param create_endpoint:
-        if True then always emit `end` as the last number in the range
-
-    # Sample Usage:
-    #
-    #     >>> list(floatrange(1, 5))
-    #     [1, 2, 3, 4, 5]
-    #
-    #     >>> list(floatrange(1, 5, .5, cutoff=False, create_endpoint=False))
-    #     [1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 5.5]
-    #
-    #     >>> list(floatrange(1, 5, .75, cutoff=True, create_endpoint=True))
-    #     [1.0, 1.75, 2.5, 3.25, 4.0, 4.75, 5.0]
+    :type add_endpoint: bool
+    :param add_endpoint:
+        If True then ensure that the last value generated
+        by :func:`floatrange` is the end value itself
     """
-    if end < start:
+    if end is not None and end < start:
         raise ValueError("`end` must be greater than `start`")
 
-    if by <= 0:
+    if by is not None and by <= 0:
         raise ValueError("`by` must be non-zero")
 
-    raise NotImplementedError("need to remove numpy dependency")
+    int_start = isinstance(start, int)
+    int_end = isinstance(end, int)
+    int_by = isinstance(by, int)
+
+    # integers - only start/by were provided
+    if int_start and end is None and int_by:
+        end = start
+        start = 0
+        return _range(start, end, by)
+
+    # integers - only start was provided
+    elif int_start and end is None and by is None:
+        return _range(start)
+
+    # integers - start/end/by are all integers
+    elif all([int_start, int_end, int_by]):
+        return _range(start, end, by)
+
+    else:
+        return _floatrange_generator(start, end, by, add_endpoint)
 
 
 class convert(object):
