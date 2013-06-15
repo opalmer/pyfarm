@@ -15,22 +15,22 @@
 # limitations under the License.
 
 import re
+import ipaddress
+from warnings import warn
 from sqlalchemy.orm import validates
 
 from pyfarm.flaskapp import db
+from pyfarm.warning import NetworkWarning
 from pyfarm.ext.config.core.loader import Loader
 from pyfarm.ext.config.enum import AgentState
+from pyfarm.ext.utility import isLocalIPv4Address
 from pyfarm.models.mixins import StateValidationMixin, RandIdMixin
 from pyfarm.models.constants import (
-    DBDATA, TABLE_AGENT, TABLE_AGENT_TAGS, TABLE_AGENT_SOFTWARE
-)
+    DBDATA, TABLE_AGENT, TABLE_AGENT_TAGS, TABLE_AGENT_SOFTWARE)
 
 REGEX_HOSTNAME = re.compile("^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*"
                             "[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9]"
                             "[A-Za-z0-9\-]*[A-Za-z0-9])$")
-REGEX_IPV4 = re.compile("^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|"
-                        "25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4]"
-                        "[0-9]|25[0-5])$")
 
 
 class AgentTags(db.Model):
@@ -99,8 +99,13 @@ class Agent(db.Model, RandIdMixin, StateValidationMixin):
 
     @validates("ip", "subnet")
     def validate_address(self, key, value):
-        if not REGEX_IPV4.match(value):
-            raise ValueError("%s is not valid for %s" % (value, key))
+        try:
+            if isLocalIPv4Address(value):
+                warn("non-public address %s provided" % value, NetworkWarning)
+
+        except ipaddress.AddressValueError, e:
+            raise ipaddress.AddressValueError(
+                "%s is not a valid ip: %s" % (value, e))
 
         return value
 
