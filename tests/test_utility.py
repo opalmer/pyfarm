@@ -26,7 +26,7 @@ from nose.tools import eq_, raises
 from pyfarm.utility import (floatrange, convert, randstr, randint,
                             rounded)
 
-RAND_TEST_COUNT = 150000
+RAND_TEST_COUNT = 75000
 
 
 def test_convert_bytetomb():
