@@ -22,29 +22,7 @@ of PyFarm.
 from __future__ import division
 
 import os
-import socket
-import getpass
 import binascii
-import numpy
-
-
-def user():
-    """returns the current user name"""
-    try:
-        import pwd
-        return pwd.getpwuid(os.getuid())[0]
-
-    except ImportError:
-        return getpass.getuser()
-
-
-def randport():
-    """returns a port which we are able to bind to"""
-    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.bind(("", 0))
-    address = s.getsockname()[1]
-    s.close()
-    return address
 
 
 def randstr():
@@ -82,29 +60,24 @@ def floatrange(start, end, by=1, cutoff=True, create_endpoint=True):
     :param create_endpoint:
         if True then always emit `end` as the last number in the range
 
-    Sample Usage:
-
-        >>> list(floatrange(1, 5))
-        [1, 2, 3, 4, 5]
-
-        >>> list(floatrange(1, 5, .5, cutoff=False, create_endpoint=False))
-        [1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 5.5]
-
-        >>> list(floatrange(1, 5, .75, cutoff=True, create_endpoint=True))
-        [1.0, 1.75, 2.5, 3.25, 4.0, 4.75, 5.0]
+    # Sample Usage:
+    #
+    #     >>> list(floatrange(1, 5))
+    #     [1, 2, 3, 4, 5]
+    #
+    #     >>> list(floatrange(1, 5, .5, cutoff=False, create_endpoint=False))
+    #     [1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 5.5]
+    #
+    #     >>> list(floatrange(1, 5, .75, cutoff=True, create_endpoint=True))
+    #     [1.0, 1.75, 2.5, 3.25, 4.0, 4.75, 5.0]
     """
     if end < start:
         raise ValueError("`end` must be greater than `start`")
 
-    last_value = None
-    for value in numpy.arange(start, end + 1, by):
-        last_value = value
-        if cutoff and value > end:
-            break
-        yield value
+    if by <= 0:
+        raise ValueError("`by` must be non-zero")
 
-    if create_endpoint and last_value != end:
-        yield float(end) if isinstance(by, float) else end
+    raise NotImplementedError("need to remove numpy dependency")
 
 
 class convert(object):
