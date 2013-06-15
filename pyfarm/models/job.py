@@ -44,6 +44,7 @@ from pyfarm.models.constants import (
 from pyfarm.models.mixins import (
     RandIdMixin, StateValidationMixin, StateChangedMixin)
 
+
 class JobTags(db.Model):
     __tablename__ = TABLE_JOB_TAGS
     _jobid = db.Column(db.Integer, db.ForeignKey("%s.id" % TABLE_JOB),
@@ -72,7 +73,6 @@ class Job(db.Model, RandIdMixin, StateValidationMixin, StateChangedMixin):
     time_submitted = db.Column(db.DateTime, default=datetime.now)
     time_started = db.Column(db.DateTime)
     time_finished = db.Column(db.DateTime)
-    # NOTE: range to be generated using numpy.arange
     start = db.Column(db.Float, nullable=False)
     end = db.Column(db.Float, nullable=False)
     by = db.Column(db.Float, default=1)
