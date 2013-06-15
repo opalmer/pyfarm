@@ -47,7 +47,7 @@ import netifaces
 from pyfarm.warning import NotImplementedWarning, NetworkWarning
 from pyfarm.ext.config.core.loader import Loader
 from pyfarm.ext.config.enum import OperatingSystem
-from pyfarm.utility import convert
+from pyfarm.utility import convert, isLocalIPv4Address
 
 
 def user():
@@ -217,7 +217,7 @@ class NetworkInfo(object):
         for interface in self.interfaces():
             addrinfo = netifaces.ifaddresses(interface)
             for address in addrinfo.get(socket.AF_INET, []):
-                if "addr" in address and self.isPublic(address["addr"]):
+                if "addr" in address and isLocalIPv4Address(address["addr"]):
                     output.append(address["addr"])
 
         assert output, "failed to find any ipv4 addresses"
@@ -260,11 +260,6 @@ class NetworkInfo(object):
         .. warning::
             This will return None if the dns name maps to a non-public
             address
-
-        >>> if not network.isPublic(socket.gethostbyname(socket.getfqdn())):
-        ...     assert network.dnsip() is None
-        ... else:
-        ...     assert network.dnsip()
         """
         hostname = self.hostname(fqdn=fqdn)
         addr = socket.gethostbyname(hostname)
@@ -276,7 +271,6 @@ class NetworkInfo(object):
             return
         elif self.isPublic(addr):
             return addr
-
 
     def ip(self):
         """
@@ -311,7 +305,7 @@ class NetworkInfo(object):
                     warn("failed to check to %s for check", NetworkWarning)
                 else:
                     address, port = sock.getsockname()
-                    if self.isPublic(address):
+                    if isLocalIPv4Address(address):
                         break
                 finally:
                     sock.close()

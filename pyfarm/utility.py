@@ -30,6 +30,8 @@ try:
 except NameError:
     _range = range
 
+import ipaddress
+
 
 def randstr():
     """returns a random hexidecimal string based on :func:`os.urandom`"""
@@ -73,6 +75,18 @@ def rounded(value, places=4, rounding=ROUND_HALF_DOWN):
     rounded_float = dec.quantize(Decimal("0.%s1" % zeros),
                                  rounding=rounding)
     return float(rounded_float)
+
+
+def isLocalIPv4Address(addr):
+    """
+    Returns True if `addr` is a local network address
+    """
+    address = ipaddress.IPv4Address(
+        unicode(addr) if isinstance(addr, str) else addr)
+
+    return not any([
+        address.is_link_local, address.is_loopback,
+        address.is_unspecified])
 
 
 def _floatrange_generator(start, end, by, add_endpoint):

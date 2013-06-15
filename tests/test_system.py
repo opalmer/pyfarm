@@ -82,13 +82,6 @@ def test_os_case_sensitive():
     eq_(operating_system.CASE_SENSITIVE, cs)
 
 
-def test_net_public():
-    eq_(network.isPublic("0.0.0.0"), False)
-    eq_(network.isPublic("127.0.0.1"), False)
-    eq_(network.isPublic("169.254.0.0"), False)
-    eq_(network.isPublic("10.56.0.0"), True)
-
-
 def test_net_packets_sent():
     v = psutil.network_io_counters(
         pernic=True)[network.interface()].packets_sent

@@ -24,7 +24,7 @@ except NameError:
 
 from nose.tools import eq_, raises
 from pyfarm.utility import (floatrange, convert, randstr, randint,
-                            rounded)
+                            rounded, isLocalIPv4Address)
 
 RAND_TEST_COUNT = 75000
 
@@ -61,6 +61,13 @@ def test_rounded():
     eq_(rounded(math.pi), 3.1416)
     eq_(rounded(math.pi, 2), 3.14)
     eq_(rounded(math.pi, 6), 3.141593)
+
+
+def test_net_public():
+    eq_(isLocalIPv4Address("0.0.0.0"), False)
+    eq_(isLocalIPv4Address("127.0.0.1"), False)
+    eq_(isLocalIPv4Address("169.254.0.0"), False)
+    eq_(isLocalIPv4Address("10.56.0.0"), True)
 
 
 @raises(TypeError)
