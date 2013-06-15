@@ -18,6 +18,7 @@ import os
 import time
 import socket
 import psutil
+import tempfile
 import netifaces
 
 try:
@@ -36,8 +37,11 @@ except ImportError:
 from nose.tools import eq_
 from nose.plugins.skip import SkipTest
 from pyfarm.ext.utility import convert
+from pyfarm.ext.config.enum import OperatingSystem as _OperatingSystem
 from pyfarm.ext.system import (user, operating_system, network,
                                processor, memory)
+
+osenum = _OperatingSystem()
 
 
 def test_user():
@@ -48,6 +52,34 @@ def test_os_uptime():
     t1 = operating_system.uptime()
     t2 = time.time() - psutil.BOOT_TIME
     eq_(t2 - t1 < 5, True)
+
+
+def test_os_classvars():
+    _os = osenum.get()
+    eq_(operating_system.OS, _os)
+    eq_(operating_system.IS_LINUX, _os == osenum.LINUX)
+    eq_(operating_system.IS_WINDOWS, _os == osenum.WINDOWS)
+    eq_(operating_system.IS_MAC, _os == osenum.MAC)
+    eq_(operating_system.IS_OTHER, _os == osenum.OTHER)
+    eq_(operating_system.IS_POSIX, _os in (osenum.LINUX, osenum.MAC))
+
+
+def test_os_case_sensitive():
+    fid, path = tempfile.mkstemp()
+    exists = map(os.path.isfile, [path, path.lower(), path.upper()])
+    if not any(exists):
+        raise ValueError("failed to determine if path was case sensitive")
+    elif all(exists):
+        cs = False
+
+    elif exists.count(True) == 1:
+        cs = True
+    try:
+        os.remove(path)
+    except:
+        pass
+
+    eq_(operating_system.CASE_SENSITIVE, cs)
 
 
 def test_net_public():
@@ -155,6 +187,13 @@ def test_processor_systemtime():
 
 def test_processor_idletime():
     eq_(psutil.cpu_times().idle <= processor.idleTime(), True)
+
+
+def test_processor_iowait():
+    if operating_system.IS_POSIX:
+        eq_(processor.iowait() <= psutil.cpu_times().iowait, True)
+    else:
+        eq_(processor.iowait(), None)
 
 
 def test_memory_totalram():

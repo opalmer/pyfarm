@@ -68,16 +68,32 @@ class OperatingSystemInfo(object):
     Namespace class which returns information about
     the current operating system such as case-sensitivity, type, etc.
     """
-    # TODO: IS_LINUX
-    # TODO: IS_WINDOWS
-    # TODO: IS_MAC
-    # TODO: TYPE (integer)
-    # TODO: linux version information (platform?)
-    # TODO: windows version information (platform?)
-    # TODO: Python implementation
-    # TODO: Python version
+    _enum = _OperatingSystem()
+    OS = _enum.get()
+    IS_LINUX = OS == _enum.LINUX
+    IS_WINDOWS = OS == _enum.WINDOWS
+    IS_MAC = OS == _enum.MAC
+    IS_OTHER = OS == _enum.OTHER
+    IS_POSIX = OS in (_enum.LINUX, _enum.MAC)
+    CASE_SENSITIVE = None
+
     def __init__(self):
-        self.enum = _OperatingSystem()
+        if self.__class__.CASE_SENSITIVE is None:
+            fid, path = tempfile.mkstemp()
+            exists = map(os.path.isfile, [path, path.lower(), path.upper()])
+            if not any(exists):
+                raise ValueError(
+                    "failed to determine if path was case sensitive")
+            elif all(exists):
+                self.__class__.CASE_SENSITIVE = False
+
+            elif exists.count(True) == 1:
+                self.__class__.CASE_SENSITIVE = True
+
+            try:
+                os.remove(path)
+            except:
+                pass
 
     def uptime(self):
         """
@@ -368,12 +384,8 @@ class ProcessorInfo(object):
         # ...     assert processor.iowait() >= psutil.cpu_times().iowait
         #
         """
-        # TODO: fix this based on work for OperatingSystemInfo
-
-        # if OS not in (OperatingSystem.LINUX, OperatingSystem.MAC):
-        #     return None
-        # else:
-        #     return psutil.cpu_times().iowait
+        if operating_system.IS_POSIX:
+            return psutil.cpu_times().iowait
 
 
 class MemoryInfo(object):
