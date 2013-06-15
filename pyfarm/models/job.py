@@ -15,6 +15,7 @@
 # limitations under the License.
 
 import os
+from warnings import warn
 from datetime import datetime
 from UserDict import UserDict
 
@@ -38,8 +39,10 @@ from sqlalchemy.orm import validates
 
 from pyfarm.flaskapp import db
 from pyfarm.config.enum import WorkState
+from pyfarm.utility import randint
+from pyfarm.warning import ConfigurationWarning
 from pyfarm.models.constants import (
-    DBDATA, TABLE_JOB, TABLE_JOB_TAGS, TABLE_JOB_SOFTWARE
+    DBCFG, TABLE_JOB, TABLE_JOB_TAGS, TABLE_JOB_SOFTWARE
 )
 from pyfarm.models.mixins import (
     RandIdMixin, StateValidationMixin, StateChangedMixin)
@@ -59,16 +62,21 @@ class JobSoftware(db.Model):
     software = db.Column(db.String)
 
 
-class Job(db.Model, RandIdMixin, StateValidationMixin, StateChangedMixin):
+class Job(db.Model, StateValidationMixin, StateChangedMixin):
     """Defines task which a child of a :class:`.Job`"""
     __tablename__ = TABLE_JOB
     STATE_ENUM = WorkState()
     STATE_DEFAULT = STATE_ENUM.QUEUED
 
+    # id column included due to self-referencing setup
+    id = db.Column(
+        db.Integer, primary_key=True, default=randint,
+        nullable=False, unique=True)
+
     state = db.Column(db.Integer, default=STATE_DEFAULT)
     cmd = db.Column(db.String)
-    priority = db.Column(db.Integer, default=DBDATA.get("job.priority"))
-    user = db.Column(db.String(DBDATA.get("job.max_username_length")))
+    priority = db.Column(db.Integer, default=DBCFG.get("job.priority"))
+    user = db.Column(db.String(DBCFG.get("job.max_username_length")))
     notes = db.Column(db.Text, default="")
     time_submitted = db.Column(db.DateTime, default=datetime.now)
     time_started = db.Column(db.DateTime)
@@ -76,6 +84,10 @@ class Job(db.Model, RandIdMixin, StateValidationMixin, StateChangedMixin):
     start = db.Column(db.Float, nullable=False)
     end = db.Column(db.Float, nullable=False)
     by = db.Column(db.Float, default=1)
+    batch = db.Column(db.Integer, default=DBCFG.get("job.batch"))
+    requeue = db.Column(db.Integer, default=DBCFG.get("job.requeue"))
+    cpus = db.Column(db.Integer, default=DBCFG.get("job.cpus"))
+    ram = db.Column(db.Integer, default=DBCFG.get("job.ram"))
 
     # underlying storage for properties
     _environ = db.Column(db.Text)
@@ -83,6 +95,9 @@ class Job(db.Model, RandIdMixin, StateValidationMixin, StateChangedMixin):
     _data = db.Column(db.Text)
 
     # relationships
+    _parentjob = db.Column(db.Integer, db.ForeignKey("%s.id" % TABLE_JOB))
+    siblings = db.relationship("Job", backref=db.backref("parent",
+                                                         remote_side=[id]))
     tasks = db.relationship("Task", backref="job", lazy="dynamic")
     tasks_done = db.relationship("Task", lazy="dynamic",
         primaryjoin="(Task.state == %s) & "
@@ -142,7 +157,7 @@ class Job(db.Model, RandIdMixin, StateValidationMixin, StateChangedMixin):
 
     @validates("user")
     def validate_user(self, key, value):
-        max_length = DBDATA.get("job.max_username_length")
+        max_length = DBCFG.get("job.max_username_length")
         if len(value) > max_length:
             msg = "max user name length is %s" % max_length
             raise ValueError(msg)
@@ -164,8 +179,33 @@ class Job(db.Model, RandIdMixin, StateValidationMixin, StateChangedMixin):
             try:
                 pwd.getpwnam(value)
             except:
-                raise ValueError("no such user `%s` could be found" % value)
+                warn("no such user `%s` could be found" % value,
+                     ConfigurationWarning)
 
         return value
+
+    @validates("ram", "cpus")
+    def validate_resource(self, key, value):
+        if value is None:
+            return value
+
+        min_value = DBCFG.get("agent.min_%s" % key)
+        max_value = DBCFG.get("agent.max_%s" % key)
+
+        # quick sanity check of the incoming config
+        assert isinstance(min_value, int), "db.min_%s must be an integer" % key
+        assert isinstance(max_value, int), "db.max_%s must be an integer" % key
+        assert min_value >= 1, "db.min_%s must be > 0" % key
+        assert max_value >= 1, "db.max_%s must be > 0" % key
+
+        # check the provided input
+        if min_value > value or value > max_value:
+            msg = "value for `%s` must be between " % key
+            msg += "%s and %s" % (min_value, max_value)
+            raise ValueError(msg)
+
+        return value
+
+
 
 event.listen(Job.state, "set", Job.stateChangedEvent)

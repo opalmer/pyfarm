@@ -26,7 +26,7 @@ from pyfarm.ext.config.enum import AgentState
 from pyfarm.ext.utility import isLocalIPv4Address
 from pyfarm.models.mixins import StateValidationMixin, RandIdMixin
 from pyfarm.models.constants import (
-    DBDATA, TABLE_AGENT, TABLE_AGENT_TAGS, TABLE_AGENT_SOFTWARE)
+    DBCFG, TABLE_AGENT, TABLE_AGENT_TAGS, TABLE_AGENT_SOFTWARE)
 
 REGEX_HOSTNAME = re.compile("^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*"
                             "[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9]"
@@ -80,9 +80,9 @@ class Agent(db.Model, RandIdMixin, StateValidationMixin):
     # allocation.  For `cpu_allocation` 100% allocation typically means
     # one task per cpu.
     ram_allocation = db.Column(db.Float,
-                               default=DBDATA.get("agent.ram_allocation", .8))
+                               default=DBCFG.get("agent.ram_allocation", .8))
     cpu_allocation = db.Column(db.Float,
-                               default=DBDATA.get("agent.cpu_allocation", 1.0))
+                               default=DBCFG.get("agent.cpu_allocation", 1.0))
 
     # relationships
     tasks = db.relationship("Task", backref="agent", lazy="dynamic")
@@ -114,8 +114,8 @@ class Agent(db.Model, RandIdMixin, StateValidationMixin):
         if value is None:
             return value
 
-        min_value = DBDATA.get("agent.min_%s" % key)
-        max_value = DBDATA.get("agent.max_%s" % key)
+        min_value = DBCFG.get("agent.min_%s" % key)
+        max_value = DBCFG.get("agent.max_%s" % key)
 
         # quick sanity check of the incoming config
         assert isinstance(min_value, int), "db.min_%s must be an integer" % key

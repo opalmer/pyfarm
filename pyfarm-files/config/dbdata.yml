@@ -32,5 +32,9 @@ task:
   priority: 500
 
 job:
+  batch: 1
+  requeue: 3
+  cpus: null
+  ram: null
   priority: 500
   max_username_length: 255
