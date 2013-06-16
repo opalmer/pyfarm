@@ -16,11 +16,9 @@
 
 import re
 import ipaddress
-from warnings import warn
 from sqlalchemy.orm import validates
 
 from pyfarm.flaskapp import db
-from pyfarm.warning import NetworkWarning
 from pyfarm.ext.config.core.loader import Loader
 from pyfarm.ext.config.enum import AgentState
 from pyfarm.ext.utility import isLocalIPv4Address
@@ -95,8 +93,7 @@ class Agent(db.Model, RandIdMixin, StateValidationMixin):
     @validates("ip", "subnet")
     def validate_address(self, key, value):
         try:
-            if isLocalIPv4Address(value):
-                warn("non-public address %s provided" % value, NetworkWarning)
+            isLocalIPv4Address(value)
 
         except ipaddress.AddressValueError, e:
             raise ipaddress.AddressValueError(
