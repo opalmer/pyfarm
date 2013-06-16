@@ -34,11 +34,14 @@ class Task(db.Model, StateValidationMixin, StateChangedMixin):
         db.BigInteger, primary_key=True, default=randint,
         nullable=False, unique=True)
 
+    # task state/general data
     state = db.Column(db.Integer, default=STATE_DEFAULT, nullable=False)
     priority = db.Column(db.Integer, default=DBCFG.get("task.priority"),
                          nullable=False)
     attempts = db.Column(db.Integer, default=0)
     frame = db.Column(db.Integer)
+
+    # time information
     time_submitted = db.Column(db.DateTime, default=datetime.now)
     time_started = db.Column(db.DateTime)
     time_finished = db.Column(db.DateTime)

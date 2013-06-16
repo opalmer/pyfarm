@@ -72,14 +72,19 @@ class Job(db.Model, StateValidationMixin, StateChangedMixin):
         db.BigInteger, primary_key=True, default=randint,
         nullable=False, unique=True)
 
+    # job state/general data not specific to a task
     state = db.Column(db.Integer, default=STATE_DEFAULT)
-    cmd = db.Column(db.String)
     priority = db.Column(db.Integer, default=DBCFG.get("job.priority"))
     user = db.Column(db.String(DBCFG.get("job.max_username_length")))
     notes = db.Column(db.Text, default="")
+
+    # time information
     time_submitted = db.Column(db.DateTime, default=datetime.now)
     time_started = db.Column(db.DateTime)
     time_finished = db.Column(db.DateTime)
+
+    # task data
+    cmd = db.Column(db.String)
     start = db.Column(db.Float)
     end = db.Column(db.Float)
     by = db.Column(db.Float, default=1)

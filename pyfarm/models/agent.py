@@ -58,23 +58,18 @@ class Agent(db.Model, RandIdMixin, StateValidationMixin):
     STATE_ENUM = AgentState()
     STATE_DEFAULT = STATE_ENUM.ONLINE
 
-    # TODO: needs running_frames relationship
+    # NOTE: any columns where are null will generally be filled in
+    # by the client on first connect
 
-    # columns
+    # host state information
     enabled = db.Column(db.Boolean, default=True)
     state = db.Column(db.Integer, default=STATE_DEFAULT, nullable=False)
     hostname = db.Column(db.String, nullable=False)
     ip = db.Column(db.String(15), nullable=False)
     subnet = db.Column(db.String(15), nullable=False)
-
-    # NOTE: this is nullable because it allows the agent to add
-    #       the port itself on its first connection
-    port = db.Column(db.Integer)
-
-    # these columns are not required and will be populated by the
-    # agent if they are null
     ram = db.Column(db.Integer)
     cpus = db.Column(db.Integer)
+    port = db.Column(db.Integer)
 
     # Max allocation of the two primary resources which `1.0` is 100%
     # allocation.  For `cpu_allocation` 100% allocation typically means
