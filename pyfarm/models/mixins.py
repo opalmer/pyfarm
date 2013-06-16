@@ -49,7 +49,7 @@ class RandIdMixin(object):
     value using :func:`.randint`
     """
     id = db.Column(
-        db.Integer, primary_key=True, default=randint,
+        db.BigInteger, primary_key=True, default=randint,
         nullable=False, unique=True)
 
 

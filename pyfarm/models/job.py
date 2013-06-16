@@ -44,8 +44,7 @@ from pyfarm.warning import ConfigurationWarning
 from pyfarm.models.constants import (
     DBCFG, TABLE_JOB, TABLE_JOB_TAGS, TABLE_JOB_SOFTWARE
 )
-from pyfarm.models.mixins import (
-    RandIdMixin, StateValidationMixin, StateChangedMixin)
+from pyfarm.models.mixins import StateValidationMixin, StateChangedMixin
 
 
 class JobTags(db.Model):
@@ -70,7 +69,7 @@ class Job(db.Model, StateValidationMixin, StateChangedMixin):
 
     # id column included due to self-referencing setup
     id = db.Column(
-        db.Integer, primary_key=True, default=randint,
+        db.BigInteger, primary_key=True, default=randint,
         nullable=False, unique=True)
 
     state = db.Column(db.Integer, default=STATE_DEFAULT)
@@ -81,8 +80,8 @@ class Job(db.Model, StateValidationMixin, StateChangedMixin):
     time_submitted = db.Column(db.DateTime, default=datetime.now)
     time_started = db.Column(db.DateTime)
     time_finished = db.Column(db.DateTime)
-    start = db.Column(db.Float, nullable=False)
-    end = db.Column(db.Float, nullable=False)
+    start = db.Column(db.Float)
+    end = db.Column(db.Float)
     by = db.Column(db.Float, default=1)
     batch = db.Column(db.Integer, default=DBCFG.get("job.batch"))
     requeue = db.Column(db.Integer, default=DBCFG.get("job.requeue"))
