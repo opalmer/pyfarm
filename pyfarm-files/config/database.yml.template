@@ -23,13 +23,19 @@
 #   driver:    # specifies the python module to connect with
 #
 
+# Order in which we will lookup a configuration
+# when creating the flask app.  Generally this
+# value should not be changed.
+config_order:
+  - unittest
+  - development
+  - production
+
 # List of possible configs to use, first db which we can connect without
 # raising an error will be be used in all future connections.
 #  Example Configuration:
 #     configs:
-#       prooduction:
-#         - databaseA
-#         - databaseB
+#       prooduction: databaseA
 configs:
 
 setup:
