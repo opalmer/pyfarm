@@ -15,18 +15,36 @@
 # limitations under the License.
 
 """
-Contains the base flask application setup.  Any specific setup
-would be executed from :mod:`pyfarm.run`
+Contains the base Flask application setup.  This module is also the
+location that sets up the initial database connection.  This is done so that
+both developers and running unittests can intercept the configuration and
+add their own.  After setting up the application :func:`pyfarm.run.run`
+will handle the execution of the Flask application
 """
 
 import uuid
 from flask import Flask
 from flask.ext.sqlalchemy import SQLAlchemy
 
+from pyfarm.error import SubKeyError, PreferencesError
 from pyfarm.config.database import DBConfig
 
 app = Flask("PyFarm")
-app.config["SQLALCHEMY_DATABASE_URI"] = DBConfig().url("testing")
+dbconfig = DBConfig()
+
+# iterate over configuration names we should expect to find
+for config_name in dbconfig.get("config_order"):
+    try:
+        dburi = dbconfig.url(config_name)
+    except SubKeyError:
+        continue
+    else:
+        break
+else:
+    # there's something wrong with the setup if we reach this point
+    raise PreferencesError("failed to find any database configurations")
+
+app.config["SQLALCHEMY_DATABASE_URI"] = dburi
 app.secret_key = str(uuid.uuid4())  # TODO: this needs a config or extern lookup
 
 db = SQLAlchemy(app)
