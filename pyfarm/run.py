@@ -28,16 +28,13 @@ def master(debug=False):
 
 
 def admin(debug=False):
-    import os
-    import random
-    from flask.ext.admin import Admin
-
-    from pyfarm.flaskapp import db
-    from pyfarm.config.enum import AgentState
-    from pyfarm.utility import randstr, randint
-    from pyfarm.models import Agent, Job
-
     if debug:
+        import os
+        import random
+        from pyfarm.flaskapp import db
+        from pyfarm.config.enum import AgentState
+        from pyfarm.utility import randstr, randint
+        from pyfarm.models import Agent, Job
         db.drop_all()
         db.create_all()
 
@@ -76,6 +73,7 @@ def admin(debug=False):
 
         db.session.commit()
 
+    from flask.ext.admin import Admin
     from pyfarm.admin import (
         AgentModelView, AgentTagsModelView, AgentSoftwareModelView,
         JobModelView, JobTagsModelView, JobSoftwareModelView, TaskModelView)
