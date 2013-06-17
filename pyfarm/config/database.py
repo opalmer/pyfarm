@@ -20,7 +20,7 @@ import os
 from sqlalchemy.engine.url import URL
 
 from pyfarm.ext.config.core.loader import Loader
-from pyfarm.config.core.errors import PreferencesError
+from pyfarm.error import PreferencesError
 
 
 class DBConfigError(PreferencesError):
@@ -34,6 +34,34 @@ class DBConfig(Loader):
     """
     REGEX_CONFIG = re.compile("^configs[.].+$")
     FILENAME = "database.yml"
+    EXTENDED_CONFIGS = {}
+
+    @classmethod
+    def createConfig(cls, name, config_data):
+        """
+        Creates a new configuration that would be accessible by any instances
+        of this class.  Mainly this is used for creating a configuration
+        so things like :mod:`pyfarm.flaskapp` can function as is without
+        modification.
+
+        **Example:**
+
+            >>> config = {"engine": "sqlite", "database": ":memory:"}
+            >>> DBConfig.createConfig("unittest", config)
+
+        :type name: str
+        :param name:
+            The name of the configuration to create.  Existing configurations
+            by the same name will be overwritten.
+
+        :type config_data: dict
+        :param config_data:
+            the data to add in the configuration
+        """
+        if not isinstance(config_data, dict):
+            raise TypeError("`config_data` should be a dict")
+
+        cls.EXTENDED_CONFIGS[name] = config_data.copy()
 
     def url(self, config_name):
         """
@@ -51,19 +79,26 @@ class DBConfig(Loader):
             return Loader.get(self, key, failobj=failobj)
 
         else:
-            config_value = Loader.get(self, key, failobj=failobj)
+            # before doing anything else see if the configuration
+            # we're looking for is part of `EXTENDED_CONFIGS`
+            config_name = key.split(".")[-1]
 
+            if config_name not in self.EXTENDED_CONFIGS:
+                config_value = Loader.get(self, key, failobj=failobj)
 
-            if config_value is None:
-                raise DBConfigError("no configurations for `%s`" % key)
+                if config_value is None:
+                    raise DBConfigError("no configurations for `%s`" % key)
 
-            try:
-                config = self[config_value].copy()
+                try:
+                    config = self[config_value].copy()
 
-            except KeyError:
-                msg = "database configuration `%s` " % config_value
-                msg += "does not exist, skipping"
-                raise DBConfigError(msg)
+                except KeyError:
+                    msg = "database configuration `%s` " % config_value
+                    msg += "does not exist, skipping"
+                    raise DBConfigError(msg)
+
+            else:
+                config = self.EXTENDED_CONFIGS[config_name].copy()
 
             # expand any environment variables in the database name
             if "database" in config:
