@@ -16,9 +16,7 @@
 
 import os
 import uuid
-import inspect
 from itertools import chain
-from UserDict import IterableUserDict
 
 try:
     from collections import OrderedDict
@@ -28,7 +26,7 @@ except ImportError:
 from nose.tools import raises, with_setup, eq_
 
 from pyfarm.files import yamlDump
-from pyfarm.ext.config.core import errors
+from pyfarm import error
 from pyfarm.ext.config.core.find import configFiles
 from pyfarm.ext.config.core.loader import Loader
 from tests.pyfarmnose import (
@@ -60,17 +58,7 @@ def _generatedata():
     return data, kwargs
 
 
-def test_subclasses():
-    eq_(issubclass(Loader, IterableUserDict), True)
-
-    for name, item in vars(errors).iteritems():
-        if name != "PreferencesError" and inspect.isclass(item):
-            eq_(issubclass(item, errors.PreferencesError), True)
-
-    eq_(issubclass(errors.PreferencesError, Exception), True)
-
-
-@raises(errors.PreferencesNotFoundError)
+@raises(error.PreferencesNotFoundError)
 def test_raises_notfound():
     Loader("")
 
