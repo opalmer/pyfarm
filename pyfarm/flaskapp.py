@@ -15,7 +15,8 @@
 # limitations under the License.
 
 """
-Base module which sets up the flask app object
+Contains the base flask application setup.  Any specific setup
+would be executed from :mod:`pyfarm.run`
 """
 
 import uuid

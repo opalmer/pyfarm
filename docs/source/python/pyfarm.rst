@@ -57,6 +57,14 @@ pyfarm Package
     :undoc-members:
     :show-inheritance:
 
+:mod:`run` Module
+-----------------
+
+.. automodule:: pyfarm.run
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 :mod:`system` Module
 --------------------
 
@@ -89,5 +97,6 @@ Subpackages
     pyfarm.admin
     pyfarm.config
     pyfarm.ext
+    pyfarm.master
     pyfarm.models
 
