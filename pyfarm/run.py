@@ -23,11 +23,12 @@ from pyfarm.flaskapp import app
 
 
 def master(debug=False):
+    """Entry point which launches master REST api"""
     # TODO: get and resources to register against `app`
-    app.run(debug=debug)
 
 
 def admin(debug=False):
+    """Entry point which launches the admin application"""
     if debug:
         import os
         import random
@@ -87,8 +88,27 @@ def admin(debug=False):
     admin.add_view(JobSoftwareModelView())
     admin.add_view(TaskModelView())
 
+
+def run(apps, debug=False):
+    """
+    Function which is meant to launch multiple Flask applications at once.
+
+    :type apps: list
+    :param apps:
+        A list of callable objects to run.  For example if you wanted to
+        launch the REST api frontend and the admin views you could call
+        `run([master, admin)])` which would call :func:`app.run` after
+        running :func:`master` and :func:`admin`
+    """
+    assert isinstance(apps, list), "expected a list for `apps`"
+
+    if not all(callable(func) for func in apps):
+        raise ValueError("all values in `apps` must be callable objects")
+
+    for function in apps:
+        function(debug=debug)
+
     app.run(debug=debug)
 
-
 if __name__ == '__main__':
-    admin(debug=True)
+    run([master, admin], debug=True)
