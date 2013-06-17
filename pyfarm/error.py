@@ -19,6 +19,25 @@
 
 class Error(Exception):
     """base exception for all pyfarm errors"""
-    def __init__(self, **kwargs):
-        for key, value in kwargs.iteritems():
-            setattr(self, key, value)
+
+
+class PreferencesError(Error):
+    """base class for all preferences related errors"""
+
+
+class PreferencesNotFoundError(PreferencesError):
+    """
+    raised when we can't find any preference files by the requested name
+    """
+
+
+class PreferenceLoadError(PreferencesError):
+    """raised when yaml can't load the preference file"""
+
+
+class SubKeyError(PreferencesError):
+    """
+    Raised when we failed to find a subkey for a given request.  Similar to
+    :class:`KeyError` but spec to when requesting nested keys from a
+    configuration
+    """

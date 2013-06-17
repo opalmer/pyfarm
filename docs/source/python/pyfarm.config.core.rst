@@ -9,14 +9,6 @@ core Package
     :undoc-members:
     :show-inheritance:
 
-:mod:`errors` Module
---------------------
-
-.. automodule:: pyfarm.config.core.errors
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 :mod:`find` Module
 ------------------
 

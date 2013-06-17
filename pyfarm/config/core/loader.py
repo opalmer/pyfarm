@@ -20,9 +20,8 @@ from UserDict import IterableUserDict
 
 from pyfarm.ext.files import yamlLoad
 from pyfarm.ext.config.core import find
-from pyfarm.config.core.errors import (
-    SubKeyError, PreferenceLoadError, PreferencesNotFoundError
-)
+from pyfarm.error import (PreferencesNotFoundError, PreferenceLoadError,
+                          SubKeyError)
 
 
 class Loader(IterableUserDict):
@@ -78,7 +77,6 @@ class Loader(IterableUserDict):
         self.__instanced = False
         IterableUserDict.__init__(self, data)
         self.__instanced = True
-    # end __init__
 
     @classmethod
     def _load(cls, filepath, cached=True):
@@ -108,7 +106,6 @@ class Loader(IterableUserDict):
             return self.where(key)[-1]
         except IndexError:
             return None
-    # end which
 
     def where(self, key):
         """determine where the value for the provided key was defined"""
@@ -117,7 +114,6 @@ class Loader(IterableUserDict):
             if key in self._DATA[path]:
                 paths.append(path)
         return paths
-    # end where
 
     def get(self, key, failobj=None):
         """
@@ -162,17 +158,13 @@ class Loader(IterableUserDict):
                     )
 
             return data
-    # end get
 
     def update(self, dict=None, **kwargs):
         # TODO: add warning message
         if not self.__instanced:
             return IterableUserDict.update(self, dict, **kwargs)
-    # end update
 
     def __setitem__(self, key, value):
         # TODO: add warning message
         if not self.__instanced:
             return IterableUserDict.__setitem__(self, key, value)
-    # end __setitem__
-# end Loader
