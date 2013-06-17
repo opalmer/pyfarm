@@ -17,11 +17,11 @@
 """stores all custom errors which can be raised by pyfarm"""
 
 
-class Error(Exception):
+class PyFarmError(Exception):
     """base exception for all pyfarm errors"""
 
 
-class PreferencesError(Error):
+class PreferencesError(PyFarmError):
     """base class for all preferences related errors"""
 
 
