@@ -31,6 +31,9 @@ class TestCase(unittest.TestCase):
         else:
             cls.ONTRAVIS = False
 
+    def getTempdir(self):
+        return
+
     def setUp(self):
         os.environ.clear()
         os.environ.update(self.ORIGINAL_ENVIRONMENT)
