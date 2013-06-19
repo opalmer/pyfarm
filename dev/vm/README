@@ -1,4 +1,0 @@
-This directory structure contains files and folders which are used
-to build and setup a host suitable for running PyFarm's database.  Please note
-these files are not meant to be used individually and are typically included
-as part of a virtual machine.
