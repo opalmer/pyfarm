@@ -20,10 +20,12 @@ used by the unittests.
 """
 
 import os
+import sys
 import shutil
 import fnmatch
 import unittest
 import tempfile
+import traceback
 
 from pyfarm.ext import files
 from pyfarm.ext.config.database import DBConfig
@@ -46,11 +48,14 @@ class TestCase(unittest.TestCase):
     def remove(cls, path):
         delete = None
         assert isinstance(path, basestring), "expected a string for `path`"
+
+        # determine path type
         if os.path.isfile(path):
             delete = os.remove
         elif os.path.isdir(path):
             delete = shutil.rmtree
 
+        # delete the path
         try:
             if delete is not None:
                 delete(path)
@@ -60,13 +65,29 @@ class TestCase(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        DBConfig.createConfig("unittest",
-                      {"engine": "sqlite", "database": ":memory:"})
+        try:
+            DBConfig.createConfig("unittest",
+                                  {"engine": "sqlite", "database": ":memory:"})
 
-        if "travis" in cls.ORIGINAL_ENVIRONMENT:
-            cls.ONTRAVIS = True
-        else:
-            cls.ONTRAVIS = False
+            if "travis" in cls.ORIGINAL_ENVIRONMENT:
+                cls.ONTRAVIS = True
+            else:
+                cls.ONTRAVIS = False
+
+        # if an exception is raised here the traceback is typically
+        # not very helpful we preprocess it before nose/unittests
+        # can pick it up
+        except Exception, e:
+            traceback.print_exc(e, sys.stderr)
+            print >> sys.stderr, "setUpClass ERROR: %s" % e
+
+    # @classmethod
+    # def tearDownClass(cls):
+    #     try:
+    #         pass
+    #     except Exception, e:
+    #         traceback.print_exc(e, sys.stderr)
+    #         print >> sys.stderr, "tearDownClass ERROR: %s" % e
 
     def setUp(self):
         self.resetEnvironment()
@@ -77,6 +98,8 @@ class TestCase(unittest.TestCase):
         self.resetEnvironment()
         self.remove(self.tmpdir)
 
+        # construct a list of paths to delete, filter, then remove them
         alldirs = os.listdir(files.DEFAULT_DIRECTORY_PREFIX)
-        dirlist = fnmatch.filter(alldirs, "%s*" % self.TMPDIR_PREFIX)
+        dirlist = [self.tmpdir]
+        dirlist.extend(fnmatch.filter(alldirs, "%s*" % self.TMPDIR_PREFIX))
         map(self.remove, dirlist)
