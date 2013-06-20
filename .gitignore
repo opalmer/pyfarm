@@ -17,4 +17,4 @@ docs/source/downloads.rst
 
 # configuration files
 database.yml
-master.yml
+pyfarmbuildbotdata.py
