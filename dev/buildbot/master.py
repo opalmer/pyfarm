@@ -65,8 +65,8 @@ py27builder.addStep(step_git)
 # TODO: create virtual environment in temp directory using
 #       virtualenv.create_environment
 # TODO: before running pip source the activate_this script then use the pip api,
-#       it may also be possible to use python -c to do this too
-#
+#       it may also be possible to use python -c to do this too (NOTE: be sure
+#       to use --download-cache)
 # py27builder.addStep(CreateVirtualEnvironment(python="python2.5"))
 # py27builder.addStep(PIPInstall())
 # py27builder.addStep(VirtualEnvShellCommand(command=[...])
