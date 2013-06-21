@@ -59,18 +59,18 @@ c["schedulers"] = [
 ### Builders
 step_git = Git(repourl="https://github.com/opalmer/pyfarm", mode="incremental")
 
-py27builder = BuildFactory()
-py27builder.addStep(step_git)
-
-# TODO: create virtual environment in temp directory using
-#       virtualenv.create_environment
-# TODO: before running pip source the activate_this script then use the pip api,
-#       it may also be possible to use python -c to do this too (NOTE: be sure
-#       to use --download-cache)
-# py27builder.addStep(CreateVirtualEnvironment(python="python2.5"))
-# py27builder.addStep(PIPInstall())
-# py27builder.addStep(VirtualEnvShellCommand(command=[...])
-# py27builder.addStep(ShellCommand(command=["pip", "install", "-e", "."]))
+builders = {}
+for python_version in ("2.5", "2.6", "2.7"):
+    builder = BuildFactory()
+    builder.addStep(step_git)
+    # TODO: create virtualenv
+    # TODO: PythonScript command (uses build step properties on the REMOTE end)
+    builder.addStep(CreateVirtualEnv("2.7"))
+    builder.addStep(PIPInstall("2.7"))
+    builder.addStep(NoseTest("2.7")) # TODO: R/D, someone may already have a nose class
+    builder.addStep(DocGeneration("2.7")) # TODO: subclass sphinx
+    builder.addStep(PyLint("2.7")) # TODO: sublcass PyLint base class
+    builders[python_version] = builder
 
 
 c["builders"] = [
