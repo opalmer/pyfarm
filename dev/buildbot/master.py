@@ -29,10 +29,12 @@ from buildbot.schedulers.basic import SingleBranchScheduler
 from buildbot.schedulers.forcesched import ForceScheduler
 from buildbot.process.factory import BuildFactory
 from buildbot.steps.source.git import Git
-from buildbot.steps.shell import ShellCommand
+from buildbot.steps.transfer import PropertiesFromVirtualEnvJson
+from buildbot.steps.python import CreateVirtualEnvironment
 
 # data we don't store in the public repo
-from pyfarmbuildbotdata import build_slaves, slavePortnum, buildbotURL, auth_cfg
+from pyfarmbuildbotdata import (build_slaves, slavePortnum,
+                                buildbotURL, auth_cfg)
 
 c = BuildmasterConfig = {}
 
@@ -60,17 +62,17 @@ c["schedulers"] = [
 step_git = Git(repourl="https://github.com/opalmer/pyfarm", mode="incremental")
 
 builders = {}
-for python_version in ("2.5", "2.6", "2.7"):
-    builder = BuildFactory()
-    builder.addStep(step_git)
-    # TODO: create virtualenv
-    # TODO: PythonScript command (uses build step properties on the REMOTE end)
-    builder.addStep(CreateVirtualEnv("2.7"))
-    builder.addStep(PIPInstall("2.7"))
-    builder.addStep(NoseTest("2.7")) # TODO: R/D, someone may already have a nose class
-    builder.addStep(DocGeneration("2.7")) # TODO: subclass sphinx
-    builder.addStep(PyLint("2.7")) # TODO: sublcass PyLint base class
-    builders[python_version] = builder
+# for python_version in ("2.5", "2.6", "2.7"):
+python_version = "2.7"
+builder = BuildFactory()
+builder.addStep(step_git)
+builder.addStep(CreateVirtualEnvironment(python_version))
+builder.addStep(PropertiesFromVirtualEnvJson())
+# builder.addStep(PIPInstall("2.7"))
+# builder.addStep(NoseTest("2.7")) # TODO: R/D, someone may already have a nose class
+# builder.addStep(DocGeneration("2.7")) # TODO: subclass sphinx
+# builder.addStep(PyLint("2.7")) # TODO: sublcass PyLint base class
+builders[python_version] = builder
 
 
 c["builders"] = [
