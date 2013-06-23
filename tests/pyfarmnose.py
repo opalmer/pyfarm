@@ -41,14 +41,7 @@ def pretest_cleanup_env():
 
 
 def posttest_cleanup_files():
-    # remove any directories we created
-    prefix = files.DEFAULT_DIRECTORY_PREFIX
-    root = os.path.dirname(
-        tempfile.mkdtemp(prefix=prefix)
-    )
-    for dirname in fnfilter(os.listdir(root), "%s*" % prefix):
-        tmpdirectory = os.path.join(root, dirname)
-        shutil.rmtree(tmpdirectory)
+    pass
 
 
 def mktmps(list_count, depth=3):
