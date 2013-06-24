@@ -168,15 +168,6 @@ if __name__ == "__main__":
         ]
     }
 
-    # readme for long_description
-    # TODO: remove this, don't need the note after the first release
-    readme = StringIO()
-    print >> readme, ".. note::"
-    print >> readme, "    This page is a placeholder only, no files have been uploaded yet."
-    print >> readme, ""
-    readme.write(open("README.rst", "r").read())
-    readme = readme.getvalue()
-
     setup(
         name="pyfarm",
         version=".".join(map(str, parsed_version)),
@@ -189,7 +180,7 @@ if __name__ == "__main__":
         author=author,
         author_email="development@pyfarm.net",
         description="A Python based distributed job system",
-        long_description=readme,
+        long_description=open("README.rst", "r").read(),
         scripts=setuptools.findall("scripts"),
         cmdclass={"clean": clean},
         zip_safe=False,
