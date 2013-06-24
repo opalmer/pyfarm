@@ -153,7 +153,14 @@ c["builders"] = [
                   factory=build_factory,
                   env={"BUILD_UUID": Property("virtualenv_uuid")},
                   properties={"database": "sqlite",
-                              "python": "python2.7"})
+                              "python": "python2.7"}),
+    BuilderConfig(name="python26_linux_sqlite",
+                  slavenames=[slave.slavename
+                              for slave in slave_mapping["2.6"]["linux"]],
+                  factory=build_factory,
+                  env={"BUILD_UUID": Property("virtualenv_uuid")},
+                  properties={"database": "sqlite",
+                              "python": "python2.6"})
 ]
 
 ### Schedulers
