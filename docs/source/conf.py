@@ -107,7 +107,7 @@ with open(python_requirements, "w") as destination:
         print >> destination, header
         print >> destination, "+" * len(header)
 
-        for requirement in sorted(_setup.requirements(major, minor, develop=False)):
+        for requirement in sorted(_setup.requirements(major, minor)):
             print >> destination, "* %s" % requirement
 
         print >> destination
