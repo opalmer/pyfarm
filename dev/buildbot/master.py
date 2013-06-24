@@ -164,7 +164,7 @@ c["builders"] = [
 ]
 
 ### Schedulers
-builder_names = ["python27_linux_sqlite"]
+builder_names = ["python27_linux_sqlite", "python26_linux_sqlite"]
 c["schedulers"] = [
     SingleBranchScheduler(name="all",
                           change_filter=_filter.ChangeFilter(branch="master"),
