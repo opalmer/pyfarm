@@ -59,7 +59,7 @@ assert isinstance(parsed_version, list), "did not find __version__"
 assert isinstance(author, basestring), "did not find __author__"
 
 
-def requirements(major, minor, develop=False, docs=True):
+def requirements(major, minor):
     """
     generates a list of requirements depending on the Python version,
     operating system, and develop keyword
@@ -138,11 +138,7 @@ if __name__ == "__main__":
     if "TRAVIS" in os.environ and "BUILD_DOCS" not in os.environ:
         build_docs = False
 
-    requires = requirements(
-        PY_MAJOR, PY_MINOR,
-        develop="install" not in sys.argv,
-        docs=build_docs
-    )
+    requires = requirements(PY_MAJOR, PY_MINOR)
 
     # coveralls only supported in Python 2.5
     if (
@@ -158,15 +154,12 @@ if __name__ == "__main__":
     # non-python code
     packages = filter(
         lambda name: name == "pyfarm" or name.startswith("pyfarm."),
-        setuptools.find_packages(".")
-    )
+        setuptools.find_packages("."))
 
     # command line scripts used for operating pyfarm
     entry_points = {
         "console_scripts": [
-            "pyfarm_master = pyfarm.script.master:run_master"
-        ]
-    }
+            "pyfarm_master = pyfarm.script.master:run_master"]}
 
     setup(
         name="pyfarm",
@@ -202,5 +195,3 @@ if __name__ == "__main__":
             "Topic :: System :: Distributed Computing",
         ]
     )
-
-    print "TODO: change requirements at runtime based on the module being used"
