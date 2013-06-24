@@ -68,17 +68,8 @@ def requirements(major, minor, develop=False, docs=True):
         "appdirs", "PyYaml",
         "psutil", "netifaces",
         "Jinja2==%s.%s" % (major, minor),
-        "flask", "flask-sqlalchemy"#, "colorama",
-        # "flask-bcrypt", "flask-cache",
-        # "flask-restless", "flask-security",
+        "flask", "flask-sqlalchemy"
     ]
-
-    # for local development
-    if develop:
-        requires.append("nose")
-
-        if docs:
-            requires.append("sphinx")
 
     # ipaddress is included in Python 3.x but
     # is not 'final'.  If it does not exist we'll
@@ -91,8 +82,6 @@ def requirements(major, minor, develop=False, docs=True):
     # backports of modules introduced in 2.7
     if (major, minor) < (2, 7):
         requires.append("argparse")
-        requires.append("ordereddict")
-        requires.append("importlib")
 
     # higher than 2.5
     if (major, minor) > (2, 5):
