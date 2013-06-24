@@ -52,6 +52,10 @@ def mktmps(list_count, depth=3):
 
     return results
 
+if "BUILD_UUID" in os.environ:
+    PREFIX = "-".join([os.environ["BUILD_UUID"], files.DEFAULT_DIRECTORY_PREFIX])
+else:
+    PREFIX = files.DEFAULT_DIRECTORY_PREFIX
 
-mktmp = lambda: tempfile.mkdtemp(prefix=files.DEFAULT_DIRECTORY_PREFIX)
+mktmp = lambda: tempfile.mkdtemp(prefix=PREFIX)
 envsetup = with_setup(setup=pretest_cleanup_env, teardown=posttest_cleanup_files)
