@@ -85,15 +85,16 @@ def requirements(major, minor):
 
     # higher than 2.5
     if (major, minor) > (2, 5):
-        requires.append("flask-admin")  # agent/master code won't need this
-    #     requires.append("zope.interface")
-    #     requires.append("twisted")
+        requires.append("flask-admin")
+        requires.append("ordereddict")
+        # requires.append("zope.interface")
+        # requires.append("twisted")
 
     # 2.5 exclusive
     if (major, minor) == (2, 5):
         requires.append("simplejson")
-    #     requires.append("zope.interface<=3.8.0")
-    #     requires.append("twisted<=12.1")
+        # requires.append("zope.interface<=3.8.0")
+        # requires.append("twisted<=12.1")
 
     # if sys.platform.startswith("win"):
     #     requires.append("pywin32")
