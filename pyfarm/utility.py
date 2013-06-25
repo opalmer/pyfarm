@@ -47,9 +47,9 @@ def rounded(value, places=4, rounding=ROUND_HALF_DOWN):
     """
     Returns a floating point number rounded to `places`.
 
-    >>> rounded(str(0.44999999999999996))
+    >>> rounded(0.44999999999999996)
     0.45
-    >>> rounded(str(0.44999999999999996), places=1)
+    >>> rounded(0.44999999999999996, places=1)
     0.4
 
     :type value: float
