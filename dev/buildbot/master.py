@@ -160,7 +160,7 @@ c["builders"] = [
                   factory=build_factory,
                   env={"BUILD_UUID": Property("virtualenv_uuid")},
                   properties={"database": "sqlite",
-                              "python": "python2.6"})
+                              "python": "python2.6"}),
     BuilderConfig(name="python25_linux_sqlite",
                   slavenames=[slave.slavename
                               for slave in slave_mapping["2.5"]["linux"]],
