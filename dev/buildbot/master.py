@@ -112,32 +112,40 @@ build_factory.addStep(
     PropertiesFromVirtualEnvJson(Property("virtualenv_slave_json"),
                                  name="virtualenv: properties"))
 
+# install pyfarm package (and dependencies)
 build_factory.addStep(
     WrappedCall(["pip", "install", "-e", "."],
                 name="install: pyfarm"))
 
+# show the python packages installed
 build_factory.addStep(
     WrappedCall(["pip", "freeze"], name="pip: freeze"))
 
+# install nose
 build_factory.addStep(
     WrappedCall(["pip", "install", "nose"],
                 name="install: nose"))
 
+# run nose tests
 build_factory.addStep(
     WrappedCall(["nosetests", "tests", "pyfarm",
                  "-s", "--verbose", "--with-doctest"],
                 name="nosetest"))
 
+# install pylint
 build_factory.addStep(
     WrappedCall(["pip", "install", "pylint"],
                 name="install: pylint"))
 
+# run pylint
 build_factory.addStep(VirtualEnvPyLint("pyfarm"))
 
+# install sphinx
 build_factory.addStep(
     WrappedCall(["pip", "install", "sphinx"],
                 name="install: sphinx"))
 
+# run sphinx
 build_factory.addStep(VirtualEnvSphinx())
 
 # cleanup
