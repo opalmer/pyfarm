@@ -122,7 +122,7 @@ def test_net_hostname():
 
 
 def test_net_addresses():
-    eq_(len(network.addresses()) > 1, True)
+    eq_(len(network.addresses()) >= 1, True)
     eq_(isinstance(network.addresses(), list), True)
     eq_(all(network.isPublic(a) for a in network.addresses()), True)
 
@@ -166,7 +166,7 @@ def test_processor_load():
     if "TRAVIS" in os.environ:
         raise SkipTest
 
-    eq_(psutil.cpu_percent(.5) / processor.CPU_COUNT > 0, True)
+    eq_(psutil.cpu_percent(.5) / processor.CPU_COUNT >= 0, True)
     eq_(processor.load(.5) > 0, True)
 
 
