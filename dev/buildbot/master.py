@@ -161,10 +161,19 @@ c["builders"] = [
                   env={"BUILD_UUID": Property("virtualenv_uuid")},
                   properties={"database": "sqlite",
                               "python": "python2.6"})
+    BuilderConfig(name="python25_linux_sqlite",
+                  slavenames=[slave.slavename
+                              for slave in slave_mapping["2.5"]["linux"]],
+                  factory=build_factory,
+                  env={"BUILD_UUID": Property("virtualenv_uuid")},
+                  properties={"database": "sqlite",
+                              "python": "python2.5"})
 ]
 
 ### Schedulers
-builder_names = ["python27_linux_sqlite", "python26_linux_sqlite"]
+builder_names = ["python27_linux_sqlite",
+                 "python26_linux_sqlite",
+                 "python25_linux_sqlite"]
 c["schedulers"] = [
     SingleBranchScheduler(name="all",
                           change_filter=_filter.ChangeFilter(branch="master"),
