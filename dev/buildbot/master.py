@@ -117,6 +117,9 @@ build_factory.addStep(
                 name="install: pyfarm"))
 
 build_factory.addStep(
+    WrappedCall(["pip", "freeze"], name="pip: freeze"))
+
+build_factory.addStep(
     WrappedCall(["pip", "install", "nose"],
                 name="install: nose"))
 
