@@ -18,13 +18,21 @@ from __future__ import with_statement
 
 import os
 import sys
-from StringIO import StringIO
 
 PY_MAJOR, PY_MINOR, PY_MICRO = sys.version_info[0:3]
 
 # quite a few packages won't support anything lower so
 # raise an exception instead of an odd failure later on
 assert (PY_MAJOR, PY_MINOR) >= (2, 5), "Python 2.5 or higher is required"
+
+# Fool setuptools into thinking this future feature exists.  Yes this
+# is a horrible idea but it prevents the need for a special setuptools version
+# for Python2.5
+if (PY_MAJOR, PY_MINOR) == (2, 5):
+    sys.modules['__future__'].CO_FUTURE_PRINT_FUNCTION = 65536
+    sys.modules['__future__'].print_statement = \
+        sys.modules['__future__']._Feature((2, 6, 0, 'alpha', 2),
+                                           (3, 0, 0, 'alpha', 0), 65536)
 
 from _ast import *
 try:
