@@ -47,9 +47,9 @@ def rounded(value, places=4, rounding=ROUND_HALF_DOWN):
     """
     Returns a floating point number rounded to `places`.
 
-    >>> rounded(0.44999999999999996)
+    >>> rounded(str(0.44999999999999996))
     0.45
-    >>> rounded(0.44999999999999996, places=1)
+    >>> rounded(str(0.44999999999999996), places=1)
     0.4
 
     :type value: float
@@ -70,7 +70,7 @@ def rounded(value, places=4, rounding=ROUND_HALF_DOWN):
         raise ValueError("expected at least one decimal place for `places`")
 
     # rounding
-    dec = Decimal(value)
+    dec = Decimal(str(value))
     zeros = "0" * (places - 1)
     rounded_float = dec.quantize(Decimal("0.%s1" % zeros),
                                  rounding=rounding)
