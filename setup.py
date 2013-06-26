@@ -103,6 +103,7 @@ def requirements(major, minor):
     if (major, minor) == (2, 5):
         requires.append("simplejson")
         requires.append("flask==0.9")
+        requires.append("Werkzeug==0.8.3")
         # requires.append("zope.interface<=3.8.0")
         # requires.append("twisted<=12.1")
 
