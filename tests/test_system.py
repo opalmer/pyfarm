@@ -70,16 +70,14 @@ def test_os_case_sensitive():
     if not any(exists):
         raise ValueError("failed to determine if path was case sensitive")
     elif all(exists):
-        cs = False
-
+        eq_(operating_system.CASE_SENSITIVE, False)
     elif exists.count(True) == 1:
-        cs = True
+        eq_(operating_system.CASE_SENSITIVE, True)
+
     try:
         os.remove(path)
     except:
         pass
-
-    eq_(operating_system.CASE_SENSITIVE, cs)
 
 
 def test_net_packets_sent():
