@@ -145,14 +145,9 @@ def floatrange(start, end=None, by=None, add_endpoint=False):
     Creates a generator which produces a list between `start` and `end` with
     a spacing of `by`.  See below for some examples:
 
-    >>> list(floatrange(2))
-    [0, 1]
-    >>> list(floatrange(2.5))
-    [0, 1, 2]
-    >>> list(floatrange(1, by=.15))
-    [0, 0.15, 0.3, 0.45, 0.6, 0.75, 0.9]
-    >>> list(floatrange(1, by=.15, add_endpoint=True))
-    [0, 0.15, 0.3, 0.45, 0.6, 0.75, 0.9, 1]
+    .. note::
+        results from this function may vary slightly from your
+        expectations when not using Python 2.7 or higher
 
     :type start: int or float
     :param start:
