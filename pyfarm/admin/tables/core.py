@@ -14,6 +14,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import sys
+
+if sys.version_info[0:2] == (2, 5):
+    if 'nose' in sys.modules:
+        from nose.util import SkipTest
+        raise SkipTest("this module only works in Python 2.6 or higher")
+    raise ImportError("Python 2.6 or higher required for admin")
+
 from wtforms.fields import SelectField
 from flask.ext.admin.contrib.sqlamodel import ModelView
 from pyfarm.flaskapp import db
