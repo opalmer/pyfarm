@@ -93,6 +93,7 @@ def requirements(major, minor):
 
     # 2.5 exclusive
     if (major, minor) == (2, 5):
+        requires.append("ordereddict")
         requires.append("simplejson")
         requires.append("flask==0.9")
         requires.append("Werkzeug==0.8.3")
