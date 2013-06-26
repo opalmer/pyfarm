@@ -34,7 +34,7 @@ from pyfarm.ext.files import TempFile, yamlLoad, yamlDump
 def test_tempfile_delete():
     # travis seems to have issues with deleting
     # files on time, this should pass locally however
-    if "TRAVIS" in os.environ:
+    if "TRAVIS" in os.environ or "BUILDBOT_UUID" in os.environ:
         raise SkipTest
 
     with TempFile(delete=True) as s:

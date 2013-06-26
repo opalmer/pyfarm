@@ -18,7 +18,7 @@ import sys
 
 if sys.version_info[0:2] == (2, 5):
     if 'nose' in sys.modules:
-        from nose.util import SkipTest
+        from nose.plugins.skip import SkipTest
         raise SkipTest("this module only works in Python 2.6 or higher")
     raise ImportError("Python 2.6 or higher required for admin")
 
