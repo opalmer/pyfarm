@@ -98,7 +98,7 @@ build_factory.addStep(
 # send a script that we can use to remove
 # the virtual environment
 build_factory.addStep(
-    FileDownload(os.path.join("slave_scripts", "cleanup_virtualenv.py"),
+    FileDownload(os.path.join("slave_scripts", "cleanup.py"),
                  "cleanup_virtualenv.py",
                  name="download: cleanup"))
 
@@ -155,6 +155,9 @@ build_factory.addStep(
                           Property("virtualenv_root")],
                  name="cleanup"))
 
+builder_environment = {
+    "BUILDBOT_UUID": Property("virtualenv_uuid"),
+    "BUILDBOT_BUILDDIR": Property("builddir")}
 
 # for slave_group_name, slaves in slave_mapping.iteritems():
 c["builders"] = [
@@ -162,21 +165,21 @@ c["builders"] = [
                   slavenames=[slave.slavename
                               for slave in slave_mapping["2.7"]["linux"]],
                   factory=build_factory,
-                  env={"BUILD_UUID": Property("virtualenv_uuid")},
+                  env=builder_environment.copy(),
                   properties={"database": "sqlite",
                               "python": "python2.7"}),
     BuilderConfig(name="python26_linux_sqlite",
                   slavenames=[slave.slavename
                               for slave in slave_mapping["2.6"]["linux"]],
                   factory=build_factory,
-                  env={"BUILD_UUID": Property("virtualenv_uuid")},
+                  env=builder_environment.copy(),
                   properties={"database": "sqlite",
                               "python": "python2.6"}),
     BuilderConfig(name="python25_linux_sqlite",
                   slavenames=[slave.slavename
                               for slave in slave_mapping["2.5"]["linux"]],
                   factory=build_factory,
-                  env={"BUILD_UUID": Property("virtualenv_uuid")},
+                  env=builder_environment.copy(),
                   properties={"database": "sqlite",
                               "python": "python2.5"})
 ]

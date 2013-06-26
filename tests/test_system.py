@@ -164,7 +164,7 @@ def test_processor_count():
 
 def test_processor_load():
     # skip for now, add things happen when running on a vm
-    if "TRAVIS" in os.environ or "BUILD_UUID" in os.environ:
+    if "TRAVIS" in os.environ or "BUILDBOT_UUID" in os.environ:
         raise SkipTest
 
     eq_(psutil.cpu_percent(.5) / processor.CPU_COUNT >= 0, True)

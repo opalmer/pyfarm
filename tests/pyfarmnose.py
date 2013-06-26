@@ -52,8 +52,9 @@ def mktmps(list_count, depth=3):
 
     return results
 
-if "BUILD_UUID" in os.environ:
-    PREFIX = "-".join([os.environ["BUILD_UUID"], files.DEFAULT_DIRECTORY_PREFIX])
+if "BUILDBOT_UUID" in os.environ:
+    PREFIX = "-".join([os.environ["BUILDBOT_UUID"],
+                       files.DEFAULT_DIRECTORY_PREFIX])
 else:
     PREFIX = files.DEFAULT_DIRECTORY_PREFIX
 
