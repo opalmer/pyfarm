@@ -15,7 +15,7 @@
 # limitations under the License.
 
 import re
-import ipaddress
+import IPy
 from sqlalchemy.orm import validates
 
 from pyfarm.flaskapp import db
@@ -92,12 +92,15 @@ class Agent(db.Model, RandIdMixin, StateValidationMixin):
 
     @validates("ip", "subnet")
     def validate_address(self, key, value):
-        try:
-            isLocalIPv4Address(value)
-
-        except ipaddress.AddressValueError, e:
-            raise ipaddress.AddressValueError(
-                "%s is not a valid ip: %s" % (value, e))
+        if isLocalIPv4Address(value):
+            try:
+                IPy.IP(value)
+            except ValueError:
+                raise ValueError("%s is not a valid address format" % value)
+        else:
+            raise ValueError(
+                "%s is not a valid network address, it must be non-local and"
+                " accessible by other hosts.")
 
         return value
 
