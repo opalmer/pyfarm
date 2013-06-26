@@ -76,7 +76,7 @@ def requirements(major, minor):
         "appdirs", "PyYaml",
         "psutil", "netifaces",
         "Jinja2==%s.%s" % (major, minor),
-        "flask", "flask-sqlalchemy"
+        "flask-sqlalchemy"
     ]
 
     # ipaddress is included in Python 3.x but
@@ -93,6 +93,7 @@ def requirements(major, minor):
 
     # higher than 2.5
     if (major, minor) > (2, 5):
+        requires.append("flask")
         requires.append("flask-admin")
         requires.append("ordereddict")
         # requires.append("zope.interface")
@@ -101,6 +102,7 @@ def requirements(major, minor):
     # 2.5 exclusive
     if (major, minor) == (2, 5):
         requires.append("simplejson")
+        requires.append("flask==0.9")
         # requires.append("zope.interface<=3.8.0")
         # requires.append("twisted<=12.1")
 
