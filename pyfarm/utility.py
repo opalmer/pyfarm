@@ -25,13 +25,15 @@ import os
 import binascii
 from decimal import Decimal, ROUND_HALF_DOWN
 
+import IPy
+
 try:
     _range = xrange
 except NameError:
     _range = range
 
-import ipaddress
-
+PUBLIC_TYPE_NAMES = set(["PRIVATE", "PUBLIC"])
+LOCAL_RANGES = set([IPy.IP("169.254.0.0/16"), IPy.IP("127.0.0.0/8")])
 
 def randstr():
     """returns a random hexidecimal string based on :func:`os.urandom`"""
@@ -46,11 +48,6 @@ def randint():
 def rounded(value, places=4, rounding=ROUND_HALF_DOWN):
     """
     Returns a floating point number rounded to `places`.
-
-    >>> rounded(0.44999999999999996)
-    0.45
-    >>> rounded(0.44999999999999996, places=1)
-    0.4
 
     :type value: float
     :param value:
@@ -74,19 +71,24 @@ def rounded(value, places=4, rounding=ROUND_HALF_DOWN):
     zeros = "0" * (places - 1)
     rounded_float = dec.quantize(Decimal("0.%s1" % zeros),
                                  rounding=rounding)
+
     return float(rounded_float)
 
 
-def isLocalIPv4Address(addr):
+def isLocalIPv4Address(address):
     """
     Returns True if `addr` is a local network address
     """
-    address = ipaddress.IPv4Address(
-        unicode(addr) if isinstance(addr, str) else addr)
-
-    return not any([
-        address.is_link_local, address.is_loopback,
-        address.is_unspecified])
+    try:
+        address = IPy.IP(address)
+    except ValueError:
+        return False
+    else:
+        return all([
+            address.iptype() in PUBLIC_TYPE_NAMES,
+            all([address not in localrange for localrange in LOCAL_RANGES]),
+            address != IPy.IP("0.0.0.0")
+        ])
 
 
 def _floatrange_generator(start, end, by, add_endpoint):

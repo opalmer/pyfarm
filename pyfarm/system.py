@@ -133,8 +133,6 @@ class NetworkInfo(object):
     Namespace class which returns information about the network
     adapters and their state information.
     """
-    PUBLIC_TYPES = set(["PRIVATE", "PUBLIC"])
-
     def __init__(self):
         self._cached_ip = None
         self.config = Loader("network.yml")
@@ -145,10 +143,7 @@ class NetworkInfo(object):
         This simply means that we should be able to use the provided address
         to contact or be contacted by other hosts on the network.
         """
-        try:
-            return IPy.IP(address).iptype() in self.PUBLIC_TYPES
-        except ValueError:
-            return False
+        return isLocalIPv4Address(address)
 
     @property
     def _iocounter(self):
