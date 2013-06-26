@@ -77,7 +77,8 @@ def rounded(value, places=4, rounding=ROUND_HALF_DOWN):
 
 def isLocalIPv4Address(address):
     """
-    Returns True if `addr` is a local network address
+    Returns True if `address` is a local network accessible
+    network but is not link local.
     """
     try:
         address = IPy.IP(address)
