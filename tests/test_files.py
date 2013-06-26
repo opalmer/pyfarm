@@ -40,16 +40,16 @@ def test_tempfile_delete():
     with TempFile(delete=True) as s:
         eq_(os.path.isfile(s.name), True)
 
-    max_time = 15
+    max_time = 30
     start = time.time()
 
     while time.time()-start <= max_time:
         if not os.path.isfile(s.name):
-            break
+            return
 
         time.sleep(.1)
 
-    eq_(os.path.isfile(s.name), False)
+    assert False, "failed %s" % s.name
 
 
 @envsetup
