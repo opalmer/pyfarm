@@ -76,16 +76,8 @@ def requirements(major, minor):
         "appdirs", "PyYaml",
         "psutil", "netifaces",
         "Jinja2==%s.%s" % (major, minor),
-        "flask-sqlalchemy"
+        "flask-sqlalchemy", "IPy"
     ]
-
-    # ipaddress is included in Python 3.x but
-    # is not 'final'.  If it does not exist we'll
-    # download and install it
-    try:
-        import ipaddress
-    except ImportError:
-        requires.append("ipaddress")
 
     # backports of modules introduced in 2.7
     if (major, minor) < (2, 7):

@@ -40,8 +40,8 @@ try:
 except ImportError:
     multiprocessing = None
 
+import IPy
 import psutil
-import ipaddress
 import netifaces
 
 from pyfarm.warning import NotImplementedWarning, NetworkWarning
@@ -133,6 +133,8 @@ class NetworkInfo(object):
     Namespace class which returns information about the network
     adapters and their state information.
     """
+    PUBLIC_TYPES = set(["PRIVATE", "PUBLIC"])
+
     def __init__(self):
         self._cached_ip = None
         self.config = Loader("network.yml")
@@ -143,12 +145,10 @@ class NetworkInfo(object):
         This simply means that we should be able to use the provided address
         to contact or be contacted by other hosts on the network.
         """
-        address = ipaddress.IPv4Address(
-            unicode(address) if isinstance(address, str) else address)
-
-        return not any([
-            address.is_link_local, address.is_loopback,
-            address.is_unspecified])
+        try:
+            return IPy.IP(address).iptype() in self.PUBLIC_TYPES
+        except ValueError:
+            return False
 
     @property
     def _iocounter(self):
