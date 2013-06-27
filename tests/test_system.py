@@ -182,7 +182,7 @@ def test_processor_idletime():
 
 
 def test_processor_iowait():
-    if operating_system.IS_POSIX:
+    if operating_system.IS_LINUX:
         eq_(processor.iowait() <= psutil.cpu_times().iowait, True)
     else:
         eq_(processor.iowait(), None)
