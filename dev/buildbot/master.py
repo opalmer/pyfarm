@@ -162,10 +162,10 @@ builder_names = []
 
 for pyinfo, platform, db in product(PYTHON_VERSIONS, PLATFORMS, DATABASES):
     py_major, py_minor = pyinfo
-    py_version_str = ".".join(pyinfo)
+    py_version_str = ".".join(map(str, pyinfo))
     name = "python%s_%s_%s" % (py_version_str, platform, db)
     builder_names.append(name)
-    slaves = [slave.slavename for slave in slave_mapping[py_version_str]]
+    slaves = [slave for slave in slave_mapping[py_version_str]]
     builder = BuilderConfig(name=name,
                             slavenames=slaves,
                             factory=build_factory,
