@@ -55,11 +55,6 @@ from pyfarmbuildbotdata import (build_slaves, slavePortnum, slave_mapping,
                                 buildbotURL, authz_cfg, web_status_port,
                                 dbconfig)
 
-PYTHON_VERSIONS = ("2.5", "2.6", "2.7")
-DATABASES = ("sqlite", "postgres", "mysql")
-PLATFORMS = ("linux", "windows", "mac")
-
-
 ### Project Information
 c = BuildmasterConfig = {
     "title": "PyFarm",
@@ -155,39 +150,32 @@ build_factory.addStep(
                           Property("virtualenv_root")],
                  name="cleanup"))
 
-builder_environment = {
+BUILDER_ENVIRONMENT = {
     "BUILDBOT_UUID": Property("virtualenv_uuid"),
     "BUILDBOT_BUILDDIR": Property("builddir")}
 
-# for slave_group_name, slaves in slave_mapping.iteritems():
-c["builders"] = [
-    BuilderConfig(name="python27_linux_sqlite",
-                  slavenames=[slave.slavename
-                              for slave in slave_mapping["2.7"]["linux"]],
-                  factory=build_factory,
-                  env=builder_environment.copy(),
-                  properties={"database": "sqlite",
-                              "python": "python2.7"}),
-    BuilderConfig(name="python26_linux_sqlite",
-                  slavenames=[slave.slavename
-                              for slave in slave_mapping["2.6"]["linux"]],
-                  factory=build_factory,
-                  env=builder_environment.copy(),
-                  properties={"database": "sqlite",
-                              "python": "python2.6"}),
-    BuilderConfig(name="python25_linux_sqlite",
-                  slavenames=[slave.slavename
-                              for slave in slave_mapping["2.5"]["linux"]],
-                  factory=build_factory,
-                  env=builder_environment.copy(),
-                  properties={"database": "sqlite",
-                              "python": "python2.5"})
-]
+PYTHON_VERSIONS = [(2, 7), (2, 6), (2, 5)]
+PLATFORMS = ("linux", "mac")
+DATABASES = ("sqlite",)
+c["builders"] = []
+builder_names = []
+
+for pyinfo, platform, db in product(PYTHON_VERSIONS, PLATFORMS, DATABASES):
+    py_major, py_minor = pyinfo
+    py_version_str = ".".join(pyinfo)
+    name = "python%s_%s_%s" % (py_version_str, platform, db)
+    builder_names.append(name)
+    slaves = [slave.slavename for slave in slave_mapping[py_version_str]]
+    builder = BuilderConfig(name=name,
+                            slavenames=slaves,
+                            factory=build_factory,
+                            env={"BUILDBOT_UUID": Property("virtualenv_uuid"),
+                                 "BUILDBOT_BUILDDIR": Property("builddir")},
+                            properties={"database": db,
+                                        "python": "python%s" % py_version_str})
+    c["builders"].append(builder)
 
 ### Schedulers
-builder_names = ["python27_linux_sqlite",
-                 "python26_linux_sqlite",
-                 "python25_linux_sqlite"]
 c["schedulers"] = [
     SingleBranchScheduler(name="all",
                           change_filter=_filter.ChangeFilter(branch="master"),
