@@ -97,6 +97,11 @@ build_factory.addStep(
                  "cleanup_virtualenv.py",
                  name="download: cleanup"))
 
+build_factory.addStep(
+    ShellCommand(command=["pip", "install",
+                          "virtualenv", "simplejson"],
+                 name="preinstall packages"))
+
 # run virtualenv creation script
 build_factory.addStep(
     CreateVirtualEnvironment(Property("python"),
