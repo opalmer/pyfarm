@@ -388,15 +388,11 @@ class ProcessorInfo(object):
 
         .. note::
             on platforms other than linux this will return None
-
-        # >>> if OS not in (OperatingSystem.LINUX, OperatingSystem.MAC):
-        # ...     assert processor.iowait() is None
-        # ... else:
-        # ...     assert processor.iowait() >= psutil.cpu_times().iowait
-        #
         """
         if operating_system.IS_POSIX:
-            return psutil.cpu_times().iowait
+            cpu_times = psutil.cpu_times()
+            if hasattr(cpu_times, "iowait"):
+                return psutil.cpu_times().iowait
 
 
 class MemoryInfo(object):
