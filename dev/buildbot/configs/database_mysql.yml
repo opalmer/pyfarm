@@ -1,0 +1,17 @@
+mysql:
+   host: bbot-database-mysql-01
+   database: buildbot_pyfarm
+   username: buildbot_pyfarm
+   password: pr9kedrugUsecrudruphephabesawresaspebruVupaPuruQacrUzEnecREspaxu
+   engine: mysql
+   driver: pymysql
+
+configs:
+  unittest: mysql
+
+config_order:
+  - mysql
+
+setup:
+  rebuild: false
+  close-connections: false

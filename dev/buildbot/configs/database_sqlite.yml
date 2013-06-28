@@ -1,0 +1,13 @@
+sqlite:
+  engine: sqlite
+  database: ":memory:"
+
+configs:
+  unittest: sqlite
+
+config_order:
+  - unittest
+
+setup:
+  rebuild: false
+  close-connections: false
