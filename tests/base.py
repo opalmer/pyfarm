@@ -36,7 +36,7 @@ class TestCase(unittest.TestCase):
     ORIGINAL_ENVIRONMENT = os.environ.copy()
 
     @classmethod
-    def getTempDir(cls):
+    def tempdir(cls):
         return tempfile.mkdtemp(prefix=cls.TMPDIR_PREFIX)
 
     @classmethod
@@ -51,16 +51,16 @@ class TestCase(unittest.TestCase):
 
         # determine path type
         if os.path.isfile(path):
-            delete = os.remove
+            delete = files.remove
         elif os.path.isdir(path):
-            delete = shutil.rmtree
+            delete = files.rmtree
 
         # delete the path
         try:
             if delete is not None:
                 delete(path)
 
-        except (IOError, OSError):
+        except EnvironmentError:
             pass
 
     @classmethod
