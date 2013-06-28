@@ -8,6 +8,7 @@
 *egg*
 .coverage
 .profile
+.idea
 build
 dist
 
