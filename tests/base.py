@@ -21,44 +21,31 @@ used by the unittests.
 
 import os
 import sys
-import shutil
 import fnmatch
 import unittest
 import tempfile
 import traceback
 
-from pyfarm.ext import files
-from pyfarm.ext.config.database import DBConfig
-
 
 class TestCase(unittest.TestCase):
-    TMPDIR_PREFIX = files.DEFAULT_DIRECTORY_PREFIX
-    ORIGINAL_ENVIRONMENT = os.environ.copy()
-
     @classmethod
-    def tempdir(cls):
-        return tempfile.mkdtemp(prefix=cls.TMPDIR_PREFIX)
-
-    @classmethod
-    def resetEnvironment(cls):
-        os.environ.clear()
-        os.environ.update(cls.ORIGINAL_ENVIRONMENT)
+    def mktempdir(cls):
+        return tempfile.mkdtemp(prefix=cls.TEMPDIR_PREFIX)
 
     @classmethod
     def remove(cls, path):
-        delete = None
         assert isinstance(path, basestring), "expected a string for `path`"
 
-        # determine path type
         if os.path.isfile(path):
-            delete = files.remove
+            delete = cls._files.remove
         elif os.path.isdir(path):
-            delete = files.rmtree
+            delete = cls._files.rmtree
+        else:
+            delete = lambda path: None
 
         # delete the path
         try:
-            if delete is not None:
-                delete(path)
+            delete(path)
 
         except EnvironmentError:
             pass
@@ -66,13 +53,16 @@ class TestCase(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         try:
+            from pyfarm.ext.config.database import DBConfig
             DBConfig.createConfig("unittest",
                                   {"engine": "sqlite", "database": ":memory:"})
+            from pyfarm.ext import files as _files
 
-            if "travis" in cls.ORIGINAL_ENVIRONMENT:
-                cls.ONTRAVIS = True
-            else:
-                cls.ONTRAVIS = False
+            # global class variables
+            cls._files = _files
+            cls.TEMPDIR_PREFIX = cls._files.DEFAULT_DIRECTORY_PREFIX
+            cls.BUILDBOT_UUID = os.environ.get("BUILDBOT_UUID")
+            cls.ORIGINAL_ENVIRONMENT = os.environ.copy()
 
         # if an exception is raised here the traceback is typically
         # not very helpful we preprocess it before nose/unittests
@@ -80,26 +70,19 @@ class TestCase(unittest.TestCase):
         except Exception, e:
             traceback.print_exc(e, sys.stderr)
             print >> sys.stderr, "setUpClass ERROR: %s" % e
-
-    # @classmethod
-    # def tearDownClass(cls):
-    #     try:
-    #         pass
-    #     except Exception, e:
-    #         traceback.print_exc(e, sys.stderr)
-    #         print >> sys.stderr, "tearDownClass ERROR: %s" % e
+            raise
 
     def setUp(self):
-        self.resetEnvironment()
-        self.tmpdir = self.getTempDir()
-        self.environ = os.environ.copy()  # local copy we can test with
+        # environment reset
+        os.environ.clear()
+        os.environ.update(self.ORIGINAL_ENVIRONMENT)
+        self.tempdir = self.mktempdir()
 
     def tearDown(self):
-        self.resetEnvironment()
-        self.remove(self.tmpdir)
-
-        # construct a list of paths to delete, filter, then remove them
-        alldirs = os.listdir(files.DEFAULT_DIRECTORY_PREFIX)
-        dirlist = [self.tmpdir]
-        dirlist.extend(fnmatch.filter(alldirs, "%s*" % self.TMPDIR_PREFIX))
+        os.environ.clear()
+        os.environ.update(self.ORIGINAL_ENVIRONMENT)
+        self.remove(self.tempdir)
+        alldirs = os.listdir(self._files.DEFAULT_DIRECTORY_PREFIX)
+        dirlist = [self.tempdir]
+        dirlist.extend(fnmatch.filter(alldirs, "%s*" % self.TEMPDIR_PREFIX))
         map(self.remove, dirlist)
