@@ -247,7 +247,7 @@ class NetworkInfo(object):
 
         raise ValueError("could not determine network interface")
 
-    def dnsip(self, fqdn=True):
+    def dnsip(self):
         """
         Returns the IP addresses that the hostname of this
         machine resolves to.
@@ -256,8 +256,18 @@ class NetworkInfo(object):
             This will return None if the dns name maps to a non-public
             address
         """
-        hostname = self.hostname(fqdn=fqdn)
-        addr = socket.gethostbyname(hostname)
+        try:
+            hostname = self.hostname(fqdn=True)
+            addr = socket.gethostbyname(hostname)
+
+        # The above will sometimes fail if the fqdn hostname
+        # is not a name that can be resolved to an ip.  In
+        # those cases we try again with the local hostname
+        # instead.
+        except socket.gaierror:
+            hostname = self.hostname(fqdn=False)
+            addr = socket.gethostbyname(hostname)
+
         reverse_name, aliases, addrs = socket.gethostbyaddr(addr)
 
         # addr may not be public and is often the case on linux
