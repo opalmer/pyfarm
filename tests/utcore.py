@@ -21,14 +21,46 @@ used by the unittests.
 
 import os
 import sys
-import fnmatch
 import unittest
 import tempfile
 import traceback
 
+from nose.plugins.skip import SkipTest
+
+
+class skip_if_true(object):
+    """Decorator which is used to skip a test given a condition"""
+    def __init__(self, condition):
+        self.condition = condition
+
+    def __call__(self, func):
+        def wrapper(*args, **kwargs):
+            if self.condition:
+                raise SkipTest
+
+            return func(*args, **kwargs)
+
+        return wrapper
+
+
+@skip_if_true("BUILDBOT_UUID" in os.environ)
+@skip_if_true("TRAVIS" in os.environ)
+def skip_on_ci(func):
+    def wrapper(*args, **kwargs):
+        return func(*args, **kwargs)
+    return wrapper
+
 
 class TestCase(unittest.TestCase):
     temp_directories = set()
+
+    def _cleanupDirectories(self):
+        map(self.remove, self.temp_directories.copy())
+        self.remove(self.tempdir)
+
+    def _resetEnvironment(self):
+        os.environ.clear()
+        os.environ.update(self.ORIGINAL_ENVIRONMENT)
 
     @classmethod
     def mktempdir(cls):
@@ -79,14 +111,20 @@ class TestCase(unittest.TestCase):
             traceback.print_exc(e, sys.stderr)
             print >> sys.stderr, "setUpClass ERROR: %s" % e
             raise
+        else:
+            cls.setUpCase()
 
-    def _cleanupDirectories(self):
-        map(self.remove, self.temp_directories.copy())
-        self.remove(self.tempdir)
+    @classmethod
+    def tearDownClass(cls):
+        cls.tearDownCase()
 
-    def _resetEnvironment(self):
-        os.environ.clear()
-        os.environ.update(self.ORIGINAL_ENVIRONMENT)
+    @classmethod
+    def setUpCase(self):
+        """called after setUpClass is complete"""
+
+    @classmethod
+    def tearDownCase(cls):
+        """called after tearDownClass is complete"""
 
     def setUp(self):
         self._resetEnvironment()
