@@ -25,7 +25,6 @@ import tempfile
 from nose.tools import raises
 
 from utcore import TestCase, skip_on_ci
-from tests.pyfarmnose import mktmp, envsetup
 from pyfarm.ext import files
 from pyfarm.ext.files import TempFile, yamlLoad, yamlDump
 
