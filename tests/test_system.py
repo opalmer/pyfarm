@@ -27,19 +27,18 @@ from pyfarm.ext.config.enum import OperatingSystem as _OperatingSystem
 from pyfarm.ext.system import (user, operating_system, network,
                                processor, memory)
 
-osenum = _OperatingSystem()
 
 class OperatingSystem(TestCase):
     def test_user(self):
         try:
             import pwd
-            _user = lambda: pwd.getpwuid(os.getuid())[0]
+            sysuser = pwd.getpwuid(os.getuid())[0]
 
         except ImportError:
             import getpass
-            _user = lambda: getpass.getuser()
+            sysuser = getpass.getuser()
 
-        self.assertEqual(user(), _user())
+        self.assertEqual(user(), sysuser)
 
     def test_uptime(self):
         t1 = operating_system.uptime()
@@ -47,6 +46,7 @@ class OperatingSystem(TestCase):
         self.assertEqual(t2 - t1 < 5, True)
 
     def test_classvars(self):
+        osenum = _OperatingSystem()
         _os = osenum.get()
         self.assertEqual(operating_system.OS, _os)
         self.assertEqual(operating_system.IS_LINUX, _os == osenum.LINUX)
