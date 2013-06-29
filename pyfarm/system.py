@@ -268,7 +268,12 @@ class NetworkInfo(object):
             hostname = self.hostname(fqdn=False)
             addr = socket.gethostbyname(hostname)
 
-        reverse_name, aliases, addrs = socket.gethostbyaddr(addr)
+        try:
+            reverse_name, aliases, addrs = socket.gethostbyaddr(addr)
+
+        except socket.herror:
+            warn("failed to resolve hostname for %s" % addr, NetworkWarning)
+            return None
 
         # addr may not be public and is often the case on linux
         # where the hostname is mapped to 127.0.0.1
@@ -307,7 +312,8 @@ class NetworkInfo(object):
                 try:
                     sock.connect((check, 0))
                 except socket.error:
-                    warn("failed to check to %s for check", NetworkWarning)
+                    warn("failed to check to use %s to check address" % check,
+                         NetworkWarning)
                 else:
                     address, port = sock.getsockname()
                     if isLocalIPv4Address(address):
