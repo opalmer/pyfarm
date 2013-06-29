@@ -30,7 +30,7 @@ from pyfarm.utility import (floatrange, convert, randstr, randint,
 RAND_TEST_COUNT = 75000
 
 
-class TestUtility(TestCase):
+class Convert(TestCase):
     def test_convert_bytetomb(self):
         self.assertEqual(convert.bytetomb(10485760), 10.0)
         self.assertEqual(convert.bytetomb(11010048), 10.5)
@@ -39,6 +39,8 @@ class TestUtility(TestCase):
         self.assertEqual(convert.mbtogb(2048), 2.0)
         self.assertEqual(convert.mbtogb(4608), 4.5)
 
+
+class Random(TestCase):
     def test_randstr(self):
         generated = set()
         regex = re.compile("^[a-f0-9]{12}$")
@@ -55,6 +57,8 @@ class TestUtility(TestCase):
             self.assertEqual(value not in generated, True)
             generated.add(value)
 
+
+class Rounding(TestCase):
     def test_rounded(self):
         self.assertEqual(rounded(math.pi), 3.1416)
         self.assertEqual(rounded(math.pi, 2), 3.14)
@@ -70,6 +74,8 @@ class TestUtility(TestCase):
     def test_rounded_places_type_error(self):
         rounded(1.5, None)
 
+
+class Range(TestCase):
     @raises(ValueError)
     def test_range_end_error(self):
         floatrange(2, 1)
