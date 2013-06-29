@@ -14,16 +14,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from utcore import TestCase
 from pyfarm.ext.config.core.loader import Loader
 from pyfarm.models import constants
 
 
-def test_config():
-   assert isinstance(constants.DBCFG, Loader)
+class Config(TestCase):    
+    def test_config(self):
+        self.assertTrue(isinstance(constants.DBCFG, Loader))
 
-
-def test_table_prefixes():
-    prefix = constants.DBCFG.get("tables.prefix")
-    for varname, value in vars(constants).iteritems():
-        if varname.startswith("TABLE_"):
-            assert value.startswith(prefix)
+    def test_table_prefixes(self):
+        prefix = constants.DBCFG.get("tables.prefix")
+        for varname, value in vars(constants).iteritems():
+            if varname.startswith("TABLE_"):
+                self.assertTrue(value.startswith(prefix))
