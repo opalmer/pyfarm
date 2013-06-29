@@ -28,9 +28,13 @@ import traceback
 
 
 class TestCase(unittest.TestCase):
+    temp_directories = set()
+
     @classmethod
     def mktempdir(cls):
-        return tempfile.mkdtemp(prefix=cls.TEMPDIR_PREFIX)
+        tempdir = tempfile.mkdtemp(prefix=cls.TEMPDIR_PREFIX)
+        cls.temp_directories.add(tempdir)
+        return tempdir
 
     @classmethod
     def remove(cls, path):
@@ -49,6 +53,10 @@ class TestCase(unittest.TestCase):
 
         except EnvironmentError:
             pass
+
+        else:
+            if path in cls.temp_directories:
+                cls.temp_directories.remove(path)
 
     @classmethod
     def setUpClass(cls):
@@ -72,17 +80,18 @@ class TestCase(unittest.TestCase):
             print >> sys.stderr, "setUpClass ERROR: %s" % e
             raise
 
-    def setUp(self):
-        # environment reset
+    def _cleanupDirectories(self):
+        map(self.remove, self.temp_directories.copy())
+        self.remove(self.tempdir)
+
+    def _resetEnvironment(self):
         os.environ.clear()
         os.environ.update(self.ORIGINAL_ENVIRONMENT)
+
+    def setUp(self):
+        self._resetEnvironment()
         self.tempdir = self.mktempdir()
 
     def tearDown(self):
-        os.environ.clear()
-        os.environ.update(self.ORIGINAL_ENVIRONMENT)
-        self.remove(self.tempdir)
-        alldirs = os.listdir(self._files.DEFAULT_DIRECTORY_PREFIX)
-        dirlist = [self.tempdir]
-        dirlist.extend(fnmatch.filter(alldirs, "%s*" % self.TEMPDIR_PREFIX))
-        map(self.remove, dirlist)
+        self._resetEnvironment()
+        self._cleanupDirectories()
