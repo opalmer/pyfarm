@@ -26,6 +26,7 @@ from nose.tools import raises
 from utcore import TestCase
 from pyfarm.exthook import ExtensionImporter
 
+
 class ImportHook(TestCase):
     def setUp(self):
         super(ImportHook, self).setUp()
@@ -58,7 +59,6 @@ class ImportHook(TestCase):
         loader = ExtensionImporter(ExtensionImporter.DEFAULT_CHOICES, "")
         loader.install()
         from pyfarm.ext import foo
-
 
     def test_install(self):
         loader = ExtensionImporter(["foo"], "")
