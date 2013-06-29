@@ -34,7 +34,7 @@ class TmpFile(TestCase):
     @skip_on_ci
     def test_delete(self):
         with TempFile(delete=True) as s:
-            self.assertEqual(os.path.isfile(s.name), True)
+            self.assertTrue(os.path.isfile(s.name))
 
         max_time = 30
         start = time.time()
@@ -49,9 +49,9 @@ class TmpFile(TestCase):
 
     def test_nodelete(self):
         with TempFile(delete=False) as s:
-            self.assertEqual(os.path.isfile(s.name), True)
+            self.assertTrue(os.path.isfile(s.name))
 
-        self.assertEqual(os.path.isfile(s.name), True)
+        self.assertTrue(os.path.isfile(s.name))
 
     def test_dirname(self):
         d = self.mktempdir()
@@ -66,7 +66,6 @@ class TmpFile(TestCase):
             self.assertTrue(base.startswith("foo"))
             self.assertTrue(base.endswith(".txt"))
 
-    @envsetup
     def test_tempfile_basename(self):
         d = self.mktempdir()
         with TempFile(prefix="foo", suffix=".txt", root=d, delete=True) as s:
@@ -74,55 +73,41 @@ class TmpFile(TestCase):
             self.assertTrue(base.startswith("foo"))
             self.assertTrue(base.endswith(".txt"))
 
+
 class DumpYaml(TestCase):
-    pass
+    @raises(TypeError)
+    def test_error(self):
+        yamlDump("", lambda: None)
 
-@envsetup
-@raises(TypeError)
-def test_dumpyaml_error(self):
-    yamlDump("", lambda: None)
+    def test_tmppath(self):
+        dump_path = yamlDump("")
+        self.assertTrue(dump_path.endswith(".yml"))
+        self.assertEqual(os.path.dirname(dump_path), files.SESSION_DIRECTORY)
 
-
-@envsetup
-def test_dumpyaml_tmppath(self):
-    dump_path = yamlDump("")
-    self.assertEqual(dump_path.endswith(".yml"), True, "%s does end with .yml" % dump_path)
-    self.assertEqual(os.path.dirname(dump_path), files.SESSION_DIRECTORY)
-
-
-@envsetup
-def test_dumpyaml_path(self):
-    d = mktmp()
-    expected_dump_path = os.path.join(d, "foo", "foo.yml")
-    dump_path = yamlDump("", path=expected_dump_path)
-    self.assertEqual(os.path.isdir(os.path.dirname(expected_dump_path)), True)
-    self.assertEqual(dump_path, expected_dump_path)
+    def test_path(self):
+        d = self.mktempdir()
+        expected_dump_path = os.path.join(d, "foo", "foo.yml")
+        dump_path = yamlDump("", path=expected_dump_path)
+        self.assertTrue(os.path.isdir(os.path.dirname(expected_dump_path)))
+        self.assertEqual(dump_path, expected_dump_path)
 
 
 class LoadYaml(TestCase):
-    pass
+    @raises(TypeError)
+    def test_error(self):
+        yamlLoad(lambda: None)
 
-
-@envsetup
-@raises(TypeError)
-def test_loadyaml_error(self):
-    yamlLoad(lambda: None)
-
-
-@envsetup
-def test_loadyaml_path(self):
-    data = os.environ.data.copy()
-    dumped_path = yamlDump(data)
-    self.assertEqual(yamlLoad(dumped_path), data)
-
-
-@envsetup
-def test_loadyaml_stream(self):
-    data = os.environ.data.copy()
-    dumped_path = yamlDump(data)
-    s = open(dumped_path, "r")
-    self.assertEqual(yamlLoad(s), data)
-    self.assertEqual(s.closed, True, "%s not closed" % s.name)
+    def test_path(self):
+        data = os.environ.data.copy()
+        dumped_path = yamlDump(data)
+        self.assertEqual(yamlLoad(dumped_path), data)
+        
+    def test_stream(self):
+        data = os.environ.data.copy()
+        dumped_path = yamlDump(data)
+        s = open(dumped_path, "r")
+        self.assertEqual(yamlLoad(s), data)
+        self.assertTrue(s.closed)
 
 
 class TmpFile(TestCase):
@@ -133,109 +118,90 @@ class TmpFile(TestCase):
         self.assertEqual(sessiondir, files.SESSION_DIRECTORY)
 
     def test_envvar(self):
-        os.environ["PYFARM_TMP"] = mktmp()
+        os.environ["PYFARM_TMP"] = self.mktempdir()
         self.assertEqual(files.tempdir(respect_env=True),
                          os.environ["PYFARM_TMP"])
         self.assertEqual(files.tempdir(respect_env=False),
                          files.SESSION_DIRECTORY)
 
     def test_unique(self):
-        self.assertEqual(
-            files.tempdir(respect_env=False, unique=True)
-            != files.tempdir(respect_env=False, unique=True),
-            True
-        )
+        self.assertNotEqual(
+            files.tempdir(respect_env=False, unique=True),
+            files.tempdir(respect_env=False, unique=True))
 
     def test_mode(self):
         st_mode = os.stat(files.tempdir(unique=True)).st_mode
         self.assertEqual(stat.S_IMODE(st_mode), files.DEFAULT_PERMISSIONS)
-        mymode = stat.S_IRWXU
-        st_mode = os.stat(files.tempdir(unique=True, mode=mymode)).st_mode
-        self.assertEqual(stat.S_IMODE(st_mode), mymode)
+        mode = stat.S_IRWXU
+        st_mode = os.stat(files.tempdir(unique=True, mode=mode)).st_mode
+        self.assertEqual(stat.S_IMODE(st_mode), mode)
 
 
 class Expand(TestCase):
-    pass
+    def test_expandpath(self):
+        os.environ["FOO"] = "foo"
+        joined_files = os.path.join("~", "$FOO")
+        expected = os.path.expanduser(os.path.expandvars(joined_files))
+        self.assertEqual(files.expandpath(joined_files), expected)
 
-@envsetup
-def test_expandpath(self):
-    os.environ["FOO"] = "foo"
-    joined_files = os.path.join("~", "$FOO")
-    expected = os.path.expanduser(os.path.expandvars(joined_files))
-    self.assertEqual(files.expandpath(joined_files), expected)
+    @raises(EnvironmentError)
+    def test_raise_enverror(self):
+        files.expandenv(str(uuid.uuid4()))
 
+    @raises(ValueError)
+    def test_raise_valuerror(self):
+        var = str(uuid.uuid4())
+        os.environ[var] = ""
+        files.expandenv(var)
 
-@envsetup
-@raises(EnvironmentError)
-def test_expandenv_raise_enverror(self):
-    files.expandenv(str(uuid.uuid4()))
+    def test_files_validation(self):
+        envvars = {
+            "FOO1": self.mktempdir(),
+            "FOO2": self.mktempdir(),
+            "FOO3": "<unknown_foo>",
+            "FOOBARA": os.pathsep.join(["$FOO1", "$FOO2", "$FOO3"])
+        }
+        os.environ.update(envvars)
+        self.assertEqual(
+            files.expandenv("FOOBARA"),
+            [os.environ["FOO1"], os.environ["FOO2"]]
+        )
 
-
-@envsetup
-@raises(ValueError)
-def test_expandenv_raise_valuerror(self):
-    var = str(uuid.uuid4())
-    os.environ[var] = ""
-    files.expandenv(var)
-
-
-@envsetup
-def test_expandenv_files_validation(self):
-    envvars = {
-        "FOO1": mktmp(), "FOO2": mktmp(),
-        "FOO3": "<unknown_foo>",
-        "FOOBARA": os.pathsep.join(["$FOO1", "$FOO2", "$FOO3"])
-    }
-    os.environ.update(envvars)
-    self.assertEqual(
-        files.expandenv("FOOBARA"),
-        [os.environ["FOO1"], os.environ["FOO2"]]
-    )
-
-
-@envsetup
-def test_expandenv_files_novalidation(self):
-    envvars = {
-        "FOO4": mktmp(), "FOO5": mktmp(),
-        "FOO6": "<unknown_foo>",
-        "FOOBARB": os.pathsep.join(["$FOO5", "$FOO4", "$FOO6"])
-    }
-    os.environ.update(envvars)
-    expanded = files.expandenv("FOOBARB", validate=False)
-    self.assertEqual(
-        expanded,
-        [os.environ["FOO5"], os.environ["FOO4"], os.environ["FOO6"]]
-    )
+    def test_files_novalidation(self):
+        envvars = {
+            "FOO4": self.mktempdir(), 
+            "FOO5": self.mktempdir(),
+            "FOO6": "<unknown_foo>",
+            "FOOBARB": os.pathsep.join(["$FOO5", "$FOO4", "$FOO6"])
+        }
+        os.environ.update(envvars)
+        expanded = files.expandenv("FOOBARB", validate=False)
+        self.assertEqual(
+            expanded,
+            [os.environ["FOO5"], os.environ["FOO4"], os.environ["FOO6"]]
+        )
 
 
 class Which(TestCase):
-    pass
+    @raises(OSError)
+    def test_which_oserror(self):
+        files.which("<FOO>")
 
+    def test_path(self):
+        fh, filename = tempfile.mkstemp(
+            prefix="pyfarm-", suffix=".sh",
+            dir=files.tempdir()
+        )
 
-@envsetup
-@raises(OSError)
-def test_which_oserror(self):
-    files.which("<FOO>")
+        with open(filename, "w") as stream:
+            pass
 
+        os.environ["PATH"] = os.pathsep.join(
+            [os.environ["PATH"], os.path.dirname(filename)]
+        )
+        basename = os.path.basename(filename)
+        self.assertEqual(files.which(basename), filename)
 
-@envsetup
-def test_which(self):
-    fh, filename = tempfile.mkstemp(
-        prefix="pyfarm-", suffix=".sh",
-        dir=files.tempdir()
-    )
-
-    with open(filename, "w") as stream:
-        pass
-
-    os.environ["PATH"] = os.pathsep.join(
-        [os.environ["PATH"], os.path.dirname(filename)]
-    )
-    basename = os.path.basename(filename)
-    self.assertEqual(files.which(basename), filename)
-
-
-@envsetup
-def test_which_fullfiles(self):
-    thisfile = os.path.abspath(__file__)
-    self.assertEqual(files.which(thisfile), thisfile)
+    def test_fullfiles(self):
+        thisfile = os.path.abspath(__file__)
+        self.assertEqual(files.which(thisfile), thisfile)
