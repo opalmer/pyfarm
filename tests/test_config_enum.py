@@ -16,72 +16,77 @@
 
 import sys
 import uuid
-from nose.tools import eq_, with_setup
 
+from utcore import TestCase
 from pyfarm.ext.config.core.loader import Loader
 from pyfarm.ext.config import enum
 
 SYS_PLATFORM = sys.platform
 
 
-def restore_sys_platform():
-    sys.platform = SYS_PLATFORM
+class Enum(TestCase):
+    SYS_PLATFORM = sys.platform
 
+    def setUp(self):
+        super(Enum, self).setUp()
+        sys.platform = self.SYS_PLATFORM
 
-def test_enum_subclasses():
-    loader = Loader("enums.yml")
-    enum_vars = vars(enum)
+    def tearDown(self):
+        super(Enum, self).tearDown()
+        sys.platform = self.SYS_PLATFORM
 
-    for enum_name in loader:
-        if enum_name in enum_vars:
-            eq_(isinstance(enum_vars[enum_name], enum.EnumBuilder), True)
+    def test_enum_subclasses(self):
+        loader = Loader("enums.yml")
+        enum_vars = vars(enum)
 
+        for enum_name in loader:
+            if enum_name in enum_vars:
+                self.assertEqual(
+                    isinstance(enum_vars[enum_name], enum.EnumBuilder), True)
 
-@with_setup(setup=restore_sys_platform, teardown=restore_sys_platform)
-def test_enum_operatingsystem():
-    osenum = enum.OperatingSystem()
-    platforms = {
-        "linux": osenum.LINUX, "darwin": osenum.MAC,
-        "win": osenum.WINDOWS, "foobar": osenum.OTHER
-    }
-    for sysplatform, value in platforms.iteritems():
-        sys.platform = sysplatform
-        eq_(osenum.get(), value)
+    def test_enum_operatingsystem(self):
+        osenum = enum.OperatingSystem()
+        platforms = {
+            "linux": osenum.LINUX, "darwin": osenum.MAC,
+            "win": osenum.WINDOWS, "foobar": osenum.OTHER
+        }
+        for sysplatform, value in platforms.iteritems():
+            sys.platform = sysplatform
+            self.assertEqual(osenum.get(), value)
 
+    def test_enum_attr_keys(self):
+        enumdata = Loader("enums.yml")
+        for name, data in enumdata.iteritems():
+            if name in vars(enum):
+                enum_class = vars(enum)[name]
+                instance = enum_class()
+                for key in data.iterkeys():
+                    self.assertEqual(
+                        hasattr(instance, key), True,
+                        "enums %s is missing the %s attribute" % (name, key)
+                    )
 
-def test_enum_attr_keys():
-    enumdata = Loader("enums.yml")
-    for name, data in enumdata.iteritems():
-        if name in vars(enum):
-            enum_class = vars(enum)[name]
-            instance = enum_class()
-            for key in data.iterkeys():
-                eq_(
-                    hasattr(instance, key), True,
-                    "enums %s is missing the %s attribute" % (name, key)
-                )
+    def test_enum_attr_values(self):
+        enumdata = Loader("enums.yml")
+        for name, data in enumdata.iteritems():
+            if name in vars(enum):
+                enum_class = vars(enum)[name]
+                instance = enum_class()
+                for key, value in data.iteritems():
+                    self.assertEqual(getattr(instance, key), value)
 
+    def test_methods(self):
+        enumdata = Loader("enums.yml")
+        for name, data in enumdata.iteritems():
+            if name in vars(enum):
+                enum_class = vars(enum)[name]
+                instance = enum_class()
+                self.assertEqual(sorted(instance.keys()),
+                                 sorted(data.keys()))
+                self.assertEqual(sorted(instance.values()),
+                                 sorted(data.values()))
 
-def test_enum_attr_values():
-    enumdata = Loader("enums.yml")
-    for name, data in enumdata.iteritems():
-        if name in vars(enum):
-            enum_class = vars(enum)[name]
-            instance = enum_class()
-            for key, value in data.iteritems():
-                eq_(getattr(instance, key), value)
-
-
-def test_methods():
-    enumdata = Loader("enums.yml")
-    for name, data in enumdata.iteritems():
-        if name in vars(enum):
-            enum_class = vars(enum)[name]
-            instance = enum_class()
-            eq_(sorted(instance.keys()), sorted(data.keys()))
-            eq_(sorted(instance.values()), sorted(data.values()))
-
-            new_key = str(uuid.uuid4())
-            new_value = str(uuid.uuid4())
-            instance._mapped[new_key] = new_value
-            eq_(instance.get(new_key), new_value)
+                new_key = str(uuid.uuid4())
+                new_value = str(uuid.uuid4())
+                instance._mapped[new_key] = new_value
+                self.assertEqual(instance.get(new_key), new_value)
