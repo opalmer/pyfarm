@@ -49,7 +49,6 @@ class ImportHook(TestCase):
     def test_wrapper_error(self):
         ExtensionImporter(["foo"], None)
 
-
     @raises(AssertionError)
     def test_choices_count_error(self):
         ExtensionImporter([], None)
