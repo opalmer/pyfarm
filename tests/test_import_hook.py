@@ -19,84 +19,68 @@ from __future__ import with_statement
 import os
 import sys
 import inspect
-from nose.tools import with_setup, raises, eq_
-from pyfarmnose import mktmp, posttest_cleanup_files, pretest_cleanup_env
 
-# NOTE: this test is testing the import hook, do not modify this line
-from pyfarm.exthook import ExtensionImporter
-
-MODULE_DIR = None
 META_PATH = sys.meta_path[:]
 
+from nose.tools import raises
+from utcore import TestCase
+from pyfarm.exthook import ExtensionImporter
 
-def prerun():
-    global MODULE_DIR
-    pretest_cleanup_env()
-    MODULE_DIR = mktmp()
-    sys.path.insert(0, MODULE_DIR)
+class ImportHook(TestCase):
+    def setUp(self):
+        super(ImportHook, self).setUp()
+        init_file = os.path.join(self.tempdir, "__init__.py")
+        with open(init_file, "w") as init_file_stream:
+            print >> init_file_stream, ""
 
+        sys.path.insert(0, self.tempdir)
 
-def postrun():
-    global MODULE_DIR
-    sys.path.remove(MODULE_DIR)
-    MODULE_DIR = None
-    posttest_cleanup_files()
-    sys.meta_path[:] = META_PATH
+    def tearDown(self):
+        super(ImportHook, self).tearDown()
+        sys.path.remove(self.tempdir)
+        sys.meta_path[:] = META_PATH
+        
+    @raises(AssertionError)
+    def test_choices_error(self):
+        ExtensionImporter("", "")
 
-
-envsetup = with_setup(setup=prerun, teardown=postrun)
-
-
-@envsetup
-@raises(AssertionError)
-def test_choices_error():
-    ExtensionImporter("", "")
-
-
-@envsetup
-@raises(AssertionError)
-def test_wrapper_error():
-    ExtensionImporter(["foo"], None)
+    @raises(AssertionError)
+    def test_wrapper_error(self):
+        ExtensionImporter(["foo"], None)
 
 
-@envsetup
-@raises(AssertionError)
-def test_choices_count_error():
-    ExtensionImporter([], None)
+    @raises(AssertionError)
+    def test_choices_count_error(self):
+        ExtensionImporter([], None)
+
+    @raises(ImportError)
+    def test_import_error(self):
+        loader = ExtensionImporter(ExtensionImporter.DEFAULT_CHOICES, "")
+        loader.install()
+        from pyfarm.ext import foo
 
 
-@envsetup
-@raises(ImportError)
-def test_import_error():
-    loader = ExtensionImporter(ExtensionImporter.DEFAULT_CHOICES, "")
-    loader.install()
-    from pyfarm.ext import foo
+    def test_install(self):
+        loader = ExtensionImporter(["foo"], "")
+        loader.install()
+        self.assertEqual(loader in sys.meta_path, True)
 
+    def test_hook(self):
+        module_dirname = os.path.join(self.tempdir, "pyfarm_foobar")
+        module_filepath = os.path.join(module_dirname, "foo.py")
+        sys.path.insert(0, self.tempdir)
 
-@envsetup
-def test_install():
-    loader = ExtensionImporter(["foo"], "")
-    loader.install()
-    eq_(loader in sys.meta_path, True)
+        os.makedirs(module_dirname)
+        with open(os.path.join(module_dirname, "__init__.py"), "w") as init:
+            print >> init, ""
 
+        with open(module_filepath, "w") as foobar:
+            print >> foobar, "test = lambda: True"
 
-@envsetup
-def test_hook():
-    module_dirname = os.path.join(MODULE_DIR, "pyfarm_foobar")
-    module_filepath = os.path.join(module_dirname, "foo.py")
-    sys.path.insert(0, MODULE_DIR)
+        loader = ExtensionImporter(ExtensionImporter.DEFAULT_CHOICES, "")
+        loader.install()
 
-    os.makedirs(module_dirname)
-    with open(os.path.join(module_dirname, "__init__.py"), "w") as init:
-        print >> init, ""
-
-    with open(module_filepath, "w") as foobar:
-        print >> foobar, "test = lambda: True"
-
-    loader = ExtensionImporter(ExtensionImporter.DEFAULT_CHOICES, "")
-    loader.install()
-
-    from pyfarm.ext.foobar import foo
-    from pyfarm.ext.foobar.foo import test
-    eq_(test(), True)
-    eq_(inspect.getfile(test), foobar.name)
+        from pyfarm.ext.foobar import foo
+        from pyfarm.ext.foobar.foo import test
+        self.assertEqual(test(), True)
+        self.assertEqual(inspect.getfile(test), foobar.name)
