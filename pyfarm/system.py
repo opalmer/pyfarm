@@ -23,6 +23,7 @@ this module was produced for the purposes of doctests.
 import os
 import time
 import socket
+import random
 import getpass
 import tempfile
 from warnings import warn
@@ -40,7 +41,6 @@ try:
 except ImportError:
     multiprocessing = None
 
-import IPy
 import psutil
 import netifaces
 
@@ -247,7 +247,7 @@ class NetworkInfo(object):
 
         raise ValueError("could not determine network interface")
 
-    def dnsip(self):
+    def ipFromDNS(self):
         """
         Returns the IP addresses that the hostname of this
         machine resolves to.
@@ -282,6 +282,9 @@ class NetworkInfo(object):
         elif self.isPublic(addr):
             return addr
 
+    def ipFromMaster(self):
+        """Attempts to connect to the master and request our current address"""
+
     def ip(self):
         """
         Attempts to retrieve the ip address for use on the network.  This
@@ -295,7 +298,7 @@ class NetworkInfo(object):
             return self._cached_ip
 
         warn("ip check via REST request to master", NotImplementedWarning)
-        checks = [self.dnsip]
+        checks = [self.ipFromDNS]
 
         if self.config.get("remote_address_check.enable"):
             checks.extend(self.config.get("remote_address_check.addresses"))
