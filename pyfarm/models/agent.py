@@ -92,9 +92,11 @@ class Agent(db.Model, RandIdMixin, StateValidationMixin):
 
     @validates("ip", "subnet")
     def validate_address(self, key, value):
+        # TODO: need multi-range verification for ip
+        # TODO: need verification of the subnet
         try:
             IPy.IP(value)
-            
+
         except ValueError, e:
             raise ValueError(
                 "%s is not a valid address format: %s" % (value, e))
