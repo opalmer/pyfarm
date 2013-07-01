@@ -92,15 +92,12 @@ class Agent(db.Model, RandIdMixin, StateValidationMixin):
 
     @validates("ip", "subnet")
     def validate_address(self, key, value):
-        if isLocalIPv4Address(value):
-            try:
-                IPy.IP(value)
-            except ValueError:
-                raise ValueError("%s is not a valid address format" % value)
-        else:
+        try:
+            IPy.IP(value)
+            
+        except ValueError, e:
             raise ValueError(
-                "%s is not a valid network address, it must be non-local and"
-                " accessible by other hosts.")
+                "%s is not a valid address format: %s" % (value, e))
 
         return value
 
