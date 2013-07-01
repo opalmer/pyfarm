@@ -14,24 +14,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import random
+import requests
+from pyfarm.api import APICFG
 
-"""
-Resources which the master processes and returns to agents, clients,
-etc via a REST api.  Examples related to requests in this section will
-be typically be formatted like below.
+def master():
+    """Returns the hostname of a master to connect to"""
+    masters = APICFG.get("masters")
+    assert isinstance(masters, list), "network.masters should be a list"
+    assert masters, "no entries in network.masters"
 
-    ::
-
-        GET 200 /v1/hosts/1
-        {
-            "hostname": "foo",
-            "address": "123.456.789.100",
-            "port": 65535
-            [ ..... ]
-        }
+    masters = masters[:]
+    while masters:
+        master = random.choice(masters)
+        masters.remove(master)
 
 
-In the example above `GET` is the request being made, `/v1/hosts/1/` is the
-resource requested, and 200 is the expected return code to get the result
-documented below.  Please note, the url structure does
-"""
+master()

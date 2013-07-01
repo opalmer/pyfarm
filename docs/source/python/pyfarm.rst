@@ -95,6 +95,7 @@ Subpackages
 .. toctree::
 
     pyfarm.admin
+    pyfarm.api
     pyfarm.config
     pyfarm.ext
     pyfarm.master

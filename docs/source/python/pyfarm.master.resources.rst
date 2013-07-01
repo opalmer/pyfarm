@@ -9,3 +9,11 @@ resources Package
     :undoc-members:
     :show-inheritance:
 
+:mod:`ping` Module
+------------------
+
+.. automodule:: pyfarm.master.resources.ping
+    :members:
+    :undoc-members:
+    :show-inheritance:
+

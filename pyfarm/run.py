@@ -24,7 +24,9 @@ from pyfarm.flaskapp import app
 
 def master(debug=False):
     """Entry point which launches master REST api"""
-    # TODO: get and resources to register against `app`
+    from pyfarm.master.resources.ping import Ping
+    from pyfarm.api import VERSION
+
 
 
 def admin(debug=False):

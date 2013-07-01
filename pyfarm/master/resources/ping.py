@@ -14,24 +14,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from flask import request
+from pyfarm.system import network
 
-"""
-Resources which the master processes and returns to agents, clients,
-etc via a REST api.  Examples related to requests in this section will
-be typically be formatted like below.
 
-    ::
-
-        GET 200 /v1/hosts/1
-        {
-            "hostname": "foo",
-            "address": "123.456.789.100",
-            "port": 65535
-            [ ..... ]
+# TODO: proper parent class setup
+class Ping(object):
+    def get(self):
+        return {
+            "success": True,
+            "master": network.hostname()
+            # TODO: 'self' reference to any known records on the agent
+            # TODO: ip address of requesting host
+            # TODO: current server time
         }
-
-
-In the example above `GET` is the request being made, `/v1/hosts/1/` is the
-resource requested, and 200 is the expected return code to get the result
-documented below.  Please note, the url structure does
-"""
