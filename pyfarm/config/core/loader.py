@@ -60,7 +60,9 @@ class Loader(IterableUserDict):
         assert isinstance(data, dict), "data should be a dictionary object"
         assert isinstance(filename, basestring), "filename not resolved"
 
-        if load:
+        self.files = []
+
+        if load and filename not in self._DATA:
             self.files = find.configFiles(filename, **findkwargs)
 
             if not self.files:
@@ -70,16 +72,18 @@ class Loader(IterableUserDict):
 
             # load data from each file
             for filepath in self.files:
-                data.update(self._load(filepath, cached=cached))
-        else:
-            self.files = []
+                data.update(self._load(filepath,
+                                       cached=cached,
+                                       filename=filename))
+        elif filename in self._DATA:
+            data = self._DATA[filename]
 
         self.__instanced = False
         IterableUserDict.__init__(self, data)
         self.__instanced = True
 
     @classmethod
-    def _load(cls, filepath, cached=True):
+    def _load(cls, filepath, cached=True, filename=None):
         """
         Underlying classmethod to load data from a yaml path.  This
         classmethod will raise a :class:`PreferenceLoadError` for
@@ -89,6 +93,9 @@ class Loader(IterableUserDict):
             try:
                 data = yamlLoad(filepath)
                 cls._DATA[filepath] = data
+
+                if filename is not None:
+                    cls._DATA[filename] = cls._DATA[filepath]
 
             except Exception, e:
                 raise PreferenceLoadError(
