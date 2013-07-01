@@ -19,14 +19,3 @@
 ports:
   master: 0
   host: 0
-
-remote_address_check:
-  enable: true
-
-  # Addresses to use to help discover the 'public'
-  # ip we can use to talk to other hosts on
-  # the network
-  addresses:
-    - example.com
-    - pyfarm.net
-    - google.com
