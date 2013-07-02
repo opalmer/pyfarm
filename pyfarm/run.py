@@ -24,9 +24,12 @@ from pyfarm.flaskapp import app
 
 def master(debug=False):
     """Entry point which launches master REST api"""
+    from flask.ext import restful
     from pyfarm.master.resources.ping import Ping
     from pyfarm.api import VERSION
 
+    api = restful.Api(app, prefix="/v%s" % VERSION)
+    api.add_resource(Ping, "/ping")
 
 
 def admin(debug=False):

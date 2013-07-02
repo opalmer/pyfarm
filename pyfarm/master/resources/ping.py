@@ -14,17 +14,38 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import time
 from flask import request
+from flask.ext import restful
 from pyfarm.system import network
 
 
-# TODO: proper parent class setup
-class Ping(object):
+class Ping(restful.Resource):
+    def _agentInformation(self, request):
+        """
+        Returns information about the agent making a request
+        """
+        # TODO: call underlying api (same api /agents/ will use)
+        return None
+
     def get(self):
+        """
+        When queried this method returns some general information about the
+        server and requesting agent.
+
+        ::
+
+            GET 200 /ping
+            {
+                "master_name": <name of master serving request>,
+                "remote_addr": <address of host requesting information>,
+                "agent": <href to additional information about the agent>,
+                "time": <current time since the epoc as a float>
+            }
+        """
         return {
-            "success": True,
-            "master": network.hostname()
-            # TODO: 'self' reference to any known records on the agent
-            # TODO: ip address of requesting host
-            # TODO: current server time
+            "master_name": network.hostname(),
+            "remote_addr": request.remote_addr,
+            "agent": self._agentInformation(request),
+            "time": time.time()
         }

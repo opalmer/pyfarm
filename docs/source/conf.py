@@ -53,8 +53,10 @@ intersphinx_mapping = {
     "python": ("http://docs.python.org/%s.%s" % (pymajor, pyminor), None),
     "sqlalchemy": ("http://www.sqlalchemy.org/docs/", None),
     "flask": ("http://flask.readthedocs.org/en/latest/", None),
-    "numpy": ("http://docs.scipy.org/doc/numpy", None)
+    "numpy": ("http://docs.scipy.org/doc/numpy", None),
+    "flask_restful": ("http://flask-restful.readthedocs.org/en/latest/", None)
 }
+intersphinx_mapping["flask-restful"] = intersphinx_mapping["flask_restful"]
 
 templates_path = ["_templates"]
 source_suffix = ".rst"
