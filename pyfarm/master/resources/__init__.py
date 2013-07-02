@@ -22,7 +22,7 @@ be typically be formatted like below.
 
     ::
 
-        GET 200 /v1/hosts/1
+        GET 200 /hosts/1
         {
             "hostname": "foo",
             "address": "123.456.789.100",
@@ -31,7 +31,11 @@ be typically be formatted like below.
         }
 
 
-In the example above `GET` is the request being made, `/v1/hosts/1/` is the
+In the example above `GET` is the request being made, `/hosts/1/` is the
 resource requested, and 200 is the expected return code to get the result
-documented below.  Please note, the url structure does
+documented below.
+
+.. note::
+    The url structure does not include the version from the url so documentation
+    referring to `/foo` should infer a version number such as `/v1/foo`
 """
