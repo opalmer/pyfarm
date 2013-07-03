@@ -49,7 +49,6 @@ class ConfigTestBase(TestCase):
         return data, kwargs
 
 
-
 class TestErrors(ConfigTestBase):
     def setUp(self):
         super(TestErrors, self).setUp()
@@ -89,7 +88,8 @@ class General(ConfigTestBase):
     def test_load_files(self):
         data, kwargs = self._generatedata()
         config = Loader("config.yml", **kwargs)
-        self.assertEqual(config.files, configFiles("config.yml", **kwargs))
+        self.assertEqual(set(config.files),
+                         set(configFiles("config.yml", **kwargs)))
 
     def test_data(self):
         uuid_data = {}
