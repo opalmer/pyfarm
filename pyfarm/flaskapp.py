@@ -22,14 +22,19 @@ add their own.  After setting up the application :func:`pyfarm.run.run`
 will handle the execution of the Flask application
 """
 
+import os
 import uuid
 from flask import Flask
 from flask.ext.sqlalchemy import SQLAlchemy
 
+from pyfarm import dist
 from pyfarm.error import SubKeyError, PreferencesError
 from pyfarm.config.database import DBConfig
 
-app = Flask("PyFarm")
+PYFARM_FILES = os.path.join(dist.location, "pyfarm-files")
+STATIC_FILES = os.path.join(PYFARM_FILES, "static")
+
+app = Flask("PyFarm", static_folder=STATIC_FILES, static_url_path="")
 dbconfig = DBConfig()
 
 # iterate over configuration names we should expect to find
