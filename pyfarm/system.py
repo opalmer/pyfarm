@@ -41,13 +41,14 @@ try:
 except ImportError:
     multiprocessing = None
 
+import IPy
 import psutil
 import netifaces
 
 from pyfarm.warning import NotImplementedWarning, NetworkWarning
 from pyfarm.ext.config.core.loader import Loader
 from pyfarm.ext.config.enum import OperatingSystem
-from pyfarm.utility import convert, isLocalIPv4Address
+from pyfarm.utility import convert
 
 
 def user():
@@ -300,9 +301,6 @@ class NetworkInfo(object):
         warn("ip check via REST request to master", NotImplementedWarning)
         checks = [self.ipFromDNS]
 
-        if self.config.get("remote_address_check.enable"):
-            checks.extend(self.config.get("remote_address_check.addresses"))
-
         address = None
         for check in checks:
             if callable(check):
@@ -457,3 +455,19 @@ memory = MemoryInfo()
 processor = ProcessorInfo()
 network = NetworkInfo()
 operating_system = OperatingSystemInfo()
+
+# address ranges
+IP_SPECIAL_USE = IPy.IP("0.0.0.0/8")
+IP_LINK_LOCAL = IPy.IP("169.254.0.0/16")
+IP_LOOPBACK = IPy.IP("127.0.0.0/8")
+IP_MULTICAST = IPy.IP("224.0.0.0/4")
+IP_BROADCAST = IPy.IP("255.255.255.255")
+IP_PRIVATE = IPy.IPSet([
+    IPy.IP("10.0.0.0/8"), IPy.IP("172.16.0.0/12"),
+    IPy.IP("192.168.0.0/16")
+])
+IP_NONNETWORK = IPy.IPSet([
+    IP_SPECIAL_USE, IP_LINK_LOCAL,
+    IP_LOOPBACK, IP_MULTICAST,
+    IP_BROADCAST
+])

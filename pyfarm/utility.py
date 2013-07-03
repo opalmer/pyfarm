@@ -32,9 +32,6 @@ try:
 except NameError:
     _range = range
 
-PUBLIC_TYPE_NAMES = set(["PRIVATE", "PUBLIC"])
-LOCAL_RANGES = set([IPy.IP("169.254.0.0/16"), IPy.IP("127.0.0.0/8")])
-
 def randstr():
     """returns a random hexidecimal string based on :func:`os.urandom`"""
     return binascii.b2a_hex(os.urandom(6))
@@ -73,24 +70,6 @@ def rounded(value, places=4, rounding=ROUND_HALF_DOWN):
                                  rounding=rounding)
 
     return float(rounded_float)
-
-
-def isLocalIPv4Address(address):
-    """
-    Returns True if `address` is a local network accessible
-    network but is not link local.
-    """
-    try:
-        address = IPy.IP(address)
-    except ValueError:
-        return False
-    else:
-        return all([
-            address.iptype() in PUBLIC_TYPE_NAMES,
-            all([address not in localrange for localrange in LOCAL_RANGES]),
-            address != IPy.IP("0.0.0.0")
-        ])
-
 
 def _floatrange_generator(start, end, by, add_endpoint):
     """
