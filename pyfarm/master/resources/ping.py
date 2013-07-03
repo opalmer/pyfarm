@@ -14,7 +14,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import time
+from datetime import datetime
+from werkzeug.http import http_date
 from flask import request
 from flask.ext import restful
 from pyfarm.system import network
@@ -47,5 +48,5 @@ class Ping(restful.Resource):
             "master_name": network.hostname(),
             "remote_addr": request.remote_addr,
             "agent": self._agentInformation(request),
-            "time": time.time()
+            "time": http_date(datetime.now())
         }
