@@ -76,27 +76,28 @@ def requirements(major, minor):
         "appdirs", "PyYaml",
         "psutil", "netifaces",
         "Jinja2==%s.%s" % (major, minor),
-        "flask-sqlalchemy", "IPy"
+        "flask-sqlalchemy", "IPy", "flask-restful"
     ]
 
     # backports of modules introduced in 2.7
     if (major, minor) < (2, 7):
         requires.append("argparse")
+        requires.append("ordereddict")
 
     # higher than 2.5
     if (major, minor) > (2, 5):
         requires.append("flask")
         requires.append("flask-admin")
-        requires.append("ordereddict")
+        requires.append("requests")
         # requires.append("zope.interface")
         # requires.append("twisted")
 
     # 2.5 exclusive
     if (major, minor) == (2, 5):
-        requires.append("ordereddict")
         requires.append("simplejson")
         requires.append("flask==0.9")
         requires.append("Werkzeug==0.8.3")
+        requires.append("requests==0.10.0")
         # requires.append("zope.interface<=3.8.0")
         # requires.append("twisted<=12.1")
 
