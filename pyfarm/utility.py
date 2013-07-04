@@ -25,12 +25,11 @@ import os
 import binascii
 from decimal import Decimal, ROUND_HALF_DOWN
 
-import IPy
-
 try:
     _range = xrange
 except NameError:
     _range = range
+
 
 def randstr():
     """returns a random hexidecimal string based on :func:`os.urandom`"""
@@ -70,6 +69,7 @@ def rounded(value, places=4, rounding=ROUND_HALF_DOWN):
                                  rounding=rounding)
 
     return float(rounded_float)
+
 
 def _floatrange_generator(start, end, by, add_endpoint):
     """
