@@ -15,115 +15,20 @@
 # limitations under the License.
 
 """
-Module which is used to query system level information such as
-cpu times, memory, and disk usage.  Inline code included in
-this module was produced for the purposes of doctests.
+Returns information about the network including ip address, dns, data
+sent/received, and some error information.
 """
 
-import os
-import time
-import socket
-import random
-import getpass
-import tempfile
 from warnings import warn
 
-try:
-    import pwd
-    _user = lambda: pwd.getpwuid(os.getuid())[0]
-
-except ImportError:
-    import getpass
-    _user = lambda: getpass.getuser()
-
-try:
-    import multiprocessing
-except ImportError:
-    multiprocessing = None
-
+import netifaces
+import socket
 import IPy
 import psutil
-import netifaces
 
-from pyfarm.warning import NotImplementedWarning, NetworkWarning
 from pyfarm.ext.config.core.loader import Loader
-from pyfarm.ext.config.enum import OperatingSystem
 from pyfarm.utility import convert
-
-
-def user():
-    """
-    Returns the current user name.  On posix based platforms this uses
-    :func:`pwd.getpwuid` and on windows it falls back to
-    :func:`getpass.getuser`.
-    """
-    return _user()
-
-
-class OperatingSystemInfo(object):
-    """
-    .. note::
-        This class has already been instanced onto
-        `pyfarm.system.operating_system`
-
-    Namespace class which returns information about
-    the current operating system such as case-sensitivity, type, etc.
-
-    :attr OS:
-        Integer containing the os type, this is a mapping to a value
-        on :class:`OperatingSystem`
-
-    :attr IS_LINUX:
-        set to True if running linux
-
-    :attr IS_WINDOWS:
-        set to True if running windows
-
-    :attr IS_MAC:
-        set to True if running mac os
-
-    :attr IS_OTHER:
-        set to True if running something we could not determine a mapping for
-
-    :attr IS_POSIX:
-        set to True if running a posix platform (such as linux or mac)
-
-    :attr CASE_SENSITIVE:
-        set to True if the filesystem is case sensitive
-    """
-    _enum = OperatingSystem()
-    OS = _enum.get()
-    IS_LINUX = OS == _enum.LINUX
-    IS_WINDOWS = OS == _enum.WINDOWS
-    IS_MAC = OS == _enum.MAC
-    IS_OTHER = OS == _enum.OTHER
-    IS_POSIX = OS in (_enum.LINUX, _enum.MAC)
-    CASE_SENSITIVE = None
-
-    def __init__(self):
-        if self.__class__.CASE_SENSITIVE is None:
-            fid, path = tempfile.mkstemp()
-            exists = map(os.path.isfile, [path, path.lower(), path.upper()])
-            if not any(exists):
-                raise ValueError(
-                    "failed to determine if path was case sensitive")
-            elif all(exists):
-                self.__class__.CASE_SENSITIVE = False
-
-            elif exists.count(True) == 1:
-                self.__class__.CASE_SENSITIVE = True
-
-            try:
-                os.remove(path)
-            except:
-                pass
-
-    def uptime(self):
-        """
-        Returns the amount of time the system has been running in
-        seconds
-        """
-        return time.time() - psutil.BOOT_TIME
+from pyfarm.warning import NetworkWarning, NotImplementedWarning
 
 
 class NetworkInfo(object):
@@ -285,6 +190,7 @@ class NetworkInfo(object):
 
     def ipFromMaster(self):
         """Attempts to connect to the master and request our current address"""
+        raise NotImplementedError
 
     def ip(self):
         """
@@ -348,126 +254,46 @@ class NetworkInfo(object):
         return address
 
 
-class ProcessorInfo(object):
+class IPSet(object):
     """
-    .. note::
-        This class has already been instanced onto `pyfarm.system.processor`
+    Simple class which returns True if an :class:`IPy.IP` object
+    is contained within the set.
 
-    Namespace class which returns information about the processor(s)
-    in use on the system.
-
-    :attr CPU_COUNT:
-        Returns the total number of cpus installed.  This first
-        attempts to use :func:`multiprocessing.cpu_count` before
-        falling back onto `psutil.NUM_CPUS`
+    >>> addresses = IPSet(IPy.IP("192.168.0.0/16"))
+    >>> IPy.IP("192.168.0.1") in addresses
+    True
+    >>> IPy.IP("0.0.0.0") in addresses
+    False
     """
-    if multiprocessing is not None:
-        try:
-            CPU_COUNT = multiprocessing.cpu_count()
-        except NotImplementedError, e:
-            warn("failed to use multiprocess.cpu_count: %s" % e,
-                 RuntimeWarning)
+    def __init__(self, *addresses):
+        self._addresses = set(addresses)
 
-    CPU_COUNT = psutil.NUM_CPUS
+    def __repr__(self):
+        addr_repr = map(repr, [ip.strCompressed(1) for ip in self._addresses])
+        return "%s(%s)" % (self.__class__.__name__, ", ".join(addr_repr))
 
-    def load(self, iterval=1):
-        """
-        Returns the load across all cpus value from zero to one.  A value
-        of 1.0 means the average load across all cpus is 100%.
-        """
-        return psutil.cpu_percent(iterval) / self.CPU_COUNT
-
-    def userTime(self):
-        """
-        Returns the amount of time spent by the cpu in user
-        space
-        """
-        return psutil.cpu_times().user
-
-    def systemTime(self):
-        """
-        Returns the amount of time spent by the cpu in system
-        space
-        """
-        return psutil.cpu_times().system
-
-    def idleTime(self):
-        """
-        Returns the amount of time spent by the cpu in idle
-        space
-        """
-        return psutil.cpu_times().idle
-
-    def iowait(self):
-        """
-        Returns the amount of time spent by the cpu waiting
-        on io
-
-        .. note::
-            on platforms other than linux this will return None
-        """
-        if operating_system.IS_POSIX:
-            cpu_times = psutil.cpu_times()
-            if hasattr(cpu_times, "iowait"):
-                return psutil.cpu_times().iowait
+    def __contains__(self, item):
+        assert isinstance(item, IPy.IP), "__contains__ requires an IPy.IP item"
+        for address in self._addresses:
+            if item in address:
+                return True
+        return False
 
 
-class MemoryInfo(object):
-    """
-    .. note::
-        This class has already been instanced onto `pyfarm.system.memory`
-
-    Namespace class which returns information about both physical and
-    virtual memory on the system.  Unless otherwise noted all units are in
-    megabytes.
-
-    This class is a wrapper around methods present on :mod:`psutil` and is
-    normally accessed using the instance found on `memory`:
-
-    :attr TOTAL_RAM:
-        Total physical memory (ram) installed on the system
-
-    :attr TOTAL_SWAP:
-        Total virtual memory (swap) installed on the system
-    """
-    TOTAL_RAM = convert.bytetomb(psutil.TOTAL_PHYMEM)
-    TOTAL_SWAP = convert.bytetomb(psutil.swap_memory().total)
-
-    def swapUsed(self):
-        """Amount of swap currently in use"""
-        return convert.bytetomb(psutil.swap_memory().used)
-
-    def swapFree(self):
-        """Amount of swap currently free"""
-        return convert.bytetomb(psutil.swap_memory().free)
-
-    def ramUsed(self):
-        """Amount of swap currently free"""
-        return convert.bytetomb(psutil.virtual_memory().used)
-
-    def ramFree(self):
-        """Amount of ram currently free"""
-        return convert.bytetomb(psutil.virtual_memory().available)
-
-
-# instances of info objects for external use
-memory = MemoryInfo()
-processor = ProcessorInfo()
-network = NetworkInfo()
-operating_system = OperatingSystemInfo()
-
-# address ranges
 IP_SPECIAL_USE = IPy.IP("0.0.0.0/8")
 IP_LINK_LOCAL = IPy.IP("169.254.0.0/16")
 IP_LOOPBACK = IPy.IP("127.0.0.0/8")
 IP_MULTICAST = IPy.IP("224.0.0.0/4")
 IP_BROADCAST = IPy.IP("255.255.255.255")
-IP_PRIVATE = IPy.IPSet([
-    IPy.IP("10.0.0.0/8"), IPy.IP("172.16.0.0/12"),
+IP_PRIVATE = IPSet(
+    IPy.IP("10.0.0.0/8"),
+    IPy.IP("172.16.0.0/12"),
     IPy.IP("192.168.0.0/16")
-])
-IP_NONNETWORK = IPy.IPSet([
-    IP_SPECIAL_USE, IP_LINK_LOCAL,
-    IP_LOOPBACK, IP_MULTICAST,
+)
+IP_NONNETWORK = IPSet(
+    IP_SPECIAL_USE,
+    IP_LINK_LOCAL,
+    IP_LOOPBACK,
+    IP_MULTICAST,
     IP_BROADCAST
-])
+)
