@@ -30,7 +30,7 @@ try:
 except ImportError:
     import getpass
 
-from pyfarm.system import operating_system
+from pyfarm.system import osinfo
 
 
 def user():
@@ -52,10 +52,10 @@ def isAdmin():
     Return True if the current user is root (Linux) or running as an
     Administrator (Windows).
     """
-    if operating_system.IS_POSIX:
+    if osinfo.IS_POSIX:
         return os.getuid() == 0
-    elif operating_system.IS_WINDOWS:
+    elif osinfo.IS_WINDOWS:
         return ctypes.windll.shell32.IsUserAnAdmin() != 0
 
-    osname = operating_system.OS(operating_system.OS())
+    osname = osinfo.OS(osinfo.OS())
     raise NotImplementedError("`isAdmin` is not implemented for %s" % osname)
