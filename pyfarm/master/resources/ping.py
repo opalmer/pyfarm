@@ -18,7 +18,7 @@ from datetime import datetime
 from werkzeug.http import http_date
 from flask import request
 from flask.ext import restful
-from pyfarm.system import network
+from pyfarm.ext.system import netinfo
 
 
 class Ping(restful.Resource):
@@ -45,7 +45,7 @@ class Ping(restful.Resource):
             }
         """
         return {
-            "master_name": network.hostname(),
+            "master_name": netinfo.hostname(),
             "remote_addr": request.remote_addr,
             "agent": self._agentInformation(request),
             "time": http_date(datetime.now())
