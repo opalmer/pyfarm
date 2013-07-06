@@ -29,7 +29,7 @@ from pyfarm.system.memory import MemoryInfo
 from pyfarm.system.network import NetworkInfo
 from pyfarm.system.processor import ProcessorInfo
 
-operating_system = OperatingSystemInfo()
-memory = MemoryInfo()
-processor = ProcessorInfo()
-network = NetworkInfo()
+osinfo = OperatingSystemInfo()
+meminfo = MemoryInfo()
+cpuinfo = ProcessorInfo()
+netinfo = NetworkInfo()
