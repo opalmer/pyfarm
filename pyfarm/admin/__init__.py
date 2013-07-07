@@ -23,11 +23,16 @@ try:
     )
     from pyfarm.admin.tables.task import TaskModelView
 except ImportError:
+    import os
     import sys
 
-    if sys.version_info[0:2] <= (2, 5):
+    msg = "admin modules require Python 2.6 or higher"
+
+    if sys.version_info[0:2] <= (2, 5) and "BUILDBOT_UUID" in os.environ:
+        from nose.plugins.skip import SkipTest
+        raise SkipTest(msg)
+    else:
         from pyfarm.warning import CompatibilityWarning
         from warnings import warn
-        warn("admin modules require Python 2.6 or higher", CompatibilityWarning)
-    else:
+        warn(msg, CompatibilityWarning)
         raise
