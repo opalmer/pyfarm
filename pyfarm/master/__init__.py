@@ -22,6 +22,7 @@ msg = "master modules require Python 2.6 or higher"
 if sys.version_info[0:2] <= (2, 5) and "BUILDBOT_UUID" in os.environ:
     from nose.plugins.skip import SkipTest
     raise SkipTest(msg)
+
 elif sys.version_info[0:2] <= (2, 5):
     from pyfarm.warning import CompatibilityWarning
     from warnings import warn
