@@ -60,23 +60,19 @@ class Loader(IterableUserDict):
         assert isinstance(data, dict), "data should be a dictionary object"
         assert isinstance(filename, basestring), "filename not resolved"
 
-        self.files = []
+        # if load and filename not in self._DATA:
+        self.files = find.configFiles(filename, **findkwargs)
 
-        if load and filename not in self._DATA:
-            self.files = find.configFiles(filename, **findkwargs)
+        if not self.files and filename and not data:
+            raise PreferencesNotFoundError(
+                "failed to find any preference files for %s" % filename
+            )
 
-            if not self.files:
-                raise PreferencesNotFoundError(
-                    "failed to find any preference files for %s" % filename
-                )
-
-            # load data from each file
-            for filepath in self.files:
-                data.update(self._load(filepath,
-                                       cached=cached,
-                                       filename=filename))
-        elif filename in self._DATA:
-            data = self._DATA[filename]
+        # load data from each file
+        for filepath in self.files:
+            data.update(self._load(filepath,
+                                   cached=cached,
+                                   filename=filename))
 
         self.__instanced = False
         IterableUserDict.__init__(self, data)
