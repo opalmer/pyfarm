@@ -24,7 +24,7 @@ the package.
 # NOTE: OperatingSystemInfo should be instanced first so other subpackages can
 # use it
 
-from pyfarm.system.osinfo import OperatingSystemInfo
+from pyfarm.system.osdata import OperatingSystemInfo
 from pyfarm.system.memory import MemoryInfo
 from pyfarm.system.network import NetworkInfo
 from pyfarm.system.processor import ProcessorInfo
