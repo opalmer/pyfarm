@@ -119,7 +119,7 @@ class Network(TestCase):
             i.get("addr") == netinfo.ip()
             for i in netifaces.ifaddresses(
             netinfo.interface()).get(socket.AF_INET, [])), True)
-        
+
 
 class Processor(TestCase):
     def test_count(self):
