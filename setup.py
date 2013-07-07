@@ -76,7 +76,7 @@ def requirements(major, minor):
         "appdirs", "PyYaml",
         "psutil", "netifaces",
         "Jinja2==%s.%s" % (major, minor),
-        "flask-sqlalchemy", "IPy", "flask-restful"
+        "flask-sqlalchemy", "IPy"
     ]
 
     # backports of modules introduced in 2.7
@@ -89,6 +89,7 @@ def requirements(major, minor):
         requires.append("flask")
         requires.append("flask-admin")
         requires.append("requests")
+        requires.append("flask-restful")
         # requires.append("zope.interface")
         # requires.append("twisted")
 
