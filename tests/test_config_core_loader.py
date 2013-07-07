@@ -56,7 +56,7 @@ class TestErrors(ConfigTestBase):
 
 
     @raises(error.PreferencesNotFoundError)
-    def test__notfound(self):
+    def test_notfound(self):
         Loader("")
 
 
