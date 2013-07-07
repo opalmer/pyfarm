@@ -24,8 +24,7 @@ except NameError:
 
 from nose.tools import raises
 from utcore import TestCase
-from pyfarm.utility import (floatrange, convert, randstr, randint,
-                            rounded, isLocalIPv4Address)
+from pyfarm.utility import floatrange, convert, randstr, randint, rounded
 
 RAND_TEST_COUNT = 75000
 
@@ -63,12 +62,6 @@ class Rounding(TestCase):
         self.assertEqual(rounded(math.pi), 3.1416)
         self.assertEqual(rounded(math.pi, 2), 3.14)
         self.assertEqual(rounded(math.pi, 6), 3.141593)
-
-    def test_net_public(self):
-        self.assertEqual(isLocalIPv4Address("0.0.0.0"), False)
-        self.assertEqual(isLocalIPv4Address("127.0.0.1"), False)
-        self.assertEqual(isLocalIPv4Address("169.254.0.0"), False)
-        self.assertEqual(isLocalIPv4Address("10.56.0.0"), True)
 
     @raises(TypeError)
     def test_rounded_places_type_error(self):

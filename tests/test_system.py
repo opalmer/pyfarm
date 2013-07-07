@@ -103,8 +103,6 @@ class Network(TestCase):
     def test_addresses(self):
         self.assertEqual(len(netinfo.addresses()) >= 1, True)
         self.assertEqual(isinstance(netinfo.addresses(), list), True)
-        self.assertEqual(all(netinfo.isPublic(a) for a in netinfo.addresses()),
-                         True)
 
     def test_interfaces(self):
         names = netinfo.interfaces()
@@ -121,10 +119,7 @@ class Network(TestCase):
             i.get("addr") == netinfo.ip()
             for i in netifaces.ifaddresses(
             netinfo.interface()).get(socket.AF_INET, [])), True)
-
-    def test_ip(self):
-        self.assertEqual(netinfo.isPublic(netinfo.ip()), True)
-
+        
 
 class Processor(TestCase):
     def test_count(self):
@@ -134,7 +129,7 @@ class Processor(TestCase):
         except (ImportError, NotImplementedError):
             cpu_count = psutil.NUM_CPUS
 
-        self.assertEqual(cpuinfo.CPU_COUNT, cpu_count)
+        self.assertEqual(cpuinfo.NUM_CPUS, cpu_count)
 
     @skip_on_ci
     def test_load(self):

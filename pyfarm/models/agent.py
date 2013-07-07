@@ -21,7 +21,6 @@ from sqlalchemy.orm import validates
 from pyfarm.flaskapp import db
 from pyfarm.ext.config.core.loader import Loader
 from pyfarm.ext.config.enum import AgentState
-from pyfarm.ext.utility import isLocalIPv4Address
 from pyfarm.models.mixins import StateValidationMixin, RandIdMixin
 from pyfarm.models.constants import (
     DBCFG, TABLE_AGENT, TABLE_AGENT_TAGS, TABLE_AGENT_SOFTWARE)
