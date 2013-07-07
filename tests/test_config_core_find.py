@@ -29,6 +29,8 @@ except ImportError:
 
 VERSION = (1, 2, 3)
 
+raise NotImplementedError("NOT NEW TESTS!")
+
 @raises(AssertionError)
 @envsetup
 def test_directories_version_error():
