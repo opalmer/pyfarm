@@ -21,6 +21,10 @@ class PyFarmError(Exception):
     """base exception for all pyfarm errors"""
 
 
+class NetworkError(PyFarmError):
+    """base exception for network related error in PyFarm"""
+
+
 class PreferencesError(PyFarmError):
     """base class for all preferences related errors"""
 
