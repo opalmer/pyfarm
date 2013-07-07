@@ -33,7 +33,7 @@ except ImportError:
 from pyfarm.system import osinfo
 
 
-def user():
+def username():
     """
     Returns the current user name.  On posix based platforms this uses
     :func:`pwd.getpwuid` and on windows it falls back to

@@ -28,7 +28,7 @@ from pyfarm.system.osdata import OperatingSystemInfo
 from pyfarm.system.memory import MemoryInfo
 from pyfarm.system.network import NetworkInfo
 from pyfarm.system.processor import ProcessorInfo
-from pyfarm.system.user import user, isAdmin
+from pyfarm.system.user import username, isAdmin
 
 osinfo = OperatingSystemInfo()
 meminfo = MemoryInfo()

@@ -24,7 +24,7 @@ import netifaces
 from utcore import TestCase, skip_on_ci
 from pyfarm.ext.utility import convert
 from pyfarm.ext.config.enum import OperatingSystem as _OperatingSystem
-from pyfarm.ext.system import osinfo, netinfo, cpuinfo, meminfo, user
+from pyfarm.ext.system import osinfo, netinfo, cpuinfo, meminfo, username
 
 
 class OperatingSystem(TestCase):
@@ -37,7 +37,7 @@ class OperatingSystem(TestCase):
             import getpass
             sysuser = getpass.getuser()
 
-        self.assertEqual(user(), sysuser)
+        self.assertEqual(username(), sysuser)
 
     def test_uptime(self):
         t1 = osinfo.uptime()
