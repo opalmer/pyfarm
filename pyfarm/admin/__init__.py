@@ -14,25 +14,24 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-try:
-    from pyfarm.admin.tables.job import (
-        JobModelView, JobTagsModelView, JobSoftwareModelView
-    )
-    from pyfarm.admin.tables.agent import (
-        AgentModelView, AgentTagsModelView, AgentSoftwareModelView
-    )
-    from pyfarm.admin.tables.task import TaskModelView
-except ImportError:
-    import os
-    import sys
+import os
+import sys
 
-    msg = "admin modules require Python 2.6 or higher"
+msg = "admin modules require Python 2.6 or higher"
 
-    if sys.version_info[0:2] <= (2, 5) and "BUILDBOT_UUID" in os.environ:
-        from nose.plugins.skip import SkipTest
-        raise SkipTest(msg)
-    else:
-        from pyfarm.warning import CompatibilityWarning
-        from warnings import warn
-        warn(msg, CompatibilityWarning)
-        raise
+if sys.version_info[0:2] <= (2, 5) and "BUILDBOT_UUID" in os.environ:
+    from nose.plugins.skip import SkipTest
+    raise SkipTest(msg)
+elif sys.version_info[0:2] <= (2, 5):
+    from pyfarm.warning import CompatibilityWarning
+    from warnings import warn
+    warn(msg, CompatibilityWarning)
+    raise
+
+from pyfarm.admin.tables.job import (
+    JobModelView, JobTagsModelView, JobSoftwareModelView
+)
+from pyfarm.admin.tables.agent import (
+    AgentModelView, AgentTagsModelView, AgentSoftwareModelView
+)
+from pyfarm.admin.tables.task import TaskModelView
