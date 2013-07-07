@@ -63,7 +63,7 @@ class Loader(IterableUserDict):
         # if load and filename not in self._DATA:
         self.files = find.configFiles(filename, **findkwargs)
 
-        if not self.files and filename and not data:
+        if filename is not None and data is not None and not self.files and load:
             raise PreferencesNotFoundError(
                 "failed to find any preference files for %s" % filename
             )
