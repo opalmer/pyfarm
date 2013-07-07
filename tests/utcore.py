@@ -24,6 +24,7 @@ import sys
 import unittest
 import tempfile
 import traceback
+from functools import wraps
 
 from nose.plugins.skip import SkipTest
 
@@ -34,6 +35,7 @@ class skip_if_true(object):
         self.condition = condition
 
     def __call__(self, func):
+        @wraps(func)
         def wrapper(*args, **kwargs):
             if self.condition:
                 raise SkipTest
@@ -46,6 +48,7 @@ class skip_if_true(object):
 @skip_if_true("BUILDBOT_UUID" in os.environ)
 @skip_if_true("TRAVIS" in os.environ)
 def skip_on_ci(func):
+    @wraps(func)
     def wrapper(*args, **kwargs):
         return func(*args, **kwargs)
     return wrapper
