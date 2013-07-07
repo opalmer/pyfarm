@@ -28,7 +28,8 @@ import psutil
 
 from pyfarm.ext.config.core.loader import Loader
 from pyfarm.utility import convert
-from pyfarm.warning import NetworkWarning, NotImplementedWarning
+from pyfarm.error import NetworkError
+from pyfarm.warning import NetworkWarning
 
 
 class NetworkInfo(object):
@@ -42,14 +43,6 @@ class NetworkInfo(object):
     def __init__(self):
         self._cached_ip = None
         self.config = Loader("network.yml")
-
-    def isPublic(self, address):
-        """
-        Utility method which returns True if the given address is 'public'.
-        This simply means that we should be able to use the provided address
-        to contact or be contacted by other hosts on the network.
-        """
-        return isLocalIPv4Address(address)
 
     @property
     def _iocounter(self):
@@ -118,8 +111,18 @@ class NetworkInfo(object):
         for interface in self.interfaces():
             addrinfo = netifaces.ifaddresses(interface)
             for address in addrinfo.get(socket.AF_INET, []):
-                if "addr" in address and isLocalIPv4Address(address["addr"]):
-                    output.append(address["addr"])
+                addr = address.get("addr")
+
+                if addr is not None:
+                    try:
+                        ip = IPy.IP(addr)
+                    except ValueError:
+                        warn(
+                            "could not convert %s to a valid IP object" % addr,
+                            NetworkWarning)
+                    else:
+                        if ip in IP_PRIVATE:
+                            output.append(addr)
 
         assert output, "failed to find any ipv4 addresses"
         return output
@@ -139,119 +142,71 @@ class NetworkInfo(object):
         assert names, "failed to find any network interface names"
         return names
 
-    def interface(self):
+    def interface(self, addr=None):
         """
         Based on the result from :meth:`ip` return the network interface
         in use
         """
-        public_address = self.ip()
+        addr = self.ip() if addr is None else addr
+
         for interface in netifaces.interfaces():
             addresses = netifaces.ifaddresses(interface).get(socket.AF_INET, [])
             for address in addresses:
-                if address.get("addr") == public_address:
+                if address.get("addr") == addr:
                     return interface
 
         raise ValueError("could not determine network interface")
 
-    def ipFromDNS(self):
-        """
-        Returns the IP addresses that the hostname of this
-        machine resolves to.
-
-        .. warning::
-            This will return None if the dns name maps to a non-public
-            address
-        """
-        try:
-            hostname = self.hostname(fqdn=True)
-            addr = socket.gethostbyname(hostname)
-
-        # The above will sometimes fail if the fqdn hostname
-        # is not a name that can be resolved to an ip.  In
-        # those cases we try again with the local hostname
-        # instead.
-        except socket.gaierror:
-            hostname = self.hostname(fqdn=False)
-            addr = socket.gethostbyname(hostname)
-
-        try:
-            reverse_name, aliases, addrs = socket.gethostbyaddr(addr)
-
-        except socket.herror:
-            warn("failed to resolve hostname for %s" % addr, NetworkWarning)
-            return None
-
-        # addr may not be public and is often the case on linux
-        # where the hostname is mapped to 127.0.0.1
-        if reverse_name == "localhost":
-            return
-        elif self.isPublic(addr):
-            return addr
-
-    def ipFromMaster(self):
-        """Attempts to connect to the master and request our current address"""
-        raise NotImplementedError
-
     def ip(self):
         """
-        Attempts to retrieve the ip address for use on the network.  This
-        method attempts several ways of finding the correct ip address:
-            * use a GET request to the master's REST api
-            * ask DNS using the fully qualified domain name
-            * bind to an external server and check for the address used (does
-              not send any data)
+        Attempts to retrieve the ip address for use on the network.
         """
         if self._cached_ip is not None:
             return self._cached_ip
 
-        warn("ip check via REST request to master", NotImplementedWarning)
-        checks = [self.ipFromDNS]
+        sums = []
+        counters = psutil.network_io_counters(pernic=True)
+        for address in self.addresses():
+            interface = self.interface(address)
+            try:
+                counter = counters[interface]
+            except KeyError:
+                bytes_sent, bytes_recv, packets_sent, packets_recv = 0, 0, 0, 0
+            else:
+                bytes_sent = counter.bytes_sent
+                bytes_recv = counter.bytes_recv
+                packets_recv = counter.bytes_recv
+                packets_sent = counter.bytes_sent
 
-        address = None
-        for check in checks:
-            if callable(check):
-                address = check()
-                if address is not None:
-                    break
+            sums.append((
+                address,
+                bytes_recv + bytes_sent + packets_sent + packets_recv))
 
-            elif isinstance(check, basestring):
-                sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-                try:
-                    sock.connect((check, 0))
-                except socket.error:
-                    warn("failed to check to use %s to check address" % check,
-                         NetworkWarning)
-                else:
-                    address, port = sock.getsockname()
-                    if isLocalIPv4Address(address):
-                        break
-                finally:
-                    sock.close()
-        else:
-            warn("failed to determine ip address", NetworkWarning)
-            return None
 
-        self._cached_ip = address
+        dnsip = None
+        hostname = self.hostname(fqdn=True)
+        try:
+            dnsip = socket.gethostbyname(hostname)
+        except socket.gaierror:
+            pass
 
-        # before we return the value check to see which
-        # network io counter has the highest value since
-        # it's the most likely to be the one we're
-        # communicating with
-        counts = []
-        count_mapping = {}
-        for nic, counter in psutil.network_io_counters(pernic=True).iteritems():
-            count = counter.packets_sent + counter.packets_recv
-            counts.append(count)
-            count_mapping[count] = nic
+        if not sums and dnsip is None:
+            raise NetworkError("no ip address found")
 
-        # get the max count then determine if the network
-        # interface with the max count is the one we've found
-        max_count = max(counts)
-        if count_mapping[max_count] != self.interface():
-            warn("interface selected may not be the primary interface",
+        # sort addresses based on how 'acive' they appear
+        sums.sort(cmp=lambda a, b: 1 if a[1] > b[1] else -1, reverse=True)
+
+        # if the most active address is not the address
+        # that's mapped via dns, print a warning and return
+        # the dns address
+        if sums and sums[0][0] != dnsip:
+            warn("DNS address != most active active address",
                  NetworkWarning)
+            self._cached_ip = dnsip
+        else:
+            self._cached_ip = sums[0][0]
 
-        return address
+        return self._cached_ip
 
 
 class IPSet(object):
@@ -297,3 +252,7 @@ IP_NONNETWORK = IPSet(
     IP_MULTICAST,
     IP_BROADCAST
 )
+
+if __name__ == "__main__":
+    n = NetworkInfo()
+    print n.ip()
