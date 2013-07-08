@@ -15,10 +15,10 @@
 # limitations under the License.
 
 import os
-from nose.tools import raises, eq_
+from nose.tools import raises
 from nose.plugins.skip import SkipTest
 
-from tests.pyfarmnose import envsetup, mktmp, mktmps
+from utcore import TestCase
 from pyfarm.ext.config.core import find
 from pyfarm.files import yamlDump
 
@@ -29,162 +29,153 @@ except ImportError:
 
 VERSION = (1, 2, 3)
 
-raise NotImplementedError("NOT NEW TESTS!")
 
-@raises(AssertionError)
-@envsetup
-def test_directories_version_error():
-    find.configDirectories(version=0)
+class TestFindDirectoriesError(TestCase):
+    @raises(AssertionError)
+    def test_directories_version_error(self):
+        find.configDirectories(version=0)
 
+    @raises(AssertionError)
+    def test_directories_user_error(self):
+        find.configDirectories(user=0)
 
-@raises(AssertionError)
-@envsetup
-def test_directories_user_error():
-    find.configDirectories(user=0)
-
-
-@raises(AssertionError)
-@envsetup
-def test_directories_system_error():
-    find.configDirectories(system=0)
-
-
-@raises(AssertionError)
-@envsetup
-def test_directories_roots_error():
-    find.configDirectories(roots=0)
+    @raises(AssertionError)
+    def test_directories_system_error(self):
+        find.configDirectories(system=0)
+    
+    @raises(AssertionError)
+    def test_directories_roots_error(self):
+        find.configDirectories(roots=0)
 
 
-@envsetup
-def test_output_types():
-    eq_(isinstance(find.configFiles(""), list), True)
-    eq_(isinstance(find.configDirectories(), list), True)
+class TestDirectories(TestCase):
+    def test_directories_roots(self):
+        roots = [self.mktempdir() for _ in xrange(3)]
+        self.assertEqual(roots, find.configDirectories(roots=roots))
+    
+    def test_directories_roots_environ(self):
+        roots = [self.mktempdir() for _ in xrange(3)]
+        os.environ["PYFARM_CFGROOT"] = os.pathsep.join(roots)
+        self.assertEqual(roots, find.configDirectories(roots=roots))
+    
+    def test_unversioned_directories(self):
+        user = self.mktempdir()
+        system = self.mktempdir()
+        roots = self.mktempdir()
+    
+        try_kwargs = (
+            {},
+            {"roots": roots},
+            {"roots": roots, "user": user},
+            {"roots": roots, "system": system},
+            {"roots": roots, "user": user, "system": system},
+        )
+        expected_results = (
+            [find.DEFAULT_CONFIG_ROOT],
+            roots,
+            user + roots,
+            system + roots,
+            user + system + roots
+        )
+    
+        for kwargs, expected in zip(try_kwargs, expected_results):
+            # just in case one was created somewhere
+            kwargs.setdefault("version", [])
+            self.assertEqual(expected, find.configDirectories(**kwargs))
+
+    def test_versioned_directories(self):
+        user = self.mktempdir()
+        system = self.mktempdir()
+        roots = self.mktempdir()
+        version = [1, 2, 3]
+        versions = find._versionSubdirs(version)
+    
+        try_kwargs = (
+            {},
+            {"roots": roots},
+            {"roots": roots, "user": user},
+            {"roots": roots, "system": system},
+            {"roots": roots, "user": user, "system": system},
+        )
+        expected_results = (
+            [find.DEFAULT_CONFIG_ROOT],
+            roots,
+            user + roots,
+            system + roots,
+            user + system + roots
+        )
+    
+        # because of latency issues on travis-ci and because we don't care
+        # about the directories existing, remove paths we do don't care
+        # about as a filter
+        all_config_dirs = user + system + roots
+        not_a_tmp_path = lambda path: \
+            any(True for d in all_config_dirs if path.startswith(d))
+    
+        for kwargs, expected in zip(try_kwargs, expected_results):
+            all_paths = []
+            kwargs.setdefault("version", version)
+            kwargs.setdefault("must_exist", False)
+    
+            for root, versiondir in product(expected, versions):
+                path = os.path.join(root, versiondir) if versiondir else root
+                if path not in all_paths:
+                    all_paths.append(path)
+    
+            filtered_config_dirs = filter(
+                not_a_tmp_path,
+                find.configDirectories(**kwargs)
+            )
+    
+            if filtered_config_dirs:
+                self.assertEqual(all_paths, filtered_config_dirs)
 
 
-@envsetup
-def test_directories_roots():
-    roots = [mktmp() for _ in xrange(3)]
-    eq_(roots, find.configDirectories(roots=roots))
+class TestGeneral(TestCase):
+    def test_output_types(self):
+        self.assertIsInstance(find.configFiles(""), list)
+        self.assertIsInstance(find.configDirectories(), list)
 
+    def test_files_by_name(self):
+        ymlname = "pyfarm_unittest.yml"
+        user = self.mktempdir()
+        system = self.mktempdir()
+        roots = self.mktempdir()
 
-@envsetup
-def test_directories_roots_environ():
-    roots = [mktmp() for _ in xrange(3)]
-    os.environ["PYFARM_CFGROOT"] = os.pathsep.join(roots)
-    eq_(roots, find.configDirectories(roots=roots))
-
-
-@envsetup
-def test_unversioned_directories():
-    user, system, roots = mktmps(3)
-
-    try_kwargs = (
-        {},
-        {"roots": roots},
-        {"roots": roots, "user": user},
-        {"roots": roots, "system": system},
-        {"roots": roots, "user": user, "system": system},
-    )
-    expected_results = (
-        [find.DEFAULT_CONFIG_ROOT],
-        roots,
-        user + roots,
-        system + roots,
-        user + system + roots
-    )
-
-    for kwargs, expected in zip(try_kwargs, expected_results):
-        kwargs.setdefault("version", []) # just in case one was created somewhere
-        eq_(expected, find.configDirectories(**kwargs))
-
-
-@envsetup
-def test_versioned_directories():
-    user, system, roots = mktmps(3)
-    version = [1, 2, 3]
-    versions = find._versionSubdirs(version)
-
-    try_kwargs = (
-        {},
-        {"roots": roots},
-        {"roots": roots, "user": user},
-        {"roots": roots, "system": system},
-        {"roots": roots, "user": user, "system": system},
-    )
-    expected_results = (
-        [find.DEFAULT_CONFIG_ROOT],
-        roots,
-        user + roots,
-        system + roots,
-        user + system + roots
-    )
-
-    # because of latency issues on travis-ci and because we don't care
-    # about the directories existing, remove paths we do don't care
-    # about as a filter
-    all_config_dirs = user + system + roots
-    not_a_tmp_path = lambda path: any(True for d in all_config_dirs if path.startswith(d))
-
-    for kwargs, expected in zip(try_kwargs, expected_results):
-        all_paths = []
-        kwargs.setdefault("version", version)
-        kwargs.setdefault("must_exist", False)
-
-        for root, versiondir in product(expected, versions):
-            path = os.path.join(root, versiondir) if versiondir else root
-            if path not in all_paths:
-                all_paths.append(path)
-
-        filtered_config_dirs = filter(
-            not_a_tmp_path,
-            find.configDirectories(**kwargs)
+        try_kwargs = (
+            {"roots": roots},
+            {"roots": roots, "user": user},
+            {"roots": roots, "system": system},
+            {"roots": roots, "user": user, "system": system},
+        )
+        expected_results = (
+            roots,
+            user + roots,
+            system + roots,
+            user + system + roots
         )
 
-        if filtered_config_dirs:
-            eq_(all_paths, filtered_config_dirs)
+        for kwargs, expected in zip(try_kwargs, expected_results):
+            filenames = []
 
+            for filepath in find.configDirectories(**kwargs):
+                filename = os.path.join(filepath, ymlname)
+                if filename not in filenames:
+                    yamlDump("", filename)
+                    if "TRAVIS" in os.environ:
+                        for i in xrange(50):
+                            if os.path.isfile(filename):
+                                break
+                        else:
+                            raise SkipTest("file not dumped %s" % filename)
 
-@envsetup
-def test_files_by_name():
-    ymlname = "pyfarm_unittest.yml"
-    user, system, roots = mktmps(3)
+                    filenames.append(filename)
 
-    try_kwargs = (
-        {"roots": roots},
-        {"roots": roots, "user": user},
-        {"roots": roots, "system": system},
-        {"roots": roots, "user": user, "system": system},
-    )
-    expected_results = (
-        roots,
-        user + roots,
-        system + roots,
-        user + system + roots
-    )
-
-    for kwargs, expected in zip(try_kwargs, expected_results):
-        filenames = []
-
-        for filepath in find.configDirectories(**kwargs):
-            filename = os.path.join(filepath, ymlname)
-            if filename not in filenames:
-                yamlDump("", filename)
-                if "TRAVIS" in os.environ:
-                    for i in xrange(50):
-                        if os.path.isfile(filename):
-                            break
-                    else:
-                        raise SkipTest("file not dumped %s" % filename)
-
-                filenames.append(filename)
-
-        yaml_files = find.configFiles(
-            ymlname,
-            roots=kwargs.get("roots"),
-            user=kwargs.get("user"),
-            system=kwargs.get("system")
-        )
-        eq_(yaml_files, filenames)
-
-
+            yaml_files = find.configFiles(
+                ymlname,
+                roots=kwargs.get("roots"),
+                user=kwargs.get("user"),
+                system=kwargs.get("system")
+            )
+            self.assertEqual(yaml_files, filenames)
 
