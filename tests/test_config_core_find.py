@@ -72,7 +72,7 @@ class TestDirectories(TestCase):
         )
         expected_results = (
             [find.DEFAULT_CONFIG_ROOT],
-            roots,
+            [roots],
             user + roots,
             system + roots,
             user + system + roots
