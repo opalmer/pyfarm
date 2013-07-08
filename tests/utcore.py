@@ -29,27 +29,11 @@ from functools import wraps
 from nose.plugins.skip import SkipTest
 
 
-class skip_if_true(object):
-    """Decorator which is used to skip a test given a condition"""
-    def __init__(self, condition):
-        self.condition = condition
-
-    def __call__(self, func):
-        @wraps(func)
-        def wrapper(*args, **kwargs):
-            if self.condition:
-                raise SkipTest
-
-            return func(*args, **kwargs)
-
-        return wrapper
-
-
-@skip_if_true("BUILDBOT_UUID" in os.environ)
-@skip_if_true("TRAVIS" in os.environ)
 def skip_on_ci(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
+        if "BUILDBOT_UUID" in os.environ or "TRAVIS" in os.environ:
+            raise SkipTest
         return func(*args, **kwargs)
     return wrapper
 
