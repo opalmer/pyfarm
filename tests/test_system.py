@@ -133,7 +133,7 @@ class Processor(TestCase):
 
     @skip_on_ci
     def test_load(self):
-        self.assertEqual(psutil.cpu_percent(.5) / cpuinfo.CPU_COUNT >= 0,
+        self.assertEqual(psutil.cpu_percent(.5) / cpuinfo.NUM_CPUS >= 0,
                          True)
         self.assertEqual(cpuinfo.load(.5) > 0, True)
 
