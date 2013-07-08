@@ -28,6 +28,8 @@ from functools import wraps
 
 from nose.plugins.skip import SkipTest
 
+from pyfarm.flaskapp import app
+
 
 def skip_on_ci(func):
     @wraps(func)
@@ -116,7 +118,15 @@ class TestCase(unittest.TestCase):
     def setUp(self):
         self._resetEnvironment()
         self.tempdir = self.mktempdir()
+        # setup the flask app
+        self.dbfd, app.config["DATABASE"] = tempfile.mkstemp()
+        app.config["TESTING"] = True
+        self.app = app.test_client()
+        app.init_db()
 
     def tearDown(self):
         self._resetEnvironment()
         self._cleanupDirectories()
+        os.close(self.db_fd)
+        os.unlink(app.config['DATABASE'])
+
