@@ -122,11 +122,11 @@ class TestCase(unittest.TestCase):
         self.dbfd, app.config["DATABASE"] = tempfile.mkstemp()
         app.config["TESTING"] = True
         self.app = app.test_client()
-        app.init_db()
+        # app.init_db()
 
     def tearDown(self):
         self._resetEnvironment()
         self._cleanupDirectories()
-        os.close(self.db_fd)
+        # os.close(self.db_fd)
         os.unlink(app.config['DATABASE'])
 
