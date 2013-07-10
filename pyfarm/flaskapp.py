@@ -34,21 +34,8 @@ from pyfarm.config.database import DBConfig
 app = Flask("PyFarm",
             static_folder=os.path.join(dist.location, "pyfarm-files", "static"),
             static_url_path="")
-dbconfig = DBConfig()
 
-# iterate over configuration names we should expect to find
-for config_name in dbconfig.get("config_order"):
-    try:
-        dburi = dbconfig.url(config_name)
-    except SubKeyError:
-        continue
-    else:
-        break
-else:
-    # there's something wrong with the setup if we reach this point
-    raise PreferencesError("failed to find any database configurations")
-
-app.config["SQLALCHEMY_DATABASE_URI"] = dburi
+app.config["SQLALCHEMY_DATABASE_URI"] = DBConfig().url()
 app.secret_key = str(uuid.uuid4())  # TODO: this needs a config or extern lookup
 
 db = SQLAlchemy(app)
