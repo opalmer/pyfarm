@@ -21,6 +21,7 @@ used by the unittests.
 
 import os
 import sys
+import time
 import unittest
 import tempfile
 import traceback
@@ -28,7 +29,15 @@ from functools import wraps
 
 from nose.plugins.skip import SkipTest
 
-from pyfarm.flaskapp import app
+# TODO: !! drive configuration from environment variables
+# before we do anything else, create the test configuration
+from pyfarm.ext.config.database import DBConfig
+DBConfig.insertConfig(
+    "unittest_%s" % time.time(), {"engine": "sqlite", "database": ":memory:"})
+
+print >> sys.stderr, "!!!!!!!! DBConfig.PREPEND_CONFIGS is being wiped!"
+raise Exception(DBConfig.PREPEND_CONFIGS)
+from pyfarm.flaskapp import app, db
 
 
 def skip_on_ci(func):
@@ -83,7 +92,7 @@ class TestCase(unittest.TestCase):
     def setUpClass(cls):
         try:
             from pyfarm.ext.config.database import DBConfig
-            DBConfig.createConfig("unittest",
+            DBConfig.insertConfig("unittest",
                                   {"engine": "sqlite", "database": ":memory:"})
             from pyfarm.ext import files as _files
 
@@ -118,15 +127,11 @@ class TestCase(unittest.TestCase):
     def setUp(self):
         self._resetEnvironment()
         self.tempdir = self.mktempdir()
-        # setup the flask app
-        self.dbfd, app.config["DATABASE"] = tempfile.mkstemp()
-        app.config["TESTING"] = True
         self.app = app.test_client()
-        # app.init_db()
+        db.create_all()
 
     def tearDown(self):
         self._resetEnvironment()
         self._cleanupDirectories()
-        # os.close(self.db_fd)
-        os.unlink(app.config['DATABASE'])
+        db.drop_all()
 
