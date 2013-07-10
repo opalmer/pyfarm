@@ -14,13 +14,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import re
 import os
+from warnings import warn
 
 from sqlalchemy.engine.url import URL
 
-from pyfarm.ext.config.core.loader import Loader
+# from pyfarm.config.core.loader import Loader
+from pyfarm.config.core.loader import Loader
 from pyfarm.error import PreferencesError
+from pyfarm.warning import DBConfigWarning
 
 
 class DBConfigError(PreferencesError):
@@ -32,22 +34,25 @@ class DBConfig(Loader):
     Custom class which allows for specific behaviors when working
     with the database.yml config.
     """
-    REGEX_CONFIG = re.compile("^configs[.].+$")
     FILENAME = "database.yml"
-    EXTENDED_CONFIGS = {}
+    PREPEND_CONFIGS = []
+
+    def __init__(self, *args, **kwargs):
+        Loader.__init__(self, *args, **kwargs)
+
+        if not self.get("config_order"):
+            raise DBConfigError(
+                "`config_order` was either not present or empty")
 
     @classmethod
     def createConfig(cls, name, config_data):
         """
-        Creates a new configuration that would be accessible by any instances
-        of this class.  Mainly this is used for creating a configuration
-        so things like :mod:`pyfarm.flaskapp` can function as is without
-        modification.
+        Creates a new configuration to use.
 
-        **Example:**
-
-            >>> config = {"engine": "sqlite", "database": ":memory:"}
-            >>> DBConfig.createConfig("unittest", config)
+        >>> DBConfig.createConfig(
+        ...     "fooA", {"engine": "sqlite", "database": "/tmp/fooA"})
+        >>> config = DBConfig()
+        >>> assert config["config_order"][0] == "FooA"
 
         :type name: str
         :param name:
@@ -58,64 +63,67 @@ class DBConfig(Loader):
         :param config_data:
             the data to add in the configuration
         """
-        if not isinstance(config_data, dict):
-            raise TypeError("`config_data` should be a dict")
+        cls.PREPEND_CONFIGS.insert(0, (name, config_data.copy()))
 
-        cls.EXTENDED_CONFIGS[name] = config_data.copy()
-
-    def url(self, config_name):
+    def url(self, config_name=None):
         """
         convenience method which returns the url for the given configuration
         name
         """
-        return self.get("configs.%s" % config_name)
+        if config_name is None:
+            config_name = self.get("config_order")[0]
 
-    def get(self, key, failobj=None):
-        """
-        Same as :meth:`Loader.get` except for database configurations
-        which will return a a list of :class:`URL` object.
-        """
-        if not self.REGEX_CONFIG.match(key):
-            return Loader.get(self, key, failobj=failobj)
+        try:
+            config = self.data[config_name].copy()
 
-        else:
-            # before doing anything else see if the configuration
-            # we're looking for is part of `EXTENDED_CONFIGS`
-            config_name = key.split(".")[-1]
+        except KeyError:
+            msg = "database configuration `%s` " % config_name
+            msg += "does not exist"
+            raise DBConfigError(msg)
 
-            if config_name not in self.EXTENDED_CONFIGS:
-                config_value = Loader.get(self, key, failobj=failobj)
+        # expand any environment variables in the database name
+        if "database" in config:
+            config["database"] = os.path.expandvars(config["database"])
 
-                if config_value is None:
-                    raise DBConfigError("no configurations for `%s`" % key)
+        # attempt to get the engine otherwise
+        # fail (required key)
+        try:
+            engine = config.pop("engine")
+        except KeyError:
+            raise DBConfigError("missing `engine` in %s" % config_name)
 
-                try:
-                    config = self[config_value].copy()
+        driver_parts = [engine]
+        driver = config.pop("driver", None)
 
-                except KeyError:
-                    msg = "database configuration `%s` " % config_value
-                    msg += "does not exist, skipping"
-                    raise DBConfigError(msg)
+        if driver is not None:
+            driver_parts.append(driver)
 
-            else:
-                config = self.EXTENDED_CONFIGS[config_name].copy()
+        return str(URL("+".join(driver_parts), **config))
 
-            # expand any environment variables in the database name
-            if "database" in config:
-                config["database"] = os.path.expandvars(config["database"])
-
-            # attempt to get the engine otherwise
-            # fail (required key)
+    def urls(self):
+        """returns a list of urls to use when attempting to connect"""
+        results = []
+        for config_name in self.get("config_order", []):
             try:
-                engine = config.pop("engine")
-            except KeyError:
-                raise DBConfigError("missing `engine` in configs.%s" %
-                                    config_value)
+                results.append(self.url(config_name))
+            except DBConfigError:
+                warn("configuration does not exist for `%s`" % config_name,
+                     DBConfigWarning)
 
-            driver_parts = [engine]
-            driver = config.pop("driver", None)
+        return results
 
-            if driver is not None:
-                driver_parts.append(driver)
+    def get(self, *args, **kwargs):
+        """
+        Wrapper around the standard :func:`Loader.get` except we
+        ensure that we pickup any changes to changes in :attr:`PREPEND_CONFIGS`
+        """
+        # Check to see if we're missing anything from PREPEND_CONFIGS.  It's
+        # not an exact process but should ensure new entries are properly
+        # added.
+        for name, data in self.PREPEND_CONFIGS:
+            if name not in self.data:
+                self.data[name] = data
+                self.data["configs"][name] = name
+                self.data["config_order"].insert(0, name)
 
-            return str(URL("+".join(driver_parts), **config))
+        return Loader.get(self, *args, **kwargs)
