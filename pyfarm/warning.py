@@ -38,6 +38,13 @@ class ConfigurationWarning(PyFarmWarning):
     """
 
 
+class DBConfigWarning(ConfigurationWarning):
+    """
+    Emitted when there's a problem that's specific
+    to the database configuration
+    """
+
+
 class ColumnStateChangeWarning(PyFarmWarning):
     """
     Emitted when the state column in a table changes in an unexpected
