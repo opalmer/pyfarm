@@ -19,14 +19,9 @@ from warnings import warn
 
 from sqlalchemy.engine.url import URL
 
-# from pyfarm.config.core.loader import Loader
-from pyfarm.config.core.loader import Loader
-from pyfarm.error import PreferencesError
+from pyfarm.ext.config.core.loader import Loader
+from pyfarm.error import PreferencesError, DBConfigError
 from pyfarm.warning import DBConfigWarning
-
-
-class DBConfigError(PreferencesError):
-    """raised when there's trouble either parsing or finding a db config"""
 
 
 class DBConfig(Loader):
@@ -45,11 +40,11 @@ class DBConfig(Loader):
                 "`config_order` was either not present or empty")
 
     @classmethod
-    def createConfig(cls, name, config_data):
+    def insertConfig(cls, name, config_data):
         """
         Creates a new configuration to use.
 
-        >>> DBConfig.createConfig(
+        >>> DBConfig.insertConfig(
         ...     "fooA", {"engine": "sqlite", "database": "/tmp/fooA"})
         >>> config = DBConfig()
         >>> assert config["config_order"][0] == "FooA"
@@ -63,7 +58,9 @@ class DBConfig(Loader):
         :param config_data:
             the data to add in the configuration
         """
-        cls.PREPEND_CONFIGS.insert(0, (name, config_data.copy()))
+        data = (name, config_data.copy())
+        if data not in cls.PREPEND_CONFIGS:
+            cls.PREPEND_CONFIGS.insert(0, data)
 
     def url(self, config_name=None):
         """
@@ -73,8 +70,13 @@ class DBConfig(Loader):
         if config_name is None:
             config_name = self.get("config_order")[0]
 
+        raise KeyError(config_name)
+
         try:
-            config = self.data[config_name].copy()
+            if config_name not in self:
+                raise KeyError
+
+            config = self.get(config_name).copy()
 
         except KeyError:
             msg = "database configuration `%s` " % config_name
