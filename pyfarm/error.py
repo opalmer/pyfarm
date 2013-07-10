@@ -45,3 +45,7 @@ class SubKeyError(PreferencesError):
     :class:`KeyError` but spec to when requesting nested keys from a
     configuration
     """
+
+
+class DBConfigError(PreferencesError):
+    """raised when there's trouble either parsing or finding a db config"""
