@@ -19,8 +19,14 @@ from warnings import warn
 
 from sqlalchemy.engine.url import URL
 
+try:
+    import simplejson as json
+except ImportError:
+    import json
+
 from pyfarm.ext.config.core.loader import Loader
-from pyfarm.error import PreferencesError, DBConfigError
+from pyfarm.error import (PreferencesError, PreferencesNotFoundError,
+                          DBConfigError)
 from pyfarm.warning import DBConfigWarning
 
 
@@ -33,7 +39,25 @@ class DBConfig(Loader):
     PREPEND_CONFIGS = []
 
     def __init__(self, *args, **kwargs):
-        Loader.__init__(self, *args, **kwargs)
+        try:
+            Loader.__init__(self, *args, **kwargs)
+
+        # if we can't find a database.yml file, start with the template
+        # then load configuration data from the environment
+        except PreferencesNotFoundError:
+            Loader.__init__(self, filename="database.yml.template")
+
+            if "PYFARM_DBCONFIG_TESTING_DATA" not in os.environ:
+                raise PreferencesNotFoundError(
+                    "failed to find testing database configuration or "
+                    "a database.yml file")
+
+            # load configuration from the environment
+            warn("creating `testing` configuration from "
+                 "$PYFARM_DBCONFIG_TESTING_DATA", DBConfigWarning)
+            self.insertConfig("testing",
+                              json.loads(
+                                  os.environ["PYFARM_DBCONFIG_TESTING_DATA"]))
 
         if not self.get("config_order"):
             raise DBConfigError(
@@ -69,8 +93,6 @@ class DBConfig(Loader):
         """
         if config_name is None:
             config_name = self.get("config_order")[0]
-
-        raise KeyError(config_name)
 
         try:
             if config_name not in self:
@@ -114,7 +136,7 @@ class DBConfig(Loader):
 
         return results
 
-    def get(self, *args, **kwargs):
+    def get(self, key, failobj=None):
         """
         Wrapper around the standard :func:`Loader.get` except we
         ensure that we pickup any changes to changes in :attr:`PREPEND_CONFIGS`
@@ -128,4 +150,4 @@ class DBConfig(Loader):
                 self.data["configs"][name] = name
                 self.data["config_order"].insert(0, name)
 
-        return Loader.get(self, *args, **kwargs)
+        return Loader.get(self, key, failobj=failobj)
