@@ -27,7 +27,16 @@ import tempfile
 import traceback
 from functools import wraps
 
+try:
+    import json
+except ImportError:
+    import simplejson as json
+
 from nose.plugins.skip import SkipTest
+
+os.environ["PYFARM_DBCONFIG_TESTING_DATA"] = json.dumps({
+    "engine": "sqlite", "database": ":memory:"
+})
 
 from pyfarm.flaskapp import app, db
 
@@ -83,9 +92,6 @@ class TestCase(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         try:
-            from pyfarm.ext.config.database import DBConfig
-            DBConfig.insertConfig("unittest",
-                                  {"engine": "sqlite", "database": ":memory:"})
             from pyfarm.ext import files as _files
 
             # global class variables
