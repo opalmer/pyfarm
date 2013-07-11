@@ -29,14 +29,6 @@ from functools import wraps
 
 from nose.plugins.skip import SkipTest
 
-# TODO: !! drive configuration from environment variables
-# before we do anything else, create the test configuration
-from pyfarm.ext.config.database import DBConfig
-DBConfig.insertConfig(
-    "unittest_%s" % time.time(), {"engine": "sqlite", "database": ":memory:"})
-
-print >> sys.stderr, "!!!!!!!! DBConfig.PREPEND_CONFIGS is being wiped!"
-raise Exception(DBConfig.PREPEND_CONFIGS)
 from pyfarm.flaskapp import app, db
 
 
