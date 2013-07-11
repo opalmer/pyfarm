@@ -25,9 +25,9 @@ except ImportError:
 
 from nose.tools import raises
 
+from utcore import TestCase
 from pyfarm.files import yamlDump
 from pyfarm import error
-from utcore import TestCase
 from pyfarm.ext.config.core.find import configFiles
 from pyfarm.ext.config.core.loader import Loader
 
