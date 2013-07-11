@@ -56,7 +56,9 @@ class Loader(IterableUserDict):
     def __init__(self, filename=None, data=None, cached=True, load=True,
                  **findkwargs):
         data = {} if data is None else data
-        filename = self.FILENAME or filename
+        if filename is None:
+            filename = self.FILENAME
+
         assert isinstance(data, dict), "data should be a dictionary object"
         assert isinstance(filename, basestring), "filename not resolved"
 
