@@ -166,10 +166,12 @@ c["builders"] = []
 builder_names = []
 
 for pyinfo, platform, db in product(PYTHON_VERSIONS, PLATFORMS, DATABASES):
+    if pyinfo == (2, 5) and platform == "mac":
+        continue
+
     py_major, py_minor = pyinfo
     py_version_str = ".".join(map(str, pyinfo))
     name = "python%s_%s_%s" % (py_version_str, platform, db)
-    print "==============",name, slave_mapping[py_version_str][platform]
     builder_names.append(name)
     slaves = [slave.slavename
               for slave in slave_mapping[py_version_str][platform]]
