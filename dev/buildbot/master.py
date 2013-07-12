@@ -45,7 +45,8 @@ from buildbot.steps.source.git import Git
 from buildbot.steps.shell import ShellCommand
 from buildbot.steps.transfer import PropertiesFromVirtualEnvJson, FileDownload
 from buildbot.steps.virtenv import (CreateVirtualEnvironment, WrappedCall,
-                                    VirtualEnvSphinx, VirtualEnvPyLint)
+                                    VirtualEnvSphinx, VirtualEnvPyLint,
+                                    PipFreeze)
 from buildbot.changes import filter as _filter
 from buildbot.config import BuilderConfig
 from buildbot.status import html
@@ -118,8 +119,7 @@ build_factory.addStep(
                 name="install: pyfarm"))
 
 # show the python packages installed
-build_factory.addStep(
-    WrappedCall(["pip", "freeze"], name="pip: freeze"))
+build_factory.addStep(PipFreeze(name="pip: freeze"))
 
 # install nose
 build_factory.addStep(
