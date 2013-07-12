@@ -50,7 +50,7 @@ class NetworkInfo(object):
         Mapping to the internal network io counter class
         """
         interface = self.interface()
-        values = psutil.network_io_counters(pernic=True)
+        values = psutil.net_io_counters(pernic=True)
         return values[interface]
 
     def packetsSent(self):
@@ -165,7 +165,7 @@ class NetworkInfo(object):
             return self._cached_ip
 
         sums = []
-        counters = psutil.network_io_counters(pernic=True)
+        counters = psutil.net_io_counters(pernic=True)
         for address in self.addresses():
             interface = self.interface(address)
             try:
