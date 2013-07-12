@@ -155,7 +155,8 @@ class NetworkInfo(object):
                 if address.get("addr") == addr:
                     return interface
 
-        raise ValueError("could not determine network interface")
+        raise ValueError(
+            "could not determine network interface for `%s`" % addr)
 
     def ip(self):
         """
