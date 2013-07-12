@@ -166,11 +166,13 @@ c["builders"] = []
 builder_names = []
 
 for pyinfo, platform, db in product(PYTHON_VERSIONS, PLATFORMS, DATABASES):
-    if pyinfo == (2, 5) and platform == "mac":
-        continue
-
     py_major, py_minor = pyinfo
     py_version_str = ".".join(map(str, pyinfo))
+    try:
+        slave_mapping[py_version_str][platform]
+    except KeyError:
+        continue
+
     name = "python%s_%s_%s" % (py_version_str, platform, db)
     builder_names.append(name)
     slaves = [slave.slavename
@@ -183,11 +185,11 @@ for pyinfo, platform, db in product(PYTHON_VERSIONS, PLATFORMS, DATABASES):
                             properties={"database": db,
                                         "python": "python%s" % py_version_str})
     c["builders"].append(builder)
-
-### Schedulers
-c["schedulers"] = [
-    SingleBranchScheduler(name="all",
-                          change_filter=_filter.ChangeFilter(branch="master"),
-                          treeStableTimer=None,
-                          builderNames=builder_names),
-    ForceScheduler(name="force", builderNames=builder_names)]
+#
+#### Schedulers
+#c["schedulers"] = [
+#    SingleBranchScheduler(name="all",
+#                          change_filter=_filter.ChangeFilter(branch="master"),
+#                          treeStableTimer=None,
+#                          builderNames=builder_names),
+#    ForceScheduler(name="force", builderNames=builder_names)]
