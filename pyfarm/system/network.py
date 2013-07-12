@@ -164,6 +164,9 @@ class NetworkInfo(object):
         if self._cached_ip is not None:
             return self._cached_ip
 
+        # get the amount of traffic for each network interface,
+        # we use this to help determine if the most active interface
+        # is the interface dns provides
         sums = []
         counters = psutil.net_io_counters(pernic=True)
         for address in self.addresses():
@@ -183,12 +186,17 @@ class NetworkInfo(object):
                 bytes_recv + bytes_sent + packets_sent + packets_recv))
 
 
-        dnsip = None
         hostname = self.hostname(fqdn=True)
         try:
             dnsip = socket.gethostbyname(hostname)
+
+            # depending on the system dns implementation
+            # socket.gethostbyname might give us a loopback address
+            if IPy.IP(dnsip) in IP_LOOPBACK:
+                dnsip = None
+
         except socket.gaierror:
-            pass
+            dnsip = None
 
         if not sums and dnsip is None:
             raise NetworkError("no ip address found")
@@ -199,12 +207,11 @@ class NetworkInfo(object):
         # if the most active address is not the address
         # that's mapped via dns, print a warning and return
         # the dns address
-        if sums and sums[0][0] != dnsip:
+        if dnsip is not None and sums and sums[0][0] != dnsip:
             warn("DNS address != most active active address",
                  NetworkWarning)
-            self._cached_ip = dnsip
-        else:
-            self._cached_ip = sums[0][0]
+
+        self._cached_ip = sums[0][0]
 
         return self._cached_ip
 
