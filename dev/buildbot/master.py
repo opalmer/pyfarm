@@ -168,6 +168,11 @@ builder_names = []
 for pyinfo, platform, db in product(PYTHON_VERSIONS, PLATFORMS, DATABASES):
     py_major, py_minor = pyinfo
     py_version_str = ".".join(map(str, pyinfo))
+    try:
+        slave_mapping[py_version_str][platform]
+    except KeyError:
+        continue
+
     name = "python%s_%s_%s" % (py_version_str, platform, db)
     builder_names.append(name)
     slaves = [slave.slavename
