@@ -73,11 +73,16 @@ def requirements(major, minor):
     operating system, and develop keyword
     """
     requires = [
-        "appdirs", "PyYaml",
-        "psutil", "netifaces",
+        "appdirs", "PyYaml", "netifaces",
         "Jinja2==%s.%s" % (major, minor),
         "flask-sqlalchemy", "IPy"
     ]
+
+    # psutil has a long history of changing the api
+    # between versions in ways that breaks both tests
+    # and general code.  Since it's hit 1.x.x we're
+    # locking it down for now.
+    requires.append("psutil==1.0.0")
 
     # backports of modules introduced in 2.7
     if (major, minor) < (2, 7):
