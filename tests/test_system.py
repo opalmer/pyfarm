@@ -69,31 +69,31 @@ class OperatingSystem(TestCase):
 
 class Network(TestCase):
     def test_packets_sent(self):
-        v = psutil.network_io_counters(
+        v = psutil.net_io_counters(
             pernic=True)[netinfo.interface()].packets_sent
         self.assertEqual(netinfo.packetsSent() >= v, True)
 
     def test_packets_recv(self):
-        v = psutil.network_io_counters(
+        v = psutil.net_io_counters(
             pernic=True)[netinfo.interface()].packets_recv
         self.assertEqual(netinfo.packetsReceived() >= v, True)
 
     def test_data_sent(self):
-        v = convert.bytetomb(psutil.network_io_counters(
+        v = convert.bytetomb(psutil.net_io_counters(
             pernic=True)[netinfo.interface()].bytes_sent)
         self.assertEqual(netinfo.dataSent() >= v, True)
 
     def test_data_recv(self):
-        v = convert.bytetomb(psutil.network_io_counters(
+        v = convert.bytetomb(psutil.net_io_counters(
             pernic=True)[netinfo.interface()].bytes_recv)
         self.assertEqual(netinfo.dataReceived() >= v, True)
 
     def test_error_incoming(self):
-        v = psutil.network_io_counters(pernic=True)[netinfo.interface()].errin
+        v = psutil.net_io_counters(pernic=True)[netinfo.interface()].errin
         self.assertEqual(netinfo.errorCountIncoming() >= v, True)
 
     def test_error_outgoing(self):
-        v = psutil.network_io_counters(pernic=True)[netinfo.interface()].errout
+        v = psutil.net_io_counters(pernic=True)[netinfo.interface()].errout
         self.assertEqual(netinfo.errorCountOutgoing() >= v, True)
 
     def test_hostname(self):
