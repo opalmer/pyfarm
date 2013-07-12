@@ -185,11 +185,11 @@ for pyinfo, platform, db in product(PYTHON_VERSIONS, PLATFORMS, DATABASES):
                             properties={"database": db,
                                         "python": "python%s" % py_version_str})
     c["builders"].append(builder)
-#
-#### Schedulers
-#c["schedulers"] = [
-#    SingleBranchScheduler(name="all",
-#                          change_filter=_filter.ChangeFilter(branch="master"),
-#                          treeStableTimer=None,
-#                          builderNames=builder_names),
-#    ForceScheduler(name="force", builderNames=builder_names)]
+
+### Schedulers
+c["schedulers"] = [
+    SingleBranchScheduler(name="all",
+                          change_filter=_filter.ChangeFilter(branch="master"),
+                          treeStableTimer=None,
+                          builderNames=builder_names),
+    ForceScheduler(name="force", builderNames=builder_names)]
