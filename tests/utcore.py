@@ -34,9 +34,16 @@ except ImportError:
 
 from nose.plugins.skip import SkipTest
 
-os.environ["PYFARM_DBCONFIG_TESTING_DATA"] = json.dumps({
-    "engine": "sqlite", "database": ":memory:"
-})
+# if there's some configuration information in the
+# environment then use that before creating our own
+if "PYFARM_DBCONFIG_TESTING_DATA" in os.environ:
+    DB_CONFIG_DATA = json.loads(os.environ["PYFARM_DBCONFIG_TESTING_DATA"])
+else:
+    DB_CONFIG_DATA = {"engine": "sqlite", "database": ":memory:"}
+
+# insert the configuration data
+from pyfarm.ext.config.database import DBConfig
+DBConfig.insertConfig("unittest_%s" % time.time(), DB_CONFIG_DATA)
 
 from pyfarm.flaskapp import app, db
 

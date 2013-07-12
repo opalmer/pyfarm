@@ -67,8 +67,7 @@ class Loader(IterableUserDict):
 
         if filename is not None and data is not None and not self.files and load:
             raise PreferencesNotFoundError(
-                "failed to find any preference files for %s" % filename
-            )
+                "failed to find any preference files for %s" % filename)
 
         # load data from each file
         for filepath in self.files:
@@ -97,8 +96,7 @@ class Loader(IterableUserDict):
 
             except Exception, e:
                 raise PreferenceLoadError(
-                    "failed to load %s: %s" % (filepath, e)
-                )
+                    "failed to load %s: %s" % (filepath, e))
 
         return cls._DATA[filepath]
 

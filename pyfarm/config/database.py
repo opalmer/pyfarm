@@ -47,18 +47,6 @@ class DBConfig(Loader):
         except PreferencesNotFoundError:
             Loader.__init__(self, filename="database.yml.template")
 
-            if "PYFARM_DBCONFIG_TESTING_DATA" not in os.environ:
-                raise PreferencesNotFoundError(
-                    "failed to find testing database configuration or "
-                    "a database.yml file")
-
-            # load configuration from the environment
-            warn("creating `testing` configuration from "
-                 "$PYFARM_DBCONFIG_TESTING_DATA", DBConfigWarning)
-            self.insertConfig("testing",
-                              json.loads(
-                                  os.environ["PYFARM_DBCONFIG_TESTING_DATA"]))
-
         if not self.get("config_order"):
             raise DBConfigError(
                 "`config_order` was either not present or empty")
