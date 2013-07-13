@@ -20,11 +20,9 @@ used by the unittests.
 """
 
 import os
-import sys
 import time
 import unittest
 import tempfile
-import traceback
 from random import randint
 from functools import wraps
 
