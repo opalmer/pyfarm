@@ -20,6 +20,11 @@ from pyfarm.flaskapp import app, db
 from pyfarm.ext.config.enum import AgentState
 from pyfarm.models.agent import AgentModel
 
+print "=" * 50
+print "create interface classes for the models"
+print "=" * 50
+raise NotImplementedError("create interface classes for the models")
+
 class TestAgentModel(ModelTestCase):
    def test_true(self):
        agent = AgentModel()
