@@ -46,6 +46,7 @@ else:
 from pyfarm.ext.config.database import DBConfig
 DBConfig.insertConfig("unittest_%s" % time.time(), DB_CONFIG_DATA)
 
+from pyfarm.utility import randstr
 from pyfarm.flaskapp import app, db
 
 
@@ -57,20 +58,28 @@ def skip_on_ci(func):
         return func(*args, **kwargs)
     return wrapper
 
-
-class RandomPrivateIPGenerator(object):
-    generated = set()
-    _random = lambda self: randint(0, 255)
-
+class RandomPrivateIPGenerator(set):
     def __call__(self):
         while True:
-            randip = [10, self._random(), self._random(), self._random()]
+            int_values = [10, randint(0, 255), randint(0, 255), randint(0, 255)]
+            random_address = "".join(map(str, int_values))
 
-            if randip not in self.generated:
-                self.generated.add(randip)
-                return ".".join(map(str, randip))
+            if random_address not in self:
+                self.add(random_address)
+                return random_address
 
-random_private_ip = RandomPrivateIPGenerator()
+
+class RandomStringGenerator(set):
+    def __call__(self):
+        while True:
+            value = randstr()
+            if value not in self:
+                self.add(value)
+                return value
+
+
+unique_ip = RandomPrivateIPGenerator()
+unique_str = RandomStringGenerator()
 
 
 class TestCase(unittest.TestCase):
@@ -80,11 +89,7 @@ class TestCase(unittest.TestCase):
     ORIGINAL_ENVIRONMENT = {}
     temp_directories = set()
 
-    def _cleanupDirectories(self):
-        map(self.remove, self.temp_directories.copy())
-        self.remove(self.tempdir)
-
-    def _resetEnvironment(self):
+    def resetEnvironment(self):
         os.environ.clear()
         os.environ.update(self.ORIGINAL_ENVIRONMENT)
 
@@ -109,7 +114,7 @@ class TestCase(unittest.TestCase):
         try:
             delete(path)
 
-        except EnvironmentError:
+        except (OSError, IOError):
             pass
 
         else:
@@ -117,60 +122,30 @@ class TestCase(unittest.TestCase):
                 cls.temp_directories.remove(path)
 
     @classmethod
-    def clearGeneratedIPs(cls):
-        RandomPrivateIPGenerator.generated.clear()
-
-    @classmethod
-    def setupFiles(cls):
-        try:
-            from pyfarm.ext import files as _files
-
-            # global class variables
-            cls._files = _files
-            cls.TEMPDIR_PREFIX = cls._files.DEFAULT_DIRECTORY_PREFIX
-            cls.BUILDBOT_UUID = os.environ.get("BUILDBOT_UUID")
-            cls.ORIGINAL_ENVIRONMENT = os.environ.copy()
-
-        # if an exception is raised here the traceback is typically
-        # not very helpful we preprocess it before nose/unittests
-        # can pick it up
-        except Exception, e:
-            traceback.print_exc(e, sys.stderr)
-            print >> sys.stderr, "setUpClass ERROR: %s" % e
-            raise
-        else:
-            cls.setUpCase()
-
-    @classmethod
     def setUpClass(cls):
-        cls.setupFiles()
-        cls.clearGeneratedIPs()
-
-    @classmethod
-    def setUpCase(self):
-        """called after setUpClass is complete"""
+        from pyfarm.ext import files as _files
+        cls._files = _files
+        cls.TEMPDIR_PREFIX = cls._files.DEFAULT_DIRECTORY_PREFIX
+        cls.ORIGINAL_ENVIRONMENT = os.environ.copy()
 
     def setUp(self):
-        self._resetEnvironment()
         self.tempdir = self.mktempdir()
-        self.app = app.test_client()
-        db.create_all()
+        unique_ip.clear()
+        unique_str.clear()
+        os.environ.clear()
+        os.environ.update(self.ORIGINAL_ENVIRONMENT)
 
     def tearDown(self):
-        self._resetEnvironment()
-        self._cleanupDirectories()
-        db.session.rollback()
-        db.session.clear()
-        db.drop_all()
+        self.remove(self.tempdir)
+        map(self.remove, self.temp_directories.copy())
+
 
 class ModelTestCase(TestCase):
-    @classmethod
-    def setUpClass(cls):
-        cls.setupFiles()
-        cls.clearGeneratedIPs()
-
     def setUp(self):
+        super(ModelTestCase, self).setUp()
         db.create_all()
 
     def tearDown(self):
+        db.session.rollback()
         db.drop_all()
+        super(ModelTestCase, self).setUp()
