@@ -16,8 +16,10 @@
 
 import sys
 import uuid
+import warnings
 
 from utcore import TestCase
+from pyfarm.warning import ConfigurationWarning
 from pyfarm.ext.config.core.loader import Loader
 from pyfarm.ext.config import enum
 
@@ -50,9 +52,13 @@ class Enum(TestCase):
             "linux": osenum.LINUX, "darwin": osenum.MAC,
             "win": osenum.WINDOWS, "foobar": osenum.OTHER
         }
+        warnings.simplefilter("ignore", ConfigurationWarning)
+
         for sysplatform, value in platforms.iteritems():
             sys.platform = sysplatform
             self.assertEqual(osenum.get(), value)
+
+        warnings.resetwarnings()
 
     def test_enum_attr_keys(self):
         enumdata = Loader("enums.yml")
