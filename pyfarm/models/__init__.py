@@ -23,3 +23,6 @@ Contains all the models the master operates on.
 from pyfarm.models.job import JobTagsModel, JobSoftwareModel, JobModel
 from pyfarm.models.task import TaskModel
 from pyfarm.models.agent import AgentTagsModel, AgentSoftwareModel, AgentModel
+
+# load the interface classes
+from pyfarm.models.agent import Agent
