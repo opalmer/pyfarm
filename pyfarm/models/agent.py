@@ -124,3 +124,36 @@ class AgentModel(db.Model, RandIdMixin, StateValidationMixin):
 
         return value
 
+
+class Agent(AgentModel):
+    """
+    Provides :meth:`__init__` for :class:`AgentModel` so the model can
+    be instanced with initial values.
+    """
+    def __init__(self, hostname, ip, subnet, state=None, enabled=None,
+                 ram=None, cpus=None, port=None, ram_allocation=None,
+                 cpu_allocation=None):
+        self.hostname = hostname
+        self.ip = ip
+        self.subnet = subnet
+
+        if state is not None:
+            self.state = state
+
+        if enabled is not None:
+            self.enabled = enabled
+
+        if ram is not None:
+            self.ram = ram
+
+        if cpus is not None:
+            self.cpus = cpus
+
+        if port is not None:
+            self.port = port
+
+        if ram is not None:
+            self.ram_allocation = ram_allocation
+
+        if cpu_allocation is not None:
+            self.cpu_allocation = cpu_allocation
