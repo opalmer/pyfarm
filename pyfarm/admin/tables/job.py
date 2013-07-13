@@ -14,18 +14,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from pyfarm.models import Job, JobTags, JobSoftware
+from pyfarm.models import JobModel, JobTagsModel, JobSoftwareModel
 from pyfarm.admin.tables.core import CoreTableModelView
 
 
 class JobTagsModelView(CoreTableModelView):
     def __init__(self):
-        super(JobTagsModelView, self).__init__(JobTags)
+        super(JobTagsModelView, self).__init__(JobTagsModel)
 
 
 class JobSoftwareModelView(CoreTableModelView):
     def __init__(self):
-        super(JobSoftwareModelView, self).__init__(JobSoftware)
+        super(JobSoftwareModelView, self).__init__(JobSoftwareModel)
 
 
 # TODO: cannot edit _environ in ui!!!
@@ -36,4 +36,4 @@ class JobModelView(CoreTableModelView):
     # TODO: add form for creation that includes **tagging**
     # form = None
     def __init__(self):
-        super(JobModelView, self).__init__(Job)
+        super(JobModelView, self).__init__(JobModel)

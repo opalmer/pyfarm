@@ -47,22 +47,22 @@ from pyfarm.models.constants import (
 from pyfarm.models.mixins import StateValidationMixin, StateChangedMixin
 
 
-class JobTags(db.Model):
+class JobTagsModel(db.Model):
     __tablename__ = TABLE_JOB_TAGS
     _jobid = db.Column(db.Integer, db.ForeignKey("%s.id" % TABLE_JOB),
                          primary_key=True)
     tag = db.Column(db.String)
 
 
-class JobSoftware(db.Model):
+class JobSoftwareModel(db.Model):
     __tablename__ = TABLE_JOB_SOFTWARE
     _jobid = db.Column(db.Integer, db.ForeignKey("%s.id" % TABLE_JOB),
                          primary_key=True)
     software = db.Column(db.String)
 
 
-class Job(db.Model, StateValidationMixin, StateChangedMixin):
-    """Defines task which a child of a :class:`.Job`"""
+class JobModel(db.Model, StateValidationMixin, StateChangedMixin):
+    """Defines task which a child of a :class:`.JobModel`"""
     __tablename__ = TABLE_JOB
     STATE_ENUM = WorkState()
     STATE_DEFAULT = STATE_ENUM.QUEUED
@@ -100,20 +100,20 @@ class Job(db.Model, StateValidationMixin, StateChangedMixin):
 
     # relationships
     _parentjob = db.Column(db.Integer, db.ForeignKey("%s.id" % TABLE_JOB))
-    siblings = db.relationship("Job", backref=db.backref("parent",
+    siblings = db.relationship("JobModel", backref=db.backref("parent",
                                                          remote_side=[id]))
-    tasks = db.relationship("Task", backref="job", lazy="dynamic")
-    tasks_done = db.relationship("Task", lazy="dynamic",
-        primaryjoin="(Task.state == %s) & "
-                    "(Task._jobid == Job.id)" % STATE_ENUM.DONE)
-    tasks_failed = db.relationship("Task", lazy="dynamic",
-        primaryjoin="(Task.state == %s) & "
-                    "(Task._jobid == Job.id)" % STATE_ENUM.FAILED)
-    tasks_queued = db.relationship("Task", lazy="dynamic",
-        primaryjoin="(Task.state == %s) & "
-                    "(Task._jobid == Job.id)" % STATE_ENUM.QUEUED)
-    tags = db.relationship("JobTags", backref="job", lazy="dynamic")
-    software = db.relationship("JobSoftware", backref="job", lazy="dynamic")
+    tasks = db.relationship("TaskModel", backref="job", lazy="dynamic")
+    tasks_done = db.relationship("TaskModel", lazy="dynamic",
+        primaryjoin="(TaskModel.state == %s) & "
+                    "(TaskModel._jobid == JobModel.id)" % STATE_ENUM.DONE)
+    tasks_failed = db.relationship("TaskModel", lazy="dynamic",
+        primaryjoin="(TaskModel.state == %s) & "
+                    "(TaskModel._jobid == JobModel.id)" % STATE_ENUM.FAILED)
+    tasks_queued = db.relationship("TaskModel", lazy="dynamic",
+        primaryjoin="(TaskModel.state == %s) & "
+                    "(TaskModel._jobid == JobModel.id)" % STATE_ENUM.QUEUED)
+    tags = db.relationship("JobTagsModel", backref="job", lazy="dynamic")
+    software = db.relationship("JobSoftwareModel", backref="job", lazy="dynamic")
 
     @property
     def environ(self):
@@ -212,4 +212,4 @@ class Job(db.Model, StateValidationMixin, StateChangedMixin):
 
 
 
-event.listen(Job.state, "set", Job.stateChangedEvent)
+event.listen(JobModel.state, "set", JobModel.stateChangedEvent)

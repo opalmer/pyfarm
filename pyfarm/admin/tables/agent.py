@@ -14,18 +14,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from pyfarm.models import Agent, AgentTags, AgentSoftware
+from pyfarm.models import AgentModel, AgentTagsModel, AgentSoftwareModel
 from pyfarm.admin.tables.core import CoreTableModelView
 
 
 class AgentTagsModelView(CoreTableModelView):
     def __init__(self):
-        super(AgentTagsModelView, self).__init__(AgentTags)
+        super(AgentTagsModelView, self).__init__(AgentTagsModel)
 
 
 class AgentSoftwareModelView(CoreTableModelView):
     def __init__(self):
-        super(AgentSoftwareModelView, self).__init__(AgentSoftware)
+        super(AgentSoftwareModelView, self).__init__(AgentSoftwareModel)
 
 
 # TODO: editor widgets in view
@@ -35,4 +35,4 @@ class AgentModelView(CoreTableModelView):
     # TODO: add form for creation that includes **tagging**
     # form = None
     def __init__(self):
-        super(AgentModelView, self).__init__(Agent)
+        super(AgentModelView, self).__init__(AgentModel)

@@ -40,7 +40,7 @@ def admin(debug=False):
         from pyfarm.flaskapp import db
         from pyfarm.config.enum import AgentState
         from pyfarm.utility import randstr, randint
-        from pyfarm.models import Agent, Job
+        from pyfarm.models import AgentModel, JobModel
         db.drop_all()
         db.create_all()
 
@@ -55,7 +55,7 @@ def admin(debug=False):
         jobs = []
 
         for i in xrange(15):
-            agent = Agent()
+            agent = AgentModel()
             agent.ip = randip()
             agent.subnet = randip()
             agent.hostname = randstr()
@@ -63,7 +63,7 @@ def admin(debug=False):
             agent.state = random.choice(agent_state.values())
             db.session.add(agent)
 
-            job = Job()
+            job = JobModel()
             job.environ = os.environ
             db.session.add(job)
             jobs.append(job)

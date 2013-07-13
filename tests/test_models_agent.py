@@ -18,10 +18,10 @@ from utcore import ModelTestCase, random_private_ip
 
 from pyfarm.flaskapp import app, db
 from pyfarm.ext.config.enum import AgentState
-from pyfarm.models.agent import Agent
+from pyfarm.models.agent import AgentModel
 
 class TestAgentModel(ModelTestCase):
    def test_true(self):
-       agent = Agent()
+       agent = AgentModel()
        db.session.add(agent)
        db.session.commit()

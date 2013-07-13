@@ -30,7 +30,7 @@ REGEX_HOSTNAME = re.compile("^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*"
                             "[A-Za-z0-9\-]*[A-Za-z0-9])$")
 
 
-class AgentTags(db.Model):
+class AgentTagsModel(db.Model):
     """Table model used to store tags for agents"""
     __tablename__ = TABLE_AGENT_TAGS
     _agentid = db.Column(db.Integer, db.ForeignKey("%s.id" % TABLE_AGENT),
@@ -38,7 +38,7 @@ class AgentTags(db.Model):
     tag = db.Column(db.String)
 
 
-class AgentSoftware(db.Model):
+class AgentSoftwareModel(db.Model):
     """Table model used to store tags for agents"""
     __tablename__ = TABLE_AGENT_SOFTWARE
     _agentid = db.Column(db.Integer, db.ForeignKey("%s.id" % TABLE_AGENT),
@@ -46,7 +46,7 @@ class AgentSoftware(db.Model):
     software = db.Column(db.String)
 
 
-class Agent(db.Model, RandIdMixin, StateValidationMixin):
+class AgentModel(db.Model, RandIdMixin, StateValidationMixin):
     """
     Stores information about an agent include its network address,
     state, allocation configuration, etc.
@@ -77,9 +77,9 @@ class Agent(db.Model, RandIdMixin, StateValidationMixin):
                                default=DBCFG.get("agent.cpu_allocation", 1.0))
 
     # relationships
-    tasks = db.relationship("Task", backref="agent", lazy="dynamic")
-    tags = db.relationship("AgentTags", backref="agent", lazy="dynamic")
-    software = db.relation("AgentSoftware", backref="agent", lazy="dynamic")
+    tasks = db.relationship("TaskModel", backref="agent", lazy="dynamic")
+    tags = db.relationship("AgentTagsModel", backref="agent", lazy="dynamic")
+    software = db.relation("AgentSoftwareModel", backref="agent", lazy="dynamic")
 
     @validates("hostname")
     def validate_hostname(self, key, value):

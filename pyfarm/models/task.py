@@ -24,7 +24,7 @@ from pyfarm.models.constants import DBCFG, TABLE_JOB, TABLE_TASK, TABLE_AGENT
 from pyfarm.models.mixins import StateValidationMixin, StateChangedMixin
 
 
-class Task(db.Model, StateValidationMixin, StateChangedMixin):
+class TaskModel(db.Model, StateValidationMixin, StateChangedMixin):
     """Defines task which a child of a :class:`.Job`"""
     __tablename__ = TABLE_TASK
     STATE_ENUM = WorkState()
@@ -50,7 +50,7 @@ class Task(db.Model, StateValidationMixin, StateChangedMixin):
     _agentid = db.Column(db.Integer, db.ForeignKey("%s.id" % TABLE_AGENT))
     _jobid = db.Column(db.Integer, db.ForeignKey("%s.id" % TABLE_JOB))
     _parenttask = db.Column(db.Integer, db.ForeignKey("%s.id" % TABLE_TASK))
-    siblings = db.relationship("Task", backref=db.backref("task",
+    siblings = db.relationship("TaskModel", backref=db.backref("task",
                                                          remote_side=[id]))
 
     @staticmethod
@@ -60,5 +60,5 @@ class Task(db.Model, StateValidationMixin, StateChangedMixin):
             target.state = target.STATE_ENUM.ASSIGN
 
 
-event.listen(Task._agentid, "set", Task.agentChangedEvent)
-event.listen(Task.state, "set", Task.stateChangedEvent)
+event.listen(TaskModel._agentid, "set", TaskModel.agentChangedEvent)
+event.listen(TaskModel.state, "set", TaskModel.stateChangedEvent)

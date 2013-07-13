@@ -14,10 +14,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from pyfarm.models import Task
+from pyfarm.models import TaskModel
 from pyfarm.admin.tables.core import CoreTableModelView
 
 
 class TaskModelView(CoreTableModelView):
     def __init__(self):
-        super(TaskModelView, self).__init__(Task)
+        super(TaskModelView, self).__init__(TaskModel)
