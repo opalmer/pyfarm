@@ -14,38 +14,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import random
-from utcore import TestCase
+from utcore import ModelTestCase, random_private_ip
 
 from pyfarm.flaskapp import app, db
 from pyfarm.ext.config.enum import AgentState
 from pyfarm.models.agent import Agent
 
-
-class DBAgentTestCase(TestCase):
-    @classmethod
-    def setUpCase(cls):
-        app.test_client()
-        # TODO: flask app not running, see examples
-        db.drop_all()
-        db.create_all()
-
-        Session = db.sessionmaker()
-        cls.session = Session()
-        cls.agent_state = AgentState()
-        cls.agent = Agent()
-
-    @classmethod
-    def randip(cls):
-        return ".".join(map(str,
-                            [random.randint(0, 255), random.randint(0, 255),
-                            random.randint(0, 255), random.randint(0, 255)]))
-#
-#class TestAgentModel(DBAgentTestCase):
-#    def test_true(self):
-#
-#        self.session.add(self.agent)
-#        self.session.commit()
-#        print self.agent.id
-#
-#        # self.assertTrue(True)
+class TestAgentModel(ModelTestCase):
+   def test_true(self):
+       agent = Agent()
+       db.session.add(agent)
+       db.session.commit()

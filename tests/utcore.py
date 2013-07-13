@@ -25,6 +25,7 @@ import time
 import unittest
 import tempfile
 import traceback
+from random import randint
 from functools import wraps
 
 try:
@@ -57,7 +58,26 @@ def skip_on_ci(func):
     return wrapper
 
 
+class RandomPrivateIPGenerator(object):
+    generated = set()
+    _random = lambda self: randint(0, 255)
+
+    def __call__(self):
+        while True:
+            randip = [10, self._random(), self._random(), self._random()]
+
+            if randip not in self.generated:
+                self.generated.add(randip)
+                return ".".join(map(str, randip))
+
+random_private_ip = RandomPrivateIPGenerator()
+
+
 class TestCase(unittest.TestCase):
+    # placeholder class vars
+    TEMPDIR_PREFIX = ""
+    BUILDBOT_UUID = os.environ.get("BUILDBOT_UUID")
+    ORIGINAL_ENVIRONMENT = {}
     temp_directories = set()
 
     def _cleanupDirectories(self):
@@ -97,7 +117,11 @@ class TestCase(unittest.TestCase):
                 cls.temp_directories.remove(path)
 
     @classmethod
-    def setUpClass(cls):
+    def clearGeneratedIPs(cls):
+        RandomPrivateIPGenerator.generated.clear()
+
+    @classmethod
+    def setupFiles(cls):
         try:
             from pyfarm.ext import files as _files
 
@@ -118,16 +142,13 @@ class TestCase(unittest.TestCase):
             cls.setUpCase()
 
     @classmethod
-    def tearDownClass(cls):
-        cls.tearDownCase()
+    def setUpClass(cls):
+        cls.setupFiles()
+        cls.clearGeneratedIPs()
 
     @classmethod
     def setUpCase(self):
         """called after setUpClass is complete"""
-
-    @classmethod
-    def tearDownCase(cls):
-        """called after tearDownClass is complete"""
 
     def setUp(self):
         self._resetEnvironment()
@@ -138,5 +159,18 @@ class TestCase(unittest.TestCase):
     def tearDown(self):
         self._resetEnvironment()
         self._cleanupDirectories()
+        db.session.rollback()
+        db.session.clear()
         db.drop_all()
 
+class ModelTestCase(TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.setupFiles()
+        cls.clearGeneratedIPs()
+
+    def setUp(self):
+        db.create_all()
+
+    def tearDown(self):
+        db.drop_all()
