@@ -48,8 +48,13 @@ class DBConfig(Loader):
             Loader.__init__(self, filename="database.yml.template")
 
         if not self.get("config_order"):
-            raise DBConfigError(
-                "`config_order` was either not present or empty")
+            if os.environ.get("SPHINX_BUILD") == "true":
+                self.insertConfig("sphinx",
+                                  {"engine": "sqlite", "database": ":memory:"})
+                warn("building sphinx, using sqlite", DBConfigWarning)
+            else:
+                raise DBConfigError(
+                    "`config_order` was either not present or empty")
 
     @classmethod
     def insertConfig(cls, name, config_data):
