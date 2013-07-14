@@ -121,10 +121,10 @@ build_factory.addStep(
 # show the python packages installed
 build_factory.addStep(PipFreeze(name="pip: freeze"))
 
-# install nose
+# install packages for testing
 build_factory.addStep(
-    WrappedCall(["pip", "install", "nose"],
-                name="install: nose"))
+    WrappedCall(["pip", "install", "nose", "unittest2", "pylint", "sphinx"],
+                name="install: extra packages"))
 
 # run nose tests
 build_factory.addStep(
@@ -132,18 +132,8 @@ build_factory.addStep(
                  "-s", "--verbose"],
                 name="nosetest"))
 
-# install pylint
-build_factory.addStep(
-    WrappedCall(["pip", "install", "pylint"],
-                name="install: pylint"))
-
 # run pylint
 build_factory.addStep(VirtualEnvPyLint("pyfarm"))
-
-# install sphinx
-build_factory.addStep(
-    WrappedCall(["pip", "install", "sphinx"],
-                name="install: sphinx"))
 
 # run sphinx
 build_factory.addStep(VirtualEnvSphinx())
