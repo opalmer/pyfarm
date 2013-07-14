@@ -15,7 +15,7 @@
 # limitations under the License.
 
 import re
-import IPy
+import netaddr
 from sqlalchemy.orm import validates
 
 from pyfarm.flaskapp import db
@@ -93,7 +93,7 @@ class AgentModel(db.Model, RandIdMixin, StateValidationMixin):
     @validates("ip", "subnet")
     def validate_address(self, key, value):
         try:
-            ip = IPy.IP(value)
+            ip = netaddr.IPAddress(value)
 
         except ValueError, e:
             raise ValueError(
@@ -101,10 +101,11 @@ class AgentModel(db.Model, RandIdMixin, StateValidationMixin):
 
         if key == "ip" and ip in IP_NONNETWORK:
             raise ValueError(
-                "ip address is not valid or must be a network address")
+                "%s is not a valid address for `ip`" % value)
 
-        elif key == "subnet" and ip.iptype() != "RESERVED":
-            raise ValueError("subnet is not valid")
+        # TODO: add test for subnet
+        # elif key == "subnet" and ip.iptype() != "RESERVED":
+        #     raise ValueError("subnet is not valid")
 
         return value
 

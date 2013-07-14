@@ -60,7 +60,7 @@ class RandomPrivateIPGenerator(set):
     def __call__(self):
         while True:
             int_values = [10, randint(0, 255), randint(0, 255), randint(0, 255)]
-            random_address = "".join(map(str, int_values))
+            random_address = ".".join(map(str, int_values))
 
             if random_address not in self:
                 self.add(random_address)

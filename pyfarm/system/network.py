@@ -23,7 +23,7 @@ from warnings import warn
 
 import netifaces
 import socket
-import IPy
+import netaddr
 import psutil
 
 from pyfarm.ext.config.core.loader import Loader
@@ -115,7 +115,7 @@ class NetworkInfo(object):
 
                 if addr is not None:
                     try:
-                        ip = IPy.IP(addr)
+                        ip = netaddr.IPAddress(addr)
                     except ValueError:
                         warn(
                             "could not convert %s to a valid IP object" % addr,
@@ -193,7 +193,7 @@ class NetworkInfo(object):
 
             # depending on the system dns implementation
             # socket.gethostbyname might give us a loopback address
-            if IPy.IP(dnsip) in IP_LOOPBACK:
+            if netaddr.IPAddress(dnsip) in IP_LOOPBACK:
                 dnsip = None
 
         except socket.gaierror:
@@ -217,50 +217,20 @@ class NetworkInfo(object):
         return self._cached_ip
 
 
-class IPSet(object):
-    """
-    Simple class which returns True if an :class:`IPy.IP` object
-    is contained within the set.
-
-    >>> addresses = IPSet(IPy.IP("192.168.0.0/16"))
-    >>> IPy.IP("192.168.0.1") in addresses
-    True
-    >>> IPy.IP("0.0.0.0") in addresses
-    False
-    """
-    def __init__(self, *addresses):
-        self._addresses = set(addresses)
-
-    def __repr__(self):
-        addr_repr = map(repr, [ip.strCompressed(1) for ip in self._addresses])
-        return "%s(%s)" % (self.__class__.__name__, ", ".join(addr_repr))
-
-    def __contains__(self, item):
-        assert isinstance(item, IPy.IP), "__contains__ requires an IPy.IP item"
-        for address in self._addresses:
-            if item in address:
-                return True
-        return False
-
-
-IP_SPECIAL_USE = IPy.IP("0.0.0.0/8")
-IP_LINK_LOCAL = IPy.IP("169.254.0.0/16")
-IP_LOOPBACK = IPy.IP("127.0.0.0/8")
-IP_MULTICAST = IPy.IP("224.0.0.0/4")
-IP_BROADCAST = IPy.IP("255.255.255.255")
-IP_PRIVATE = IPSet(
-    IPy.IP("10.0.0.0/8"),
-    IPy.IP("172.16.0.0/12"),
-    IPy.IP("192.168.0.0/16")
-)
-IP_NONNETWORK = IPSet(
+IP_SPECIAL_USE = netaddr.IPNetwork("0.0.0.0/8")
+IP_LINK_LOCAL = netaddr.IPNetwork("169.254.0.0/16")
+IP_LOOPBACK = netaddr.IPNetwork("127.0.0.0/8")
+IP_MULTICAST = netaddr.IPNetwork("224.0.0.0/4")
+IP_BROADCAST = netaddr.IPNetwork("255.255.255.255")
+IP_PRIVATE = netaddr.IPSet([
+    netaddr.IPNetwork("10.0.0.0/8"),
+    netaddr.IPNetwork("172.16.0.0/12"),
+    netaddr.IPNetwork("192.168.0.0/16")
+])
+IP_NONNETWORK = netaddr.IPSet([
     IP_SPECIAL_USE,
     IP_LINK_LOCAL,
     IP_LOOPBACK,
     IP_MULTICAST,
     IP_BROADCAST
-)
-
-if __name__ == "__main__":
-    n = NetworkInfo()
-    print n.ip()
+])

@@ -14,19 +14,47 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from utcore import ModelTestCase, random_private_ip
+from __future__ import with_statement
+from utcore import ModelTestCase, unique_ip, unique_str
 
 from pyfarm.flaskapp import app, db
 from pyfarm.ext.config.enum import AgentState
-from pyfarm.models.agent import AgentModel
+from pyfarm.models.agent import Agent
 
-print "=" * 50
-print "create interface classes for the models"
-print "=" * 50
-raise NotImplementedError("create interface classes for the models")
 
 class TestAgentModel(ModelTestCase):
-   def test_true(self):
-       agent = AgentModel()
-       db.session.add(agent)
-       db.session.commit()
+    subnet = "255.255.255.0"
+
+    def test_basic_insert(self):
+        hostname = "foobar"
+        address = unique_ip()
+        agent = Agent(hostname, address, self.subnet)
+        self.assertIsNone(agent.id)
+        db.session.add(agent)
+        db.session.commit()
+        self.assertIsInstance(agent.id, long)
+        result = Agent.query.filter_by(id=agent.id).first()
+        self.assertEqual(result.id, agent.id)
+        self.assertEqual(result.hostname, agent.hostname)
+        self.assertEqual(result.ip, address)
+
+    def test_hostname_validation(self):
+        with self.assertRaises(ValueError):
+            Agent("foo/bar", unique_ip(), self.subnet)
+
+        with self.assertRaises(ValueError):
+            Agent("", unique_ip(), self.subnet)
+
+        Agent("foo-bar", unique_ip(), self.subnet)
+
+    def test_ip_validation(self):
+        fail_addresses = (
+            "0.0.0.0", "127.0.0.1", "169.254.0.1",
+            "224.0.0.0", "255.255.255.255"
+        )
+        for address in fail_addresses:
+            with self.assertRaises(ValueError):
+                Agent("foobar", address, unique_ip())
+
+    # def test_subnet_validation(self):
+    #     subnets

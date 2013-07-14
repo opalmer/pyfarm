@@ -75,7 +75,7 @@ def requirements(major, minor):
     requires = [
         "appdirs", "PyYaml", "netifaces",
         "Jinja2==%s.%s" % (major, minor),
-        "flask-sqlalchemy", "IPy"
+        "flask-sqlalchemy", "netaddr"
     ]
 
     # psutil has a long history of changing the api
