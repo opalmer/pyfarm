@@ -22,7 +22,8 @@ from _ast import *
 try:
     from ast import parse
 except ImportError:
-    parse = lambda source, filename: compile(source, filename, "exec", PyCF_ONLY_AST)
+    parse = lambda source, filename: compile(source, filename,
+                                             "exec", PyCF_ONLY_AST)
 
 import sys
 import shutil
