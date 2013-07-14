@@ -61,11 +61,6 @@ class DBConfig(Loader):
         """
         Creates a new configuration to use.
 
-        >>> DBConfig.insertConfig(
-        ...     "fooA", {"engine": "sqlite", "database": "/tmp/fooA"})
-        >>> config = DBConfig()
-        >>> assert config["config_order"][0] == "FooA"
-
         :type name: str
         :param name:
             The name of the configuration to create.  Existing configurations
