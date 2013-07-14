@@ -129,7 +129,7 @@ build_factory.addStep(
 # run nose tests
 build_factory.addStep(
     WrappedCall(["nosetests", "tests", "pyfarm",
-                 "-s", "--verbose", "--with-doctest"],
+                 "-s", "--verbose"],
                 name="nosetest"))
 
 # install pylint
