@@ -21,6 +21,7 @@ from sqlalchemy.orm import validates
 from pyfarm.flaskapp import db
 from pyfarm.ext.config.core.loader import Loader
 from pyfarm.ext.config.enum import AgentState
+from pyfarm.ext.system.network import IP_NONNETWORK
 from pyfarm.models.mixins import StateValidationMixin, RandIdMixin
 from pyfarm.models.constants import (
     DBCFG, TABLE_AGENT, TABLE_AGENT_TAGS, TABLE_AGENT_SOFTWARE)
@@ -91,14 +92,19 @@ class AgentModel(db.Model, RandIdMixin, StateValidationMixin):
 
     @validates("ip", "subnet")
     def validate_address(self, key, value):
-        # TODO: need multi-range verification for ip
-        # TODO: need verification of the subnet
         try:
-            IPy.IP(value)
+            ip = IPy.IP(value)
 
         except ValueError, e:
             raise ValueError(
                 "%s is not a valid address format: %s" % (value, e))
+
+        if key == "ip" and ip in IP_NONNETWORK:
+            raise ValueError(
+                "ip address is not valid or must be a network address")
+
+        elif key == "subnet" and ip.iptype() != "RESERVED":
+            raise ValueError("subnet is not valid")
 
         return value
 
