@@ -20,11 +20,16 @@ used by the unittests.
 """
 
 import os
+import sys
 import time
-import unittest
 import tempfile
 from random import randint
 from functools import wraps
+
+if sys.version_info[0:2] < (2, 7):
+    import unittest2 as unittest
+else:
+    import unittest
 
 try:
     import json
