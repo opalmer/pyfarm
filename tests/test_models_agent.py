@@ -49,12 +49,20 @@ class TestAgentModel(ModelTestCase):
 
     def test_ip_validation(self):
         fail_addresses = (
-            "0.0.0.0", "127.0.0.1", "169.254.0.1",
-            "224.0.0.0", "255.255.255.255"
+            "0.0.0.0",
+            "169.254.0.0", "169.254.254.255",  # link local
+            "127.0.0.1", "127.255.255.255",  # loopback
+            "224.0.0.0", "255.255.255.255"  # multi/broadcast
         )
         for address in fail_addresses:
             with self.assertRaises(ValueError):
-                Agent("foobar", address, unique_ip())
+                Agent("foobar", address, "255.0.0.0")
 
-    # def test_subnet_validation(self):
-    #     subnets
+
+    def test_subnet_validation(self):
+        fail_subnets = (
+            "0.0.0.0"
+        )
+        for address in fail_subnets:
+            with self.assertRaises(ValueError):
+                Agent("foobar", "10.56.0.1", address)
