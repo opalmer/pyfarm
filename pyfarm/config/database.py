@@ -25,8 +25,7 @@ except ImportError:
     import json
 
 from pyfarm.ext.config.core.loader import Loader
-from pyfarm.error import (PreferencesError, PreferencesNotFoundError,
-                          DBConfigError)
+from pyfarm.error import PreferencesNotFoundError, DBConfigError
 from pyfarm.warning import DBConfigWarning
 
 
