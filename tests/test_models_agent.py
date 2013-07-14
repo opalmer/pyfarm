@@ -15,11 +15,13 @@
 # limitations under the License.
 
 from __future__ import with_statement
-from utcore import ModelTestCase, unique_ip, unique_str
+import random
 
+from utcore import ModelTestCase, unique_ip
 from pyfarm.flaskapp import app, db
 from pyfarm.ext.config.enum import AgentState
 from pyfarm.models.agent import Agent
+from pyfarm.models.constants import DBCFG
 
 
 class TestAgentModel(ModelTestCase):
@@ -71,3 +73,25 @@ class TestAgentModel(ModelTestCase):
         for address in fail_subnets:
             with self.assertRaises(ValueError):
                 Agent("foobar", "10.56.0.1", address)
+
+    def test_resource_validation(self):
+        for resource in ("ram", "cpus", "port"):
+            min_value = DBCFG.get("agent.min_%s" % resource)
+            max_value = DBCFG.get("agent.max_%s" % resource)
+            values = range(min_value, max_value + 1)
+            value = random.choice(values)
+
+            kwargs = {resource: value}
+            Agent("foobar", "10.56.0.1", "255.0.0.0", **kwargs)
+
+            kwargs = {resource: None}
+            agent = Agent("foobar", "10.56.0.1", "255.0.0.0", **kwargs)
+            self.assertIsNone(getattr(agent, resource))
+
+            with self.assertRaises(ValueError):
+                kwargs = {resource: min_value - 1}
+                Agent("foobar", "10.56.0.1", "255.0.0.0", **kwargs)
+
+            with self.assertRaises(ValueError):
+                kwargs = {resource: max_value + 1}
+                Agent("foobar", "10.56.0.1", "255.0.0.0", **kwargs)
