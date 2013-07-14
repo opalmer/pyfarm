@@ -52,16 +52,21 @@ class TestAgentModel(ModelTestCase):
             "0.0.0.0",
             "169.254.0.0", "169.254.254.255",  # link local
             "127.0.0.1", "127.255.255.255",  # loopback
-            "224.0.0.0", "255.255.255.255"  # multi/broadcast
+            "224.0.0.0", "255.255.255.255",  # multi/broadcast
+            "255.0.0.0", "255.255.0.0"
         )
         for address in fail_addresses:
             with self.assertRaises(ValueError):
                 Agent("foobar", address, "255.0.0.0")
 
-
     def test_subnet_validation(self):
         fail_subnets = (
-            "0.0.0.0"
+            "0.0.0.0",
+            "169.254.0.0", "169.254.254.255",  # link local
+            "127.0.0.1", "127.255.255.255",  # loopback
+            "224.0.0.0", "255.255.255.255",  # multi/broadcast
+            "10.56.0.1", "172.16.0.1"
+
         )
         for address in fail_subnets:
             with self.assertRaises(ValueError):
