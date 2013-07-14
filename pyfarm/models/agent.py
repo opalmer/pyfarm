@@ -99,9 +99,14 @@ class AgentModel(db.Model, RandIdMixin, StateValidationMixin):
             raise ValueError(
                 "%s is not a valid address format: %s" % (value, e))
 
-        if key == "ip" and ip in IP_NONNETWORK:
-            raise ValueError(
-                "%s is not a valid address for `ip`" % value)
+        if key == "ip":
+            valid = all([
+                ip.is_private(), not ip.is_netmask(), not ip.is_hostmask(),
+                not ip.is_multicast(), not ip.is_link_local(),
+                not ip.is_loopback()
+            ])
+            if not valid:
+                raise ValueError("%s it not a private ip address" % value)
 
         # TODO: add test for subnet
         # elif key == "subnet" and ip.iptype() != "RESERVED":
