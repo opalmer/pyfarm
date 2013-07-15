@@ -25,4 +25,4 @@ from pyfarm.models.task import TaskModel
 from pyfarm.models.agent import AgentTagsModel, AgentSoftwareModel, AgentModel
 
 # load the interface classes
-from pyfarm.models.agent import Agent
+from pyfarm.models.agent import Agent, AgentSoftware, AgentTag
