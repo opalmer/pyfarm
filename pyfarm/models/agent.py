@@ -34,17 +34,46 @@ REGEX_HOSTNAME = re.compile("^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*"
 class AgentTagsModel(db.Model):
     """Table model used to store tags for agents"""
     __tablename__ = TABLE_AGENT_TAGS
-    _agentid = db.Column(db.Integer, db.ForeignKey("%s.id" % TABLE_AGENT),
-                         primary_key=True)
+    id = db.Column(db.Integer, autoincrement=True, primary_key=True)
+    _agentid = db.Column(db.Integer, db.ForeignKey("%s.id" % TABLE_AGENT))
     tag = db.Column(db.String)
 
 
 class AgentSoftwareModel(db.Model):
     """Table model used to store tags for agents"""
     __tablename__ = TABLE_AGENT_SOFTWARE
-    _agentid = db.Column(db.Integer, db.ForeignKey("%s.id" % TABLE_AGENT),
-                         primary_key=True)
+    id = db.Column(db.Integer, autoincrement=True, primary_key=True)
+    _agentid = db.Column(db.Integer, db.ForeignKey("%s.id" % TABLE_AGENT))
     software = db.Column(db.String)
+
+
+class AgentSoftware(AgentSoftwareModel):
+    """
+    Provides :meth:`__init__` for :class:`AgentSoftwareModel` so the model can
+    be instanced with initial values.
+    """
+    def __init__(self, agent, software):
+        if isinstance(agent, (AgentSoftwareModel, Agent)):
+            agentid = agent.id
+        else:
+            agentid = agent
+
+        self._agentid = agentid
+        self.software = software
+
+    @validates("_agentid")
+    def validate_agentid(self, key, value):
+        if not isinstance(value, long):
+            raise ValueError("expected long object for `%s`" % key)
+
+        return value
+
+    @validates("software")
+    def validate_software(self, key, value):
+        if not isinstance(value, basestring):
+            raise ValueError("expected a string for `%s`" % key)
+
+        return value
 
 
 class AgentModel(db.Model, RandIdMixin, StateValidationMixin):
