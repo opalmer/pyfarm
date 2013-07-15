@@ -18,8 +18,7 @@ from __future__ import with_statement
 import random
 
 from utcore import ModelTestCase, unique_ip
-from pyfarm.flaskapp import app, db
-from pyfarm.ext.config.enum import AgentState
+from pyfarm.flaskapp import db
 from pyfarm.models.agent import Agent
 from pyfarm.models.constants import DBCFG
 
