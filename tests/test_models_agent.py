@@ -19,7 +19,7 @@ import random
 
 from utcore import ModelTestCase, unique_ip
 from pyfarm.flaskapp import db
-from pyfarm.models.agent import Agent
+from pyfarm.models.agent import Agent, AgentSoftware
 from pyfarm.models.constants import DBCFG
 
 
@@ -94,3 +94,29 @@ class TestAgentModel(ModelTestCase):
             with self.assertRaises(ValueError):
                 kwargs = {resource: max_value + 1}
                 Agent("foobar", "10.56.0.1", "255.0.0.0", **kwargs)
+
+    def test_software(self):
+        # create the agent
+        agent_foobar = Agent("foobar", "10.56.0.1", "255.0.0.0")
+        db.session.add(agent_foobar)
+        db.session.commit()
+
+        # create some software tags
+        software_objects = []
+        for software_name in ("foo", "bar", "baz"):
+            software = AgentSoftware(agent_foobar, software_name)
+            software_objects.append(software)
+            db.session.add(software)
+
+        db.session.commit()
+        agent = Agent.query.filter_by(id=agent_foobar.id).first()
+
+        # agent.software == software_objects
+        self.assertEqual(
+            set(i.id for i in agent.software.all()),
+            set(i.id for i in software_objects))
+
+        # same as above, asking from the software table side
+        self.assertEqual(
+            set(i.id for i in AgentSoftware.query.filter_by(agent=agent).all()),
+            set(i.id for i in software_objects))
