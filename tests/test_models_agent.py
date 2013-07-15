@@ -19,7 +19,7 @@ import random
 
 from utcore import ModelTestCase, unique_ip
 from pyfarm.flaskapp import db
-from pyfarm.models.agent import Agent, AgentSoftware
+from pyfarm.models.agent import Agent, AgentSoftware, AgentTag
 from pyfarm.models.constants import DBCFG
 
 
@@ -54,8 +54,8 @@ class TestAgentModel(ModelTestCase):
             "169.254.0.0", "169.254.254.255",  # link local
             "127.0.0.1", "127.255.255.255",  # loopback
             "224.0.0.0", "255.255.255.255",  # multi/broadcast
-            "255.0.0.0", "255.255.0.0"
-        )
+            "255.0.0.0", "255.255.0.0")
+
         for address in fail_addresses:
             with self.assertRaises(ValueError):
                 Agent("foobar", address, "255.0.0.0")
@@ -66,9 +66,8 @@ class TestAgentModel(ModelTestCase):
             "169.254.0.0", "169.254.254.255",  # link local
             "127.0.0.1", "127.255.255.255",  # loopback
             "224.0.0.0", "255.255.255.255",  # multi/broadcast
-            "10.56.0.1", "172.16.0.1"
+            "10.56.0.1", "172.16.0.1")
 
-        )
         for address in fail_subnets:
             with self.assertRaises(ValueError):
                 Agent("foobar", "10.56.0.1", address)
@@ -95,6 +94,16 @@ class TestAgentModel(ModelTestCase):
                 kwargs = {resource: max_value + 1}
                 Agent("foobar", "10.56.0.1", "255.0.0.0", **kwargs)
 
+    def test_software_validation(self):
+        for i in (0, 1.0, None):
+            with self.assertRaises(ValueError):
+                AgentSoftware(1L, i)
+
+    def test_tag_validation(self):
+        for i in (0, 1.0, None):
+            with self.assertRaises(ValueError):
+                AgentTag(1L, i)
+
     def test_software(self):
         # create the agent
         agent_foobar = Agent("foobar", "10.56.0.1", "255.0.0.0")
@@ -120,3 +129,29 @@ class TestAgentModel(ModelTestCase):
         self.assertEqual(
             set(i.id for i in AgentSoftware.query.filter_by(agent=agent).all()),
             set(i.id for i in software_objects))
+
+    def test_tags(self):
+        # create the agent
+        agent_foobar = Agent("foobar", "10.56.0.1", "255.0.0.0")
+        db.session.add(agent_foobar)
+        db.session.commit()
+
+        # create some software tags
+        tag_objects = []
+        for tag_name in ("foo", "bar", "baz"):
+            tag = AgentTag(agent_foobar, tag_name)
+            tag_objects.append(tag)
+            db.session.add(tag)
+
+        db.session.commit()
+        agent = Agent.query.filter_by(id=agent_foobar.id).first()
+
+        # agent.software == software_objects
+        self.assertEqual(
+            set(i.id for i in agent.tags.all()),
+            set(i.id for i in tag_objects))
+
+        # same as above, asking from the software table side
+        self.assertEqual(
+            set(i.id for i in AgentTag.query.filter_by(agent=agent).all()),
+            set(i.id for i in tag_objects))
