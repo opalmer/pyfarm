@@ -31,20 +31,11 @@ REGEX_HOSTNAME = re.compile("^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*"
                             "[A-Za-z0-9\-]*[A-Za-z0-9])$")
 
 
-class AgentTagsModel(db.Model):
-    """Table model used to store tags for agents"""
-    __tablename__ = TABLE_AGENT_TAGS
+class AgentTaggingMixin(object):
+    """
+    Base class which can be used for other tagging classes
+    """
     id = db.Column(db.Integer, autoincrement=True, primary_key=True)
-    _agentid = db.Column(db.BigInteger, db.ForeignKey("%s.id" % TABLE_AGENT))
-    tag = db.Column(db.String)
-
-
-class AgentSoftwareModel(db.Model):
-    """Table model used to store tags for agents"""
-    __tablename__ = TABLE_AGENT_SOFTWARE
-    id = db.Column(db.Integer, autoincrement=True, primary_key=True)
-    _agentid = db.Column(db.BigInteger, db.ForeignKey("%s.id" % TABLE_AGENT))
-    software = db.Column(db.String)
 
     @validates("_agentid")
     def validate_agentid(self, key, value):
@@ -53,12 +44,41 @@ class AgentSoftwareModel(db.Model):
 
         return value
 
-    @validates("software")
-    def validate_software(self, key, value):
+    @validates("tag", "software")
+    def validate_string_column(self, key, value):
         if not isinstance(value, basestring):
             raise ValueError("expected a string for `%s`" % key)
 
         return value
+
+
+class AgentTagsModel(db.Model, AgentTaggingMixin):
+    """Table model used to store tags for agents"""
+    __tablename__ = TABLE_AGENT_TAGS
+    _agentid = db.Column(db.BigInteger, db.ForeignKey("%s.id" % TABLE_AGENT))
+    tag = db.Column(db.String)
+
+
+class AgentTag(AgentTagsModel):
+    """
+    Provides :meth:`__init__` for :class:`AgentTagsModel` so the model can
+    be instanced with initial values.
+    """
+    def __init__(self, agent, tag):
+        if isinstance(agent, Agent):
+            agentid = agent.id
+        else:
+            agentid = agent
+
+        self._agentid = agentid
+        self.tag = tag
+
+
+class AgentSoftwareModel(db.Model, AgentTaggingMixin):
+    """Table model used to store tags for agents"""
+    __tablename__ = TABLE_AGENT_SOFTWARE
+    _agentid = db.Column(db.BigInteger, db.ForeignKey("%s.id" % TABLE_AGENT))
+    software = db.Column(db.String)
 
 
 class AgentSoftware(AgentSoftwareModel):
@@ -67,7 +87,7 @@ class AgentSoftware(AgentSoftwareModel):
     be instanced with initial values.
     """
     def __init__(self, agent, software):
-        if isinstance(agent, (AgentSoftwareModel, Agent)):
+        if isinstance(agent, Agent):
             agentid = agent.id
         else:
             agentid = agent
