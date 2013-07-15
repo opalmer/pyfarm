@@ -35,7 +35,7 @@ class AgentTagsModel(db.Model):
     """Table model used to store tags for agents"""
     __tablename__ = TABLE_AGENT_TAGS
     id = db.Column(db.Integer, autoincrement=True, primary_key=True)
-    _agentid = db.Column(db.Integer, db.ForeignKey("%s.id" % TABLE_AGENT))
+    _agentid = db.Column(db.BigInteger, db.ForeignKey("%s.id" % TABLE_AGENT))
     tag = db.Column(db.String)
 
 
@@ -43,8 +43,22 @@ class AgentSoftwareModel(db.Model):
     """Table model used to store tags for agents"""
     __tablename__ = TABLE_AGENT_SOFTWARE
     id = db.Column(db.Integer, autoincrement=True, primary_key=True)
-    _agentid = db.Column(db.Integer, db.ForeignKey("%s.id" % TABLE_AGENT))
+    _agentid = db.Column(db.BigInteger, db.ForeignKey("%s.id" % TABLE_AGENT))
     software = db.Column(db.String)
+
+    @validates("_agentid")
+    def validate_agentid(self, key, value):
+        if not isinstance(value, long):
+            raise ValueError("expected long object for `%s`" % key)
+
+        return value
+
+    @validates("software")
+    def validate_software(self, key, value):
+        if not isinstance(value, basestring):
+            raise ValueError("expected a string for `%s`" % key)
+
+        return value
 
 
 class AgentSoftware(AgentSoftwareModel):
@@ -60,20 +74,6 @@ class AgentSoftware(AgentSoftwareModel):
 
         self._agentid = agentid
         self.software = software
-
-    @validates("_agentid")
-    def validate_agentid(self, key, value):
-        if not isinstance(value, long):
-            raise ValueError("expected long object for `%s`" % key)
-
-        return value
-
-    @validates("software")
-    def validate_software(self, key, value):
-        if not isinstance(value, basestring):
-            raise ValueError("expected a string for `%s`" % key)
-
-        return value
 
 
 class AgentModel(db.Model, RandIdMixin, StateValidationMixin):
@@ -109,7 +109,8 @@ class AgentModel(db.Model, RandIdMixin, StateValidationMixin):
     # relationships
     tasks = db.relationship("TaskModel", backref="agent", lazy="dynamic")
     tags = db.relationship("AgentTagsModel", backref="agent", lazy="dynamic")
-    software = db.relation("AgentSoftwareModel", backref="agent", lazy="dynamic")
+    software = db.relation("AgentSoftwareModel", backref="agent",
+                           lazy="dynamic")
 
     @validates("hostname")
     def validate_hostname(self, key, value):
