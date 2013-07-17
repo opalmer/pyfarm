@@ -30,9 +30,8 @@ class TaskModel(db.Model, StateValidationMixin, StateChangedMixin):
     STATE_ENUM = WorkState()
     STATE_DEFAULT = STATE_ENUM.QUEUED
 
-    id = db.Column(
-        db.BigInteger, primary_key=True, default=randint,
-        nullable=False, unique=True)
+    id = db.Column(db.BigInteger, primary_key=True, default=randint,
+                   nullable=False, unique=True)
 
     # task state/general data
     state = db.Column(db.Integer, default=STATE_DEFAULT, nullable=False)
