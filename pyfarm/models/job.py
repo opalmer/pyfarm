@@ -39,10 +39,9 @@ from sqlalchemy.orm import validates
 
 from pyfarm.flaskapp import db
 from pyfarm.config.enum import WorkState
-from pyfarm.utility import randint
 from pyfarm.warning import ConfigurationWarning
-from pyfarm.models.constants import (
-    DBCFG, TABLE_JOB, TABLE_JOB_TAGS, TABLE_JOB_SOFTWARE
+from pyfarm.models.core import (
+    DBCFG, TABLE_JOB, TABLE_JOB_TAGS, TABLE_JOB_SOFTWARE, IDColumn
 )
 from pyfarm.models.mixins import StateValidationMixin, StateChangedMixin
 
@@ -51,6 +50,7 @@ class JobTagsModel(db.Model):
     __tablename__ = TABLE_JOB_TAGS
     _jobid = db.Column(db.Integer, db.ForeignKey("%s.id" % TABLE_JOB),
                          primary_key=True)
+    id = IDColumn()
     tag = db.Column(db.String)
 
 
@@ -58,6 +58,7 @@ class JobSoftwareModel(db.Model):
     __tablename__ = TABLE_JOB_SOFTWARE
     _jobid = db.Column(db.Integer, db.ForeignKey("%s.id" % TABLE_JOB),
                          primary_key=True)
+    id = IDColumn()
     software = db.Column(db.String)
 
 
@@ -67,10 +68,7 @@ class JobModel(db.Model, StateValidationMixin, StateChangedMixin):
     STATE_ENUM = WorkState()
     STATE_DEFAULT = STATE_ENUM.QUEUED
 
-    # id column included due to self-referencing setup
-    id = db.Column(
-        db.BigInteger, primary_key=True, default=randint,
-        nullable=False, unique=True)
+    id = IDColumn()
 
     # job state/general data not specific to a task
     state = db.Column(db.Integer, default=STATE_DEFAULT)

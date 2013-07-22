@@ -16,13 +16,11 @@
 
 from datetime import datetime
 from sqlalchemy import event
-
 from pyfarm.flaskapp import db
 from pyfarm.config.enum import WorkState
-from pyfarm.utility import randint
-from pyfarm.models.constants import DBCFG, TABLE_JOB, TABLE_TASK, TABLE_AGENT
+from pyfarm.models.core import (
+    DBCFG, TABLE_JOB, TABLE_TASK, TABLE_AGENT, IDColumn, modelfor)
 from pyfarm.models.mixins import StateValidationMixin, StateChangedMixin
-from pyfarm.models import modelfor
 
 
 class TaskModel(db.Model, StateValidationMixin, StateChangedMixin):
@@ -31,8 +29,7 @@ class TaskModel(db.Model, StateValidationMixin, StateChangedMixin):
     STATE_ENUM = WorkState()
     STATE_DEFAULT = STATE_ENUM.QUEUED
 
-    id = db.Column(db.BigInteger, primary_key=True, default=randint,
-                   nullable=False, unique=True)
+    id = IDColumn()
 
     # task state/general data
     state = db.Column(db.Integer, default=STATE_DEFAULT, nullable=False)
@@ -75,7 +72,7 @@ class Task(TaskModel):
             jobid = job.jobid
             if jobid is None:
                 raise ValueError("`job` with null id provided")
-        elif isinstance(job, long):
+        elif isinstance(job, int):
             jobid = job
         else:
             raise ValueError("failed to determine job id")
@@ -87,7 +84,7 @@ class Task(TaskModel):
             parent_taskid = parent_task.id
             if parent_taskid is None:
                 raise ValueError("`parent_task` with null id provided")
-        elif isinstance(parent_task, long):
+        elif isinstance(parent_task, int):
             parent_taskid = parent_task
         else:
             raise ValueError("failed to determine parent task id")
@@ -99,7 +96,7 @@ class Task(TaskModel):
             agentid = agent.id
             if agentid is None:
                 raise ValueError("`agent` with null id provided")
-        elif isinstance(agent, long):
+        elif isinstance(agent, int):
             agentid = agent
         else:
             raise ValueError("failed to determine agent id")

@@ -16,11 +16,10 @@
 
 from __future__ import with_statement
 import random
-
 from utcore import ModelTestCase, unique_ip
 from pyfarm.flaskapp import db
 from pyfarm.models.agent import Agent, AgentSoftware, AgentTag
-from pyfarm.models.constants import DBCFG
+from pyfarm.models.core import DBCFG
 
 
 class TestAgentModel(ModelTestCase):
@@ -28,12 +27,12 @@ class TestAgentModel(ModelTestCase):
 
     def test_basic_insert(self):
         hostname = "foobar"
-        address = unique_ip()
+        address = "10.56.0.1"
         agent = Agent(hostname, address, self.subnet)
         self.assertIsNone(agent.id)
         db.session.add(agent)
         db.session.commit()
-        self.assertIsInstance(agent.id, long)
+        self.assertIsInstance(agent.id, int)
         result = Agent.query.filter_by(id=agent.id).first()
         self.assertEqual(result.id, agent.id)
         self.assertEqual(result.hostname, agent.hostname)

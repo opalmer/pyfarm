@@ -22,9 +22,9 @@ from pyfarm.flaskapp import db
 from pyfarm.ext.config.core.loader import Loader
 from pyfarm.ext.config.enum import AgentState
 from pyfarm.ext.system.network import IP_NONNETWORK
-from pyfarm.models.mixins import StateValidationMixin, RandIdMixin
-from pyfarm.models.constants import (
-    DBCFG, TABLE_AGENT, TABLE_AGENT_TAGS, TABLE_AGENT_SOFTWARE)
+from pyfarm.models.mixins import StateValidationMixin
+from pyfarm.models.core import (
+    DBCFG, TABLE_AGENT, TABLE_AGENT_TAGS, TABLE_AGENT_SOFTWARE, IDColumn)
 
 REGEX_HOSTNAME = re.compile("^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*"
                             "[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9]"
@@ -35,12 +35,11 @@ class AgentTaggingMixin(object):
     """
     Base class which can be used for other tagging classes
     """
-    id = db.Column(db.Integer, autoincrement=True, primary_key=True)
 
     @validates("_agentid")
     def validate_agentid(self, key, value):
-        if not isinstance(value, long):
-            raise ValueError("expected long object for `%s`" % key)
+        if not isinstance(value, int):
+            raise ValueError("expected int object for `%s`" % key)
 
         return value
 
@@ -56,6 +55,7 @@ class AgentTagsModel(db.Model, AgentTaggingMixin):
     """Table model used to store tags for agents"""
     __tablename__ = TABLE_AGENT_TAGS
     _agentid = db.Column(db.BigInteger, db.ForeignKey("%s.id" % TABLE_AGENT))
+    id = IDColumn()
     tag = db.Column(db.String)
 
 
@@ -78,6 +78,7 @@ class AgentSoftwareModel(db.Model, AgentTaggingMixin):
     """Table model used to store tags for agents"""
     __tablename__ = TABLE_AGENT_SOFTWARE
     _agentid = db.Column(db.BigInteger, db.ForeignKey("%s.id" % TABLE_AGENT))
+    id = IDColumn()
     software = db.Column(db.String)
 
 
@@ -96,7 +97,7 @@ class AgentSoftware(AgentSoftwareModel):
         self.software = software
 
 
-class AgentModel(db.Model, RandIdMixin, StateValidationMixin):
+class AgentModel(db.Model, StateValidationMixin):
     """
     Stores information about an agent include its network address,
     state, allocation configuration, etc.
@@ -104,9 +105,7 @@ class AgentModel(db.Model, RandIdMixin, StateValidationMixin):
     __tablename__ = TABLE_AGENT
     STATE_ENUM = AgentState()
     STATE_DEFAULT = STATE_ENUM.ONLINE
-
-    # NOTE: any columns where are null will generally be filled in
-    # by the client on first connect
+    id = IDColumn()
 
     # host state information
     enabled = db.Column(db.Boolean, default=True)

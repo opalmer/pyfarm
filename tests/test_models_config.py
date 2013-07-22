@@ -16,15 +16,15 @@
 
 from utcore import TestCase
 from pyfarm.ext.config.core.loader import Loader
-from pyfarm.models import constants
+from pyfarm.models import core
 
 
 class Config(TestCase):    
     def test_config(self):
-        self.assertTrue(isinstance(constants.DBCFG, Loader))
+        self.assertTrue(isinstance(core.DBCFG, Loader))
 
     def test_table_prefixes(self):
-        prefix = constants.DBCFG.get("tables.prefix")
-        for varname, value in vars(constants).iteritems():
+        prefix = core.DBCFG.get("tables.prefix")
+        for varname, value in vars(core).iteritems():
             if varname.startswith("TABLE_"):
                 self.assertTrue(value.startswith(prefix))
