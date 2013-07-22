@@ -14,7 +14,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""
+Contains core functions and data for use by :mod:`pyfarm.models`
+"""
+
 from pyfarm.ext.config.core.loader import Loader
+from pyfarm.flaskapp import db
 
 DBCFG = Loader("dbdata.yml")
 
@@ -42,3 +47,14 @@ def modelfor(model, table):
         return model.__tablename__ == table
     except AttributeError:
         return False
+
+
+def IDColumn():
+    """
+    Produces a column used for `id` on each table.  Typically this is done
+    using a class in :mod:`pyfarm.models.mixins` however because of the ORM
+    and the table relationships it's cleaner to have a function produce
+    the column.
+    """
+    return db.Column(
+        db.Integer, autoincrement=True, primary_key=True, unique=True)
