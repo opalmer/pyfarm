@@ -17,10 +17,10 @@ models Package
     :undoc-members:
     :show-inheritance:
 
-:mod:`constants` Module
------------------------
+:mod:`core` Module
+------------------
 
-.. automodule:: pyfarm.models.constants
+.. automodule:: pyfarm.models.core
     :members:
     :undoc-members:
     :show-inheritance:
