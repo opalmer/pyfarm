@@ -15,10 +15,36 @@
 # limitations under the License.
 
 from utcore import ModelTestCase
-from pyfarm.models.agent import Agent
+# from pyfarm.models.job import JobModel
+from pyfarm.flaskapp import db
+from pyfarm.models.task import Task, TaskModel
 
 
 class TestTaskModel(ModelTestCase):
-    def test_time_submitted(self):
-        agent = Agent("f", "10.56.1.1", "255.0.0.0")
-        print agent.__tablename__
+    def test_basic_insert(self):
+        job, frame, parent_task, priority, attempts, agent = range(6)
+        task = Task(job, frame, parent_task=parent_task, priority=priority,
+                    attempts=attempts, agent=agent)
+
+        self.assertIsNone(task.id)
+        db.session.add(task)
+        db.session.commit()
+        self.assertIsInstance(task.id, int)
+
+        result = Task.query.filter_by(id=task.id).first()
+        self.assertIsNotNone(result)
+        self.assertEqual(result.id, task.id)
+        self.assertEqual(result._jobid, job)
+        self.assertEqual(result.frame, frame)
+        self.assertEqual(result._parenttask, parent_task)
+        self.assertEqual(result.priority, priority)
+        self.assertEqual(result.attempts, attempts)
+        self.assertEqual(result._agentid, agent)
+        self.assertEqual(result.state, TaskModel.STATE_DEFAULT)
+
+    def test_init_errors(self):
+        job, frame, parent_task, priority, attempts, agent = range(6)
+
+        with self.assertRaises(ValueError):
+            raise NotImplementedError
+
