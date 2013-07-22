@@ -19,8 +19,6 @@ from warnings import warn
 from datetime import datetime
 from sqlalchemy.orm import validates
 from pyfarm.warning import ColumnStateChangeWarning
-from pyfarm.utility import randint
-from pyfarm.flaskapp import db
 
 
 class StateValidationMixin(object):
@@ -41,16 +39,6 @@ class StateValidationMixin(object):
             raise ValueError(msg)
 
         return value
-
-
-class RandIdMixin(object):
-    """
-    Mixin that provides an `id` column which generates a
-    value using :func:`.randint`
-    """
-    id = db.Column(
-        db.BigInteger, primary_key=True, default=randint,
-        nullable=False, unique=True)
 
 
 class StateChangedMixin(object):
