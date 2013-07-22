@@ -26,3 +26,19 @@ TABLE_JOB = "%sjob" % TABLE_PREFIX
 TABLE_JOB_TAGS = "%s_tags" % TABLE_JOB
 TABLE_JOB_SOFTWARE = "%s_software" % TABLE_JOB
 TABLE_TASK = "%stask" % TABLE_PREFIX
+
+
+def modelfor(model, table):
+    """
+    Returns True if the given `model` object is for the
+    expected `table`.
+
+    >>> from pyfarm.models.constants import TABLE_AGENT
+    >>> from pyfarm.models import Agent
+    >>> modelfor(Agent("foo", "10.56.0.0", "255.0.0.0"), TABLE_AGENT)
+    True
+    """
+    try:
+        return model.__tablename__ == table
+    except AttributeError:
+        return False
