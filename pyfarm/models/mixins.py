@@ -14,8 +14,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from warnings import warn
+"""
+Module containing mixins which can be used by multiple models.
+"""
 
+from warnings import warn
 from datetime import datetime
 from sqlalchemy.orm import validates
 from pyfarm.warning import ColumnStateChangeWarning
