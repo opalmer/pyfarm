@@ -30,12 +30,6 @@ try:
 except NameError:
     _range = range
 
-raise NotImplementedError("os.urandom's pool is small on some platforms, need better solution")
-# number generator service over rest api ??
-# hex(int(random.randrange(16**14) + time.time()))
-# OpenSSL.rand.bytes(16) # pip install pyOpenSSL ??
-# http://stackoverflow.com/a/6092448
-
 
 def randstr():
     """returns a random hexidecimal string based on :func:`os.urandom`"""
