@@ -27,19 +27,3 @@ from pyfarm.models.agent import AgentTagsModel, AgentSoftwareModel, AgentModel
 # load the interface classes
 from pyfarm.models.agent import Agent, AgentSoftware, AgentTag
 from pyfarm.models.task import Task
-
-
-def modelfor(model, table):
-    """
-    Returns True if the given `model` object is for the
-    expected `table`.
-
-    >>> from pyfarm.models.constants import TABLE_AGENT
-    >>> from pyfarm.models import Agent
-    >>> modelfor(Agent("foo", "10.56.0.0", "255.0.0.0"), TABLE_AGENT)
-    True
-    """
-    try:
-        return model.__tablename__ == table
-    except AttributeError:
-        return False
