@@ -68,7 +68,7 @@ class Task(TaskModel):
     def __init__(self, job, frame, parent_task=None, state=None,
                  priority=None, attempts=None, agent=None):
         # build parent job id
-        if not modelfor(job, TABLE_JOB):
+        if modelfor(job, TABLE_JOB):
             jobid = job.jobid
             if jobid is None:
                 raise ValueError("`job` with null id provided")
