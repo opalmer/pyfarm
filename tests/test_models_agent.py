@@ -34,6 +34,7 @@ class TestAgentModel(ModelTestCase):
         db.session.commit()
         self.assertIsInstance(agent.id, int)
         result = Agent.query.filter_by(id=agent.id).first()
+        self.assertIsNotNone(result)
         self.assertEqual(result.id, agent.id)
         self.assertEqual(result.hostname, agent.hostname)
         self.assertEqual(result.ip, address)
