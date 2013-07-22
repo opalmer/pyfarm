@@ -116,5 +116,5 @@ class Task(TaskModel):
         if priority is not None:
             self.priority = priority
 
-        if attempts is None:
+        if attempts is not None:
             self.attempts = attempts
