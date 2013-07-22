@@ -93,6 +93,8 @@ class TestAgentModel(ModelTestCase):
                 kwargs = {resource: max_value + 1}
                 Agent("foobar", "10.56.0.1", "255.0.0.0", **kwargs)
 
+
+class TestAgentSWAndTags(ModelTestCase):
     def test_software_validation(self):
         for i in (0, 1.0, None):
             with self.assertRaises(ValueError):
