@@ -80,7 +80,11 @@ def requirements(major, minor):
     # between versions in ways that breaks both tests
     # and general code.  Since it's hit 1.x.x we're
     # locking it down for now.
-    requires.append("psutil")
+    if os.environ.get("READTHEDOCS") == "True":
+        psutil_version = "psutil"
+    else:
+        psutil_version = "psutil>=1.0.0"
+    requires.append(psutil_version)
 
     # backports of modules introduced in 2.7
     if (major, minor) < (2, 7):
