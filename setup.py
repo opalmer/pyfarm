@@ -46,8 +46,6 @@ from distutils.core import setup
 from os.path import abspath, dirname, join
 from distutils.command.clean import clean as _clean
 
-os.environ["PYFARM_SETUP_RUNNING"] = "True"
-
 cwd = os.path.dirname(os.path.abspath(__file__))
 
 initpy = abspath(join(dirname(__file__), "pyfarm", "__init__.py"))
