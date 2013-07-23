@@ -319,7 +319,8 @@ else:
     DBConfig.insertConfig("docbuild",
                           {"engine": "sqlite", "database": ":memory:"})
 
-    import pprint
-    pprint.pprint(os.environ.data)
-    pprint.pprint(sys.argv)
-    pprint.pprint(sys.path)
+    print "="*20
+    from pyfarm.config.core import find
+    print find.configDirectories()
+    print os.listdir(find.configDirectories())
+    print "="*20
