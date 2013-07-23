@@ -17,6 +17,7 @@
 from __future__ import with_statement
 
 import os
+import pkg_resources
 
 from _ast import *
 try:
@@ -309,3 +310,13 @@ texinfo_documents = [
    u"Oliver Palmer", "PyFarm", "A Python based distributed job system",
    "Miscellaneous"),
 ]
+
+# try to load PyFarm and create some configuration
+# data
+try:
+    import pyfarm
+except pkg_resources.DistributionNotFound:
+    pass
+else:
+    from pyfarm.ext.config.database import DBConfig
+    DBConfig.insertConfig({"engine": "sqlite", "database": ":memory:"})
