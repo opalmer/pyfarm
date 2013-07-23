@@ -315,17 +315,6 @@ try:
 except pkg_resources.DistributionNotFound:
     pass
 else:
-    from os.path import join
-    from pyfarm import dist
     from pyfarm.ext.config.database import DBConfig
     DBConfig.insertConfig("docbuild",
                           {"engine": "sqlite", "database": ":memory:"})
-
-    print "="*20
-    from pyfarm.config.core import find
-    print find.configDirectories()
-    path = join(dist.location, "pyfarm-files")
-    print path
-    print os.listdir(path)
-    # print os.listdir(find.configDirectories())
-    print "="*20
