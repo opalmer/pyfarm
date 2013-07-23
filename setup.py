@@ -80,7 +80,7 @@ def requirements(major, minor):
     # between versions in ways that breaks both tests
     # and general code.  Since it's hit 1.x.x we're
     # locking it down for now.
-    requires.append("psutil==1.0.0")
+    requires.append("psutil>=1.0.0")
 
     # backports of modules introduced in 2.7
     if (major, minor) < (2, 7):
@@ -124,7 +124,6 @@ class clean(_clean):
                 shutil.rmtree(path)
             elif os.path.isfile(path):
                 os.remove(path)
-        # end rm
 
         # remove egg directories
         eggdir = lambda name: ".egg" in name or ".egg-info" in name
