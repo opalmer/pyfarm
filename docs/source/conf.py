@@ -324,7 +324,8 @@ else:
     print "="*20
     from pyfarm.config.core import find
     print find.configDirectories()
-    # print join(dist.location, "pyfarm-files", "config")
-    print os.listdir(dist.location)
-    print os.listdir(find.configDirectories())
+    path = join(dist.location, "pyfarm-files")
+    print path
+    print os.listdir(path)
+    # print os.listdir(find.configDirectories())
     print "="*20
