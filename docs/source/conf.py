@@ -179,7 +179,7 @@ download_other = (
 
 
 download_directory = join(
-    tempfile.gettempdir(),"pyfarm", "docbuild",  "downloads"
+    tempfile.gettempdir(), "pyfarm", "docbuild",  "downloads"
 )
 
 USE_SERVER_URL = True
