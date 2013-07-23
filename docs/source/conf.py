@@ -34,9 +34,6 @@ import tempfile
 from datetime import datetime
 from os.path import abspath, join, dirname, isfile, isdir, basename
 
-# environment
-os.environ["SPHINX_BUILD"] = 'true'
-
 # -- General configuration -----------------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.
