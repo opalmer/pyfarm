@@ -23,7 +23,7 @@ or files on disk.
 import os
 import copy
 from itertools import imap
-from os.path import join, isfile, isdir
+from os.path import join, isfile, isdir, dirname
 
 try:
     from itertools import product
@@ -36,7 +36,13 @@ from pyfarm import __version__, dist
 DEFAULT_SUBDIR = "etc"
 DEFAULT_USER_PATHS = False
 DEFAULT_SYSTEM_PATHS = False
+
+# Determine the default configuration root.  Depending on how
+# PyFarm was installed this could be one of two directories.
 DEFAULT_CONFIG_ROOT = join(dist.location, "pyfarm-files", "config")
+if not isdir(DEFAULT_CONFIG_ROOT) and isdir(dirname(DEFAULT_CONFIG_ROOT)):
+    DEFAULT_CONFIG_ROOT = dirname(DEFAULT_CONFIG_ROOT)
+
 DEFAULT_VERSION = list(__version__)
 
 
