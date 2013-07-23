@@ -319,4 +319,5 @@ except pkg_resources.DistributionNotFound:
     pass
 else:
     from pyfarm.ext.config.database import DBConfig
-    DBConfig.insertConfig({"engine": "sqlite", "database": ":memory:"})
+    DBConfig.insertConfig("docbuild",
+                          {"engine": "sqlite", "database": ":memory:"})
