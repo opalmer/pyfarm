@@ -321,3 +321,8 @@ else:
     from pyfarm.ext.config.database import DBConfig
     DBConfig.insertConfig("docbuild",
                           {"engine": "sqlite", "database": ":memory:"})
+
+    import pprint
+    pprint.pprint(os.environ.data)
+    pprint.pprint(sys.argv)
+    pprint.pprint(sys.path)
