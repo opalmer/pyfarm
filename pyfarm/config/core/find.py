@@ -108,7 +108,7 @@ def configDirectories(roots=None, user=None, system=None, version=None,
         user = [os.path.join(appdirs.user_data_dir, DEFAULT_SUBDIR)]
 
     elif "PYFARM_CFGROOT_USER" in os.environ:
-        user = filter(bool, os.environ["PYFARM_CFGROOT_USER"].split(os.pathsep))
+        user = filter(bool, os.environ["PYFARM_CFGROOT_USER"].split(","))
 
     elif isinstance(user, basestring):
         user = [user]
@@ -118,7 +118,7 @@ def configDirectories(roots=None, user=None, system=None, version=None,
         system = [os.path.join(appdirs.site_data_dir, DEFAULT_SUBDIR)]
 
     elif "PYFARM_CFGROOT_SYSTEM" in os.environ:
-        system = filter(bool, os.environ["PYFARM_CFGROOT_SYSTEM"].split(os.pathsep))
+        system = filter(bool, os.environ["PYFARM_CFGROOT_SYSTEM"].split(","))
 
     elif isinstance(system, basestring):
         system = [system]
@@ -134,9 +134,9 @@ def configDirectories(roots=None, user=None, system=None, version=None,
         "failed to convert %s for `roots` into a list" % rootdirs
 
     # environment paths before go before our paths
-    # NOTE: these are not the same thing as the initial value for `rootdors`
+    # NOTE: these are not the same thing as the initial value for `rootdirs`
     if "PYFARM_CFGROOT" in os.environ:
-        rootdirs[:0] = filter(bool, os.environ["PYFARM_CFGROOT"].split(os.pathsep))
+        rootdirs[:0] = filter(bool, os.environ["PYFARM_CFGROOT"].split(","))
 
     # followed by the system
     if system:
