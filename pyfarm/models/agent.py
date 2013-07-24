@@ -32,6 +32,7 @@ REGEX_HOSTNAME = re.compile("^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*"
                             "[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9]"
                             "[A-Za-z0-9\-]*[A-Za-z0-9])$")
 
+raise NotImplementedError("multi-column uniqueness")
 
 class AgentTaggingMixin(object):
     """
