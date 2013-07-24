@@ -62,5 +62,4 @@ def IDColumn():
         db.Integer, autoincrement=True, primary_key=True, unique=True,
         doc=dedent("""
         Provides an id for the current row.  This value should never be
-        directly relied upon and is intended for use in relationships.
-        """))
+        directly relied upon and it's intended for use by relationships."""))
