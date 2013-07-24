@@ -17,6 +17,7 @@
 import re
 import netaddr
 from textwrap import dedent
+from sqlalchemy.schema import UniqueConstraint
 from sqlalchemy.orm import validates
 
 from pyfarm.flaskapp import db
@@ -34,27 +35,54 @@ REGEX_HOSTNAME = re.compile("^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*"
 
 class AgentTaggingMixin(object):
     """
-    Base class which can be used for other tagging classes
+    Mixin used which provides some common structures to
+    :class:`.AgentTagsModel` and :class:`.AgentSoftwareModel`
     """
     @validates("tag", "software")
     def validate_string_column(self, key, value):
-        if not isinstance(value, basestring):
+        """
+        Ensures `value` is a string or something that can be converted
+        to a string.
+        """
+        if isinstance(value, (int, long)):
+            value = str(value)
+        elif not isinstance(value, basestring):
             raise ValueError("expected a string for `%s`" % key)
 
         return value
 
 
 class AgentTagsModel(db.Model, AgentTaggingMixin):
-    """Table model used to store tags for agents"""
+    """
+    Table model used to store tags for an agent.
+
+    .. note::
+        This table enforces two forms of uniqueness.  The :attr:`id` column
+        must be unique and the combination of these columns must also be
+        unique to limit the frequency of duplicate data:
+
+            * :attr:`_agentid`
+            * :attr:`tag`
+
+    .. autoattribute:: _agentid
+    """
     __tablename__ = TABLE_AGENT_TAGS
-    _agentid = db.Column(db.BigInteger, db.ForeignKey("%s.id" % TABLE_AGENT))
+    __table_args__ = (UniqueConstraint("_agentid", "tag"), )
     id = IDColumn()
-    tag = db.Column(db.String)
+    _agentid = db.Column(db.Integer, db.ForeignKey("%s.id" % TABLE_AGENT),
+                         doc=dedent("""
+                         The foreign key which stores :attr:`AgentModel.id`"""))
+    tag = db.Column(db.String,
+                    doc=dedent("""
+                    A string value to tag an :class:`.AgentModel`. Generally
+                    this value is used for grouping like resources together
+                    on the network but could also be used by jobs as a sort of
+                    requirement."""))
 
 
 class AgentTag(AgentTagsModel):
     """
-    Provides :meth:`__init__` for :class:`AgentTagsModel` so the model can
+    Provides :meth:`__init__` for :class:`.AgentTagsModel` so the model can
     be instanced with initial values.
     """
     def __init__(self, agent, tag):
@@ -68,11 +96,36 @@ class AgentTag(AgentTagsModel):
 
 
 class AgentSoftwareModel(db.Model, AgentTaggingMixin):
-    """Table model used to store tags for agents"""
+    """
+    Stores information about an the software installed on
+    an agent.
+
+    .. note::
+        This table enforces two forms of uniqueness.  The :attr:`id` column
+        must be unique and the combination of these columns must also be
+        unique to limit the frequency of duplicate data:
+
+            * :attr:`_agentid`
+            * :attr:`version`
+            * :attr:`software`
+
+    .. autoattribute:: _agentid
+    """
     __tablename__ = TABLE_AGENT_SOFTWARE
-    _agentid = db.Column(db.BigInteger, db.ForeignKey("%s.id" % TABLE_AGENT))
+    __table_args__ = (UniqueConstraint("_agentid", "version", "software"), )
     id = IDColumn()
-    software = db.Column(db.String)
+    _agentid = db.Column(db.Integer, db.ForeignKey("%s.id" % TABLE_AGENT),
+                         doc=dedent("""
+                         The foreign key which stores :attr:`AgentModel.id`"""))
+    version = db.Column(db.String, default="any",
+                        doc=dedent("""
+                        The version of the software installed on a host.  This
+                        value does not follow any special formatting rules
+                        because the format depends on the 3rd party."""))
+    software = db.Column(db.String,
+                         doc=dedent("""
+                         The name of the software installed.  No normalization
+                         is performed prior to being stored in the database"""))
 
 
 class AgentSoftware(AgentSoftwareModel):
@@ -80,7 +133,7 @@ class AgentSoftware(AgentSoftwareModel):
     Provides :meth:`__init__` for :class:`AgentSoftwareModel` so the model can
     be instanced with initial values.
     """
-    def __init__(self, agent, software):
+    def __init__(self, agent, software, version="any"):
         if isinstance(agent, Agent):
             agentid = agent.id
         else:
@@ -88,14 +141,27 @@ class AgentSoftware(AgentSoftwareModel):
 
         self._agentid = agentid
         self.software = software
+        self.version = version
 
 
 class AgentModel(db.Model, StateValidationMixin):
     """
     Stores information about an agent include its network address,
     state, allocation configuration, etc.
+
+    .. note::
+        This table enforces two forms of uniqueness.  The :attr:`id` column
+        must be unique and the combination of these columns must also be
+        unique to limit the frequency of duplicate data:
+
+            * :attr:`hostname`
+            * :attr:`ip`
+            * :attr:`subnet`
+            * :attr:`port`
+
     """
     __tablename__ = TABLE_AGENT
+    __table_args__ = (UniqueConstraint("hostname", "ip", "subnet", "port"), )
     STATE_ENUM = AgentState()
     STATE_DEFAULT = STATE_ENUM.ONLINE
     id = IDColumn()
