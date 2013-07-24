@@ -24,7 +24,7 @@ from pyfarm.models.mixins import StateValidationMixin, StateChangedMixin
 
 
 class TaskModel(db.Model, StateValidationMixin, StateChangedMixin):
-    """Defines task which a child of a :class:`.Job`"""
+    """Defines task which a child of a :class:`Job`"""
     __tablename__ = TABLE_TASK
     STATE_ENUM = WorkState()
     STATE_DEFAULT = STATE_ENUM.QUEUED
