@@ -168,7 +168,7 @@ class NetworkInfo(object):
         * measure the bytes sent/received and the packets sent/received for
           each adapter found
         * return the adapter with the most number of packets and bytes
-          sent and received 
+          sent and received
         """
         if self._cached_ip is not None:
             return self._cached_ip
