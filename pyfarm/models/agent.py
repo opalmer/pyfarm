@@ -167,31 +167,108 @@ class AgentModel(db.Model, StateValidationMixin):
     id = IDColumn()
 
     # host state information
-    enabled = db.Column(db.Boolean, default=True)
-    state = db.Column(db.Integer, default=STATE_DEFAULT, nullable=False)
-    hostname = db.Column(db.String, nullable=False)
-    ip = db.Column(db.String(15), nullable=False)
-    subnet = db.Column(db.String(15), nullable=False)
-    ram = db.Column(db.Integer)
-    cpus = db.Column(db.Integer)
-    port = db.Column(db.Integer)
+    enabled = db.Column(db.Boolean, default=True, nullable=False,
+                        doc=dedent("""
+                        Tells the queue and various other parts of PyFarm if
+                        this host is considered part of the pool.  Setting
+                        this to True will prevent:
+
+                        * new work from being sent to an agent
+                        * failed job types from rerunning
+                        * batch commands being picked up over the pub/sub
+                          channel"""))
+    state = db.Column(db.Integer, default=STATE_DEFAULT, nullable=False,
+                      doc=dedent("""
+                      Stores the current state of the host.  This value can be
+                      changed either by a master telling the host to do
+                      something with a task or from the host via REST api.
+
+                      .. csv-table:: **Values (from enum.yml:AgentState)**
+                          :header: Integer, Description
+                          :widths: 10, 50
+
+                          16,Offline - host is unreachable
+                          17,Online - ready to receive work
+                          18,Disabled - same as online but cannot receive work
+                          19,Running - currently processing work"""))
+    hostname = db.Column(db.String, nullable=False,
+                         doc=dedent("""
+                         The hostname we should use to talk to this host.
+                         Preferably this value will be the fully qualified
+                         name instead of the base hostname alone."""))
+    ip = db.Column(db.String(15), nullable=False,
+                   doc=dedent("""
+                   The IPv4 network address this host resides on.  This is
+                   'best guess' address using factors described in
+                   :meth:`pyfarm.system.network.NetworkInfo.ip`"""))
+    subnet = db.Column(db.String(15), nullable=False,
+                       doc=dedent("""
+                       The subnet associated with the agent at the time we
+                       discovered :attr:`ip`"""))
+    ram = db.Column(db.Integer, nullable=False,
+                    doc=dedent("""
+                    The amount of ram (in megabytes) installed on the agent.
+                    This value is provided by
+                    :attr:`pyfarm.system.memory.MemoryInfo.TOTAL_RAM`"""))
+    cpus = db.Column(db.Integer, nullable=False,
+                     doc=dedent("""
+                     The number of cpus installed on the agent.  This value
+                     is provided by
+                     :attr:`pyfarm.system.processor.ProcessorInfo.NUM_CPUS`
+                     """))
+    port = db.Column(db.Integer, nullable=False,
+                     doc=dedent("""
+                     The port the agent is currently running on"""))
 
     # Max allocation of the two primary resources which `1.0` is 100%
     # allocation.  For `cpu_allocation` 100% allocation typically means
     # one task per cpu.
-    ram_allocation = db.Column(db.Float,
-                               default=DBCFG.get("agent.ram_allocation", .8))
-    cpu_allocation = db.Column(db.Float,
-                               default=DBCFG.get("agent.cpu_allocation", 1.0))
+    ram_allocation = db.Column(db.Float, nullable=False,
+                               default=DBCFG.get("agent.ram_allocation", .8),
+                               doc=dedent("""
+                               The amount of ram the agent is allowed to
+                               allocate towards work.  A value of `1.0` would
+                               mean to let the agent use all of the memory
+                               installed on the system when assigning work.
+
+                               **configured by**: `agent.ram_allocation`"""))
+    cpu_allocation = db.Column(db.Float, nullable=False,
+                               default=DBCFG.get("agent.cpu_allocation", 1.0),
+                               doc=dedent("""
+                               The total amount of cpu space an agent is
+                               allowed to process work in.  A value of `1.0`
+                               would mean an agent can handle as much work
+                               as the system could handle given the
+                               requirements of a task.  For example if an agent
+                               has 8 cpus, cpu_allocation is .5, and a task
+                               requires 4 cpus then only that task will run
+                               on the system.
+
+                               **configured by**: `agent.cpu_allocation`"""))
 
     # relationships
-    tasks = db.relationship("TaskModel", backref="agent", lazy="dynamic")
-    tags = db.relationship("AgentTagsModel", backref="agent", lazy="dynamic")
+    tasks = db.relationship("TaskModel", backref="agent", lazy="dynamic",
+                            doc=dedent("""
+                            Relationship between an :class:`AgentModel`
+                            and any :class:`pyfarm.models.TaskModel`
+                            objects"""))
+    tags = db.relationship("AgentTagsModel", backref="agent", lazy="dynamic",
+                           doc=dedent("""
+                           Relationship between an :class:`AgentModel`
+                           and any :class:`pyfarm.models.AgentTagsModel`
+                           objects"""))
     software = db.relation("AgentSoftwareModel", backref="agent",
-                           lazy="dynamic")
+                           lazy="dynamic", doc=dedent("""
+                           Relationship between an :class:`AgentModel`
+                           and any :class:`pyfarm.models.AgentSoftwareModel`
+                           objects"""))
 
     @validates("hostname")
     def validate_hostname(self, key, value):
+        """
+        Ensures that the hostname provided by `value` matches a regular
+        expression that expresses what a valid hostname is.
+        """
         # ensure hostname does not contain characters we can't use
         if not REGEX_HOSTNAME.match(value):
             raise ValueError("%s is not valid for %s" % (value, key))
@@ -200,6 +277,20 @@ class AgentModel(db.Model, StateValidationMixin):
 
     @validates("ip", "subnet")
     def validate_address(self, key, value):
+        """
+        Ensures the :attr:`ip` and :attr:`subnet` are valid.  For ip addresses
+        this will make sure `value` is:
+
+            * not a hostmask
+            * not link local (:rfc:`3927`)
+            * not used for multicast (:rfc:`1112`)
+            * not a netmask (:rfc:`4632`)
+            * not reserved (:rfc:`6052`)
+            * a private address (:rfc:`1918`)
+
+        This method will also value subnet masks to ensure their format is
+        valid.
+        """
         try:
             ip = netaddr.IPAddress(value)
 
@@ -231,6 +322,10 @@ class AgentModel(db.Model, StateValidationMixin):
 
     @validates("ram", "cpus", "port")
     def validate_resource(self, key, value):
+        """
+        Ensure the `value` provided for `key` is within an expected range as
+        specified in `agent.yml`
+        """
         if value is None:
             return value
 
