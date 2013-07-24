@@ -15,7 +15,8 @@
 # limitations under the License.
 
 """
-Contains all the models the master operates on.
+Contains all the models used for database communication and object
+relational management.
 """
 
 # NOTE: All models must be loaded here so the mapper
@@ -28,3 +29,5 @@ from pyfarm.models.agent import AgentTagsModel, AgentSoftwareModel, AgentModel
 from pyfarm.models.agent import Agent, AgentSoftware, AgentTag
 from pyfarm.models.task import Task
 from pyfarm.models.job import Job
+
+__all__ = ["Job", "Task", "Agent", "AgentSoftware", "AgentTag"]
