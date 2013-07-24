@@ -16,6 +16,7 @@
 
 import re
 import netaddr
+from textwrap import dedent
 from sqlalchemy.orm import validates
 
 from pyfarm.flaskapp import db
@@ -35,14 +36,6 @@ class AgentTaggingMixin(object):
     """
     Base class which can be used for other tagging classes
     """
-
-    @validates("_agentid")
-    def validate_agentid(self, key, value):
-        if not isinstance(value, int):
-            raise ValueError("expected int object for `%s`" % key)
-
-        return value
-
     @validates("tag", "software")
     def validate_string_column(self, key, value):
         if not isinstance(value, basestring):
