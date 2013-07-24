@@ -18,6 +18,8 @@
 Contains core functions and data for use by :mod:`pyfarm.models`
 """
 
+from textwrap import dedent
+
 from pyfarm.ext.config.core.loader import Loader
 from pyfarm.flaskapp import db
 
@@ -57,4 +59,8 @@ def IDColumn():
     the column.
     """
     return db.Column(
-        db.Integer, autoincrement=True, primary_key=True, unique=True)
+        db.Integer, autoincrement=True, primary_key=True, unique=True,
+        doc=dedent("""
+        Provides an id for the current row.  This value should never be
+        directly relied upon and is intended for use in relationships.
+        """))
