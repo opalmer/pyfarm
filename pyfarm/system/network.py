@@ -160,7 +160,15 @@ class NetworkInfo(object):
 
     def ip(self):
         """
-        Attempts to retrieve the ip address for use on the network.
+        Attempts to retrieve the ip address for use on the network.  Because
+        a host could have several network adapters installed this method will:
+
+        * find all network adapters on the system which contain network
+          addressable IPv4 addresses
+        * measure the bytes sent/received and the packets sent/received for
+          each adapter found
+        * return the adapter with the most number of packets and bytes
+          sent and received 
         """
         if self._cached_ip is not None:
             return self._cached_ip
