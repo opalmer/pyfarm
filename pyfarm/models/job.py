@@ -19,6 +19,8 @@
 """
 
 import os
+import inspect
+import importlib
 from datetime import datetime
 from UserDict import UserDict
 
@@ -48,7 +50,7 @@ from pyfarm.models.core import (
     DBCFG, TABLE_JOB, TABLE_JOB_TAGS, TABLE_JOB_SOFTWARE, IDColumn
 )
 from pyfarm.models.mixins import StateValidationMixin, StateChangedMixin
-
+from pyfarm.ext.jobtypes.core import Job
 
 class JobTagsModel(db.Model):
     """
@@ -176,6 +178,11 @@ class JobModel(db.Model, StateValidationMixin, StateChangedMixin):
                               """))
 
     # task data
+    _jobtype = db.Column(db.String, nullable=False,
+                         doc=dedent("""
+                         The name of the the jobtype to execute.  This value
+                         will be set by the jobtype property when the class
+                         is setup."""))
     cmd = db.Column(db.String,
                     doc=dedent("""
                     The platform independent command to run. Each agent will
@@ -194,10 +201,10 @@ class JobModel(db.Model, StateValidationMixin, StateChangedMixin):
                       The last frame of the job to run.  This value may
                       be a float so subframes can be processed."""))
     by = db.Column(db.Float, default=1,
-                      doc=dedent("""
-                      The number of frames to count by between `start` and
-                      `end`.  This column may also sometimes be referred to
-                      as 'step' by other software."""))
+                   doc=dedent("""
+                   The number of frames to count by between `start` and
+                   `end`.  This column may also sometimes be referred to
+                   as 'step' by other software."""))
     batch = db.Column(db.Integer, default=DBCFG.get("job.batch"),
                       doc=dedent("""
                       Number of tasks to run on a single agent at once.
@@ -341,6 +348,53 @@ class JobModel(db.Model, StateValidationMixin, StateChangedMixin):
                                Relationship between this job and
                                :class:`.JobSoftwareModel` objects"""))
 
+    def instanceJobType(self):
+        """
+        Produces an instance of the job type object using :attr:`.jobtype`
+        """
+        return self.jobtype(self.cmd, self.args, self.environ, self.data)
+
+    @property
+    def jobtype(self):
+        """
+        Property which returns the jobtype class this instance is supposed
+        to be using
+        """
+        if not self._jobtype:
+            raise ValueError("underlying `_jobtype` is not populated")
+
+        module_name = self._jobtype.lower()
+        module_path = "pyfarm.ext.jobtypes.%s" % module_name
+
+        # attempt to import the job type module
+        try:
+            module = importlib.import_module(module_path)
+        except ImportError:
+            args = (module_name, module_path)
+            raise ImportError(
+                "failed to find a job type to import for %s at %s" % args)
+
+        # try to get the class attribute and return it
+        try:
+            return getattr(module, self._jobtype)
+        except AttributeError:
+            raise AttributeError(
+                "job type %s does exist on %s" % (self._jobtype, module))
+
+    @jobtype.setter
+    def jobtype(self, value):
+        """
+        Sets the :attr:`_jobtype` column when provided input.  If the input
+        provided is a job type class then we'll use that directly otherwise
+        we attempt to handle `value` as a string.
+        """
+        if isinstance(value, Job) or inspect.isclass(value):
+            self._jobtype = value.__name__
+        elif isinstance(value, basestring):
+            self._jobtype = value
+        else:
+            raise TypeError("unsupported type %s for `_jobtype`" % type(value))
+
     @property
     def environ(self):
         """
@@ -454,3 +508,4 @@ class Job(JobModel):
         This is done so an `id` could be retrieved without creating a new
         job however this class does not allow that
     """
+    def __init__(self):
