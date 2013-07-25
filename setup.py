@@ -90,6 +90,7 @@ def requirements(major, minor):
     if (major, minor) < (2, 7):
         requires.append("argparse")
         requires.append("ordereddict")
+        requires.append("importlib")
 
     # higher than 2.5
     if (major, minor) > (2, 5):
