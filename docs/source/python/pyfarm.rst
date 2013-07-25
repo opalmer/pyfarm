@@ -90,6 +90,7 @@ Subpackages
     pyfarm.api
     pyfarm.config
     pyfarm.ext
+    pyfarm.jobtypes
     pyfarm.master
     pyfarm.models
     pyfarm.system
