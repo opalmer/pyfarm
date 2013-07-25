@@ -501,11 +501,26 @@ event.listen(JobModel.state, "set", JobModel.stateChangedEvent)
 class Job(JobModel):
     """
     Provides :meth:`__init__` for :class:`.JobModel` so the model can
-    be instanced with initial values.
+    be instanced with initial values.  Unlike the other interface classes
+    however :class:`Job` only requires a single positional argument and
+    any number of kwargs.
 
     .. note::
         The :class:`.JobModel` allows nearly all of its columns to be nullable.
         This is done so an `id` could be retrieved without creating a new
         job however this class does not allow that
     """
-    def __init__(self):
+    def __init__(self, jobtype, **kwargs):
+        self.jobtype = jobtype
+
+        for key, value in kwargs.iteritems():
+            if not hasattr(JobModel, key):
+                raise AttributeError("`Job` does not have `%s`" % key)
+            else:
+                setattr(self, key, value)
+
+    @classmethod
+    def getID(cls):
+        raise NotImplementedError
+        instance = cls(None)
+        return inspect.id
