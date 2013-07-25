@@ -45,9 +45,6 @@ from pyfarm.models.core import (
 )
 from pyfarm.models.mixins import StateValidationMixin, StateChangedMixin
 
-if "READTHEDOCS" not in os.environ:
-    raise NotImplementedError("documentation, interface class, "
-                              "multi-column uniqueness")
 
 class JobTagsModel(db.Model):
     __tablename__ = TABLE_JOB_TAGS
