@@ -14,8 +14,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""
+.. include:: ../include/references.rst
+"""
+
 import os
-from warnings import warn
 from datetime import datetime
 from UserDict import UserDict
 
@@ -37,6 +40,7 @@ except AttributeError:
 from textwrap import dedent
 from sqlalchemy import event
 from sqlalchemy.orm import validates
+from sqlalchemy.schema import UniqueConstraint
 
 from pyfarm.flaskapp import db
 from pyfarm.config.enum import WorkState
@@ -47,25 +51,65 @@ from pyfarm.models.mixins import StateValidationMixin, StateChangedMixin
 
 
 class JobTagsModel(db.Model):
+    """
+    Model which provides tagging for :class:`.JobModel` objects
+
+    .. note::
+        This table enforces two forms of uniqueness.  The :attr:`id` column
+        must be unique and the combination of these columns must also be
+        unique to limit the frequency of duplicate data:
+
+            * :attr:`_jobid`
+            * :attr:`tag`
+
+    .. autoattribute:: _jobid
+    """
     __tablename__ = TABLE_JOB_TAGS
-    _jobid = db.Column(db.Integer, db.ForeignKey("%s.id" % TABLE_JOB),
-                         primary_key=True)
+    __table_args__ = (UniqueConstraint("_jobid", "tag"),)
     id = IDColumn()
-    tag = db.Column(db.String)
+    _jobid = db.Column(db.Integer, db.ForeignKey("%s.id" % TABLE_JOB),
+                       doc=dedent("""
+                       The foreign key which stores :attr:`JobModel.id`"""))
+
+    tag = db.Column(db.String, nullable=False)
 
 
 class JobSoftwareModel(db.Model):
+    """
+    Model which allows specific software to be associated with a
+    :class:`.JobModel` object.
+
+    .. note::
+        This table enforces two forms of uniqueness.  The :attr:`id` column
+        must be unique and the combination of these columns must also be
+        unique to limit the frequency of duplicate data:
+
+            * :attr:`_jobid`
+            * :attr:`software`
+            * :attr:`version`
+
+    .. autoattribute:: _jobid
+    """
     __tablename__ = TABLE_JOB_SOFTWARE
-    _jobid = db.Column(db.Integer, db.ForeignKey("%s.id" % TABLE_JOB),
-                         primary_key=True)
+    __table_args__ = (UniqueConstraint("_jobid", "software", "version"),)
     id = IDColumn()
-    software = db.Column(db.String)
+    _jobid = db.Column(db.Integer, db.ForeignKey("%s.id" % TABLE_JOB),
+                       doc=dedent("""
+                       The foreign key which stores :attr:`JobModel.id`"""))
+    software = db.Column(db.String, nullable=False,
+                         doc=dedent("""
+                         The name of the software required to run a job"""))
+    version = db.Column(db.String, default="any", nullable=False,
+                        doc=dedent("""
+                        The version of software required to run the job.  This
+                        value does not follow any special formatting rules
+                        because the format depends on the 3rd party."""))
 
 
 class JobModel(db.Model, StateValidationMixin, StateChangedMixin):
     """
     Defines the attributes and environment for a job.  Individual commands
-    are kept track of by :class:`pyfarm.models.task.TaskModel`
+    are kept track of by |TaskModel|
 
     .. autoattribute:: _environ
     .. autoattribute:: _data
@@ -139,7 +183,7 @@ class JobModel(db.Model, StateValidationMixin, StateChangedMixin):
                     command like `ping` will work on any platform it's
                     assigned to.  The full commend could be provided here,
                     but then the job must be tagged using
-                    :class:`JobSoftwareModel` to limit which agent(s) it will
+                    :class:`.JobSoftwareModel` to limit which agent(s) it will
                     run on."""))
     start = db.Column(db.Float,
                       doc=dedent("""
@@ -256,46 +300,46 @@ class JobModel(db.Model, StateValidationMixin, StateChangedMixin):
                                                          remote_side=[id]),
                                doc=dedent("""
                                Relationship between this model and other
-                               :class:`JobModel` objects which have the same
+                               :class:`.JobModel` objects which have the same
                                parent.
                                """))
 
     tasks = db.relationship("TaskModel", backref="job", lazy="dynamic",
                             doc=dedent("""
                             Relationship between this job and and child
-                            :class:`TaskModel` objects
+                            |TaskModel| objects
                             """))
 
     tasks_done = db.relationship("TaskModel", lazy="dynamic",
         primaryjoin="(TaskModel.state == %s) & "
                     "(TaskModel._jobid == JobModel.id)" % STATE_ENUM.DONE,
         doc=dedent("""
-        Relationship between this job and any :class:`TaskModel` objects
-        which are done."""))
+        Relationship between this job and any |TaskModel| objects which are
+        done."""))
 
     tasks_failed = db.relationship("TaskModel", lazy="dynamic",
         primaryjoin="(TaskModel.state == %s) & "
                     "(TaskModel._jobid == JobModel.id)" % STATE_ENUM.FAILED,
         doc=dedent("""
-        Relationship between this job and any :class:`TaskModel` objects
-        which have failed."""))
+        Relationship between this job and any |TaskModel| objects which have
+        failed."""))
 
     tasks_queued = db.relationship("TaskModel", lazy="dynamic",
         primaryjoin="(TaskModel.state == %s) & "
                     "(TaskModel._jobid == JobModel.id)" % STATE_ENUM.QUEUED,
         doc=dedent("""
-        Relationship between this job and any :class:`TaskModel` objects
-        which are queued."""))
+        Relationship between this job and any |TaskModel| objects which
+        are queued."""))
 
     tags = db.relationship("JobTagsModel", backref="job", lazy="dynamic",
                            doc=dedent("""
                            Relationship between this job and
-                           :class:`JobTagsModel` objects"""))
+                           :class:`.JobTagsModel` objects"""))
     software = db.relationship("JobSoftwareModel", backref="job",
                                lazy="dynamic",
                                doc=dedent("""
                                Relationship between this job and
-                               :class:`JobSoftwareModel` objects"""))
+                               :class:`.JobSoftwareModel` objects"""))
 
     @property
     def environ(self):
@@ -402,12 +446,11 @@ event.listen(JobModel.state, "set", JobModel.stateChangedEvent)
 
 class Job(JobModel):
     """
-    Provides :meth:`__init__` for :class:`JobModel` so the model can
+    Provides :meth:`__init__` for :class:`.JobModel` so the model can
     be instanced with initial values.
 
     .. note::
-        The :class:`JobModel` allows nearly all of its columns to be nullable.
+        The :class:`.JobModel` allows nearly all of its columns to be nullable.
         This is done so an `id` could be retrieved without creating a new
         job however this class does not allow that
     """
-    # def
