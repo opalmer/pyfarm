@@ -117,15 +117,15 @@ class AgentSoftwareModel(db.Model, AgentTaggingMixin):
     _agentid = db.Column(db.Integer, db.ForeignKey("%s.id" % TABLE_AGENT),
                          doc=dedent("""
                          The foreign key which stores :attr:`AgentModel.id`"""))
-    version = db.Column(db.String, default="any",
+    software = db.Column(db.String, nullable=False,
+                         doc=dedent("""
+                         The name of the software installed.  No normalization
+                         is performed prior to being stored in the database"""))
+    version = db.Column(db.String, default="any", nullable=False,
                         doc=dedent("""
                         The version of the software installed on a host.  This
                         value does not follow any special formatting rules
                         because the format depends on the 3rd party."""))
-    software = db.Column(db.String,
-                         doc=dedent("""
-                         The name of the software installed.  No normalization
-                         is performed prior to being stored in the database"""))
 
 
 class AgentSoftware(AgentSoftwareModel):
