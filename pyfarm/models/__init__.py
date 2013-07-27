@@ -27,7 +27,8 @@ from pyfarm.models.agent import AgentTagsModel, AgentSoftwareModel, AgentModel
 
 # load the interface classes
 from pyfarm.models.agent import Agent, AgentSoftware, AgentTag
+from pyfarm.models.job import Job, JobSoftware, JobTag
 from pyfarm.models.task import Task
-from pyfarm.models.job import Job
 
-__all__ = ["Job", "Task", "Agent", "AgentSoftware", "AgentTag"]
+__all__ = ["Agent", "AgentSoftware", "AgentTag",
+           "Job", "JobSoftware", "JobTag", "Task"]
