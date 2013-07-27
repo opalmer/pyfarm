@@ -52,6 +52,7 @@ from pyfarm.models.core import (
 from pyfarm.models.mixins import StateValidationMixin, StateChangedMixin
 from pyfarm.ext.jobtypes.core import Job
 
+
 class JobTagsModel(db.Model):
     """
     Model which provides tagging for :class:`.JobModel` objects
@@ -496,6 +497,35 @@ class JobModel(db.Model, StateValidationMixin, StateChangedMixin):
 
 
 event.listen(JobModel.state, "set", JobModel.stateChangedEvent)
+
+
+class JobTag(JobTagsModel):
+    """
+    Provides :meth:`__init__` for :class:`JobTagsModel` so the model can
+    be instanced with initial values.
+    """
+    def __init__(self, job, tag):
+        jobid = job
+        if isinstance(job, JobModel):
+            jobid = job.id
+
+        self._jobid = jobid
+        self.tag = tag
+
+
+class JobSoftware(JobSoftwareModel):
+    """
+    Provides :meth:`__init__` for :class:`JobSoftwareModel` so the model can
+    be instanced with initial values.
+    """
+    def __init__(self, job, software, version="any"):
+        jobid = job
+        if isinstance(job, JobModel):
+            jobid = job.id
+
+        self._jobid = jobid
+        self.software = software
+        self.version = version
 
 
 class Job(JobModel):
