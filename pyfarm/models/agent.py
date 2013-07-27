@@ -80,21 +80,6 @@ class AgentTagsModel(db.Model, AgentTaggingMixin):
                     requirement."""))
 
 
-class AgentTag(AgentTagsModel):
-    """
-    Provides :meth:`__init__` for :class:`.AgentTagsModel` so the model can
-    be instanced with initial values.
-    """
-    def __init__(self, agent, tag):
-        if isinstance(agent, Agent):
-            agentid = agent.id
-        else:
-            agentid = agent
-
-        self._agentid = agentid
-        self.tag = tag
-
-
 class AgentSoftwareModel(db.Model, AgentTaggingMixin):
     """
     Stores information about an the software installed on
@@ -126,22 +111,6 @@ class AgentSoftwareModel(db.Model, AgentTaggingMixin):
                         The version of the software installed on a host.  This
                         value does not follow any special formatting rules
                         because the format depends on the 3rd party."""))
-
-
-class AgentSoftware(AgentSoftwareModel):
-    """
-    Provides :meth:`__init__` for :class:`AgentSoftwareModel` so the model can
-    be instanced with initial values.
-    """
-    def __init__(self, agent, software, version="any"):
-        if isinstance(agent, Agent):
-            agentid = agent.id
-        else:
-            agentid = agent
-
-        self._agentid = agentid
-        self.software = software
-        self.version = version
 
 
 class AgentModel(db.Model, StateValidationMixin):
@@ -345,6 +314,37 @@ class AgentModel(db.Model, StateValidationMixin):
             raise ValueError(msg)
 
         return value
+
+
+class AgentTag(AgentTagsModel):
+    """
+    Provides :meth:`__init__` for :class:`.AgentTagsModel` so the model can
+    be instanced with initial values.
+    """
+    def __init__(self, agent, tag):
+        if isinstance(agent, Agent):
+            agentid = agent.id
+        else:
+            agentid = agent
+
+        self._agentid = agentid
+        self.tag = tag
+
+
+class AgentSoftware(AgentSoftwareModel):
+    """
+    Provides :meth:`__init__` for :class:`AgentSoftwareModel` so the model can
+    be instanced with initial values.
+    """
+    def __init__(self, agent, software, version="any"):
+        if isinstance(agent, Agent):
+            agentid = agent.id
+        else:
+            agentid = agent
+
+        self._agentid = agentid
+        self.software = software
+        self.version = version
 
 
 class Agent(AgentModel):
