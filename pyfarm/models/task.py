@@ -46,11 +46,21 @@ class TaskModel(db.Model, WorkValidationMixin, StateChangedMixin):
                       The frame the :class:`TaskModel` will be executing."""))
 
     # relationships
-    _agentid = db.Column(db.Integer, db.ForeignKey("%s.id" % TABLE_AGENT))
-    _jobid = db.Column(db.Integer, db.ForeignKey("%s.id" % TABLE_JOB))
-    _parenttask = db.Column(db.Integer, db.ForeignKey("%s.id" % TABLE_TASK))
-    siblings = db.relationship("TaskModel", backref=db.backref("task",
-                                                         remote_side=[id]))
+    _agentid = db.Column(db.Integer, db.ForeignKey("%s.id" % TABLE_AGENT),
+                         doc=dedent("""
+                         Foreign key which stores :attr:`JobModel.id`"""))
+    _jobid = db.Column(db.Integer, db.ForeignKey("%s.id" % TABLE_JOB),
+                       doc=dedent("""
+                       Foreign key which stores :attr:`JobModel.id`"""))
+    _parenttask = db.Column(db.Integer, db.ForeignKey("%s.id" % TABLE_TASK),
+                            doc=dedent("""
+                            The foreign key which stores :attr:`TaskModel.id`
+                            """))
+    siblings = db.relationship("TaskModel",
+                               backref=db.backref("task", remote_side=[id]),
+                               doc=dedent("""
+                               Relationship to other tasks which have the same
+                               parent"""))
 
     @staticmethod
     def agentChangedEvent(target, new_value, old_value, initiator):

@@ -72,7 +72,7 @@ class JobTagsModel(db.Model):
     id = IDColumn()
     _jobid = db.Column(db.Integer, db.ForeignKey("%s.id" % TABLE_JOB),
                        doc=dedent("""
-                       The foreign key which stores :attr:`JobModel.id`"""))
+                       Foreign key which stores :attr:`JobModel.id`"""))
 
     tag = db.Column(db.String, nullable=False)
 
@@ -271,8 +271,8 @@ class JobModel(db.Model, WorkValidationMixin, StateChangedMixin):
     # relationships
     _parentjob = db.Column(db.Integer, db.ForeignKey("%s.id" % TABLE_JOB))
 
-    siblings = db.relationship("JobModel", backref=db.backref("parent",
-                                                         remote_side=[id]),
+    siblings = db.relationship("JobModel",
+                               backref=db.backref("parent", remote_side=[id]),
                                doc=dedent("""
                                Relationship between this model and other
                                :class:`.JobModel` objects which have the same
