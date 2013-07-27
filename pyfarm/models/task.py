@@ -20,11 +20,14 @@ from pyfarm.flaskapp import db
 from pyfarm.config.enum import WorkState
 from pyfarm.models.core import (
     TABLE_JOB, TABLE_TASK, TABLE_AGENT, WorkColumns, modelfor)
-from pyfarm.models.mixins import StateValidationMixin, StateChangedMixin
+from pyfarm.models.mixins import WorkValidationMixin, StateChangedMixin
 
 
-class TaskModel(db.Model, StateValidationMixin, StateChangedMixin):
-    """Defines task which a child of a :class:`Job`"""
+class TaskModel(db.Model, WorkValidationMixin, StateChangedMixin):
+    """
+    Defines a task which a child of a :class:`Job`.  This table represents
+    rows which contain the individual work unit(s) for a job.
+    """
     __tablename__ = TABLE_TASK
     STATE_ENUM = WorkState()
 
@@ -32,8 +35,15 @@ class TaskModel(db.Model, StateValidationMixin, StateChangedMixin):
     id, state, priority, time_submitted, time_started, time_finished = \
         WorkColumns(STATE_ENUM.QUEUED, "job.priority")
 
-    attempts = db.Column(db.Integer, default=0)
-    frame = db.Column(db.Integer, nullable=False)
+    attempts = db.Column(db.Integer, default=0,
+                         doc=dedent("""
+                         The number attempts which have been made on this
+                         task. This value is auto incremented when
+                         :attr:`state` changes to a value synonyms with a
+                         running state."""))
+    frame = db.Column(db.Float, nullable=False,
+                      doc=dedent("""
+                      The frame the :class:`TaskModel` will be executing."""))
 
     # relationships
     _agentid = db.Column(db.Integer, db.ForeignKey("%s.id" % TABLE_AGENT))
@@ -47,6 +57,7 @@ class TaskModel(db.Model, StateValidationMixin, StateChangedMixin):
         """set the state to ASSIGN whenever the agent is changed"""
         if new_value is not None:
             target.state = target.STATE_ENUM.ASSIGN
+
 
 event.listen(TaskModel._agentid, "set", TaskModel.agentChangedEvent)
 event.listen(TaskModel.state, "set", TaskModel.stateChangedEvent)
