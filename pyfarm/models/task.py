@@ -19,7 +19,7 @@ from sqlalchemy import event
 from pyfarm.flaskapp import db
 from pyfarm.config.enum import WorkState
 from pyfarm.models.core import (
-    DBCFG, TABLE_JOB, TABLE_TASK, TABLE_AGENT, WorkColumns, modelfor)
+    TABLE_JOB, TABLE_TASK, TABLE_AGENT, WorkColumns, modelfor)
 from pyfarm.models.mixins import StateValidationMixin, StateChangedMixin
 
 
@@ -30,7 +30,7 @@ class TaskModel(db.Model, StateValidationMixin, StateChangedMixin):
 
     # shared work columns
     id, state, priority, time_submitted, time_started, time_finished = \
-        WorkColumns(STATE_ENUM.QUEUED, DBCFG.get("job.priority"))
+        WorkColumns(STATE_ENUM.QUEUED, "job.priority")
 
     attempts = db.Column(db.Integer, default=0)
     frame = db.Column(db.Integer, nullable=False)

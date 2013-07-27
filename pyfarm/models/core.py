@@ -85,12 +85,12 @@ def WorkColumns(state_default, priority_default):
                   :class:`.WorkState`""")),
 
         # priority
-        db.Column(db.Integer, default=priority_default,
+        db.Column(db.Integer, default=DBCFG.get(priority_default),
                   doc=dedent("""
                   The priority of the job relative to others in the
                   queue.  This is not the same as task priority.
 
-                  **configured by**: `job.priority`""")),
+                  **configured by**: `%s`""" % priority_default)),
 
         # time_submitted
         db.Column(db.DateTime, default=datetime.now,

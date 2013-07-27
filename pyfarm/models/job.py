@@ -123,7 +123,7 @@ class JobModel(db.Model, StateValidationMixin, StateChangedMixin):
 
     # shared work columns
     id, state, priority, time_submitted, time_started, time_finished = \
-        WorkColumns(STATE_ENUM.QUEUED, DBCFG.get("job.priority"))
+        WorkColumns(STATE_ENUM.QUEUED, "job.priority")
 
     user = db.Column(db.String(DBCFG.get("job.max_username_length")),
                      doc=dedent("""

@@ -19,12 +19,9 @@ Module containing mixins which can be used by multiple models.
 """
 
 from warnings import warn
-from textwrap import dedent
 from datetime import datetime
 from sqlalchemy.orm import validates
 from pyfarm.warning import ColumnStateChangeWarning
-
-from pyfarm.flaskapp import db
 
 
 class StateValidationMixin(object):
