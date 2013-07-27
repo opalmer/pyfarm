@@ -16,4 +16,4 @@
 .. documentation string as a means to shorten it.
 
 .. |TaskModel| replace:: :class:`TaskModel <pyfarm.models.task.TaskModel>`
-
+.. |JobModel| replace:: :class:`JobModel <pyfarm.models.job.JobModel>`
