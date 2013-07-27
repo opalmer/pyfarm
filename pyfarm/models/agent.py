@@ -322,10 +322,9 @@ class AgentTag(AgentTagsModel):
     be instanced with initial values.
     """
     def __init__(self, agent, tag):
+        agentid = agent
         if isinstance(agent, AgentModel):
             agentid = agent.id
-        else:
-            agentid = agent
 
         self._agentid = agentid
         self.tag = tag
@@ -337,10 +336,9 @@ class AgentSoftware(AgentSoftwareModel):
     be instanced with initial values.
     """
     def __init__(self, agent, software, version="any"):
+        agentid = agent
         if isinstance(agent, AgentModel):
             agentid = agent.id
-        else:
-            agentid = agent
 
         self._agentid = agentid
         self.software = software
