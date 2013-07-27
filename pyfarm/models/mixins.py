@@ -71,28 +71,3 @@ class StateChangedMixin(object):
                 warn(msg,  ColumnStateChangeWarning)
 
             target.time_finished = datetime.now()
-
-
-class TimeColumnMixin(object):
-    """
-    Mixin class which provides columns which keep track of timing
-    """
-    time_submitted = db.Column(db.DateTime, default=datetime.now,
-                               doc=dedent("""
-                               The time the job was submitted.  By default this
-                               defaults to using :meth:`datetime.datetime.now`
-                               as the source of submission time.  This value
-                               will not be set more than once and will not
-                               change even after a job is requeued."""))
-    time_started = db.Column(db.DateTime,
-                             doc=dedent("""
-                             The time this job was started.  By default this
-                             value is set when :attr:`state` is changed to
-                             an appropriate value or when a job is
-                             requeued."""))
-    time_finished = db.Column(db.DateTime,
-                              doc=dedent("""
-                              Time the job was finished.  This will be set
-                              when the last task finishes and reset if a job
-                              is requeued.
-                              """))

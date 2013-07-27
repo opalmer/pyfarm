@@ -16,12 +16,15 @@
 
 """
 Contains core functions and data for use by :mod:`pyfarm.models`
+
+.. include:: ../include/references.rst
 """
 
+from datetime import datetime
 from textwrap import dedent
-
-from pyfarm.ext.config.core.loader import Loader
 from pyfarm.flaskapp import db
+from pyfarm.ext.config.enum import WorkState
+from pyfarm.ext.config.core.loader import Loader
 
 DBCFG = Loader("dbdata.yml")
 
@@ -58,8 +61,56 @@ def IDColumn():
     and the table relationships it's cleaner to have a function produce
     the column.
     """
-    return db.Column(
-        db.Integer, autoincrement=True, primary_key=True, unique=True,
-        doc=dedent("""
-        Provides an id for the current row.  This value should never be
-        directly relied upon and it's intended for use by relationships."""))
+    return db.Column(db.Integer, autoincrement=True, primary_key=True,
+                     unique=True,
+                     doc=dedent("""
+                     Provides an id for the current row.  This value should
+                     never be directly relied upon and it's intended for use
+                     by relationships."""))
+
+
+def WorkColumns(state_default, priority_default):
+    """
+    Produces some default columns which are used by models which produce
+    work.  Currently this includes |JobModel| and |TaskModel|
+    """
+    return (
+        # id
+        IDColumn(),
+
+        # state
+        db.Column(db.Integer, default=state_default,
+                  doc=dedent("""
+                  The state of the job with a value provided by
+                  :class:`.WorkState`""")),
+
+        # priority
+        db.Column(db.Integer, default=priority_default,
+                  doc=dedent("""
+                  The priority of the job relative to others in the
+                  queue.  This is not the same as task priority.
+
+                  **configured by**: `job.priority`""")),
+
+        # time_submitted
+        db.Column(db.DateTime, default=datetime.now,
+                               doc=dedent("""
+                               The time the job was submitted.  By default this
+                               defaults to using :meth:`datetime.datetime.now`
+                               as the source of submission time.  This value
+                               will not be set more than once and will not
+                               change even after a job is requeued.""")),
+
+        # time_started
+        db.Column(db.DateTime,
+                  doc=dedent("""
+                  The time this job was started.  By default this value is set
+                  when :attr:`state` is changed to an appropriate value or
+                  when a job is requeued.""")),
+
+        # time_finished
+        db.Column(db.DateTime,
+                  doc=dedent("""
+                  Time the job was finished.  This will be set when the last
+                  task finishes and reset if a job is requeued."""))
+    )

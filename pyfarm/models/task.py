@@ -14,28 +14,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from textwrap import dedent
 from sqlalchemy import event
 from pyfarm.flaskapp import db
 from pyfarm.config.enum import WorkState
-from pyfarm.models.mixins import TimeColumnMixin
 from pyfarm.models.core import (
-    DBCFG, TABLE_JOB, TABLE_TASK, TABLE_AGENT, IDColumn, modelfor)
+    DBCFG, TABLE_JOB, TABLE_TASK, TABLE_AGENT, WorkColumns, modelfor)
 from pyfarm.models.mixins import StateValidationMixin, StateChangedMixin
 
 
-class TaskModel(db.Model, TimeColumnMixin, StateValidationMixin,
-                StateChangedMixin):
+class TaskModel(db.Model, StateValidationMixin, StateChangedMixin):
     """Defines task which a child of a :class:`Job`"""
     __tablename__ = TABLE_TASK
     STATE_ENUM = WorkState()
-    STATE_DEFAULT = STATE_ENUM.QUEUED
 
-    id = IDColumn()
-
-    # task state/general data
-    state = db.Column(db.Integer, default=STATE_DEFAULT, nullable=False)
-    priority = db.Column(db.Integer, default=DBCFG.get("task.priority"),
-                         nullable=False)
+    id, state, priority, time_submitted, time_started, time_finished = \
+        WorkColumns(STATE_ENUM.QUEUED, DBCFG.get("job.priority"))
     attempts = db.Column(db.Integer, default=0)
     frame = db.Column(db.Integer, nullable=False)
 

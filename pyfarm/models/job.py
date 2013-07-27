@@ -46,10 +46,10 @@ from sqlalchemy.schema import UniqueConstraint
 from pyfarm.flaskapp import db
 from pyfarm.config.enum import WorkState
 from pyfarm.models.core import (
-    DBCFG, TABLE_JOB, TABLE_JOB_TAGS, TABLE_JOB_SOFTWARE, IDColumn
+    DBCFG, TABLE_JOB, TABLE_JOB_TAGS, TABLE_JOB_SOFTWARE,
+    IDColumn, WorkColumns
 )
-from pyfarm.models.mixins import (StateValidationMixin, StateChangedMixin,
-                                  TimeColumnMixin)
+from pyfarm.models.mixins import StateValidationMixin, StateChangedMixin
 from pyfarm.ext.jobtypes.core import Job
 
 
@@ -109,8 +109,7 @@ class JobSoftwareModel(db.Model):
                         because the format depends on the 3rd party."""))
 
 
-class JobModel(db.Model, TimeColumnMixin, StateValidationMixin,
-               StateChangedMixin):
+class JobModel(db.Model, StateValidationMixin, StateChangedMixin):
     """
     Defines the attributes and environment for a job.  Individual commands
     are kept track of by |TaskModel|
@@ -121,23 +120,15 @@ class JobModel(db.Model, TimeColumnMixin, StateValidationMixin,
     """
     __tablename__ = TABLE_JOB
     STATE_ENUM = WorkState()
-    STATE_DEFAULT = STATE_ENUM.QUEUED
+    # STATE_DEFAULT = STATE_ENUM.QUEUED
+    #
+    # # common columns produced when creating the class
+    # id = IDColumn()
+    # # state = StateColumn(STATE_ENUM.QUEUED)
+    # # priority = PriorityColumn(DBCFG.get("job.priority"))
+    id, state, priority, time_submitted, time_started, time_finished = \
+        WorkColumns(STATE_ENUM.QUEUED, DBCFG.get("job.priority"))
 
-    id = IDColumn()
-
-    # job state/general data not specific to a task
-    state = db.Column(db.Integer, default=STATE_DEFAULT,
-                      doc=dedent("""
-                      The state of the job with a value provided by
-                      :class:`.WorkState`
-                      """))
-    priority = db.Column(db.Integer, default=DBCFG.get("job.priority"),
-                         doc=dedent("""
-                         The priority of the job relative to others in the
-                         queue.  This is not the same as task priority.
-
-                         **configured by**: `job.priority`
-                         """))
     user = db.Column(db.String(DBCFG.get("job.max_username_length")),
                      doc=dedent("""
                      The user this job should execute as.  The agent
