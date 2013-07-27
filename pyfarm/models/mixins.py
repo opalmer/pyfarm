@@ -48,7 +48,7 @@ class WorkValidationMixin(object):
         return value
 
     @validates("attempts", "priority")
-    def validate_positive_numver(self, key, value):
+    def validate_positive_number(self, key, value):
         """
         Validates the `value` being provided a greater than or equal to zero
         """
