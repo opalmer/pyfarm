@@ -17,6 +17,7 @@
 """
 Contains jobtypes for execution on PyFarm.  Typically job types will be
 loaded using the extension system:
+
     >>> from pyfarm.ext.jobtypes.core import Job
 """
 
