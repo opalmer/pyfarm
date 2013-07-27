@@ -120,12 +120,8 @@ class JobModel(db.Model, StateValidationMixin, StateChangedMixin):
     """
     __tablename__ = TABLE_JOB
     STATE_ENUM = WorkState()
-    # STATE_DEFAULT = STATE_ENUM.QUEUED
-    #
-    # # common columns produced when creating the class
-    # id = IDColumn()
-    # # state = StateColumn(STATE_ENUM.QUEUED)
-    # # priority = PriorityColumn(DBCFG.get("job.priority"))
+
+    # shared work columns
     id, state, priority, time_submitted, time_started, time_finished = \
         WorkColumns(STATE_ENUM.QUEUED, DBCFG.get("job.priority"))
 

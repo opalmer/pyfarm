@@ -28,8 +28,10 @@ class TaskModel(db.Model, StateValidationMixin, StateChangedMixin):
     __tablename__ = TABLE_TASK
     STATE_ENUM = WorkState()
 
+    # shared work columns
     id, state, priority, time_submitted, time_started, time_finished = \
         WorkColumns(STATE_ENUM.QUEUED, DBCFG.get("job.priority"))
+
     attempts = db.Column(db.Integer, default=0)
     frame = db.Column(db.Integer, nullable=False)
 
