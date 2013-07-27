@@ -24,13 +24,17 @@ from sqlalchemy.orm import validates
 from pyfarm.warning import ColumnStateChangeWarning
 
 
-class StateValidationMixin(object):
+class WorkValidationMixin(object):
     """
     Mixin that adds a `state` column and uses a class
     level `STATE_ENUM` attribute to assist in validation.
     """
     @validates("state")
     def validate_state(self, key, value):
+        """
+        Validates the `value` being provided for :attr:`.state` is within
+        the range provided by :attr:`.STATE_ENUM`
+        """
         if value not in self.STATE_ENUM.values():
             # string which represents what states are valid
             valid_states = ", ".join(
@@ -40,6 +44,14 @@ class StateValidationMixin(object):
             msg = "%s is not a valid state, valid states " % value
             msg += "are %s" % valid_states
             raise ValueError(msg)
+
+        return value
+
+    @validates("attempts")
+    def validate_attempts(self, key, value):
+        """Validates the `value` being provided for :attr:`.attempts`"""
+        if value < 0:
+            raise ValueError("`attempts` must be a positive number")
 
         return value
 
