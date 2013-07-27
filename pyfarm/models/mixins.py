@@ -32,8 +32,8 @@ class WorkValidationMixin(object):
     @validates("state")
     def validate_state(self, key, value):
         """
-        Validates the `value` being provided for :attr:`.state` is within
-        the range provided by :attr:`.STATE_ENUM`
+        Validates the `value` being provided for `state` is within
+        the range provided by `STATE_ENUM`
         """
         if value not in self.STATE_ENUM.values():
             # string which represents what states are valid
@@ -47,11 +47,13 @@ class WorkValidationMixin(object):
 
         return value
 
-    @validates("attempts")
-    def validate_attempts(self, key, value):
-        """Validates the `value` being provided for :attr:`.attempts`"""
+    @validates("attempts", "priority")
+    def validate_positive_numver(self, key, value):
+        """
+        Validates the `value` being provided a greater than or equal to zero
+        """
         if value < 0:
-            raise ValueError("`attempts` must be a positive number")
+            raise ValueError("`%s` must be equal to zero or higher" % key)
 
         return value
 
@@ -65,7 +67,7 @@ class StateChangedMixin(object):
     def stateChangedEvent(target, new_value, old_value, initiator):
         """update the datetime objects depending on the new value"""
         if target.id is None:
-            pass
+            return
 
         elif new_value == target.STATE_ENUM.RUNNING:
             target.time_started = datetime.now()
