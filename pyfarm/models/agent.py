@@ -24,7 +24,7 @@ from pyfarm.flaskapp import db
 from pyfarm.ext.config.core.loader import Loader
 from pyfarm.ext.config.enum import AgentState
 from pyfarm.ext.system.network import IP_NONNETWORK
-from pyfarm.models.mixins import StateValidationMixin
+from pyfarm.models.mixins import WorkValidationMixin
 from pyfarm.models.core import (
     DBCFG, TABLE_AGENT, TABLE_AGENT_TAGS, TABLE_AGENT_SOFTWARE, IDColumn)
 
@@ -113,7 +113,7 @@ class AgentSoftwareModel(db.Model, AgentTaggingMixin):
                         because the format depends on the 3rd party."""))
 
 
-class AgentModel(db.Model, StateValidationMixin):
+class AgentModel(db.Model, WorkValidationMixin):
     """
     Stores information about an agent include its network address,
     state, allocation configuration, etc.

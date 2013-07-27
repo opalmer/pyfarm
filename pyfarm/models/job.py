@@ -49,7 +49,7 @@ from pyfarm.models.core import (
     DBCFG, TABLE_JOB, TABLE_JOB_TAGS, TABLE_JOB_SOFTWARE,
     IDColumn, WorkColumns
 )
-from pyfarm.models.mixins import StateValidationMixin, StateChangedMixin
+from pyfarm.models.mixins import WorkValidationMixin, StateChangedMixin
 from pyfarm.ext.jobtypes.core import Job
 
 
@@ -109,7 +109,7 @@ class JobSoftwareModel(db.Model):
                         because the format depends on the 3rd party."""))
 
 
-class JobModel(db.Model, StateValidationMixin, StateChangedMixin):
+class JobModel(db.Model, WorkValidationMixin, StateChangedMixin):
     """
     Defines the attributes and environment for a job.  Individual commands
     are kept track of by |TaskModel|
