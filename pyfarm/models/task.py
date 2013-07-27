@@ -14,16 +14,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from datetime import datetime
 from sqlalchemy import event
 from pyfarm.flaskapp import db
 from pyfarm.config.enum import WorkState
+from pyfarm.models.mixins import TimeColumnMixin
 from pyfarm.models.core import (
     DBCFG, TABLE_JOB, TABLE_TASK, TABLE_AGENT, IDColumn, modelfor)
 from pyfarm.models.mixins import StateValidationMixin, StateChangedMixin
 
 
-class TaskModel(db.Model, StateValidationMixin, StateChangedMixin):
+class TaskModel(db.Model, TimeColumnMixin, StateValidationMixin,
+                StateChangedMixin):
     """Defines task which a child of a :class:`Job`"""
     __tablename__ = TABLE_TASK
     STATE_ENUM = WorkState()
@@ -37,11 +38,6 @@ class TaskModel(db.Model, StateValidationMixin, StateChangedMixin):
                          nullable=False)
     attempts = db.Column(db.Integer, default=0)
     frame = db.Column(db.Integer, nullable=False)
-
-    # time information
-    time_submitted = db.Column(db.DateTime, default=datetime.now)
-    time_started = db.Column(db.DateTime)
-    time_finished = db.Column(db.DateTime)
 
     # relationships
     _agentid = db.Column(db.Integer, db.ForeignKey("%s.id" % TABLE_AGENT))

@@ -21,7 +21,6 @@
 import os
 import inspect
 import importlib
-from datetime import datetime
 from UserDict import UserDict
 
 try:
@@ -49,7 +48,8 @@ from pyfarm.config.enum import WorkState
 from pyfarm.models.core import (
     DBCFG, TABLE_JOB, TABLE_JOB_TAGS, TABLE_JOB_SOFTWARE, IDColumn
 )
-from pyfarm.models.mixins import StateValidationMixin, StateChangedMixin
+from pyfarm.models.mixins import (StateValidationMixin, StateChangedMixin,
+                                  TimeColumnMixin)
 from pyfarm.ext.jobtypes.core import Job
 
 
@@ -109,7 +109,8 @@ class JobSoftwareModel(db.Model):
                         because the format depends on the 3rd party."""))
 
 
-class JobModel(db.Model, StateValidationMixin, StateChangedMixin):
+class JobModel(db.Model, TimeColumnMixin, StateValidationMixin,
+               StateChangedMixin):
     """
     Defines the attributes and environment for a job.  Individual commands
     are kept track of by |TaskModel|
@@ -156,27 +157,6 @@ class JobModel(db.Model, StateValidationMixin, StateChangedMixin):
                       the fact. This column is only provided for human
                       consumption is not scanned, index, or used when
                       searching"""))
-
-    # time information
-    time_submitted = db.Column(db.DateTime, default=datetime.now,
-                               doc=dedent("""
-                               The time the job was submitted.  By default this
-                               defaults to using :meth:`datetime.datetime.now`
-                               as the source of submission time.  This value
-                               will not be set more than once and will not
-                               change even after a job is requeued."""))
-    time_started = db.Column(db.DateTime,
-                             doc=dedent("""
-                             The time this job was started.  By default this
-                             value is set when :attr:`state` is changed to
-                             an appropriate value or when a job is
-                             requeued."""))
-    time_finished = db.Column(db.DateTime,
-                              doc=dedent("""
-                              Time the job was finished.  This will be set
-                              when the last task finishes and reset if a job
-                              is requeued.
-                              """))
 
     # task data
     _jobtype = db.Column(db.String, nullable=False,
