@@ -30,10 +30,11 @@ class TaskModel(db.Model, WorkValidationMixin, StateChangedMixin):
     """
     __tablename__ = TABLE_TASK
     STATE_ENUM = WorkState()
+    STATE_DEFAULT = STATE_ENUM.QUEUED
 
     # shared work columns
     id, state, priority, time_submitted, time_started, time_finished = \
-        WorkColumns(STATE_ENUM.QUEUED, "job.priority")
+        WorkColumns(STATE_DEFAULT, "job.priority")
 
     attempts = db.Column(db.Integer, default=0,
                          doc=dedent("""
