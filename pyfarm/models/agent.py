@@ -367,16 +367,7 @@ class Agent(AgentModel):
         if enabled is not None:
             self.enabled = enabled
 
-        if ram is not None:
-            self.ram = ram
-
-        if cpus is not None:
-            self.cpus = cpus
-
-        if port is not None:
-            self.port = port
-
-        if ram is not None:
+        if ram_allocation is not None:
             self.ram_allocation = ram_allocation
 
         if cpu_allocation is not None:
