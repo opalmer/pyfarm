@@ -135,31 +135,7 @@ class AgentModel(db.Model, WorkValidationMixin):
     STATE_DEFAULT = STATE_ENUM.ONLINE
     id = IDColumn()
 
-    # host state information
-    enabled = db.Column(db.Boolean, default=True, nullable=False,
-                        doc=dedent("""
-                        Tells the queue and various other parts of PyFarm if
-                        this host is considered part of the pool.  Setting
-                        this to True will prevent:
-
-                        * new work from being sent to an agent
-                        * failed job types from rerunning
-                        * batch commands being picked up over the pub/sub
-                          channel"""))
-    state = db.Column(db.Integer, default=STATE_DEFAULT, nullable=False,
-                      doc=dedent("""
-                      Stores the current state of the host.  This value can be
-                      changed either by a master telling the host to do
-                      something with a task or from the host via REST api.
-
-                      .. csv-table:: **Values (from enum.yml:AgentState)**
-                          :header: Integer, Description
-                          :widths: 10, 50
-
-                          16,Offline - host is unreachable
-                          17,Online - ready to receive work
-                          18,Disabled - same as online but cannot receive work
-                          19,Running - currently processing work"""))
+    # basic host attribute information
     hostname = db.Column(db.String, nullable=False,
                          doc=dedent("""
                          The hostname we should use to talk to this host.
@@ -188,6 +164,32 @@ class AgentModel(db.Model, WorkValidationMixin):
     port = db.Column(db.Integer, nullable=False,
                      doc=dedent("""
                      The port the agent is currently running on"""))
+
+    # host state
+    enabled = db.Column(db.Boolean, default=True, nullable=False,
+                        doc=dedent("""
+                        Tells the queue and various other parts of PyFarm if
+                        this host is considered part of the pool.  Setting
+                        this to True will prevent:
+
+                        * new work from being sent to an agent
+                        * failed job types from rerunning
+                        * batch commands being picked up over the pub/sub
+                          channel"""))
+    state = db.Column(db.Integer, default=STATE_DEFAULT, nullable=False,
+                      doc=dedent("""
+                      Stores the current state of the host.  This value can be
+                      changed either by a master telling the host to do
+                      something with a task or from the host via REST api.
+
+                      .. csv-table:: **Values (from enum.yml:AgentState)**
+                          :header: Integer, Description
+                          :widths: 10, 50
+
+                          16,Offline - host is unreachable
+                          17,Online - ready to receive work
+                          18,Disabled - same as online but cannot receive work
+                          19,Running - currently processing work"""))
 
     # Max allocation of the two primary resources which `1.0` is 100%
     # allocation.  For `cpu_allocation` 100% allocation typically means
@@ -350,12 +352,14 @@ class Agent(AgentModel):
     Provides :meth:`__init__` for :class:`AgentModel` so the model can
     be instanced with initial values.
     """
-    def __init__(self, hostname, ip, subnet, state=None, enabled=None,
-                 ram=None, cpus=None, port=None, ram_allocation=None,
-                 cpu_allocation=None):
+    def __init__(self, hostname, ip, subnet, port, cpus, ram, state=None,
+                 enabled=None, ram_allocation=None, cpu_allocation=None):
         self.hostname = hostname
         self.ip = ip
         self.subnet = subnet
+        self.port = port
+        self.cpus = cpus
+        self.ram = ram
 
         if state is not None:
             self.state = state
