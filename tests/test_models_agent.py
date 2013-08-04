@@ -16,21 +16,33 @@
 
 from __future__ import with_statement
 import random
+from sqlalchemy.exc import IntegrityError
 from utcore import ModelTestCase, unique_ip
+from pyfarm.ext.config.core.loader import Loader
+from pyfarm.ext.config.enum import AgentState
 from pyfarm.flaskapp import db
 from pyfarm.models.agent import Agent, AgentSoftware, AgentTag
-from pyfarm.models.core import DBCFG
 
 try:
     from itertools import product
 except ImportError:
     from pyfarm.backports import product
 
+STATE_ENUM = AgentState()
+DBCFG = Loader("dbdata.yml")
+
 
 class AgentTestCase(ModelTestCase):
-    model = Agent
-    hostname = "foobar"
-    ports = (1025, 65535)
+    hostnamebase = "foobar"
+    ports = (DBCFG.get("agent.min_port"), DBCFG.get("agent.max_port"))
+    cpus = (DBCFG.get("agent.min_cpus"), DBCFG.get("agent.max_cpus"))
+    ram = (DBCFG.get("agent.min_ram"), DBCFG.get("agent.max_ram"))
+    states = STATE_ENUM.values()
+
+    # static test values
+    _port = ports[-1]
+    _ram = ram[-1]
+    _cpus = cpus[-1]
 
     # General list of addresses we should test
     # against.  This covered the start and end
@@ -43,22 +55,23 @@ class AgentTestCase(ModelTestCase):
         ("172.31.255.255", "255.240.0.0"),
         ("192.168.255.255", "255.255.255.0"))
 
+    def agentModelArgs(self):
+        generator = product(self.addresses, self.ports, self.cpus, self.ram)
+
+        count = 0
+        for address, port, cpus, ram in generator:
+            ip, subnet = address
+            hostname = "%s%02d" % (self.hostnamebase, count)
+            yield (hostname, ip, subnet, port, cpus, ram)
+            count += 1
+
     def agents(self):
-        """generates a list of values to test for the agent"""
-        # TODO: this MUST generate input for the models
-        # TODO: need to add cpu/ram/state ranges
-        generator = product([self.hostname], self.addresses, self.ports)
-
-        for values in generator:
-            yield self.model(*values)
-            # yield hostname, address, port
-
-
-class TestFoo(AgentTestCase):
-    def test_foobar(self):
-        for hostname, address, port in self.agents():
-            print "=====",hostname, address, port
-
+        """
+        Iterates over the class level variables and produces an agent
+        model.  This is done so that we test endpoints in the extreme ranges.
+        """
+        for args in self.agentModelArgs():
+            yield Agent(*args)
 
 
 class TestAgentSoftware(AgentTestCase):
@@ -128,30 +141,61 @@ class TestAgentTags(ModelTestCase):
 
 
 class TestAgentModel(AgentTestCase):
-    subnet = "255.255.255.0"
+    _host = AgentTestCase.hostnamebase
+    _ip = "10.56.0.0"
+    _subnet = "255.0.0.0"
 
     def test_basic_insert(self):
-        hostname = "foobar"
-        address = "10.56.0.1"
-        agent = Agent(hostname, address, self.subnet)
-        self.assertIsNone(agent.id)
-        db.session.add(agent)
+        for hostname, ip, subnet, port, cpus, ram in self.agentModelArgs():
+            model = Agent(hostname, ip, subnet, port, cpus, ram)
+            db.session.add(model)
+            self.assertEqual(model.hostname, hostname)
+            self.assertEqual(model.ip, ip)
+            self.assertEqual(model.subnet, subnet)
+            self.assertEqual(model.port, port)
+            self.assertEqual(model.cpus, cpus)
+            self.assertEqual(model.ram, ram)
+            self.assertIsNone(model.id)
+            db.session.commit()
+            self.assertIsInstance(model.id, int)
+            result = Agent.query.filter_by(id=model.id).first()
+            self.assertEqual(model.hostname, result.hostname)
+            self.assertEqual(model.ip, result.ip)
+            self.assertEqual(model.subnet, result.subnet)
+            self.assertEqual(model.port, result.port)
+            self.assertEqual(model.cpus, result.cpus)
+            self.assertEqual(model.ram, result.ram)
+            self.assertEqual(result.id, model.id)
+
+    def test_basic_insert_nonunique(self):
+        modelA = Agent("foobar", self._ip, self._subnet, self._port,
+                       self._cpus, self._ram)
+        modelB = Agent("foobar", self._ip, self._subnet, self._port,
+                       self._cpus, self._ram)
+        db.session.add(modelA)
+        db.session.add(modelB)
+
+        with self.assertRaises(IntegrityError):
+            db.session.commit()
+
+        db.session.rollback()
+        modelB = Agent(self._host, self._ip, self._subnet, self._port-1,
+                       self._cpus, self._ram)
+        db.session.add(modelA)
+        db.session.add(modelB)
         db.session.commit()
-        self.assertIsInstance(agent.id, int)
-        result = Agent.query.filter_by(id=agent.id).first()
-        self.assertIsNotNone(result)
-        self.assertEqual(result.id, agent.id)
-        self.assertEqual(result.hostname, agent.hostname)
-        self.assertEqual(result.ip, address)
 
     def test_hostname_validation(self):
         with self.assertRaises(ValueError):
-            Agent("foo/bar", unique_ip(), self.subnet)
+            Agent("foo/bar", self._ip, self._subnet, self._port,
+                  self._cpus, self._ram)
 
         with self.assertRaises(ValueError):
-            Agent("", unique_ip(), self.subnet)
+            Agent("", self._ip, self._subnet, self._port,
+                  self._cpus, self._ram)
 
-        Agent("foo-bar", unique_ip(), self.subnet)
+        Agent("foo-bar", self._ip, self._subnet, self._port,
+              self._cpus, self._ram)
 
     def test_ip_validation(self):
         fail_addresses = (
@@ -163,7 +207,8 @@ class TestAgentModel(AgentTestCase):
 
         for address in fail_addresses:
             with self.assertRaises(ValueError):
-                Agent("foobar", address, "255.0.0.0")
+                Agent(self._host, address, self._subnet, self._port,
+                      self._cpus, self._ram)
 
     def test_subnet_validation(self):
         fail_subnets = (
@@ -173,36 +218,37 @@ class TestAgentModel(AgentTestCase):
             "224.0.0.0", "255.255.255.255",  # multi/broadcast
             "10.56.0.1", "172.16.0.1")
 
-        for address in fail_subnets:
+        for subnet in fail_subnets:
             with self.assertRaises(ValueError):
-                Agent("foobar", "10.56.0.1", address)
+                Agent(self._host, self._ip, subnet, self._port,
+                      self._cpus, self._ram)
 
     def test_resource_validation(self):
-        for resource in ("ram", "cpus", "port"):
-            min_value = DBCFG.get("agent.min_%s" % resource)
-            max_value = DBCFG.get("agent.max_%s" % resource)
-            values = range(min_value, max_value + 1)
-            value = random.choice(values)
+        for hostname, ip, subnet, port, cpus, ram in self.agentModelArgs():
+            model = Agent(hostname, ip, subnet, port, cpus, ram)
+            db.session.add(model)
+            db.session.commit()
 
-            kwargs = {resource: value}
-            Agent("foobar", "10.56.0.1", "255.0.0.0", **kwargs)
+            # port value test
+            if port == DBCFG.get("agent.min_port"):
+                with self.assertRaises(ValueError):
+                    Agent(hostname, ip, subnet, port-1, cpus, ram)
+            else:
+                with self.assertRaises(ValueError):
+                    Agent(hostname, ip, subnet, port+1, cpus, ram)
 
-            kwargs = {resource: None}
-            agent = Agent("foobar", "10.56.0.1", "255.0.0.0", **kwargs)
-            self.assertIsNone(getattr(agent, resource))
+            # cpu value test
+            if cpus == DBCFG.get("agent.min_cpus"):
+                with self.assertRaises(ValueError):
+                    Agent(hostname, ip, subnet, port, cpus-1, ram)
+            else:
+                with self.assertRaises(ValueError):
+                    Agent(hostname, ip, subnet, port, cpus+1, ram)
 
-            with self.assertRaises(ValueError):
-                kwargs = {resource: min_value - 1}
-                Agent("foobar", "10.56.0.1", "255.0.0.0", **kwargs)
-
-            with self.assertRaises(ValueError):
-                kwargs = {resource: max_value + 1}
-                Agent("foobar", "10.56.0.1", "255.0.0.0", **kwargs)
-
-
-if __name__ == '__main__':
-    from itertools import product, permutations
-
-    for i in product(AgentTestCase.addresses, AgentTestCase.ports, [AgentTestCase.hostname]):
-        print i
-    # c = AgentTestCase.addresses
+            # ram value test
+            if ram == DBCFG.get("agent.min_ram"):
+                with self.assertRaises(ValueError):
+                    Agent(hostname, ip, subnet, port, cpus, ram-1)
+            else:
+                with self.assertRaises(ValueError):
+                    Agent(hostname, ip, subnet, port, cpus, ram+1)
