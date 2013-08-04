@@ -15,9 +15,8 @@
 # limitations under the License.
 
 from __future__ import with_statement
-import random
 from sqlalchemy.exc import IntegrityError
-from utcore import ModelTestCase, unique_ip
+from utcore import ModelTestCase
 from pyfarm.ext.config.core.loader import Loader
 from pyfarm.ext.config.enum import AgentState
 from pyfarm.flaskapp import db
@@ -43,6 +42,9 @@ class AgentTestCase(ModelTestCase):
     _port = ports[-1]
     _ram = ram[-1]
     _cpus = cpus[-1]
+    _host = hostnamebase
+    _ip = "10.0.0.0"
+    _subnet = "255.0.0.0"
 
     # General list of addresses we should test
     # against.  This covered the start and end
@@ -75,14 +77,10 @@ class AgentTestCase(ModelTestCase):
 
 
 class TestAgentSoftware(AgentTestCase):
-    def test_software_validation(self):
-        for i in (0, 1.0, None):
-            with self.assertRaises(ValueError):
-                AgentSoftware(1L, i)
-
     def test_software(self):
         # create the agent
-        agent_foobar = Agent("foobar", "10.56.0.1", "255.0.0.0")
+        agent_foobar = Agent(self._host, self._ip, self._subnet, self._port,
+                             self._cpus, self._ram)
         db.session.add(agent_foobar)
         db.session.commit()
 
@@ -107,15 +105,11 @@ class TestAgentSoftware(AgentTestCase):
             set(i.id for i in software_objects))
 
 
-class TestAgentTags(ModelTestCase):
-    def test_tag_validation(self):
-        for i in (0, 1.0, None):
-            with self.assertRaises(ValueError):
-                AgentTag(1L, i)
-
+class TestAgentTags(AgentTestCase):
     def test_tags(self):
         # create the agent
-        agent_foobar = Agent("foobar", "10.56.0.1", "255.0.0.0")
+        agent_foobar = Agent(self._host, self._ip, self._subnet, self._port,
+                             self._cpus, self._ram)
         db.session.add(agent_foobar)
         db.session.commit()
 
@@ -141,10 +135,6 @@ class TestAgentTags(ModelTestCase):
 
 
 class TestAgentModel(AgentTestCase):
-    _host = AgentTestCase.hostnamebase
-    _ip = "10.56.0.0"
-    _subnet = "255.0.0.0"
-
     def test_basic_insert(self):
         for hostname, ip, subnet, port, cpus, ram in self.agentModelArgs():
             model = Agent(hostname, ip, subnet, port, cpus, ram)
@@ -168,9 +158,9 @@ class TestAgentModel(AgentTestCase):
             self.assertEqual(result.id, model.id)
 
     def test_basic_insert_nonunique(self):
-        modelA = Agent("foobar", self._ip, self._subnet, self._port,
+        modelA = Agent(self._host, self._ip, self._subnet, self._port,
                        self._cpus, self._ram)
-        modelB = Agent("foobar", self._ip, self._subnet, self._port,
+        modelB = Agent(self._host, self._ip, self._subnet, self._port,
                        self._cpus, self._ram)
         db.session.add(modelA)
         db.session.add(modelB)
