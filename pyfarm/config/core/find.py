@@ -23,6 +23,7 @@ or files on disk.
 import os
 import copy
 from itertools import imap
+from warnings import warn
 from os.path import join, isfile, isdir, dirname
 
 try:
@@ -32,6 +33,7 @@ except ImportError:
 
 from appdirs import AppDirs
 from pyfarm import __version__, dist
+from pyfarm.warning import ConfigurationWarning
 
 DEFAULT_SUBDIR = "etc"
 DEFAULT_USER_PATHS = False
@@ -41,7 +43,11 @@ DEFAULT_SYSTEM_PATHS = False
 # PyFarm was installed this could be one of two directories.
 DEFAULT_CONFIG_ROOT = join(dist.location, "pyfarm-files", "config")
 if not isdir(DEFAULT_CONFIG_ROOT) and isdir(dirname(DEFAULT_CONFIG_ROOT)):
+    warn("%s does not exist", ConfigurationWarning)
     DEFAULT_CONFIG_ROOT = dirname(DEFAULT_CONFIG_ROOT)
+
+if not isdir(DEFAULT_CONFIG_ROOT):
+    raise OSError("%s does not exist" % DEFAULT_CONFIG_ROOT)
 
 DEFAULT_VERSION = list(__version__)
 
