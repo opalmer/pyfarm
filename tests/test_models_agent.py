@@ -15,6 +15,7 @@
 # limitations under the License.
 
 from __future__ import with_statement
+from uuid import UUID
 from sqlalchemy.exc import IntegrityError
 from utcore import ModelTestCase
 from pyfarm.ext.config.core.loader import Loader
@@ -147,7 +148,7 @@ class TestAgentModel(AgentTestCase):
             self.assertEqual(model.ram, ram)
             self.assertIsNone(model.id)
             db.session.commit()
-            self.assertIsInstance(model.id, int)
+            self.assertIsInstance(model.id, UUID)
             result = Agent.query.filter_by(id=model.id).first()
             self.assertEqual(model.hostname, result.hostname)
             self.assertEqual(model.ip, result.ip)

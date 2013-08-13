@@ -14,8 +14,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from uuid import UUID
+
 from utcore import ModelTestCase
-# from pyfarm.models.job import JobModel
 from pyfarm.flaskapp import db
 from pyfarm.models.task import Task, TaskModel
 
@@ -29,7 +30,7 @@ class TestTaskModel(ModelTestCase):
         self.assertIsNone(task.id)
         db.session.add(task)
         db.session.commit()
-        self.assertIsInstance(task.id, int)
+        self.assertIsInstance(task.id, UUID)
 
         result = Task.query.filter_by(id=task.id).first()
         self.assertIsNotNone(result)
