@@ -25,7 +25,7 @@ from pyfarm.ext.config.core.loader import Loader
 from pyfarm.ext.config.enum import AgentState
 from pyfarm.ext.system.network import IP_NONNETWORK
 from pyfarm.models.mixins import WorkValidationMixin
-from pyfarm.models.core.types import IDColumn
+from pyfarm.models.core.types import IDColumn, IDType
 from pyfarm.models.core.cfg import (
     DBCFG, TABLE_AGENT, TABLE_AGENT_TAGS, TABLE_AGENT_SOFTWARE)
 
@@ -71,7 +71,7 @@ class AgentTagsModel(db.Model, AgentTaggingMixin):
     __tablename__ = TABLE_AGENT_TAGS
     __table_args__ = (UniqueConstraint("_agentid", "tag"), )
     id = IDColumn()
-    _agentid = db.Column(db.Integer, db.ForeignKey("%s.id" % TABLE_AGENT),
+    _agentid = db.Column(IDType, db.ForeignKey("%s.id" % TABLE_AGENT),
                          doc=dedent("""
                          The foreign key which stores :attr:`AgentModel.id`"""))
     tag = db.Column(db.String,
@@ -101,7 +101,7 @@ class AgentSoftwareModel(db.Model, AgentTaggingMixin):
     __tablename__ = TABLE_AGENT_SOFTWARE
     __table_args__ = (UniqueConstraint("_agentid", "version", "software"), )
     id = IDColumn()
-    _agentid = db.Column(db.Integer, db.ForeignKey("%s.id" % TABLE_AGENT),
+    _agentid = db.Column(IDType, db.ForeignKey("%s.id" % TABLE_AGENT),
                          doc=dedent("""
                          The foreign key which stores :attr:`AgentModel.id`"""))
     software = db.Column(db.String, nullable=False,

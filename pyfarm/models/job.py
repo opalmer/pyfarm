@@ -46,7 +46,7 @@ from sqlalchemy.schema import UniqueConstraint
 from pyfarm.flaskapp import db
 from pyfarm.config.enum import WorkState
 from pyfarm.models.core.functions import WorkColumns
-from pyfarm.models.core.types import IDColumn
+from pyfarm.models.core.types import IDColumn, IDType
 from pyfarm.models.core.cfg import (
     DBCFG, TABLE_JOB, TABLE_JOB_TAGS, TABLE_JOB_SOFTWARE)
 
@@ -71,7 +71,7 @@ class JobTagsModel(db.Model):
     __tablename__ = TABLE_JOB_TAGS
     __table_args__ = (UniqueConstraint("_jobid", "tag"),)
     id = IDColumn()
-    _jobid = db.Column(db.Integer, db.ForeignKey("%s.id" % TABLE_JOB),
+    _jobid = db.Column(IDType, db.ForeignKey("%s.id" % TABLE_JOB),
                        doc=dedent("""
                        Foreign key which stores :attr:`JobModel.id`"""))
 
@@ -97,7 +97,7 @@ class JobSoftwareModel(db.Model):
     __tablename__ = TABLE_JOB_SOFTWARE
     __table_args__ = (UniqueConstraint("_jobid", "software", "version"),)
     id = IDColumn()
-    _jobid = db.Column(db.Integer, db.ForeignKey("%s.id" % TABLE_JOB),
+    _jobid = db.Column(IDType, db.ForeignKey("%s.id" % TABLE_JOB),
                        doc=dedent("""
                        The foreign key which stores :attr:`JobModel.id`"""))
     software = db.Column(db.String, nullable=False,
