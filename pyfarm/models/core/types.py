@@ -18,7 +18,7 @@
 Special column types used by PyFarm's models.
 """
 
-import uuid
+from uuid import uuid4, UUID
 
 from sqlalchemy.types import TypeDecorator, CHAR
 from sqlalchemy.dialects.postgresql import UUID as PGUuid
@@ -48,8 +48,8 @@ class GUID(TypeDecorator):
         elif dialect.name == "postgresql":
             return str(value)
         else:
-            if not isinstance(value, uuid.UUID):
-                return "%.32x" % uuid.UUID(value)
+            if not isinstance(value, UUID):
+                return "%.32x" % UUID(value)
             else:
                 # hexstring
                 return "%.32x" % value
@@ -58,4 +58,10 @@ class GUID(TypeDecorator):
         if value is None:
             return value
         else:
-            return uuid.UUID(value)
+            return UUID(value)
+
+
+# the universal mapping which can be used, even if the underlying
+# type changes in the future
+IDType = GUID
+IDDefault = uuid4
