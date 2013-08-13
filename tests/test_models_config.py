@@ -15,7 +15,7 @@
 # limitations under the License.
 
 from utcore import TestCase
-from pyfarm.ext.config.cfg.loader import Loader
+from pyfarm.ext.config.core.loader import Loader
 from pyfarm.models.core import cfg
 
 
