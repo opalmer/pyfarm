@@ -25,7 +25,7 @@ from pyfarm.ext.config.core.loader import Loader
 from pyfarm.ext.config.enum import AgentState
 from pyfarm.ext.system.network import IP_NONNETWORK
 from pyfarm.models.mixins import WorkValidationMixin
-from pyfarm.models.core.functions import IDColumn
+from pyfarm.models.core.types import IDColumn
 from pyfarm.models.core.cfg import (
     DBCFG, TABLE_AGENT, TABLE_AGENT_TAGS, TABLE_AGENT_SOFTWARE)
 

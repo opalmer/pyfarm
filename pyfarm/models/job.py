@@ -45,7 +45,8 @@ from sqlalchemy.schema import UniqueConstraint
 
 from pyfarm.flaskapp import db
 from pyfarm.config.enum import WorkState
-from pyfarm.models.core.functions import WorkColumns, IDColumn
+from pyfarm.models.core.functions import WorkColumns
+from pyfarm.models.core.types import IDColumn
 from pyfarm.models.core.cfg import (
     DBCFG, TABLE_JOB, TABLE_JOB_TAGS, TABLE_JOB_SOFTWARE)
 
