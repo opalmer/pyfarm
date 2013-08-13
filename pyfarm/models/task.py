@@ -18,8 +18,8 @@ from textwrap import dedent
 from sqlalchemy import event
 from pyfarm.flaskapp import db
 from pyfarm.config.enum import WorkState
-from pyfarm.models.core import (
-    TABLE_JOB, TABLE_TASK, TABLE_AGENT, WorkColumns, modelfor)
+from pyfarm.models.core.functions import WorkColumns, modelfor
+from pyfarm.models.core.cfg import TABLE_JOB, TABLE_TASK, TABLE_AGENT
 from pyfarm.models.mixins import WorkValidationMixin, StateChangedMixin
 
 

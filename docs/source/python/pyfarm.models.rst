@@ -17,14 +17,6 @@ models Package
     :undoc-members:
     :show-inheritance:
 
-:mod:`core` Module
-------------------
-
-.. automodule:: pyfarm.models.core
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 :mod:`job` Module
 -----------------
 
@@ -48,4 +40,11 @@ models Package
     :members:
     :undoc-members:
     :show-inheritance:
+
+Subpackages
+-----------
+
+.. toctree::
+
+    pyfarm.models.core
 

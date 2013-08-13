@@ -14,28 +14,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+
 """
 Contains core functions and data for use by :mod:`pyfarm.models`
 
 .. include:: ../include/references.rst
 """
 
+from uuid import uuid4
 from datetime import datetime
 from textwrap import dedent
 from pyfarm.flaskapp import db
 from pyfarm.ext.config.enum import WorkState
-from pyfarm.ext.config.core.loader import Loader
-
-DBCFG = Loader("dbdata.yml")
-
-TABLE_PREFIX = DBCFG.get("tables.prefix")
-TABLE_AGENT = "%sagent" % TABLE_PREFIX
-TABLE_AGENT_TAGS = "%s_tags" % TABLE_AGENT
-TABLE_AGENT_SOFTWARE = "%s_software" % TABLE_AGENT
-TABLE_JOB = "%sjob" % TABLE_PREFIX
-TABLE_JOB_TAGS = "%s_tags" % TABLE_JOB
-TABLE_JOB_SOFTWARE = "%s_software" % TABLE_JOB
-TABLE_TASK = "%stask" % TABLE_PREFIX
+from pyfarm.models.core.types import GUID
+from pyfarm.models.core.cfg import DBCFG
 
 
 def modelfor(model, table):
@@ -61,8 +53,7 @@ def IDColumn():
     and the table relationships it's cleaner to have a function produce
     the column.
     """
-    return db.Column(db.Integer, autoincrement=True, primary_key=True,
-                     unique=True,
+    return db.Column(GUID, primary_key=True, unique=True, default=uuid4,
                      doc=dedent("""
                      Provides an id for the current row.  This value should
                      never be directly relied upon and it's intended for use
