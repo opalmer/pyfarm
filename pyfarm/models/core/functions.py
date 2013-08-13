@@ -21,13 +21,12 @@ Contains core functions and data for use by :mod:`pyfarm.models`
 .. include:: ../include/references.rst
 """
 
-from uuid import uuid4
 from datetime import datetime
 from textwrap import dedent
 from pyfarm.flaskapp import db
 from pyfarm.ext.config.enum import WorkState
-from pyfarm.models.core.types import GUID
 from pyfarm.models.core.cfg import DBCFG
+from pyfarm.models.core.types import IDColumn
 
 
 def modelfor(model, table):
@@ -44,20 +43,6 @@ def modelfor(model, table):
         return model.__tablename__ == table
     except AttributeError:
         return False
-
-
-def IDColumn():
-    """
-    Produces a column used for `id` on each table.  Typically this is done
-    using a class in :mod:`pyfarm.models.mixins` however because of the ORM
-    and the table relationships it's cleaner to have a function produce
-    the column.
-    """
-    return db.Column(GUID, primary_key=True, unique=True, default=uuid4,
-                     doc=dedent("""
-                     Provides an id for the current row.  This value should
-                     never be directly relied upon and it's intended for use
-                     by relationships."""))
 
 
 def WorkColumns(state_default, priority_default):

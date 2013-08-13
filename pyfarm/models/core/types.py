@@ -18,10 +18,13 @@
 Special column types used by PyFarm's models.
 """
 
+from textwrap import dedent
 from uuid import uuid4, UUID
 
 from sqlalchemy.types import TypeDecorator, CHAR
 from sqlalchemy.dialects.postgresql import UUID as PGUuid
+
+from pyfarm.flaskapp import db
 
 
 class GUID(TypeDecorator):
@@ -59,6 +62,20 @@ class GUID(TypeDecorator):
             return value
         else:
             return UUID(value)
+
+
+def IDColumn():
+    """
+    Produces a column used for `id` on each table.  Typically this is done
+    using a class in :mod:`pyfarm.models.mixins` however because of the ORM
+    and the table relationships it's cleaner to have a function produce
+    the column.
+    """
+    return db.Column(IDType, primary_key=True, unique=True, default=IDDefault,
+                     doc=dedent("""
+                     Provides an id for the current row.  This value should
+                     never be directly relied upon and it's intended for use
+                     by relationships."""))
 
 
 # the universal mapping which can be used, even if the underlying
