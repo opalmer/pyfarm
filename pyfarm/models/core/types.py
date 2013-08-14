@@ -32,7 +32,7 @@ try:
 except ImportError:
     from simplejson import dumps, loads
 
-from sqlalchemy.types import TypeDecorator, CHAR, String
+from sqlalchemy.types import TypeDecorator, CHAR, String, BigInteger
 from sqlalchemy.dialects.postgresql import UUID as PGUuid
 
 from pyfarm.flaskapp import db
@@ -153,6 +153,7 @@ class IPv4Address(TypeDecorator):
     Column type which can store and retrieve IPv4 addresses in a more
     efficient manner
     """
+    impl = BigInteger
     MAX_INT = 4294967295
 
     def checkInteger(self, value):
@@ -185,6 +186,7 @@ class JobType(TypeDecorator):
     """
     Column type which loads and stores job types.
     """
+    impl = String
     MODULE_ROOT = "pyfarm.ext.jobtypes.%s"
 
     def process_bind_param(self, value, dialect):
@@ -217,6 +219,7 @@ class JobType(TypeDecorator):
         except AttributeError:
             raise AttributeError(
                 "job type %s does exist on %s" % (value, module))
+
 
 def IDColumn():
     """
