@@ -97,8 +97,6 @@ class JSONSerializable(TypeDecorator):
     impl = String
     serialize_types = None
     serialize_none = False
-    allow_blank = False
-    allow_empty = True
 
     def __init__(self, *args, **kwargs):
         super(JSONSerializable, self).__init__(*args, **kwargs)
@@ -107,41 +105,36 @@ class JSONSerializable(TypeDecorator):
         if self.serialize_types is None:
             raise NotImplementedError("`serialize_types` is not defined")
 
+    def dumps(self, value):
+        """
+        Performs the process of dumping `value` to json.  For classes
+        such as :class:`UserDict` or :class:`UserList` this will dump the
+        underlying data instead of the object itself.
+        """
+        if isinstance(value, (UserDict, UserList)):
+            value = value.data
+
+        return dumps(value)
+
     def process_bind_param(self, value, dialect):
-        # TODO: simplify
+        """Converts the value being assigned into a json blob"""
+        if value is None:
+            return self.dumps(value) if self.serialize_none else value
 
-        # value provided is already a string, try to
-        # convert it into something we expect
-        if isinstance(value, basestring):
-            check = loads(value)
+        elif isinstance(value, self.serialize_types):
+            return self.dumps(value)
 
-            if not isinstance(check, self.serialize_types):
-                raise TypeError(
-                    "failed to serialize %s to an expected data type" % value)
+        else:
+            args = (value, self.__class__.__name__)
+            raise ValueError("unexpected input %s for `%s`" % args)
 
-        # value provided is not something we expected to serialize
-        elif not isinstance(value, self.serialize_types):
-            raise TypeError(
-                "%s is not an instance of %s" % self.serialize_types)
-
-        if isinstance(value, basestring):
-            if not self.allow_blank and not value:
-                raise ValueError("value is blank")
-
-        if not isinstance(value, basestring):
-            value = dumps(value)
-
-                # elif all([isinstance(value, self.serialize_types),
-        #           not value, not self.allow_empty]):
-        #     raise ValueError("object is empty")
-
-
-
-        return value
+    def process_result_value(self, value, dialect):
+        """Converts data from the database into a Python object"""
+        return value if value is None else loads(value)
 
 
 class JSONList(JSONSerializable):
-    """Special column type for storing lists as json"""
+    """Special column type for storing list objects as json"""
     serialize_types = (list, tuple, UserList)
 
 
