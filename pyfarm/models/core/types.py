@@ -32,7 +32,7 @@ try:
 except ImportError:
     from simplejson import dumps, loads
 
-from sqlalchemy.types import TypeDecorator, CHAR, String, BigInteger
+from sqlalchemy.types import TypeDecorator, CHAR, String, BigInteger, Unicode
 from sqlalchemy.dialects.postgresql import UUID as PGUuid
 
 from pyfarm.flaskapp import db
@@ -99,7 +99,7 @@ class JSONSerializable(TypeDecorator):
         if True, do not raise :class:`ValueError` if the input data
         itself is empty
     """
-    impl = String
+    impl = Unicode
     serialize_types = None
     serialize_none = False
 
@@ -135,7 +135,10 @@ class JSONSerializable(TypeDecorator):
 
     def process_result_value(self, value, dialect):
         """Converts data from the database into a Python object"""
-        return value if value is None else loads(value)
+        if value is not None:
+            value = loads(value)
+
+        return value
 
 
 class JSONList(JSONSerializable):
