@@ -36,7 +36,7 @@ from sqlalchemy.dialects.postgresql import UUID as PGUuid
 from pyfarm.flaskapp import db
 
 JSON_NONE = dumps(None)
-NoneType = type(None) # from stdlib types module
+NoneType = type(None)  # from stdlib types module
 
 
 class GUID(TypeDecorator):
