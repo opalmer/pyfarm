@@ -22,6 +22,8 @@ from textwrap import dedent
 from uuid import uuid4, UUID
 from UserDict import UserDict
 from UserList import UserList
+from inspect import isclass
+from importlib import import_module
 
 from netaddr import IPAddress
 
@@ -34,6 +36,7 @@ from sqlalchemy.types import TypeDecorator, CHAR, String
 from sqlalchemy.dialects.postgresql import UUID as PGUuid
 
 from pyfarm.flaskapp import db
+from pyfarm.ext.jobtypes.core import Job
 
 JSON_NONE = dumps(None)
 NoneType = type(None)  # from stdlib types module
@@ -150,22 +153,70 @@ class IPv4Address(TypeDecorator):
     Column type which can store and retrieve IPv4 addresses in a more
     efficient manner
     """
+    MAX_INT = 4294967295
+
+    def checkInteger(self, value):
+        if value < 0 or value > self.MAX_INT:
+            args = (value, self.__class__.__name__)
+            raise ValueError("invalid integer '%s' for %s" % args)
+
+        return value
+
     def process_bind_param(self, value, dialect):
         if isinstance(value, int):
-            return value
+            return self.checkInteger(value)
 
         elif isinstance(value, basestring):
-            return int(IPAddress(value))
+            return self.checkInteger(int(IPAddress(value)))
 
         elif isinstance(value, IPAddress):
-            return int(value)
+            return self.checkInteger(int(value))
 
         else:
             raise ValueError("unexpected type %s for value" % type(value))
 
     def process_result_value(self, value, dialect):
-        return IPAddress(value)
+        value = IPAddress(value)
+        self.checkInteger(int(value))
+        return value
 
+
+class JobType(TypeDecorator):
+    """
+    Column type which loads and stores job types.
+    """
+    MODULE_ROOT = "pyfarm.ext.jobtypes.%s"
+
+    def process_bind_param(self, value, dialect):
+        if isinstance(value, Job) or isclass(value):
+            return value.__name__
+        elif isinstance(value, basestring):
+            return value
+        else:
+            args = (type(value), self.__class__.__name__)
+            raise TypeError("unsupported type %s for %s" % args)
+
+    def process_result_value(self, value, dialect):
+        if value is None:
+            raise ValueError("value provided for `jobtype` cannot be None")
+
+        module_name = value.lower()
+        module_path = self.MODULE_ROOT % module_name
+
+        # attempt to import the module for the job type
+        try:
+            module = import_module(module_path)
+        except ImportError:
+            args = (module_name, module_path)
+            raise ImportError(
+                "failed to find a job type to import for %s at %s" % args)
+
+        # try to get the class attribute and return it
+        try:
+            return getattr(module, value)
+        except AttributeError:
+            raise AttributeError(
+                "job type %s does exist on %s" % (value, module))
 
 def IDColumn():
     """
