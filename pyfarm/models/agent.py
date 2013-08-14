@@ -25,7 +25,7 @@ from pyfarm.ext.config.core.loader import Loader
 from pyfarm.ext.config.enum import AgentState
 from pyfarm.ext.system.network import IP_NONNETWORK
 from pyfarm.models.mixins import WorkValidationMixin
-from pyfarm.models.core.types import IDColumn, IDType
+from pyfarm.models.core.types import IDColumn, IDType, IPv4Address
 from pyfarm.models.core.cfg import (
     DBCFG, TABLE_AGENT, TABLE_AGENT_TAGS, TABLE_AGENT_SOFTWARE)
 
@@ -143,12 +143,12 @@ class AgentModel(db.Model, WorkValidationMixin):
                          The hostname we should use to talk to this host.
                          Preferably this value will be the fully qualified
                          name instead of the base hostname alone."""))
-    ip = db.Column(db.String(15), nullable=False,
+    ip = db.Column(IPv4Address, nullable=False,
                    doc=dedent("""
                    The IPv4 network address this host resides on.  This is
                    'best guess' address using factors described in
                    :meth:`pyfarm.system.network.NetworkInfo.ip`"""))
-    subnet = db.Column(db.String(15), nullable=False,
+    subnet = db.Column(IPv4Address, nullable=False,
                        doc=dedent("""
                        The subnet associated with the agent at the time we
                        discovered :attr:`ip`"""))
