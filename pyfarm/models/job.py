@@ -46,7 +46,7 @@ from sqlalchemy.schema import UniqueConstraint
 from pyfarm.flaskapp import db
 from pyfarm.config.enum import WorkState
 from pyfarm.models.core.functions import WorkColumns
-from pyfarm.models.core.types import IDColumn, IDType
+from pyfarm.models.core.types import IDColumn, IDType, JobType
 from pyfarm.models.core.cfg import (
     DBCFG, TABLE_JOB, TABLE_JOB_TAGS, TABLE_JOB_SOFTWARE)
 
@@ -147,11 +147,11 @@ class JobModel(db.Model, WorkValidationMixin, StateChangedMixin):
                       searching"""))
 
     # task data
-    _jobtype = db.Column(db.String, nullable=False,
-                         doc=dedent("""
-                         The name of the the jobtype to execute.  This value
-                         will be set by the jobtype property when the class
-                         is setup."""))
+    jobtype = db.Column(JobType, nullable=False,
+                        doc=dedent("""
+                        The name of the the jobtype to execute.  This value
+                        will be set by the jobtype property when the class
+                        is setup."""))
     cmd = db.Column(db.String,
                     doc=dedent("""
                     The platform independent command to run. Each agent will
@@ -322,47 +322,6 @@ class JobModel(db.Model, WorkValidationMixin, StateChangedMixin):
         Produces an instance of the job type object using :attr:`.jobtype`
         """
         return self.jobtype(self.cmd, self.args, self.environ, self.data)
-
-    @property
-    def jobtype(self):
-        """
-        Property which returns the jobtype class this instance is supposed
-        to be using
-        """
-        if not self._jobtype:
-            raise ValueError("underlying `_jobtype` is not populated")
-
-        module_name = self._jobtype.lower()
-        module_path = "pyfarm.ext.jobtypes.%s" % module_name
-
-        # attempt to import the job type module
-        try:
-            module = importlib.import_module(module_path)
-        except ImportError:
-            args = (module_name, module_path)
-            raise ImportError(
-                "failed to find a job type to import for %s at %s" % args)
-
-        # try to get the class attribute and return it
-        try:
-            return getattr(module, self._jobtype)
-        except AttributeError:
-            raise AttributeError(
-                "job type %s does exist on %s" % (self._jobtype, module))
-
-    @jobtype.setter
-    def jobtype(self, value):
-        """
-        Sets the :attr:`_jobtype` column when provided input.  If the input
-        provided is a job type class then we'll use that directly otherwise
-        we attempt to handle `value` as a string.
-        """
-        if isinstance(value, Job) or inspect.isclass(value):
-            self._jobtype = value.__name__
-        elif isinstance(value, basestring):
-            self._jobtype = value
-        else:
-            raise TypeError("unsupported type %s for `_jobtype`" % type(value))
 
     @property
     def environ(self):
