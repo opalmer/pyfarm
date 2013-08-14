@@ -23,6 +23,8 @@ from uuid import uuid4, UUID
 from UserDict import UserDict
 from UserList import UserList
 
+from netaddr import IPAddress
+
 try:
     from json import dumps, loads
 except ImportError:
@@ -134,13 +136,32 @@ class JSONSerializable(TypeDecorator):
 
 
 class JSONList(JSONSerializable):
-    """Special column type for storing list objects as json"""
+    """Column type for storing list objects as json"""
     serialize_types = (list, tuple, UserList)
 
 
 class JSONDict(JSONSerializable):
-    """Special column type for storing dictionary objects as json"""
+    """Column type for storing dictionary objects as json"""
     serialize_types = (dict, UserDict)
+
+
+class IPv4Address(TypeDecorator):
+    """
+    Column type which can store and retrieve IPv4 addresses in a more
+    efficient manner
+    """
+    def process_bind_param(self, value, dialect):
+        if isinstance(value, int):
+            return value
+        elif isinstance(value, basestring):
+            return int(IPAddress(value))
+        elif isinstance(value, IPAddress):
+            return int(value)
+        else:
+            raise ValueError("unexpected type %s for value" % type(value))
+
+    def process_result_value(self, value, dialect):
+        return IPAddress(value)
 
 
 def IDColumn():
