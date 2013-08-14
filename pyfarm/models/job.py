@@ -46,7 +46,8 @@ from sqlalchemy.schema import UniqueConstraint
 from pyfarm.flaskapp import db
 from pyfarm.config.enum import WorkState
 from pyfarm.models.core.functions import WorkColumns
-from pyfarm.models.core.types import IDColumn, IDType, JobType
+from pyfarm.models.core.types import (
+    IDColumn, IDType, JobType, JSONDict, JSONList)
 from pyfarm.models.core.cfg import (
     DBCFG, TABLE_JOB, TABLE_JOB_TAGS, TABLE_JOB_SOFTWARE)
 
@@ -114,10 +115,6 @@ class JobModel(db.Model, WorkValidationMixin, StateChangedMixin):
     """
     Defines the attributes and environment for a job.  Individual commands
     are kept track of by |TaskModel|
-
-    .. autoattribute:: _environ
-    .. autoattribute:: _data
-    .. autoattribute:: _args
     """
     __tablename__ = TABLE_JOB
     STATE_ENUM = WorkState()
@@ -252,22 +249,22 @@ class JobModel(db.Model, WorkValidationMixin, StateChangedMixin):
                         """))
 
     # underlying storage for properties
-    _environ = db.Column(db.Text,
-                         doc=dedent("""
-                         Text containing a json dictionary which has some
-                         information about the environment.  This value
-                         is read by :attr:`.environ`"""))
-    _args = db.Column(db.Text,
-                      doc=dedent("""
-                      Text containing a json list which stores
-                      the arguments that are intended by be passed onto
-                      the task's command.  This value is read by :attr:`.args`.
-                      """))
-    _data = db.Column(db.Text,
-                      doc=dedent("""
-                      Text containing extra data which a job type may want
-                      to handle.  This data is not formatted and handled by
-                      :attr:`.data`"""))
+    environ = db.Column(JSONDict,
+                        doc=dedent("""
+                        Text containing a json dictionary which has some
+                        information about the environment.  This value
+                        is read by :attr:`.environ`"""))
+    args = db.Column(JSONList,
+                     doc=dedent("""
+                     Text containing a json list which stores
+                     the arguments that are intended by be passed onto
+                     the task's command.  This value is read by :attr:`.args`.
+                     """))
+    data = db.Column(JSONDict,
+                     doc=dedent("""
+                     Text containing extra data which a job type may want
+                     to handle.  This data is not formatted and handled by
+                     :attr:`.data`"""))
 
     # relationships
     _parentjob = db.Column(db.Integer, db.ForeignKey("%s.id" % TABLE_JOB))
@@ -322,79 +319,6 @@ class JobModel(db.Model, WorkValidationMixin, StateChangedMixin):
         Produces an instance of the job type object using :attr:`.jobtype`
         """
         return self.jobtype(self.cmd, self.args, self.environ, self.data)
-
-    @property
-    def environ(self):
-        """
-        Property which will produce an environment that a task can use on
-        an agent.  If an environment was not provided as part of
-        :attr:`_environ` then the current environment will be used instead.
-        """
-        environ = os.environ.copy()
-
-        if not self._environ:
-            return environ
-
-        envbase = json.loads(self._environ)
-        assert isinstance(envbase, dict), "expected a dictionary from _environ"
-        environ.update(envbase)
-        return environ
-
-    @environ.setter
-    def environ(self, value):
-        """Takes the incoming `value` and stores it in `_environ`"""
-        if isinstance(value, dict):
-            value = json.dumps(value)
-        elif isinstance(value, UserDict):
-            value = json.dumps(value.data)
-        else:
-            raise TypeError("expected a dict or UserDict object for `environ`")
-
-        self._environ = value
-
-    @property
-    def data(self):
-        """Loads and produces data from :attr:`.data`"""
-        return json.loads(self._data)
-
-    @data.setter
-    def data(self, value):
-        """Takes the incoming `value` and stores it in `_data`"""
-        self._data = json.dumps(value)
-
-    @property
-    def args(self):
-        """Loads and produces data from :attr:`.args`"""
-        return json.loads(self._args)
-
-    @args.setter
-    def args(self, value):
-        assert isinstance(value, list), "expected a list for `args`"
-        self._args = json.dumps(value)
-
-    @validates("environ")
-    def validate_environ(self, key, value):
-        """
-        Validation that ensures the value we're attempting to set on
-        :attr:`.environ` is of type we expect
-        """
-        if not isinstance(value, (dict, UserDict, basestring)):
-            raise TypeError("expected a dictionary or string for %s" % key)
-
-        return value
-
-    @validates("_environ")
-    def validate_json(self, key, value):
-        """
-        Validation that ensures the underlying environment data is something
-        we could store as a json document
-        """
-        try:
-            json.dumps(value)
-        except Exception, e:
-            raise ValueError("failed to dump `%s` to json: %s" % (key, e))
-
-        return value
 
     @validates("ram", "cpus")
     def validate_resource(self, key, value):
