@@ -251,20 +251,26 @@ class JobModel(db.Model, WorkValidationMixin, StateChangedMixin):
     # underlying storage for properties
     environ = db.Column(JSONDict,
                         doc=dedent("""
-                        Text containing a json dictionary which has some
-                        information about the environment.  This value
-                        is read by :attr:`.environ`"""))
+                        Dictionary containing information about the environment
+                        in which the job will execute.
+
+                        .. note::
+                            Changes made directly to this object are **not**
+                            applied to the session."""))
     args = db.Column(JSONList,
                      doc=dedent("""
-                     Text containing a json list which stores
-                     the arguments that are intended by be passed onto
-                     the task's command.  This value is read by :attr:`.args`.
-                     """))
+                     List containing the command line arguments.
+
+                     .. note::
+                        Changes made directly to this object are **not**
+                        applied to the session."""))
     data = db.Column(JSONDict,
                      doc=dedent("""
-                     Text containing extra data which a job type may want
-                     to handle.  This data is not formatted and handled by
-                     :attr:`.data`"""))
+                     Json blob containing additional data for a job
+
+                     .. note::
+                        Changes made directly to this object are **not**
+                        applied to the session."""))
 
     # relationships
     _parentjob = db.Column(db.Integer, db.ForeignKey("%s.id" % TABLE_JOB))
