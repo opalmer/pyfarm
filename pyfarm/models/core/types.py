@@ -153,10 +153,13 @@ class IPv4Address(TypeDecorator):
     def process_bind_param(self, value, dialect):
         if isinstance(value, int):
             return value
+
         elif isinstance(value, basestring):
             return int(IPAddress(value))
+
         elif isinstance(value, IPAddress):
             return int(value)
+
         else:
             raise ValueError("unexpected type %s for value" % type(value))
 
