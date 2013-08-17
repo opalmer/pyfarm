@@ -1,0 +1,3 @@
+[submodule "pyfarm-api"]
+	path = pyfarm-api
+	url = git@github.com:pyfarm/pyfarm-api.git
