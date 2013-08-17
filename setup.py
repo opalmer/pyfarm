@@ -180,7 +180,6 @@ if __name__ == "__main__":
         version=".".join(map(str, parsed_version)),
         data_files=[("pyfarm-files", setuptools.findall("pyfarm-files"))],
         packages=packages,
-        setup_requires=requires,
         install_requires=requires,
         url="http://pyfarm.net",
         license="Apache v2.0",
