@@ -25,15 +25,6 @@ PY_MAJOR, PY_MINOR, PY_MICRO = sys.version_info[0:3]
 # raise an exception instead of an odd failure later on
 assert (PY_MAJOR, PY_MINOR) >= (2, 5), "Python 2.5 or higher is required"
 
-# Fool setuptools into thinking this future feature exists.  Yes this
-# is a horrible idea but it prevents the need for a special setuptools version
-# for Python2.5
-if (PY_MAJOR, PY_MINOR) == (2, 5):
-    sys.modules['__future__'].CO_FUTURE_PRINT_FUNCTION = 65536
-    sys.modules['__future__'].print_statement = \
-        sys.modules['__future__']._Feature((2, 6, 0, 'alpha', 2),
-                                           (3, 0, 0, 'alpha', 0), 65536)
-
 from _ast import *
 try:
     from ast import parse
@@ -154,16 +145,6 @@ if __name__ == "__main__":
 
     requires = requirements(PY_MAJOR, PY_MINOR)
 
-    # coveralls only supported in Python 2.5
-    if (
-        "TRAVIS" in os.environ
-        and "BUILD_DOCS" not in os.environ
-        and (PY_MAJOR, PY_MINOR) > (2, 5)
-        and os.environ.get("TRAVIS_PYTHON_VERSION", "2.5") != "2.5"
-    ):
-        requires.append("coverage")
-        requires.append("python-coveralls")
-
     # get all packages but make sure we don't include any
     # non-python code
     packages = filter(
@@ -201,7 +182,7 @@ if __name__ == "__main__":
             "License :: OSI Approved :: Apache Software License",
             "Natural Language :: English",
             "Operating System :: OS Independent",
-            "Programming Language :: Python :: 2 :: Only", # waiting on 3rd party packages
+            "Programming Language :: Python :: 2 :: Only",  # waiting on 3rd party packages
             "Programming Language :: Python :: 2.5",
             "Programming Language :: Python :: 2.6",
             "Programming Language :: Python :: 2.7",
