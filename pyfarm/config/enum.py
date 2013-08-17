@@ -47,7 +47,7 @@ class EnumBuilder(type):
         doc = dedent("""
         Enum object for %s.  See :class:`Enum` for the method
         documentation and
-        :download:`enums.yml <../../../pyfarm-files/config/enums.yml>` for the
+        :download:`enums.yml <downloads/config/enums.yml>` for the
         underlying data
         """ % classname)
 
