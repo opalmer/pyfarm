@@ -1,3 +1,9 @@
+**NOTE**: This repo is being broken down into individual projects under 
+https://github.com/pyfarm for  better transparency, isolation, and tracking.  
+Please see use the resources below to locate what your're looking for 
+or mail development@pyfarm.net if you have questions. 
+ 
+ 
 PyFarm
 ======
 
