@@ -16,8 +16,9 @@ about the project please use the resources below or view the online
 
 Subprojects
 ===========
-Below are the current subprojects of PyFarm.  More detailed information
-is avaliable either in the documentation or using the links below.
+Below are the current subprojects of PyFarm which are under active development.
+More detailed information about the individual project(s) can be found in either
+the documentation or in the respective repo.
 
 * `pyfarm.core <https://github.com/pyfarm/pyfarm-core>`_
 
