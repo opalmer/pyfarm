@@ -21,17 +21,17 @@ is avaliable either in the documentation or using the links below.
 
 * `pyfarm.core <https://github.com/pyfarm/pyfarm-core>`_
 
-.. image:: https://travis-ci.org/pyfarm/pyfarm-core.png?branch=master
-    :target: https://travis-ci.org/pyfarm/pyfarm-core
-    :align: left
+    .. image:: https://travis-ci.org/pyfarm/pyfarm-core.png?branch=master
+        :target: https://travis-ci.org/pyfarm/pyfarm-core
+        :align: left
 
-.. image:: https://coveralls.io/repos/pyfarm/pyfarm-core/badge.png?branch=master
-    :target: https://coveralls.io/r/pyfarm/pyfarm-core?branch=master
-    :align: left
+    .. image:: https://coveralls.io/repos/pyfarm/pyfarm-core/badge.png?branch=master
+        :target: https://coveralls.io/r/pyfarm/pyfarm-core?branch=master
+        :align: left
 
-.. image:: https://badge.waffle.io/pyfarm/pyfarm-core.png?label=ready
-    :target: https://waffle.io/pyfarm/pyfarm-core
-    :align: left
+    .. image:: https://badge.waffle.io/pyfarm/pyfarm-core.png?label=ready
+        :target: https://waffle.io/pyfarm/pyfarm-core
+        :align: left
 
 
 pyfarm.master
