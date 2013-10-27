@@ -4,12 +4,8 @@ python:
   - "2.6"
   - "2.7"
 
-before_script:
-  - if [[ $TDB_TYPE == "postgres" ]]; then psql -c "create database pyfarm;" -U postgres; fi
-  - if [[ $TDB_TYPE == "mysql" ]]; then mysql -e "create database pyfarm;"; fi
-
 install:
-  - pip
+  - pip install -e . --egg --use-mirrors
 
 script:
   - pip freeze
