@@ -16,9 +16,10 @@ about the project please use the resources below or view the online
 
 Subprojects
 ===========
+Below are the current subprojects of PyFarm.  More detailed information
+is avaliable either in the documentation or using the links below.
 
-pyfarm.core
------------
+`**pyfarm.core** <https://github.com/pyfarm/pyfarm-core>`_
 
 .. image:: https://travis-ci.org/pyfarm/pyfarm-core.png?branch=master
     :target: https://travis-ci.org/pyfarm/pyfarm-core
