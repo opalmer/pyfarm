@@ -22,7 +22,7 @@ assert sys.version_info[0:2] >= (2, 5), "Python 2.5 or higher is required"
 from os.path import isfile
 from setuptools import setup
 
-install_requires = ["fabric"]
+install_requires = ["fabric", "gitpython"]
 if sys.version_info[0:2] < (2, 7):
     install_requires.extend(["argparse"])
 
