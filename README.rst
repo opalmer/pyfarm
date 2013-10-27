@@ -1,33 +1,84 @@
-**NOTE**: This repo is being broken down into individual projects under 
-https://github.com/pyfarm for  better transparency, isolation, and tracking.  
-Please see use the resources below to locate what your're looking for 
-or mail development@pyfarm.net if you have questions. 
- 
- 
 PyFarm
 ======
+
+**NOTE**: This repo has been broken down into individual projects under
+https://github.com/pyfarm for  better transparency, isolation, and tracking.
+All that remains in this repo are tools for development and deployment.
 
 A Python based distributed job system which is intended to be easy to deploy
 and maintain.  Initially developed to be used solely by the Visual Effects
 industry there is the intention to expand into other areas as well such as the
 general scientific community.  Currently the project is undergoing heavy
 development and this page serves as a placeholder.  For more direct information
-about the project please use the resources below.
+about the project please use the resources below or view the online
+`documentation <https://pyfarm.readthedocs.org>`_
 
 
-Resources
-=========
+Subprojects
+===========
 
- * `Documentation <https://pyfarm.readthedocs.org>`_
- * Continuous Integration
-  * `pyfarm.core <https://travis-ci.org/pyfarm/pyfarm-core/>`_
-  * `pyfarm.models <https://travis-ci.org/pyfarm/pyfarm-core/>`_
- * Issues
-  * `pyfarm.core <https://github.com/pyfarm/pyfarm-core/issues>`_
-  * `pyfarm.models <https://github.com/pyfarm/pyfarm-models/issues>`_
-  * `pyfarm.jobtypes <https://github.com/pyfarm/pyfarm-jobtypes/issues>`_
-  * `pyfarm.docs <https://github.com/pyfarm/pyfarm-jobtypes/issues>`_
- * `Code Coverage <https://coveralls.io/r/pyfarm>`_
+pyfarm.core
+-----------
+
+.. image:: https://travis-ci.org/pyfarm/pyfarm-core.png?branch=master
+    :target: https://travis-ci.org/pyfarm/pyfarm-core
+    :align: left
+
+.. image:: https://coveralls.io/repos/pyfarm/pyfarm-core/badge.png?branch=master
+    :target: https://coveralls.io/r/pyfarm/pyfarm-core?branch=master
+    :align: left
+
+.. image:: https://badge.waffle.io/pyfarm/pyfarm-core.png?label=ready
+    :target: https://waffle.io/pyfarm/pyfarm-core
+    :align: left
+
+
+pyfarm.master
+-------------
+
+.. image:: https://travis-ci.org/pyfarm/pyfarm-master.png?branch=master
+    :target: https://travis-ci.org/pyfarm/pyfarm-master
+    :align: left
+
+.. image:: https://coveralls.io/repos/pyfarm/pyfarm-master/badge.png?branch=master
+    :target: https://coveralls.io/r/pyfarm/pyfarm-master?branch=master
+    :align: left
+
+.. image:: https://badge.waffle.io/pyfarm/pyfarm-master.png?label=ready
+    :target: https://waffle.io/pyfarm/pyfarm-master
+    :align: left
+
+
+pyfarm.models
+-------------
+
+.. image:: https://travis-ci.org/pyfarm/pyfarm-models.png?branch=master
+    :target: https://travis-ci.org/pyfarm/pyfarm-models
+    :align: left
+
+.. image:: https://coveralls.io/repos/pyfarm/pyfarm-models/badge.png?branch=master
+    :target: https://coveralls.io/r/pyfarm/pyfarm-models?branch=master
+    :align: left
+
+.. image:: https://badge.waffle.io/pyfarm/pyfarm-models.png?label=ready
+    :target: https://waffle.io/pyfarm/pyfarm-models
+    :align: left
+
+
+pyfarm.agent
+------------
+
+.. image:: https://travis-ci.org/pyfarm/pyfarm-agent.png?branch=master
+    :target: https://travis-ci.org/pyfarm/pyfarm-agent
+    :align: left
+
+.. image:: https://coveralls.io/repos/pyfarm/pyfarm-agent/badge.png?branch=master
+    :target: https://coveralls.io/r/pyfarm/pyfarm-agent?branch=master
+    :align: left
+
+.. image:: https://badge.waffle.io/pyfarm/pyfarm-agent.png?label=ready
+    :target: https://waffle.io/pyfarm/pyfarm-agent
+    :align: left
 
 
 
