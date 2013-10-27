@@ -26,6 +26,11 @@ install_requires = ["fabric"]
 if sys.version_info[0:2] < (2, 7):
     install_requires.extend(["argparse"])
 
+if sys.version_info[0:2] == (2, 5):
+    install_requires.append("requests==0.10.0")
+else:
+    install_requires.append("requests")
+
 if isfile("README.rst"):
     with open("README.rst", "r") as readme:
         long_description = readme.read()
@@ -38,6 +43,9 @@ setup(
     packages=["pyfarm",
               "pyfarm.operations"],
     namespace_packages=["pyfarm"],
+    entry_points={
+        "console_scripts":[
+            "pyfarm-dev-release = pyfarm.operations.dev.release:main"]},
     install_requires=install_requires,
     url="https://github.com/pyfarm/pyfarm",
     license="Apache v2.0",
