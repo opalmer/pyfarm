@@ -11,11 +11,3 @@
 .idea
 build
 dist
-
-# auto generated files
-docs/source/include/python_requirements.rst
-docs/source/downloads.rst
-
-# configuration files
-database.yml
-pyfarmbuildbotdata.py
