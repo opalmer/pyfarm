@@ -34,6 +34,9 @@ import git
 import requests
 from fabric.api import local
 
+from pyfarm.operations.dev.tag import remote_tags
+from pyfarm.operations.dev.utility import (
+    info_from_setup, get_pypi_json_api_url, get_github_api_url)
 from pyfarm.operations.dev.tag import create_tag
 
 RE_LOCAL_VERSION = re.compile("^    version=\"(.*)\".*$")
@@ -41,52 +44,44 @@ RE_PY_PACKAGE_NAME = re.compile("^    name=\"(.*)\".*$")
 
 
 def main():
-    if not isdir(".git"):
-        raise OSError(".git directory not located")
+    assert isdir(".git")
 
     parser = argparse.ArgumentParser()
     parser.add_argument("version", nargs="?")
     parsed = parser.parse_args()
 
-    local_version = None
-    python_package_name = None
     pypi_version = None
     latest_git_tag = None
-
-    # read local version and package name
-    with open("setup.py", "r") as setup:
-        for line in setup:
-            match = RE_LOCAL_VERSION.match(line)
-            if match is not None:
-                local_version = match.group(1)
-
-            match = RE_PY_PACKAGE_NAME.match(line)
-            if match is not None:
-                python_package_name = match.group(1)
-
-    assert python_package_name is not None
-    assert local_version is not None
+    python_package_name, local_version = info_from_setup()
 
     # get pypi version
-    pypi = requests.get(
-        "https://pypi.python.org/pypi/%s/json" % python_package_name)
+    pypi = requests.get(get_pypi_json_api_url())
     exists_on_pypi = pypi.status_code == 200
 
     if exists_on_pypi:
         pypi_version = pypi.json()["info"]["version"]
 
     # retrieve the tags
-    git_repo_name = python_package_name.replace(".", "-")
-    tags = requests.get(
-        "https://api.github.com/repos/pyfarm/%s/git/refs/tags" % git_repo_name
-    ).json()
-    latest_git_tag = tags[-1]["ref"].split("/")[-1]
+    latest_git_tag = None
+    for latest_git_tag in remote_tags():
+        continue
 
     # print some info
     print "Python Package Name: %s" % python_package_name
     print "      local version: %s" % local_version
     print "    version on PyPI: %s" % pypi_version
     print " last tag on github: %s" % latest_git_tag
+
+    if latest_git_tag is None:
+        should_continue = None
+        while should_continue not in ("Y", "n"):
+            should_continue = raw_input(
+                "is %s the latest tag [Y/n] ? " % latest_git_tag)
+
+            if should_continue == "n":
+                latest_git_tag = raw_input(
+                    "new git tag ? " % latest_git_tag)
+                should_continue = None
 
     if parsed.version:
         should_continue = None
@@ -98,8 +93,7 @@ def main():
             print "Quit!"
             sys.exit()
 
-
-    create_tag(git_repo_name, parsed.version)
+    create_tag(parsed.version or local_version)
     local("python setup.py sdist upload")
 
     print "current local version: %s" % local_version
@@ -128,5 +122,5 @@ def main():
         while should_commit not in ("Y", "n"):
             should_commit = raw_input("commit changes above? [Y/n] ? ")
 
-        if should_continue == "Y":
+        if should_commit == "Y":
             local('git ci -am "post-release commit" && git push')

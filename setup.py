@@ -45,7 +45,8 @@ setup(
     namespace_packages=["pyfarm"],
     entry_points={
         "console_scripts":[
-            "pyfarm-dev-release = pyfarm.operations.dev.release:main"]},
+            "pyfarm-dev-release = pyfarm.operations.dev.release:main",
+            "pyfarm-dev-tags = pyfarm.operations.dev.tag:tags_main"]},
     install_requires=install_requires,
     url="https://github.com/pyfarm/pyfarm",
     license="Apache v2.0",
