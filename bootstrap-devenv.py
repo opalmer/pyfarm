@@ -137,6 +137,9 @@ if run("pip", show_errors=False, silent=True) is COMMAND_NOT_FOUND:
 if run("virtualenv", show_errors=False, silent=True) is COMMAND_NOT_FOUND:
     raise OSError("command `virtualenv` not found")
 
+options.clone_dir = os.path.abspath(options.clone_dir)
+options.virtualenvs = os.path.abspath(options.virtualenvs)
+
 mkdir(options.clone_dir)
 mkdir(options.virtualenvs)
 
