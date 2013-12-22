@@ -165,9 +165,8 @@ for repo, repo_deps in SUBPROJECT_DEPENDENCIES:
     chdir(tempfile.gettempdir())
 
     venv_paths = virtualenv.path_locations(virtualenv_path)
-    if not all(map(os.path.isdir, venv_paths)):
-        if run("virtualenv %s" % virtualenv_path, redirect=False):
-            raise Exception("error creating virtualenv")
+    if run("virtualenv %s" % virtualenv_path, redirect=False):
+        raise Exception("error creating virtualenv")
 
     home, libs, include, bin = venv_paths
 
