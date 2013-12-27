@@ -4,6 +4,7 @@ python:
   - "2.7"
 
 install:
+  - mkdir $HOME/.pip/ && curl https://raw.github.com/pyfarm/pyfarm/master/misc/travis_pip.conf -o $HOME/.pip/pip.conf
   - pip install . --use-mirrors
 
 script:
