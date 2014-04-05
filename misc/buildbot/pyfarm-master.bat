@@ -1,0 +1,1 @@
+C:\Python27\scripts\buildslave --verbose start C:\buildslave\%~n0
