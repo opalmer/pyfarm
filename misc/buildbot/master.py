@@ -1,16 +1,18 @@
 import os
-from buildbot.status import html
+
 from buildbot.buildslave import BuildSlave
-from buildbot.steps.source.git import Git
-from buildbot.steps.shell import ShellCommand
-from buildbot.steps.slave import RemoveDirectory
-from buildbot.steps.transfer import FileDownload
-from buildbot.changes.gitpoller import GitPoller
-from buildbot.process.factory import BuildFactory
-from buildbot.schedulers.basic import AnyBranchScheduler
-from buildbot.schedulers.forcesched import ForceScheduler
 from buildbot.changes.filter import ChangeFilter
 from buildbot.config import BuilderConfig
+from buildbot.changes.gitpoller import GitPoller
+from buildbot.schedulers.basic import AnyBranchScheduler
+from buildbot.schedulers.forcesched import ForceScheduler
+from buildbot.status import html
+from buildbot.status.web import authz, auth
+from buildbot.steps.shell import ShellCommand
+from buildbot.steps.slave import RemoveDirectory
+from buildbot.steps.source.git import Git
+from buildbot.steps.transfer import FileDownload
+from buildbot.process.factory import BuildFactory
 
 distutils_config = """
 [build]
@@ -41,17 +43,17 @@ core_windows_factory.addSteps([
     ShellCommand(
         name="build virtualenv",
         flunkOnFailure=True,
-        command=["virtualenv", "virtualenv"]),
+        command=["virtualenv", "virtualenv", "--system-site-packages"]),
     FileDownload(
         distutils_config_path, "virtualenv/Lib/distutils/distutils.cfg",
         flunkOnFailure=True,
         name="configure distutils"),
     ShellCommand(
-        name="pip install .",
+        name="install package",
         flunkOnFailure=True,
         command=["virtualenv\\Scripts\\pip.exe", "install", ".", "--upgrade"]),
     ShellCommand(
-        name="pip install nose",
+        name="install extras",
         flunkOnFailure=True,
         command=["virtualenv\\Scripts\\pip.exe", "install", "nose"]),
     ShellCommand(
@@ -60,6 +62,16 @@ core_windows_factory.addSteps([
         command=["virtualenv\\Scripts\\nosetests.exe", "-v", "tests"]),
 ])
 
+authz_cfg = authz.Authz(
+    auth=auth.BasicAuth([("user", "123")]),
+    gracefulShutdown=True,
+    forceBuild="user",
+    forceAllBuilds=True,
+    pingBuilder=True,
+    stopBuild=True,
+    stopAllBuilds=True,
+    cancelPendingBuild=True)
+
 
 BuildmasterConfig = {
     "slavePortnum": 9989,
@@ -67,12 +79,10 @@ BuildmasterConfig = {
     "title": "PyFarm",
     "titleURL": "https://github.com/pyfarm",
     "buildbotURL": "http://buildmaster:8000/",
-    "status": [html.WebStatus(http_port=8000)],
+    "status": [html.WebStatus(http_port=8000, authz=authz_cfg)],
     "slaves":  [
-
         # TODO: add linux build slaves
         # TODO: add os x build slaves
-
         BuildSlave("pyfarm-core-xp", "123"),
         BuildSlave("pyfarm-master-xp", "123"),
         BuildSlave("pyfarm-agent-xp", "123"),
@@ -100,7 +110,10 @@ BuildmasterConfig = {
         AnyBranchScheduler(
             "pyfarm-core-7", treeStableTimer=None,
             builderNames=["pyfarm-core-7", "pyfarm-core-xp"],
-            change_filter=ChangeFilter(project_re="^pyfarm-core.*"))
+            change_filter=ChangeFilter(project_re="^pyfarm-core.*")),
+        ForceScheduler(
+            name="force",
+            builderNames=["pyfarm-core-7", "pyfarm-core-xp"])
     ],
     "builders": [
         BuilderConfig(
