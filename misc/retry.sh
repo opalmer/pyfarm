@@ -1,3 +1,5 @@
+#!/bin/bash
+
 function retry {
     local attempt=1
     local command="${@}" 
