@@ -1,4 +1,6 @@
-#!/bin/bash
+# USAGE: 
+#    $ source retry.sh
+#    $ retry <command>
 
 function retry {
     local attempt=1
@@ -18,4 +20,3 @@ function retry {
     done
 }
 
-retry $*
