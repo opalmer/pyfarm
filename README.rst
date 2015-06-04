@@ -33,11 +33,6 @@ the documentation or in the respective repo.
         :target: https://coveralls.io/r/pyfarm/pyfarm-core?branch=master
         :align: left
 
-    .. image:: https://badge.waffle.io/pyfarm/pyfarm-core.png?label=ready
-        :target: https://waffle.io/pyfarm/pyfarm-core
-        :align: left
-
-
 * `pyfarm.master <https://github.com/pyfarm/pyfarm-master>`_
 
     Sub-library which contains the code necessary to communicate with the
@@ -51,10 +46,6 @@ the documentation or in the respective repo.
         :target: https://coveralls.io/r/pyfarm/pyfarm-master?branch=master
         :align: left
 
-    .. image:: https://badge.waffle.io/pyfarm/pyfarm-master.png?label=ready
-        :target: https://waffle.io/pyfarm/pyfarm-master
-        :align: left
-
 * `pyfarm.agent <https://github.com/pyfarm/pyfarm-agent>`_
 
     Core module containing code to run PyFarm's agent.
@@ -65,8 +56,4 @@ the documentation or in the respective repo.
 
     .. image:: https://coveralls.io/repos/pyfarm/pyfarm-agent/badge.png?branch=master
         :target: https://coveralls.io/r/pyfarm/pyfarm-agent?branch=master
-        :align: left
-
-    .. image:: https://badge.waffle.io/pyfarm/pyfarm-agent.png?label=ready
-        :target: https://waffle.io/pyfarm/pyfarm-agent
         :align: left
