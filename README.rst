@@ -55,24 +55,6 @@ the documentation or in the respective repo.
         :target: https://waffle.io/pyfarm/pyfarm-master
         :align: left
 
-
-* `pyfarm.models <https://github.com/pyfarm/pyfarm-models>`_
-
-    Sub-library which contains the database models used by the admin interface
-    and master server(s).
-
-    .. image:: https://travis-ci.org/pyfarm/pyfarm-models.png?branch=master
-        :target: https://travis-ci.org/pyfarm/pyfarm-models
-        :align: left
-
-    .. image:: https://coveralls.io/repos/pyfarm/pyfarm-models/badge.png?branch=master
-        :target: https://coveralls.io/r/pyfarm/pyfarm-models?branch=master
-        :align: left
-
-    .. image:: https://badge.waffle.io/pyfarm/pyfarm-models.png?label=ready
-        :target: https://waffle.io/pyfarm/pyfarm-models
-        :align: left
-
 * `pyfarm.agent <https://github.com/pyfarm/pyfarm-agent>`_
 
     Core module containing code to run PyFarm's agent.
